@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8) 
-#Aqui ponemos el nombre del proyecto
+
 SET( PROJECT_NAME MultiCamViewer ) 
 PROJECT( ${PROJECT_NAME} ) 
 SET( PROJECT_EXE "${PROJECT_NAME}_exe" )
@@ -31,7 +31,6 @@ MESSAGE(STATUS "Cuda lib dir found at ${CUDA_INCLUDE_DIRS}")
 
 #Source and header files: 
 SET(SOURCE 
-#Here go the source files
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
 src/main.cpp
@@ -45,7 +44,6 @@ src/SurfelModel.cpp
 ) 
 
 SET(HEADERS 
-#Here goes the headers files
 src/CudaVec.h
 src/DepthMapPoly.h
 src/DepthMapSurfel.h
@@ -65,8 +63,7 @@ macro( config_project PROJNAME LIBNAME )
 	target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY} )
 endmacro()
 
-#Make the library 
-#Crea el ejecutable Project_Name usando Source y Headers
+#Create the executable
 ADD_EXECUTABLE( ${PROJECT_EXE} ${SOURCE} ${HEADERS} ) 
 
 #OSG linking
