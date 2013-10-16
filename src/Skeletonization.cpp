@@ -3,17 +3,25 @@
 using std::cout;
 using std::endl;
 
-Skeletonization::Skeletonization()
+Skeletonization::Skeletonization(std::map<int, RGBD_Frame>& camera_frames)
 {
-	//ctor
+	frames = &camera_frames;
 }
 
 Skeletonization::~Skeletonization()
 {
-	//dtor
+	frames = NULL;
 }
 
-void Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
+void Skeletonization::generate_skeletonization()
+{
+	std::map<int, RGBD_Frame>::iterator i(frames->begin());
+	for(; i != frames->end(); ++i ){
+		skeletonized_imgs.push_back(dist_transform_skeletonization(i->second.depth_img));
+	}
+}
+
+cv::Mat Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
 {
 
 	int rows = seg_img.rows;
@@ -59,7 +67,7 @@ void Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
 		}
 	}
 
-	cv::imshow("Binary image", bin_img);
+	//cv::imshow("Binary image", bin_img);
 
 	//---------------------
 
@@ -69,7 +77,7 @@ void Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
 
 	cv::distanceTransform(bin_img, dist_transform_img, CV_DIST_L2, CV_DIST_MASK_PRECISE);
 
-	cv::imshow("Dist transform", dist_transform_img/100.f);
+	//cv::imshow("Dist transform", dist_transform_img*0.01f);
 
 	//---------------------
 
@@ -89,7 +97,7 @@ void Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
 
 	cv::sqrt(diff_xx_sq + diff_yy_sq, grad_dist_xform);//abs(diff_xx) + abs(diff_yy);
 
-	cv::imshow("2nd deriv dist transform", grad_dist_xform/10);
+	//cv::imshow("2nd deriv dist transform", grad_dist_xform/10);
 
 	//---------------------
 
@@ -125,22 +133,23 @@ void Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
 
 	cv::Mat removed_border;
 	cv::bitwise_and(thresh_8bit, bin_eroded, removed_border);
-	cv::imshow("removed_border", removed_border);
+	//cv::imshow("removed_border", removed_border);
 
 	cv::Mat thinned = connectivity_preserving_thinning(removed_border);
-	cv::imshow("thinned", thinned);
+	//cv::imshow("thinned", thinned);
 
 	cv::Mat dendrites_removed1 = remove_isolated_short_segments(thinned, 5);
-	cv::imshow("dendrites_removed1", dendrites_removed1);
+	//cv::imshow("dendrites_removed1", dendrites_removed1);
 
 	cv::Mat thinned2 = connectivity_preserving_thinning(dendrites_removed1);
-	cv::imshow("thinned2", thinned2);
+	//cv::imshow("thinned2", thinned2);
 
 	cv::Mat dendrites_removed2 = remove_isolated_short_segments(thinned2, 15);
 	cv::imshow("dendrites_removed2", dendrites_removed2);
 
-	cv::waitKey(80);
+	//cv::waitKey(80);
 	//exit(0);
+	return dendrites_removed2;
 }
 
 cv::Mat Skeletonization::remove_isolated_short_segments(cv::Mat img_in, int thresh_length)

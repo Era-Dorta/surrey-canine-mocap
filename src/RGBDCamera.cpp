@@ -66,12 +66,13 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name):
 	//DEBUG TEST: Distance transform skeletonization
 	if(cam_name == "Cam_02")
 	{
-		Skeletonization skeletonizator;
-		for(int i = 90; i < 120; i++)
-		{
-		skeletonizator.dist_transform_skeletonization(frames[i].depth_img);
+		Skeletonization skeletonizator(frames);
+		//for(int i = 90; i < 120; i++)
+		//{
+		skeletonizator.generate_skeletonization();
+		//skeletonizator.dist_transform_skeletonization(frames[i].depth_img);
 		cv::waitKey(0);
-		}
+		//}
 	}
 
 	//	//Pre-compute the surface paths for all frames:
