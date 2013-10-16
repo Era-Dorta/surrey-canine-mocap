@@ -57,7 +57,7 @@ MultiCamViewer::MultiCamViewer(std::string path):
 
 	//Set currently displayed frame to beginning:
 	disp_frame_no = begin_frame_no;
-
+	skel_renderer.set_cameras(camera_arr);
 }
 
 MultiCamViewer::~MultiCamViewer()
@@ -130,6 +130,9 @@ void MultiCamViewer::setup_scene(void)
 	scene_root->addChild(cam_vis_switch);
 	//---------------------------
 
+	osg::ref_ptr<osg::Group> skel_graph = new osg::Group;
+	scene_root->addChild(skel_graph.get());
+	skel_renderer.set_node(skel_graph.get());
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer, std::string win_name, int x, int y)

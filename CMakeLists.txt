@@ -40,6 +40,7 @@ src/main.cpp
 src/MultiCamViewer.cpp
 src/PointFusion.cpp
 src/RenderPOV.cpp
+src/RenderSkeletonization.cpp
 src/RGBDCamera.cpp
 src/RGBDFrame.cpp
 src/SimpleTimer.cpp
@@ -55,6 +56,7 @@ src/MiscUtils.h
 src/MultiCamViewer.h
 src/PointFusion.h
 src/RenderPOV.h
+src/RenderSkeletonization.h
 src/RGBDCamera.h
 src/RGBDFrame.h
 src/SimpleTimer.h

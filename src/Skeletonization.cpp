@@ -3,9 +3,9 @@
 using std::cout;
 using std::endl;
 
-Skeletonization::Skeletonization(std::map<int, RGBD_Frame>& camera_frames)
+Skeletonization::Skeletonization(std::map<int, RGBD_Frame>* camera_frames)
 {
-	frames = &camera_frames;
+	frames = camera_frames;
 }
 
 Skeletonization::~Skeletonization()

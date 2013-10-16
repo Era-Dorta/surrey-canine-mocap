@@ -13,6 +13,7 @@
 #include "DepthMapPoly.h"
 #include "SurfelModel.h"
 #include "SimpleTimer.h"
+#include "RenderSkeletonization.h"
 
 #include <string>
 #include <vector>
@@ -86,6 +87,8 @@ private:
 	//Switch to turn camera visualizations on or off:
 	osg::ref_ptr<osg::Switch> cam_vis_switch;
 	float alpha;
+
+	RenderSkeletonization skel_renderer;
 
 };
 

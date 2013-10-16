@@ -9,7 +9,7 @@
 class Skeletonization
 {
 	public:
-		Skeletonization(std::map<int, RGBD_Frame>& camera_frames);
+		Skeletonization(std::map<int, RGBD_Frame>* camera_frames);
 		virtual ~Skeletonization();
 		void generate_skeletonization();
 	protected:

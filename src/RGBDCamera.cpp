@@ -64,16 +64,16 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name):
 	//bilateral_filter_frames();
 
 	//DEBUG TEST: Distance transform skeletonization
-	if(cam_name == "Cam_02")
-	{
-		Skeletonization skeletonizator(frames);
+	//if(cam_name == "Cam_02")
+	//{
+		//Skeletonization skeletonizator(frames);
 		//for(int i = 90; i < 120; i++)
 		//{
-		skeletonizator.generate_skeletonization();
+		//skeletonizator.generate_skeletonization();
 		//skeletonizator.dist_transform_skeletonization(frames[i].depth_img);
-		cv::waitKey(0);
+		//cv::waitKey(0);
 		//}
-	}
+	//}
 
 	//	//Pre-compute the surface paths for all frames:
 	//	cout << "Computing surface paths" << endl;
@@ -397,6 +397,11 @@ cv::Mat* RGBD_Camera::get_rgb_image(int frame_num)
 			exit(-1);
 		}
 	}
+}
+
+std::map<int, RGBD_Frame>* RGBD_Camera::get_frames()
+{
+	return &frames;
 }
 
 std::string RGBD_Camera::get_cam_name(void)
