@@ -477,17 +477,18 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name):
 	//Segment the frames (remove the background):
 	segment_frames();
 
-	bilateral_filter_frames();
+	//TODO This produces much betters results but is quite slow
+	//bilateral_filter_frames();
 
-//	//DEBUG TEST: Distance transform skeletonization
-//	if(cam_name == "Cam_02")
-//	{
-//		for(int i = 90; i < 120; i++)
-//		{
-//		dist_transform_skeletonization(frames[i].depth_img);
-//		cv::waitKey(0);
-//		}
-//	}
+	//DEBUG TEST: Distance transform skeletonization
+	if(cam_name == "Cam_02")
+	{
+		for(int i = 90; i < 120; i++)
+		{
+		dist_transform_skeletonization(frames[i].depth_img);
+		cv::waitKey(0);
+		}
+	}
 
 	//	//Pre-compute the surface paths for all frames:
 	//	cout << "Computing surface paths" << endl;

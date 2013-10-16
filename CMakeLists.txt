@@ -2,27 +2,30 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 SET( PROJECT_NAME MultiCamViewer ) 
 PROJECT( ${PROJECT_NAME} ) 
-SET( PROJECT_EXE "${PROJECT_NAME}_exe" )
+SET( PROJECT_EXE "${PROJECT_NAME}_exe" ) 
 
-#OSG
-find_package(OpenThreads )
-find_package(osg )
-find_package(osgDB )
-find_package(osgUtil )
-find_package(osgViewer )
-find_package(osgGA )
-find_package(osgText )
-find_package(osgAnimation )
+#Boost
+FIND_PACKAGE( Boost 1.46 REQUIRED COMPONENTS filesystem system )
+INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
+#Custom path to compiled by hand libraries, thanks to not having permision to install software
+#If you have installation permisions remove this line
+SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
 
 #OpenCV
 FIND_PACKAGE( OpenCV REQUIRED ) 
 MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
 MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
 
-#Boost
-FIND_PACKAGE( Boost 1.46 REQUIRED COMPONENTS filesystem system )
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+#OSG
+find_package(OpenThreads )
+find_package(osg)
+find_package(osgDB )
+find_package(osgUtil )
+find_package(osgViewer )
+find_package(osgGA )
+find_package(osgText )
+find_package(osgAnimation )
 
 #CUDA
 FIND_PACKAGE( CUDA )

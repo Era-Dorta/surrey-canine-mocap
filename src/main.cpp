@@ -1,8 +1,8 @@
 //============================================================================
 // Name        : Multi_Cam_Viewer.cpp
-// Author      : 
+// Author      :
 // Version     :
-// Copyright   : 
+// Copyright   :
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -40,8 +40,10 @@ int main(int argc, char** argv)
 	//Read command line arguments:
 	if(argc != 2)
 	{
-		printf("Usage: %s [dataset path]", argv[0]);
-		exit(-1);
+		//printf("Usage: %s [dataset path]", argv[0]);
+		//Set default path when no arguments are given
+		path = "/home/cvssp/misc/m04701/workspace/data/UniS_Fitzpatrick_04_July_2013/RGBD_Cap_2013.07.04_12.58.30_Labrador";
+		//exit(-1);
 	}
 	else
 	{
