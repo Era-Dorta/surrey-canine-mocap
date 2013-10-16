@@ -43,6 +43,7 @@ src/RenderPOV.cpp
 src/RGBDCamera.cpp
 src/RGBDFrame.cpp
 src/SimpleTimer.cpp
+src/Skeletonization.cpp
 src/SurfelModel.cpp
 ) 
 
@@ -57,6 +58,7 @@ src/RenderPOV.h
 src/RGBDCamera.h
 src/RGBDFrame.h
 src/SimpleTimer.h
+src/Skeletonization.h
 src/SurfelModel.h
 ) 
 

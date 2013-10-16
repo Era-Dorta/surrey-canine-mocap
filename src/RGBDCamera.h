@@ -14,6 +14,7 @@
 #include "DepthMapSurfel.h"
 #include "SimpleTimer.h"
 #include "RenderPOV.h"
+#include "Skeletonization.h"
 
 #include <string>
 #include <vector>
