@@ -1,7 +1,7 @@
 #ifndef RENDERSKELETONIZATION_H
 #define RENDERSKELETONIZATION_H
 
-#include "Skeletonization.h"
+#include "Skeletonization3D.h"
 #include "RGBDCamera.h"
 
 #include <vector>
@@ -29,9 +29,7 @@ class RenderSkeletonization
 		void set_node( osg::ref_ptr<osg::Group> new_skel_root );
 	protected:
 	private:
-		//Vector of Skeletonization class, there is one instance
-		//for each camera
-		std::vector < boost::shared_ptr<Skeletonization> > skel_arr;
+		Skeletonization3D skeleton;
 		osg::ref_ptr<osg::Group> skel_root;
 		osg::ref_ptr<osg::Vec3Array> vertices;
 };

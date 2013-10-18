@@ -48,7 +48,8 @@ src/RenderSkeletonization.cpp
 src/RGBDCamera.cpp
 src/RGBDFrame.cpp
 src/SimpleTimer.cpp
-src/Skeletonization.cpp
+src/Skeletonization2D.cpp
+src/Skeletonization3D.cpp
 src/SurfelModel.cpp
 ) 
 
@@ -64,7 +65,8 @@ src/RenderSkeletonization.h
 src/RGBDCamera.h
 src/RGBDFrame.h
 src/SimpleTimer.h
-src/Skeletonization.h
+src/Skeletonization2D.h
+src/Skeletonization3D.h
 src/SurfelModel.h
 ) 
 

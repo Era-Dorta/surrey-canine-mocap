@@ -1,5 +1,5 @@
-#ifndef SKELETONIZATION_H
-#define SKELETONIZATION_H
+#ifndef SKELETONIZATION2D_H
+#define SKELETONIZATION2D_H
 
 #include "RGBDFrame.h"
 
@@ -9,12 +9,11 @@
 using std::cout;
 using std::endl;
 
-class Skeletonization
+class Skeletonization2D
 {
 	public:
-		Skeletonization(std::map<int, RGBD_Frame>* camera_frames);
-		virtual ~Skeletonization();
-		osg::ref_ptr<osg::Vec3Array> get_points_for_frame( int frame );
+		Skeletonization2D(std::map<int, RGBD_Frame>* camera_frames);
+		virtual ~Skeletonization2D();
 	protected:
 	private:
 		void generate_skeletonization();
@@ -23,8 +22,8 @@ class Skeletonization
 		cv::Mat connectivity_preserving_thinning(cv::Mat& img_in);
 		cv::Mat remove_isolated_short_segments(cv::Mat& img_in, int thresh_length);
 
-		std::vector< osg::ref_ptr<osg::Vec3Array> > skeletonized_points;
+		std::vector< cv::Mat > skeletonized_frames;
 		std::map<int, RGBD_Frame>* frames;
 };
 
-#endif // SKELETONIZATION_H
+#endif // SKELETONIZATION2D_H

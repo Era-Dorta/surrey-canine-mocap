@@ -7,10 +7,7 @@ RenderSkeletonization::RenderSkeletonization()
 
 RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr)
 {
-	for(int i = 0; i < camera_arr.size(); i++){
-		boost::shared_ptr<Skeletonization> skel(new Skeletonization(camera_arr[i]->get_frames()));
-		skel_arr.push_back(skel);
-	}
+	skeleton.set_cameras(camera_arr);
 }
 
 RenderSkeletonization::~RenderSkeletonization()
@@ -20,12 +17,7 @@ RenderSkeletonization::~RenderSkeletonization()
 
 void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr)
 {
-	skel_arr.clear();
-	//Just the second camera until I boost up the speed
-	for(int i = 0; i < camera_arr.size(); i++){
-		boost::shared_ptr<Skeletonization> skel(new Skeletonization(camera_arr[i]->get_frames()));
-		skel_arr.push_back(skel);
-	}
+	skeleton.set_cameras(camera_arr);
 }
 
 void RenderSkeletonization::set_node( osg::ref_ptr<osg::Group> new_skel_root )
@@ -35,6 +27,7 @@ void RenderSkeletonization::set_node( osg::ref_ptr<osg::Group> new_skel_root )
 
 void RenderSkeletonization::update_dynamics( int disp_frame_no )
 {
+	/*
 	//TODO Since only one camera, remove 1 children, to be changed later
 	skel_root->removeChildren(0, 1);
 	vertices = skel_arr[0]->get_points_for_frame(disp_frame_no);
@@ -55,4 +48,5 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 		geom->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
 		skel_geode->addDrawable(geom.get());
 	}
+	*/
 }
