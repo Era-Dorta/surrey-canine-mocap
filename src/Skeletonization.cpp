@@ -105,18 +105,10 @@ cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 		}
 	}
 
-	//cv::imshow("Binary image", bin_img);
-
-	//---------------------
-
 	//Perform distance transform:
 	//---------------------
 
 	cv::distanceTransform(bin_img, temp2, CV_DIST_L2, CV_DIST_MASK_PRECISE);
-
-	//cv::imshow("Dist transform", temp2*0.01f);
-
-	//---------------------
 
 	//2nd derivative magnitude image:
 	//---------------------
@@ -128,20 +120,6 @@ cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 	cv::multiply(res, res, temp1);
 
 	cv::sqrt(temp2 + temp1, res);//abs(diff_xx) + abs(diff_yy);
-
-	//cv::imshow("2nd deriv dist transform", grad_dist_xform/10);
-
-	//---------------------
-
-	//	//Canny (not suitable - makes two lines per bone)
-	//	//---------------------
-	//	cv::Mat canny_edge;
-	//	cv::Mat dist_8bit;
-	//	grad_dist_xform.convertTo(dist_8bit, CV_8U, 25);
-	//	cv::imshow("Dist_8bit", dist_8bit);
-	//	cv::Canny(dist_8bit, canny_edge, 9, 3*9);
-	//	cv::imshow("Canny", canny_edge);
-	//	//---------------------
 
 	//Threshold
 	//---------------------
@@ -157,27 +135,17 @@ cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 	res = cv::getStructuringElement( cv::MORPH_ELLIPSE,
 			cv::Size( 2*erosion_size + 1, 2*erosion_size+1 ),
 			cv::Point( erosion_size, erosion_size ) );
+
 	cv::erode(bin_img, temp1, res);
-	//cv::imshow("Eroded", bin_eroded);
-	//---------------------
-
 	cv::bitwise_and(thresh_8bit, temp1, res);
-	//cv::imshow("removed_border", removed_border);
-
 	temp1 = connectivity_preserving_thinning(res);
-	//cv::imshow("thinned", thinned);
-
 	res = remove_isolated_short_segments(temp1, 5);
-	//cv::imshow("dendrites_removed1", dendrites_removed1);
-
 	temp1 = connectivity_preserving_thinning(res);
-	//cv::imshow("thinned2", thinned2);
-
 	res = remove_isolated_short_segments(temp1, 15);
+
 	cv::imshow("dendrites_removed2", res);
 
 	cv::waitKey(80);
-	//exit(0);
 	return res;
 }
 
