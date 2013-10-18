@@ -8,6 +8,10 @@ SET( PROJECT_EXE "${PROJECT_NAME}_exe" )
 FIND_PACKAGE( Boost 1.46 REQUIRED COMPONENTS filesystem system )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
+INCLUDE(FindFreetype)
+MESSAGE(STATUS "Freetype lib dir found at ${FREETYPE_LIBRARIES}")
+MESSAGE(STATUS "Freetype include dir found at ${FREETYPE_INCLUDE_DIRS}")
+
 #Custom path to compiled by hand libraries, thanks to not having permision to install software
 #If you have installation permisions remove this line
 SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
@@ -90,3 +94,6 @@ target_link_libraries( ${PROJECT_EXE} ${OpenCV_LIBS} )
 
 #Boost linking
 target_link_libraries( ${PROJECT_EXE} ${Boost_LIBRARIES} )
+
+INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${FREETYPE_LIBRARIES})

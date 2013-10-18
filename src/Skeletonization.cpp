@@ -6,6 +6,7 @@ using std::endl;
 Skeletonization::Skeletonization(std::map<int, RGBD_Frame>* camera_frames)
 {
 	frames = camera_frames;
+	generate_skeletonization();
 }
 
 Skeletonization::~Skeletonization()
@@ -13,15 +14,51 @@ Skeletonization::~Skeletonization()
 	frames = NULL;
 }
 
+osg::ref_ptr<osg::Vec3Array> Skeletonization::get_points_for_frame( int frame )
+{
+	return skeletonized_points[frame];
+}
+
 void Skeletonization::generate_skeletonization()
 {
 	std::map<int, RGBD_Frame>::iterator i(frames->begin());
+	cv::Mat transformed_img;
+	skeletonized_points.reserve(frames->size());
 	for(; i != frames->end(); ++i ){
-		skeletonized_imgs.push_back(dist_transform_skeletonization(i->second.depth_img));
+		transformed_img = dist_transform_skeletonization(i->second.depth_img);
+		skeletonized_points.push_back(points_from_image(transformed_img));
+		cv::waitKey(0);
 	}
 }
 
-cv::Mat Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
+//Generates a vector of 2D points from a binary image
+osg::ref_ptr<osg::Vec3Array> Skeletonization::points_from_image(const cv::Mat& seg_img)
+{
+	int rows = seg_img.rows;
+	int cols = seg_img.cols;
+	//Maximun size is this, but it would be good to reserve just the neede space
+	osg::ref_ptr<osg::Vec3Array> skeleton_points = new osg::Vec3Array();
+	//We are going to put some elements in the vector, better reserve some
+	//space to make it faster
+	skeleton_points->reserve(100);
+
+	for(int row = 0; row < rows; row++)
+	{
+		for(int col = 0; col < cols; col++)
+		{
+			//If point is not background, then save it
+			if((int)seg_img.at<ushort>(row, col) == 255 )
+			{
+				//TODO Apply transform to get them in 3D space
+				skeleton_points->push_back(osg::Vec3(row, col, 0));
+			}
+		}
+	}
+	return skeleton_points.get();
+}
+
+//Generates a skeletonized image from a depth image
+cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 {
 
 	int rows = seg_img.rows;
@@ -147,12 +184,12 @@ cv::Mat Skeletonization::dist_transform_skeletonization(cv::Mat& seg_img)
 	cv::Mat dendrites_removed2 = remove_isolated_short_segments(thinned2, 15);
 	cv::imshow("dendrites_removed2", dendrites_removed2);
 
-	//cv::waitKey(80);
+	cv::waitKey(80);
 	//exit(0);
 	return dendrites_removed2;
 }
 
-cv::Mat Skeletonization::remove_isolated_short_segments(cv::Mat img_in, int thresh_length)
+cv::Mat Skeletonization::remove_isolated_short_segments(cv::Mat& img_in, int thresh_length)
 {
 	cv::Mat result = img_in.clone();
 
@@ -297,7 +334,7 @@ cv::Mat Skeletonization::remove_isolated_short_segments(cv::Mat img_in, int thre
 	return result;
 }
 
-cv::Mat Skeletonization::connectivity_preserving_thinning(cv::Mat img_in)
+cv::Mat Skeletonization::connectivity_preserving_thinning(cv::Mat& img_in)
 {
 	cv::Mat result = img_in.clone();
 

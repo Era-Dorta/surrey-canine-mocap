@@ -13,20 +13,27 @@
 
 #include "boost/shared_ptr.hpp"
 
+#include "iostream"
+
+using std::cout;
+using std::endl;
+
 class RenderSkeletonization
 {
 	public:
 		RenderSkeletonization();
 		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr );
 		virtual ~RenderSkeletonization();
-		void update_dynamics(void);
+		void update_dynamics(int disp_frame_no);
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr);
 		void set_node( osg::ref_ptr<osg::Group> new_skel_root );
-		void draw();
 	protected:
 	private:
+		//Vector of Skeletonization class, there is one instance
+		//for each camera
 		std::vector < boost::shared_ptr<Skeletonization> > skel_arr;
 		osg::ref_ptr<osg::Group> skel_root;
+		osg::ref_ptr<osg::Vec3Array> vertices;
 };
 
 #endif // RENDERSKELETONIZATION_H
