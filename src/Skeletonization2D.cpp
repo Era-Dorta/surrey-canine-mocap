@@ -14,6 +14,11 @@ Skeletonization2D::~Skeletonization2D()
 	frames = NULL;
 }
 
+cv::Mat* Skeletonization2D::get_frame( int frame_num )
+{
+	return &skeletonized_frames[frame_num];
+}
+
 void Skeletonization2D::generate_skeletonization()
 {
 	std::map<int, RGBD_Frame>::iterator i(frames->begin());

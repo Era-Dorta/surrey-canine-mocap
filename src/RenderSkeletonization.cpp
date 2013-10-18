@@ -5,7 +5,7 @@ RenderSkeletonization::RenderSkeletonization()
 
 }
 
-RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr)
+RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr)
 {
 	skeleton.set_cameras(camera_arr);
 }
@@ -15,7 +15,7 @@ RenderSkeletonization::~RenderSkeletonization()
 	//dtor
 }
 
-void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr)
+void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr)
 {
 	skeleton.set_cameras(camera_arr);
 }

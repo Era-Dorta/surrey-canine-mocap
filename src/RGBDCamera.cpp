@@ -44,7 +44,7 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name):
 	cout << "Found " << rgb_files.size() << " images." << endl;
 
 	//Parse the RGB filenames:
-	for(std::vector<std::string>::iterator i(rgb_files.begin()); i != rgb_files.end(); ++i)
+	for(std::vector<std::string>::iterator i(rgb_files.begin() + 90); i != rgb_files.begin() + 150; ++i)
 		//for(std::vector<std::string>::iterator i(rgb_files.begin()); i != rgb_files.begin()+10; ++i)
 	{
 		int frame_num = boost::lexical_cast<int>(((*i).substr((*i).length()-9,5)).c_str());
@@ -125,7 +125,7 @@ void RGBD_Camera::load_frame(int frame_num)
 {
 	RGBD_Frame frame;
 
-	frame.frame_num = frame_num;
+	frame.frame_num = frame_num - 90;
 
 	//Read images:
 	char fn[1024];
@@ -145,7 +145,7 @@ void RGBD_Camera::load_frame(int frame_num)
 		exit(-1);
 	}
 
-	frames[frame_num] = frame;
+	frames[frame_num - 90] = frame;
 
 }
 
@@ -176,6 +176,12 @@ void RGBD_Camera::load_calibration(void)
 	//NB! Cloning because the array with the data will go out of scope when the function returns:
 	cv::Mat K = cv::Mat(3, 3, CV_32F, K_val, 3*sizeof(float)).clone();
 	K_rgb = K;
+	inv_K_rgb = K.inv();
+
+	for(int i = 0; i<9; i++){
+		K_d_f3x3.val[i] = K_rgb.at<float>(i);
+		inv_K_d_f3x3.val[i] = inv_K_rgb.at<float>(i);
+	}
 
 	//DEBUG:
 	//cout << "Intrinsics read from file: " << K << endl;
@@ -348,6 +354,21 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour)
 cv::Mat RGBD_Camera::get_K_rgb(void)
 {
 	return K_rgb;
+}
+
+float3x3 RGBD_Camera::get_K_f3x3(void)
+{
+	return K_d_f3x3;
+}
+
+cv::Mat RGBD_Camera::get_inv_K_rgb(void)
+{
+	return inv_K_rgb;
+}
+
+float3x3 RGBD_Camera::get_inv_K_f3x3(void)
+{
+	return inv_K_d_f3x3;
 }
 
 cv::Mat RGBD_Camera::get_T_rgb(void)

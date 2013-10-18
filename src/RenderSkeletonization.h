@@ -22,10 +22,10 @@ class RenderSkeletonization
 {
 	public:
 		RenderSkeletonization();
-		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr );
+		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr );
 		virtual ~RenderSkeletonization();
 		void update_dynamics(int disp_frame_no);
-		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >& camera_arr);
+		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr);
 		void set_node( osg::ref_ptr<osg::Group> new_skel_root );
 	protected:
 	private:

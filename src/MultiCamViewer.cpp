@@ -57,7 +57,7 @@ MultiCamViewer::MultiCamViewer(std::string path):
 
 	//Set currently displayed frame to beginning:
 	disp_frame_no = begin_frame_no;
-	skel_renderer.set_cameras(camera_arr);
+	skel_renderer.set_cameras(&camera_arr);
 }
 
 MultiCamViewer::~MultiCamViewer()

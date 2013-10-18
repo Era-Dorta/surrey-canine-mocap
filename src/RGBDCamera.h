@@ -53,6 +53,9 @@ public:
 	int get_d_cols(void);
 	osg::Vec3 get_vis_colour(void);
 	cv::Mat get_K_rgb(void);
+	float3x3 get_K_f3x3(void);
+	cv::Mat get_inv_K_rgb(void);
+	float3x3 get_inv_K_f3x3(void);
 	cv::Mat get_T_rgb(void);
 	cv::Mat* get_depth_map(int frame_num);
 	cv::Mat* get_rgb_image(int frame_num);
@@ -91,7 +94,11 @@ private:
 	int d_cols;
 
 	cv::Mat K_rgb;
+	cv::Mat inv_K_rgb;
 	cv::Mat T_rgb;
+
+	float3x3 K_d_f3x3;
+	float3x3 inv_K_d_f3x3;
 };
 
 #endif /* RGBDCAMERA_H_ */

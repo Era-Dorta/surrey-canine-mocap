@@ -14,6 +14,7 @@ class Skeletonization2D
 	public:
 		Skeletonization2D(std::map<int, RGBD_Frame>* camera_frames);
 		virtual ~Skeletonization2D();
+		cv::Mat* get_frame( int frame_num );
 	protected:
 	private:
 		void generate_skeletonization();
@@ -23,6 +24,9 @@ class Skeletonization2D
 		cv::Mat remove_isolated_short_segments(cv::Mat& img_in, int thresh_length);
 
 		std::vector< cv::Mat > skeletonized_frames;
+
+		//This pointer is only valid as long as the RGBD camera holds the memory
+		//Change this and the camera to boost pointers
 		std::map<int, RGBD_Frame>* frames;
 };
 
