@@ -64,6 +64,7 @@ cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 	int rows = seg_img.rows;
 	int cols = seg_img.cols;
 
+	cv::Mat res, temp1, temp2;
 	//Make binary image of segmented depth map:
 	//---------------------
 	cv::Mat bin_img(rows, cols, CV_8U);
@@ -110,29 +111,23 @@ cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 
 	//Perform distance transform:
 	//---------------------
-	cv::Mat dist_transform_img;
 
-	cv::distanceTransform(bin_img, dist_transform_img, CV_DIST_L2, CV_DIST_MASK_PRECISE);
+	cv::distanceTransform(bin_img, temp2, CV_DIST_L2, CV_DIST_MASK_PRECISE);
 
-	//cv::imshow("Dist transform", dist_transform_img*0.01f);
+	//cv::imshow("Dist transform", temp2*0.01f);
 
 	//---------------------
 
 	//2nd derivative magnitude image:
 	//---------------------
-	cv::Mat diff_xx;
-	cv::Mat diff_yy;
 
-	cv::Sobel(dist_transform_img, diff_xx, CV_32F, 2, 0, 1);
-	cv::Sobel(dist_transform_img, diff_yy, CV_32F, 0, 2, 1);
+	cv::Sobel(temp2, temp1, CV_32F, 2, 0, 1);
+	cv::Sobel(temp2, res, CV_32F, 0, 2, 1);
 
-	cv::Mat grad_dist_xform;
-	cv::Mat diff_xx_sq;
-	cv::multiply(diff_xx, diff_xx, diff_xx_sq);
-	cv::Mat diff_yy_sq;
-	cv::multiply(diff_yy, diff_yy, diff_yy_sq);
+	cv::multiply(temp1, temp1, temp2);
+	cv::multiply(res, res, temp1);
 
-	cv::sqrt(diff_xx_sq + diff_yy_sq, grad_dist_xform);//abs(diff_xx) + abs(diff_yy);
+	cv::sqrt(temp2 + temp1, res);//abs(diff_xx) + abs(diff_yy);
 
 	//cv::imshow("2nd deriv dist transform", grad_dist_xform/10);
 
@@ -150,43 +145,40 @@ cv::Mat Skeletonization::dist_transform_skeletonization(const cv::Mat& seg_img)
 
 	//Threshold
 	//---------------------
-	cv::Mat thresholded;
-	cv::threshold(grad_dist_xform,thresholded, 0.7, 255, CV_8U);
+	cv::threshold(res, temp1, 0.7, 255, CV_8U);
 	cv::Mat thresh_8bit;
-	thresholded.convertTo(thresh_8bit,CV_8U);
+	temp1.convertTo(thresh_8bit,CV_8U);
 	//cv::imshow("Thresh", thresh_8bit);
 	//---------------------
 
 	//Erode binary image
 	//---------------------
-	cv::Mat bin_eroded;
 	int erosion_size = 2;
-	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE,
+	res = cv::getStructuringElement( cv::MORPH_ELLIPSE,
 			cv::Size( 2*erosion_size + 1, 2*erosion_size+1 ),
 			cv::Point( erosion_size, erosion_size ) );
-	cv::erode(bin_img, bin_eroded, element);
+	cv::erode(bin_img, temp1, res);
 	//cv::imshow("Eroded", bin_eroded);
 	//---------------------
 
-	cv::Mat removed_border;
-	cv::bitwise_and(thresh_8bit, bin_eroded, removed_border);
+	cv::bitwise_and(thresh_8bit, temp1, res);
 	//cv::imshow("removed_border", removed_border);
 
-	cv::Mat thinned = connectivity_preserving_thinning(removed_border);
+	temp1 = connectivity_preserving_thinning(res);
 	//cv::imshow("thinned", thinned);
 
-	cv::Mat dendrites_removed1 = remove_isolated_short_segments(thinned, 5);
+	res = remove_isolated_short_segments(temp1, 5);
 	//cv::imshow("dendrites_removed1", dendrites_removed1);
 
-	cv::Mat thinned2 = connectivity_preserving_thinning(dendrites_removed1);
+	temp1 = connectivity_preserving_thinning(res);
 	//cv::imshow("thinned2", thinned2);
 
-	cv::Mat dendrites_removed2 = remove_isolated_short_segments(thinned2, 15);
-	cv::imshow("dendrites_removed2", dendrites_removed2);
+	res = remove_isolated_short_segments(temp1, 15);
+	cv::imshow("dendrites_removed2", res);
 
 	cv::waitKey(80);
 	//exit(0);
-	return dendrites_removed2;
+	return res;
 }
 
 cv::Mat Skeletonization::remove_isolated_short_segments(cv::Mat& img_in, int thresh_length)

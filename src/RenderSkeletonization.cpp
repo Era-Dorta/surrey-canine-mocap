@@ -22,7 +22,7 @@ void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Cam
 {
 	skel_arr.clear();
 	//Just the second camera until I boost up the speed
-	for(int i = 1; i < camera_arr.size() - 1; i++){
+	for(int i = 0; i < camera_arr.size(); i++){
 		boost::shared_ptr<Skeletonization> skel(new Skeletonization(camera_arr[i]->get_frames()));
 		skel_arr.push_back(skel);
 	}
