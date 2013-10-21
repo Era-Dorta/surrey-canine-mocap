@@ -18,6 +18,7 @@ class Skeletonization3D
 	private:
 		void merge_2D_skeletons();
 		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(std::vector< cv::Mat* >& skeletonized_frames, int frame_num);
+		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col );
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
 		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
@@ -29,6 +30,8 @@ class Skeletonization3D
 		//This pointer is only valid as long as the MultiCameraViewer camera
 		//holds the memory Change this and the camera to boost pointers
 		std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr;
+
+		std::vector < cv::Mat > visited_pixels;
 
 		int n_cameras;
 		int n_frames;

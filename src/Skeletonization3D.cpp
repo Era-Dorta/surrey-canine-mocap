@@ -42,6 +42,23 @@ void Skeletonization3D::merge_2D_skeletons()
 	}
 }
 
+bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_col )
+{
+	for(int row = 0; row < img->rows; row++)
+	{
+		for(int col = 0; col < img->cols; col++)
+		{
+			//If pixel is white
+			if( (int)img->at<ushort>(row, col) == 255){
+				res_row = row;
+				res_col = col;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	std::vector< cv::Mat* >& skeletonized_frames, int frame_num)
 {
@@ -66,7 +83,11 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
+	//Not sure about this, but maybe it was calculated in depthmapsurfel so
+	//this is stupid recalculation
 	for(int i = 0; i < skeletonized_frames.size(); i++){
+		//Copy images
+		visited_pixels[i] = skeletonized_frames[i]->clone();
 		depth_map = (*camera_arr)[i]->get_depth_map(frame_num);
 		inv_K = (*camera_arr)[i]->get_inv_K_f3x3();
 		//Generate 3D vertices
@@ -85,10 +106,83 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		}
 	}
 
+	//TODO SHOW SKELETON PIXELS IN 3D IMAGE TO CHECK IF IS OK UNTIL HERE
+
 	//Go through each pixel of each image, check if other has pixels
 	//inside treshold, if the do, erase pixel in others and actual and
 	//put new pixel in the mean
 	// If no near treshold, delete current add it to res image as is
 
+	//To know if pixel have been treated or not, need copies of the images
 
+	//For each image
+		//While still untreated pixels in image
+			//Find white pixel
+			//Calculate merge
+				//Better have area of interest
+					//To have area of interest calculate K*d*[x,y,z]'
+					//and that gives [u,v,1]
+					//If this is calculate for each camera then
+					//with tresholds for row and cols we can get
+					//areas of interest
+				//Calculate distance to other non used pixels
+				//If smaller than treshold, merge pixels
+			//Set used other image pixels to used
+			//Get next white pixel from path
+	cv::Point3f p0, p1;
+
+	int total_pixels = rows*cols, pixel_row, pixel_col;
+	int treated_pixels[3] = {0,0,0};
+	int skeleton_num_points = 0;
+	float distance_treshold = 10.0f;
+	osg::Vec3 merged_pixel;
+	int total_merge;
+
+	for( int i = 0; i < skeletonized_frames.size(); i++){
+		while(treated_pixels[i] < total_pixels){
+			if(get_white_pixel(&visited_pixels[i], pixel_row, pixel_col)){
+				//Mark found pixel as visited
+				visited_pixels[i].at<uchar>(pixel_row, pixel_col) = 0;
+
+				total_merge = 1;
+
+				merged_pixel = (*(frames_3d[i]))[pixel_row*cols + pixel_col];
+
+				p0.x = (*(frames_3d[i]))[pixel_row*cols + pixel_col].x();
+				p0.y = (*(frames_3d[i]))[pixel_row*cols + pixel_col].y();
+				p0.z = (*(frames_3d[i]))[pixel_row*cols + pixel_col].z();
+				//We can safely asume that we only have to merge with the images
+				//of the next cameras, since we already treated all the pixels
+				//in the previous ones
+				for(int j = i + 1; j < skeletonized_frames.size(); j++){
+					for(int row = 0; row < rows; row++)
+					{
+						for(int col = 0; col < cols; col++)
+						{
+							p1.x = (*(frames_3d[j]))[row*cols + col].x();
+							p1.y = (*(frames_3d[j]))[row*cols + col].y();
+							p1.z = (*(frames_3d[j]))[row*cols + col].z();
+							if( cv::norm(p0 - p1) < distance_treshold ){
+								//Set merging pixel as visited
+								visited_pixels[j].at<uchar>(pixel_row, pixel_col) = 0;
+								merged_pixel = merged_pixel + (*(frames_3d[j]))[row*cols + col];
+								total_merge++;
+							}
+						}
+					}
+				}
+				merged_pixel = merged_pixel / (float)total_merge;
+
+				(*result)[skeleton_num_points].set(merged_pixel);
+				skeleton_num_points++;
+
+				treated_pixels[i]++;
+
+				//Instead of calling get_white_pixel each itereation, follow
+				//a path
+			}else{
+				treated_pixels[i] = total_pixels;
+			}
+		}
+	}
 }
