@@ -25,7 +25,7 @@ void Skeletonization2D::generate_skeletonization()
 	skeletonized_frames.reserve(frames->size());
 	for(; i != frames->end(); ++i ){
 		skeletonized_frames.push_back(dist_transform_skeletonization(i->second.depth_img));
-		cv::waitKey(0);
+		//cv::waitKey(0);
 	}
 }
 
@@ -143,7 +143,7 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat& seg_img
 
 	cv::imshow("dendrites_removed2", res);
 
-	cv::waitKey(80);
+	//cv::waitKey(80);
 	return res;
 }
 

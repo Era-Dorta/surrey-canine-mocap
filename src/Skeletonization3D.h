@@ -14,6 +14,7 @@ class Skeletonization3D
 		Skeletonization3D();
 		virtual ~Skeletonization3D();
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_);
+		osg::ref_ptr<osg::Vec3Array> get_points_for_camera( int cam_num, int frame_num );
 	protected:
 	private:
 		void merge_2D_skeletons();

@@ -5,9 +5,9 @@ RenderSkeletonization::RenderSkeletonization()
 
 }
 
-RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr)
+RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_)
 {
-	skeleton.set_cameras(camera_arr);
+	set_cameras(camera_arr_);
 }
 
 RenderSkeletonization::~RenderSkeletonization()
@@ -15,14 +15,17 @@ RenderSkeletonization::~RenderSkeletonization()
 	//dtor
 }
 
-void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr)
+void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_)
 {
+	camera_arr = camera_arr_;
 	skeleton.set_cameras(camera_arr);
-}
 
-void RenderSkeletonization::set_node( osg::ref_ptr<osg::Group> new_skel_root )
-{
-	skel_root = new_skel_root;
+	osg::ref_ptr<osg::Group> skel_group;
+	for(int i = 0; i < camera_arr->size(); i++){
+		skel_group = new osg::Group;
+		(*camera_arr)[i]->cam_group->addChild(skel_group);
+		cam_skel_nodes.push_back(skel_group);
+	}
 }
 
 void RenderSkeletonization::update_dynamics( int disp_frame_no )
@@ -49,4 +52,23 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 		skel_geode->addDrawable(geom.get());
 	}
 	*/
+
+	osg::ref_ptr<osg::Geode> skel_geode;
+	osg::ref_ptr<osg::Geometry> skel_geometry;
+	osg::ref_ptr<osg::Group> cam_group;
+	osg::ref_ptr<osg::Vec3Array> vertices;
+
+	for(int i = 0; i < camera_arr->size(); i++){
+		cam_group = cam_skel_nodes[i];
+		cam_group->removeChildren(0, 1);
+		skel_geode = new osg::Geode;
+		skel_geometry = new osg::Geometry;
+
+		vertices = skeleton.get_points_for_camera(i, disp_frame_no);
+
+		skel_geometry->setVertexArray (vertices.get());
+		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
+		skel_geode->addDrawable(skel_geometry.get());
+		cam_group->addChild(skel_geode);
+	}
 }

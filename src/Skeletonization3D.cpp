@@ -59,6 +59,45 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_num, int frame_num ){
+
+	//Merge method
+	//Transform the images to 3D world
+	//Travel thrugh pixels -> Have a matrix of travelled pixels?
+	// Calculate new vector of mean points
+	int rows = (*camera_arr)[0]->get_d_rows();
+	int cols = (*camera_arr)[0]->get_d_cols();
+	//Return vector
+
+	osg::ref_ptr< osg::Vec3Array> frames_3d;
+
+	cv::Mat* depth_map;
+	float3x3 inv_K;
+
+	//Calculate 3D proyections of 2D skeleton images
+	//Every image is from a different camera
+	//Not sure about this, but maybe it was calculated in depthmapsurfel so
+	//this is stupid recalculation
+	depth_map = (*camera_arr)[cam_num]->get_depth_map(frame_num);
+	inv_K = (*camera_arr)[cam_num]->get_inv_K_f3x3();
+	//Generate 3D vertices
+	for(int row = 0; row < rows; row++)
+	{
+		for(int col = 0; col < cols; col++)
+		{
+			//Read depth pixel (converted from mm to m):
+			float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
+			//Reproject it:
+			float3 depth_pix_hom = make_float3(col, row, 1.f);
+			float3 vert = depth*(inv_K*depth_pix_hom);
+			//Add to array (negate y and z to correct orientation)://11/07/2013 Update - don't negate
+			frames_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+		}
+	}
+
+	return frames_3d;
+}
+
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	std::vector< cv::Mat* >& skeletonized_frames, int frame_num)
 {
@@ -69,7 +108,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	int rows = (*camera_arr)[0]->get_d_rows();
 	int cols = (*camera_arr)[0]->get_d_cols();
 	//Return vector
-	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array(rows*cols);
+	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
 
 	std::vector< osg::ref_ptr< osg::Vec3Array> > frames_3d;
 	osg::ref_ptr<osg::Vec3Array> aux;
@@ -108,12 +147,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	//TODO SHOW SKELETON PIXELS IN 3D IMAGE TO CHECK IF IS OK UNTIL HERE
 
-	//Go through each pixel of each image, check if other has pixels
-	//inside treshold, if the do, erase pixel in others and actual and
-	//put new pixel in the mean
-	// If no near treshold, delete current add it to res image as is
-
-	//To know if pixel have been treated or not, need copies of the images
 
 	//For each image
 		//While still untreated pixels in image
@@ -129,6 +162,9 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 				//If smaller than treshold, merge pixels
 			//Set used other image pixels to used
 			//Get next white pixel from path
+
+
+	/*
 	cv::Point3f p0, p1;
 
 	int total_pixels = rows*cols, pixel_row, pixel_col;
@@ -173,16 +209,17 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 				}
 				merged_pixel = merged_pixel / (float)total_merge;
 
-				(*result)[skeleton_num_points].set(merged_pixel);
+				result->push_back(merged_pixel);
 				skeleton_num_points++;
 
 				treated_pixels[i]++;
 
-				//Instead of calling get_white_pixel each itereation, follow
+				// TODO Instead of calling get_white_pixel each itereation, follow
 				//a path
 			}else{
 				treated_pixels[i] = total_pixels;
 			}
 		}
 	}
+	*/
 }
