@@ -5,9 +5,10 @@ RenderSkeletonization::RenderSkeletonization()
 	camera_arr = NULL;
 }
 
-RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_)
+RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_,
+		osg::ref_ptr<osg::Switch> skel_vis_switch_)
 {
-	set_cameras(camera_arr_);
+	set_data(camera_arr_, skel_vis_switch_);
 }
 
 RenderSkeletonization::~RenderSkeletonization()
@@ -15,10 +16,19 @@ RenderSkeletonization::~RenderSkeletonization()
 	//dtor
 }
 
-void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_)
+void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_,
+		osg::ref_ptr<osg::Switch> skel_vis_switch_)
 {
 	camera_arr = camera_arr_;
 	skeleton.set_cameras(camera_arr);
+	skel_vis_switch = skel_vis_switch_;
+
+	osg::ref_ptr<osg::Group> skel_group;
+	for(unsigned int i = 0; i < camera_arr->size(); i++){
+		skel_group = new osg::Group;
+		skel_vis_switch->addChild(skel_group.get());
+		//(*camera_arr)[i]->skel_vis_group->addChild(skel_group.get());
+	}
 }
 
 void RenderSkeletonization::update_dynamics( int disp_frame_no )
@@ -50,7 +60,9 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	osg::ref_ptr<osg::Geometry> skel_geometry;
 	osg::ref_ptr<osg::Vec3Array> vertices;
 
-	osg::ref_ptr<osg::MatrixTransform> trans;
+	//osg::ref_ptr<osg::MatrixTransform> trans;
+
+	osg::ref_ptr<osg::Group> skel_group;
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
@@ -59,7 +71,9 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
+		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
 
+		skel_group->removeChildren(0, skel_group->getNumChildren());
 
 		vertices = skeleton.get_points_for_camera(i, disp_frame_no);
 
@@ -70,10 +84,12 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 
 		//This transformation is done after the cameras transformations, so
 		//is with respect the world axis but camera axis
-		trans = new osg::MatrixTransform();
-		trans->setMatrix(osg::Matrix::translate(osg::Vec3(2.f, 0, 0.f)));
-		trans->addChild(skel_geode.get());
+		//trans = new osg::MatrixTransform();
+		//trans->setMatrix(osg::Matrix::translate(osg::Vec3(1.f, 0, 0.f)));
+		//trans->addChild(skel_geode.get());
 		//Camera deletes every children on every frame, so don't worry about that
-		(*camera_arr)[i]->skel_vis_group->addChild(trans.get());
+		//(*camera_arr)[i]->skel_vis_group->addChild(trans.get());
+		//skel_nodes[i] = trans.get();
+		skel_group->addChild(skel_geode.get());
 	}
 }

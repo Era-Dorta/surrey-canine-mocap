@@ -14,6 +14,7 @@ MultiCamViewer::MultiCamViewer(std::string path):
 		_dataset_path(path),
 		scene_root(new osg::Group),
 		cam_vis_switch(new osg::Switch),
+		skel_vis_switch(new osg::Switch),
 		win_height(720),
 		win_width(1280),
 		last_frame_tick_count(0),
@@ -57,7 +58,8 @@ MultiCamViewer::MultiCamViewer(std::string path):
 
 	//Set currently displayed frame to beginning:
 	disp_frame_no = begin_frame_no;
-	skel_renderer.set_cameras(&camera_arr);
+
+	skel_renderer.set_data(&camera_arr, skel_vis_switch);
 }
 
 MultiCamViewer::~MultiCamViewer()
@@ -130,8 +132,9 @@ void MultiCamViewer::setup_scene(void)
 	scene_root->addChild(cam_vis_switch);
 	//---------------------------
 
-	osg::ref_ptr<osg::Group> skel_graph = new osg::Group;
-	scene_root->addChild(skel_graph.get());
+	//Switch for each view of the skeleton
+
+	scene_root->addChild(skel_vis_switch.get());
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer, std::string win_name, int x, int y)
@@ -163,7 +166,7 @@ void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer, std::string win
 
 bool MultiCamViewer::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-
+	//TODO ADD OPTION TO ENABLE/DISABLE DOG BUT NOT DISABLE SKELETON
 	//Show the visualizations from the last rendered frame:
 	//display_raw_image_overlay();//TEMP - disable the overlay display for speed
 
@@ -223,6 +226,29 @@ bool MultiCamViewer::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 			//DEBUG:
 			//std::cout << "[3] pressed" << std::endl;
 			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
+			update_dynamics();
+			break;
+			//Toggle skel cam 1 visibility:
+		case osgGA::GUIEventAdapter::KEY_Q:
+			//DEBUG:
+			//std::cout << "[1] pressed" << std::endl;
+			skel_vis_switch->setValue(0, !skel_vis_switch->getValue(0));
+			update_dynamics();
+			break;
+
+			//Toggle skel cam 2 visibility:
+		case osgGA::GUIEventAdapter::KEY_W:
+			//DEBUG:
+			//std::cout << "[2] pressed" << std::endl;
+			skel_vis_switch->setValue(1, !skel_vis_switch->getValue(1));
+			update_dynamics();
+			break;
+
+			//Toggle skel cam 3 visibility:
+		case osgGA::GUIEventAdapter::KEY_E:
+			//DEBUG:
+			//std::cout << "[3] pressed" << std::endl;
+			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
 			update_dynamics();
 			break;
 //

@@ -86,6 +86,8 @@ private:
 
 	//Switch to turn camera visualizations on or off:
 	osg::ref_ptr<osg::Switch> cam_vis_switch;
+	//Switch to turn skeleton on or off
+	osg::ref_ptr<osg::Switch> skel_vis_switch;
 	float alpha;
 
 	RenderSkeletonization skel_renderer;
