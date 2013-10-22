@@ -1,3 +1,11 @@
+#Build directories
 build/*
+Debug
+#Hidden file copies
 *~
+#Resources
 FreeSans.ttf
+#Eclipse and codeblocks files
+.cproject
+.project
+.settings
