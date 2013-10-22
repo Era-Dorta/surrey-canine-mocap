@@ -55,6 +55,7 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
 
+	//Draw a red cloud of points, where each point represents a small part of a bone
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
@@ -67,6 +68,8 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
 		skel_geode->addDrawable(skel_geometry.get());
 
+		//This transformation is done after the cameras transformations, so
+		//is with respect the world axis but camera axis
 		trans = new osg::MatrixTransform();
 		trans->setMatrix(osg::Matrix::translate(osg::Vec3(2.f, 0, 0.f)));
 		trans->addChild(skel_geode.get());

@@ -24,14 +24,15 @@ class RenderSkeletonization
 		RenderSkeletonization();
 		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_ );
 		virtual ~RenderSkeletonization();
+		//Update/Draw the skeleton display every frame
 		void update_dynamics(int disp_frame_no);
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_);
 	protected:
 	private:
+		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeleton;
-		osg::ref_ptr<osg::Vec3Array> vertices;
+		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> >* camera_arr;
-		std::vector<osg::ref_ptr<osg::Group> > cam_skel_nodes;
 };
 
 #endif // RENDERSKELETONIZATION_H

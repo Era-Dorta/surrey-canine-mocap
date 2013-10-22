@@ -37,10 +37,12 @@ void Skeletonization3D::merge_2D_skeletons()
 	skeletonized_frames.resize(n_cameras);
 
 	for( int i = 0; i < n_frames; i++){
+		//Get all the 2D views of a given frame
 		std::vector < boost::shared_ptr<Skeletonization2D> >::iterator j(skel_arr.begin());
 		for(; j != skel_arr.end(); ++j){
 			skeletonized_frames[n_cameras] = (*j)->get_frame(i);
 		}
+		//Save the 3D result
 		skeleton_frames.push_back(merge_2D_skeletons_impl(skeletonized_frames, i));
 	}
 }
@@ -62,12 +64,8 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_num, int frame_num ){
-
-	//Merge method
-	//Transform the images to 3D world
-	//Travel thrugh pixels -> Have a matrix of travelled pixels?
-	// Calculate new vector of mean points
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_num, int frame_num )
+{
 	int rows = (*camera_arr)[0]->get_d_rows();
 	int cols = (*camera_arr)[0]->get_d_cols();
 	//Return vector
@@ -80,8 +78,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
-	//Not sure about this, but maybe it was calculated in depthmapsurfel so
-	//this is stupid recalculation
 	depth_map = (*camera_arr)[cam_num]->get_depth_map(frame_num);
 	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
 	inv_K = (*camera_arr)[cam_num]->get_inv_K_f3x3();
