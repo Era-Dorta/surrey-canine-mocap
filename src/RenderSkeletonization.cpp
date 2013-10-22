@@ -50,6 +50,8 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	osg::ref_ptr<osg::Geometry> skel_geometry;
 	osg::ref_ptr<osg::Vec3Array> vertices;
 
+	osg::ref_ptr<osg::MatrixTransform> trans;
+
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
 
@@ -65,7 +67,10 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
 		skel_geode->addDrawable(skel_geometry.get());
 
-		//Camera deletes every children on every frame, so dont worry about that
-		(*camera_arr)[i]->skel_vis_group->addChild(skel_geode.get());
+		trans = new osg::MatrixTransform();
+		trans->setMatrix(osg::Matrix::translate(osg::Vec3(2.f, 0, 0.f)));
+		trans->addChild(skel_geode.get());
+		//Camera deletes every children on every frame, so don't worry about that
+		(*camera_arr)[i]->skel_vis_group->addChild(trans.get());
 	}
 }

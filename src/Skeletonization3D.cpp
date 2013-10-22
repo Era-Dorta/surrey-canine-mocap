@@ -72,33 +72,38 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 	int cols = (*camera_arr)[0]->get_d_cols();
 	//Return vector
 
-	osg::ref_ptr< osg::Vec3Array> frames_3d = new osg::Vec3Array();
+	osg::ref_ptr< osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
-	cv::Mat* skel_frame;
+	cv::Mat* depth_map;
+	cv::Mat* skeleton_img;
 	float3x3 inv_K;
 
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
 	//Not sure about this, but maybe it was calculated in depthmapsurfel so
 	//this is stupid recalculation
-	skel_frame = skel_arr[cam_num]->get_frame(frame_num);
+	depth_map = (*camera_arr)[cam_num]->get_depth_map(frame_num);
+	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
 	inv_K = (*camera_arr)[cam_num]->get_inv_K_f3x3();
 	//Generate 3D vertices
 	for(int row = 0; row < rows; row++)
 	{
 		for(int col = 0; col < cols; col++)
 		{
-			//Read depth pixel (converted from mm to m):
-			float depth = (((ushort*)(skel_frame->data))[row*skel_frame->step1() + col])*0.001f;
-			//Reproject it:
-			float3 depth_pix_hom = make_float3(col, row, 1.f);
-			float3 vert = depth*(inv_K*depth_pix_hom);
-			//Add to array (negate y and z to correct orientation)://11/07/2013 Update - don't negate
-			frames_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+			//If the pixel belongs to the skeleton then calculate it's projection
+			if( (int)skeleton_img->at<ushort>(row, col) == 255){
+				//Read depth pixel (converted from mm to m):
+				float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
+				//Reproject it:
+				float3 depth_pix_hom = make_float3(col, row, 1.f);
+				float3 vert = depth*(inv_K*depth_pix_hom);
+				//Add to array
+				skeleton_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+			}
 		}
 	}
 
-	return frames_3d.get();
+	return skeleton_3d.get();
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
