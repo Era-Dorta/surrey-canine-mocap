@@ -10,6 +10,7 @@
 #include <osg/Geometry>
 #include <osg/ShapeDrawable>
 #include <osg/Group>
+#include <osg/Texture2D>
 
 #include "boost/shared_ptr.hpp"
 

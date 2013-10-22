@@ -19,6 +19,9 @@ class Skeletonization3D
 
 		//Return an array of points, given a camera and a frame number
 		osg::ref_ptr<osg::Vec3Array> get_points_for_camera( int cam_num, int frame_num );
+
+		//TODO This is public to do some debugging, and it should got to private again
+		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
 	protected:
 	private:
 		//Merges several 2D images to a 3D complete image of a skeleton
@@ -33,7 +36,7 @@ class Skeletonization3D
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
-		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
+
 
 		//Each Vec3Array is a cloud of points that represent a skeleton
 		//in a given frame
