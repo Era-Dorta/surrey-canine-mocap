@@ -21,10 +21,16 @@ void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Cam
 	skeleton.set_cameras(camera_arr);
 
 	osg::ref_ptr<osg::Group> skel_group;
+	osg::ref_ptr<osg::MatrixTransform> traslate_node;
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		skel_group = new osg::Group;
-		(*camera_arr)[i]->cam_group->addChild(skel_group);
-		cam_skel_nodes.push_back(skel_group);
+		(*camera_arr)[i]->skel_vis_group->addChild(skel_group.get());
+
+		traslate_node = new osg::MatrixTransform();
+		traslate_node->setMatrix(osg::Matrix::scale(osg::Vec3(10.f, 0, 10.f)));
+		skel_group->addChild(traslate_node.get());
+
+		cam_skel_nodes.push_back(traslate_node.get());
 	}
 }
 
@@ -58,17 +64,22 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	osg::ref_ptr<osg::Group> cam_group;
 	osg::ref_ptr<osg::Vec3Array> vertices;
 
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
+
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		cam_group = cam_skel_nodes[i];
 		cam_group->removeChildren(0, 1);
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
 
+
 		vertices = skeleton.get_points_for_camera(i, disp_frame_no);
 
 		skel_geometry->setVertexArray (vertices.get());
-		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
+		skel_geometry->setColorArray(colors, osg::Array::BIND_OVERALL);
+		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vertices->size()));
 		skel_geode->addDrawable(skel_geometry.get());
-		cam_group->addChild(skel_geode);
+		cam_group->addChild(skel_geode.get());
 	}
 }

@@ -1,6 +1,7 @@
 #Build directories
 build/*
 Debug
+Release
 #Hidden file copies
 *~
 #Resources

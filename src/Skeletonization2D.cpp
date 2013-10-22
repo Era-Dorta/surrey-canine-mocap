@@ -251,10 +251,10 @@ cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in, int t
 								{
 									next_node_found = true;
 									//DEBUG:
-									if(free_nodes.at<uchar>(walk_row, walk_col) != 0)
-										cout << "Found free node" << endl;
-									if(junction_nodes.at<uchar>(walk_row, walk_col) != 0)
-										cout << "Found junction node" << endl;
+									//if(free_nodes.at<uchar>(walk_row, walk_col) != 0)
+										//cout << "Found free node" << endl;
+									//if(junction_nodes.at<uchar>(walk_row, walk_col) != 0)
+										//cout << "Found junction node" << endl;
 
 									//Delete last element so that breaks are not introduced at junctions
 									path.pop_back();
@@ -266,11 +266,11 @@ cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in, int t
 				}
 				//DEBUG:
 
-				cout << "(next node " << std::string(next_node_found?"found":"not found") << ") path length = " << path.size() << endl;
-				for(int p = 0; p<path.size(); p++)
-				{
-					cout << path[p] << endl;
-				}
+				//cout << "(next node " << std::string(next_node_found?"found":"not found") << ") path length = " << path.size() << endl;
+				//for(int p = 0; p<path.size(); p++)
+				//{
+					//cout << path[p] << endl;
+				//}
 
 				//Check length of path, deleting points if it's shorted than threshold:
 				if(path.size() < thresh_length)
@@ -428,7 +428,7 @@ cv::Mat Skeletonization2D::connectivity_preserving_thinning(cv::Mat& img_in)
 	}
 
 	//DEBUG:
-	cout << "Skeleton thinning done in " << iter << " iterations" << endl;
+	//cout << "Skeleton thinning done in " << iter << " iterations" << endl;
 
 	return result;
 }

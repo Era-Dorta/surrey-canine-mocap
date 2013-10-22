@@ -26,7 +26,8 @@ void Skeletonization3D::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera>
 		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D((*i)->get_frames()));
 		skel_arr.push_back(skel);
 	}
-	merge_2D_skeletons();
+	//TODO Uncomment, the merge has to be done
+	//merge_2D_skeletons();
 }
 
 void Skeletonization3D::merge_2D_skeletons()
@@ -71,16 +72,16 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 	int cols = (*camera_arr)[0]->get_d_cols();
 	//Return vector
 
-	osg::ref_ptr< osg::Vec3Array> frames_3d;
+	osg::ref_ptr< osg::Vec3Array> frames_3d = new osg::Vec3Array();
 
-	cv::Mat* depth_map;
+	cv::Mat* skel_frame;
 	float3x3 inv_K;
 
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
 	//Not sure about this, but maybe it was calculated in depthmapsurfel so
 	//this is stupid recalculation
-	depth_map = (*camera_arr)[cam_num]->get_depth_map(frame_num);
+	skel_frame = skel_arr[cam_num]->get_frame(frame_num);
 	inv_K = (*camera_arr)[cam_num]->get_inv_K_f3x3();
 	//Generate 3D vertices
 	for(int row = 0; row < rows; row++)
@@ -88,7 +89,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 		for(int col = 0; col < cols; col++)
 		{
 			//Read depth pixel (converted from mm to m):
-			float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
+			float depth = (((ushort*)(skel_frame->data))[row*skel_frame->step1() + col])*0.001f;
 			//Reproject it:
 			float3 depth_pix_hom = make_float3(col, row, 1.f);
 			float3 vert = depth*(inv_K*depth_pix_hom);
@@ -97,7 +98,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 		}
 	}
 
-	return frames_3d;
+	return frames_3d.get();
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
@@ -116,7 +117,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	osg::ref_ptr<osg::Vec3Array> aux;
 	for(int i = 0; i < n_cameras; i++){
 		aux = new osg::Vec3Array(rows*cols);
-		frames_3d.push_back(aux);
+		frames_3d.push_back(aux.get());
 	}
 
 	cv::Mat* depth_map;
@@ -224,5 +225,5 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		}
 	}
 	*/
-	return result;
+	return result.get();
 }
