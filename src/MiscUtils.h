@@ -451,7 +451,7 @@ inline void surfel_ply_write(osg::ref_ptr<osg::Geode> geom_in, std::string file_
 	osg::Vec4Array* colour_array = static_cast<osg::Vec4Array*>(geom_in->getDrawable(0)->asGeometry()->getColorArray());
 	osg::Vec3Array* attrib_array = static_cast<osg::Vec3Array*>(geom_in->getDrawable(0)->asGeometry()->getVertexAttribArray(6));
 
-	for(int i = 0; i < vertex_array->getNumElements(); i++)
+	for(unsigned int i = 0; i < vertex_array->getNumElements(); i++)
 	{
 
 			out_file << (*vertex_array)[i].x() << "\t" <<

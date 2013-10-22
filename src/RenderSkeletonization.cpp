@@ -2,7 +2,7 @@
 
 RenderSkeletonization::RenderSkeletonization()
 {
-
+	camera_arr = NULL;
 }
 
 RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_)
@@ -21,7 +21,7 @@ void RenderSkeletonization::set_cameras(std::vector < boost::shared_ptr<RGBD_Cam
 	skeleton.set_cameras(camera_arr);
 
 	osg::ref_ptr<osg::Group> skel_group;
-	for(int i = 0; i < camera_arr->size(); i++){
+	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		skel_group = new osg::Group;
 		(*camera_arr)[i]->cam_group->addChild(skel_group);
 		cam_skel_nodes.push_back(skel_group);
@@ -58,7 +58,7 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	osg::ref_ptr<osg::Group> cam_group;
 	osg::ref_ptr<osg::Vec3Array> vertices;
 
-	for(int i = 0; i < camera_arr->size(); i++){
+	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		cam_group = cam_skel_nodes[i];
 		cam_group->removeChildren(0, 1);
 		skel_geode = new osg::Geode;

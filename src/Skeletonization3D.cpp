@@ -2,7 +2,9 @@
 
 Skeletonization3D::Skeletonization3D()
 {
-	//ctor
+	camera_arr = NULL;
+	n_cameras = 0;
+	n_frames = 0;
 }
 
 Skeletonization3D::~Skeletonization3D()
@@ -124,7 +126,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	//Every image is from a different camera
 	//Not sure about this, but maybe it was calculated in depthmapsurfel so
 	//this is stupid recalculation
-	for(int i = 0; i < skeletonized_frames.size(); i++){
+	for(unsigned int i = 0; i < skeletonized_frames.size(); i++){
 		//Copy images
 		visited_pixels[i] = skeletonized_frames[i]->clone();
 		depth_map = (*camera_arr)[i]->get_depth_map(frame_num);
@@ -222,4 +224,5 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		}
 	}
 	*/
+	return result;
 }
