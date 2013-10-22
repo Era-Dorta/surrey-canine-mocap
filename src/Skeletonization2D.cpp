@@ -16,7 +16,7 @@ Skeletonization2D::~Skeletonization2D()
 
 cv::Mat* Skeletonization2D::get_frame( int frame_num )
 {
-	return &skeletonized_frames[frame_num];
+	return &(skeletonized_frames[frame_num]);
 }
 
 void Skeletonization2D::generate_skeletonization()
