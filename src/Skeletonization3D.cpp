@@ -33,7 +33,7 @@ void Skeletonization3D::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera>
 void Skeletonization3D::merge_2D_skeletons()
 {
 	skeleton_frames.reserve(n_frames);
-	std::vector< cv::Mat* > skeletonized_frames;
+	std::vector< const cv::Mat* > skeletonized_frames;
 	skeletonized_frames.resize(n_cameras);
 
 	for( int i = 0; i < n_frames; i++){
@@ -64,13 +64,13 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num )
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num ) const
 {
 	//Return vector
 	osg::ref_ptr< osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
 	const cv::Mat* depth_map;
-	cv::Mat* skeleton_img;
+	const cv::Mat* skeleton_img;
 	float3x3 inv_K;
 
 	//Calculate 3D proyections of 2D skeleton images
@@ -107,7 +107,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
-	std::vector< cv::Mat* >& skeletonized_frames, int frame_num)
+	std::vector<const cv::Mat* >& skeletonized_frames, int frame_num)
 {
 	//Merge method
 	//Transform the images to 3D world

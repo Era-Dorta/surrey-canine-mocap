@@ -14,7 +14,7 @@ class Skeletonization2D
 	public:
 		Skeletonization2D(const boost::shared_ptr<RGBD_Camera> camera_);
 		virtual ~Skeletonization2D();
-		cv::Mat* get_frame(const int frame_num );
+		const cv::Mat* const get_frame(const int frame_num ) const;
 	protected:
 	private:
 		void generate_skeletonization();
