@@ -49,6 +49,7 @@ public:
 	virtual ~RGBD_Camera();
 	int get_first_frame_num(void);
 	int get_last_frame_num(void);
+	int get_total_frame_num(void);
 	int get_d_rows(void);
 	int get_d_cols(void);
 	osg::Vec3 get_vis_colour(void);
@@ -59,7 +60,6 @@ public:
 	cv::Mat get_T_rgb(void);
 	cv::Mat* get_depth_map(int frame_num);
 	cv::Mat* get_rgb_image(int frame_num);
-	std::map<int, RGBD_Frame>* get_frames();
 	std::string get_cam_name(void);
 	void get_surface_paths(int frame_num, std::vector< std::vector<cv::Point> >& surface_paths);
 	void get_surface_paths_3d(int frame_num, std::vector< std::vector<float3> >& surface_paths_3d);

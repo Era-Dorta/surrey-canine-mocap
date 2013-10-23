@@ -220,24 +220,17 @@ void RGBD_Camera::load_calibration(void)
 
 int RGBD_Camera::get_first_frame_num(void)
 {
-	int result = frames.begin()->first;
-
-	//DEBUG:
-	//cout << "first_frame: " << result << endl;
-
-	return result;
-
-
+	return frames.begin()->first;
 }
 
 int RGBD_Camera::get_last_frame_num(void)
 {
-	int result = frames.rbegin()->first;
+	return frames.rbegin()->first;
+}
 
-	//DEBUG:
-	//cout << "last_frame: " << result << endl;
-
-	return result;
+int RGBD_Camera::get_total_frame_num(void)
+{
+	return frames.size();
 }
 
 void RGBD_Camera::create_cam_geom(void)
@@ -418,11 +411,6 @@ cv::Mat* RGBD_Camera::get_rgb_image(int frame_num)
 			exit(-1);
 		}
 	}
-}
-
-std::map<int, RGBD_Frame>* RGBD_Camera::get_frames()
-{
-	return &frames;
 }
 
 std::string RGBD_Camera::get_cam_name(void)

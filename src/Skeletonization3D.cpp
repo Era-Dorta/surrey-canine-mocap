@@ -18,7 +18,7 @@ void Skeletonization3D::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera>
 	skel_arr.clear();
 	//Save number of cameras and total number of frames
 	n_cameras = camera_arr->size();
-	n_frames = (*camera_arr)[0]->get_frames()->size();
+	n_frames = (*camera_arr)[0]->get_total_frame_num();
 
 	//Create a Skeleton2D for each camera
 	std::vector < boost::shared_ptr<RGBD_Camera> >::iterator i(camera_arr->begin());
