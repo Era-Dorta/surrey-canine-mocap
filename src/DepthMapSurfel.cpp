@@ -75,9 +75,9 @@ osg::Geode* DepthMapSurfel::create_depth_map_surfel_geode(void)
 }
 
 void DepthMapSurfel::surfelise_depth_map(
-		cv::Mat* depth_map,
-		cv::Mat* rgb_image,
-		cv::Mat K,
+		const cv::Mat* depth_map,
+		const cv::Mat* rgb_image,
+		const cv::Mat K,
 		osg::Vec3 vis_colour,
 		bool with_colour,
 		float alpha)

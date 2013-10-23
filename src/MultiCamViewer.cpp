@@ -435,7 +435,7 @@ void MultiCamViewer::update_dynamics(void)
 		//DEBUG:
 		//cout << "Updating depth map polygonisation for " << camera_arr[i]->get_cam_name() <<
 		//		" with frame " << disp_frame_no << endl;
-		cv::Mat* depth = (camera_arr[i]->get_depth_map(disp_frame_no));
+		const cv::Mat* depth = (camera_arr[i]->get_depth_map(disp_frame_no));
 		cv::Mat* rgb = (camera_arr[i]->get_rgb_image(disp_frame_no));
 		//camera_arr[i]->depth_poly.polygonise_depth_map(
 		//		depth, rgb, camera_arr[i]->get_K_rgb(), camera_arr[i]->get_vis_colour(),

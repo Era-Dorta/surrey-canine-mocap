@@ -69,7 +69,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 	//Return vector
 	osg::ref_ptr< osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
-	cv::Mat* depth_map;
+	const cv::Mat* depth_map;
 	cv::Mat* skeleton_img;
 	float3x3 inv_K;
 
@@ -125,7 +125,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		frames_3d.push_back(aux.get());
 	}
 
-	cv::Mat* depth_map;
+	const cv::Mat* depth_map;
 	float3x3 inv_K;
 
 	//Calculate 3D proyections of 2D skeleton images

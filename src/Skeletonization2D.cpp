@@ -3,7 +3,7 @@
 using std::cout;
 using std::endl;
 
-Skeletonization2D::Skeletonization2D(boost::shared_ptr<RGBD_Camera> camera_)
+Skeletonization2D::Skeletonization2D(const boost::shared_ptr<RGBD_Camera> camera_)
 {
 	camera = camera_;
 	generate_skeletonization();
@@ -56,7 +56,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization2D::points_from_image(const cv::Mat&
 }
 
 //Generates a skeletonized image from a depth image
-cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* const seg_img)
+cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img)
 {
 
 	int rows = seg_img->rows;

@@ -218,17 +218,17 @@ void RGBD_Camera::load_calibration(void)
 
 }
 
-int RGBD_Camera::get_first_frame_num(void)
+int RGBD_Camera::get_first_frame_num(void) const
 {
 	return frames.begin()->first;
 }
 
-int RGBD_Camera::get_last_frame_num(void)
+int RGBD_Camera::get_last_frame_num(void) const
 {
 	return frames.rbegin()->first;
 }
 
-int RGBD_Camera::get_total_frame_num(void)
+int RGBD_Camera::get_total_frame_num(void) const
 {
 	return frames.size();
 }
@@ -369,7 +369,7 @@ cv::Mat RGBD_Camera::get_T_rgb(void)
 	return T_rgb;
 }
 
-cv::Mat* RGBD_Camera::get_depth_map(int frame_num)
+const cv::Mat* RGBD_Camera::get_depth_map(int frame_num)
 {
 	if(frames.find(frame_num) != frames.end())
 	{
@@ -549,12 +549,12 @@ void RGBD_Camera::get_surface_paths(int frame_num, std::vector< std::vector<cv::
 
 		//Append each detected midpoint from this row to a existing path (if present) otherwise begin a new one:
 
-		for(int mc = 0; mc<mid_cols.size(); mc++)
+		for(unsigned int mc = 0; mc<mid_cols.size(); mc++)
 		{
 			bool matched_to_existing = false;
 
 			//See if possible to append to existing contour:
-			for(int sp = 0; sp < surface_paths.size(); sp++)
+			for(unsigned int sp = 0; sp < surface_paths.size(); sp++)
 			{
 				cv::Point last_pt(*(surface_paths[sp].end()-1));
 				if(cont_path(frames[frame_num].depth_img,
@@ -576,7 +576,7 @@ void RGBD_Camera::get_surface_paths(int frame_num, std::vector< std::vector<cv::
 	}
 
 	//Delete paths with fewer than min_length elements because they're probably noise:
-	int min_length = 25;
+	unsigned int min_length = 25;
 	std::vector<std::vector<cv::Point> >::iterator sp(surface_paths.begin());
 
 	while(sp != surface_paths.end())
@@ -710,12 +710,12 @@ void RGBD_Camera::get_surface_paths_3d(int frame_num, std::vector< std::vector<f
 		K_d_f3x3.val[i] = K_rgb.at<float>(i);
 
 	surface_paths_3d.clear();
-	for(int sp = 0; sp < surface_paths_2d.size(); sp++)
+	for(unsigned int sp = 0; sp < surface_paths_2d.size(); sp++)
 	{
 		std::vector<float3> temp(surface_paths_2d[sp].size());
 		surface_paths_3d.push_back(temp);
 
-		for(int element = 0; element < surface_paths_3d[sp].size(); element++)
+		for(unsigned int element = 0; element < surface_paths_3d[sp].size(); element++)
 		{
 			int row = surface_paths_2d[sp][element].y;
 			int col = surface_paths_2d[sp][element].x;
