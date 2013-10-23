@@ -26,7 +26,7 @@ void Skeletonization3D::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera>
 		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D(*i));
 		skel_arr.push_back(skel);
 	}
-	//TODO Uncomment, the merge has to be done
+	//TODO Still couses seg fault
 	//merge_2D_skeletons();
 }
 
@@ -121,10 +121,14 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	std::vector< osg::ref_ptr< osg::Vec3Array> > skel_3D_points_array;
 	osg::ref_ptr<osg::Vec3Array> aux;
 
-	//Calculate 3D projections
+
 	for(int i = 0; i < n_cameras; i++){
+		//Calculate 3D projection
 		aux = get_simple_3d_projection(i, frame_num);
 		skel_3D_points_array.push_back(aux.get());
+
+		//Initialise visited pixel matrices
+		visited_pixels.push_back(skel_arr[i]->get_frame(frame_num)->clone());
 	}
 
 	//For each image
