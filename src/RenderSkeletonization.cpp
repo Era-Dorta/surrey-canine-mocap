@@ -91,18 +91,27 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 
 	osg::ref_ptr<osg::MatrixTransform> trans_matrix;
 
+	//Define a quad
 	vertices = new osg::Vec3Array;
 	vertices->push_back(osg::Vec3(-0.5f, -0.5f,2.f));
 	vertices->push_back(osg::Vec3(0.5f, -0.5f, 2.f));
 	vertices->push_back(osg::Vec3(0.5f, 0.5f, 2.f));
 	vertices->push_back(osg::Vec3(-0.5f, 0.5f, 2.f));
 
-
+	//Understanding the texture mapping
+	//In a standard Y right Y up axis, quad was defined as
+	// 3, 2
+	// 0, 1
+	//While texture mapping world for a quad in the same axis is defined as
+	// [0,1] [1,1]
+	// [0,0] [1,0]
+	//Then the coordinates of the texture has to follow the order of the
+	//definition of the quad
 	osg::ref_ptr<osg::Vec2Array> tc = new osg::Vec2Array;
-	tc->push_back( osg::Vec2( 0.f, 1.f ) );
-	tc->push_back( osg::Vec2( 1.f, 1.f ) );
-	tc->push_back( osg::Vec2( 1.f, 0.f ) );
 	tc->push_back( osg::Vec2( 0.f, 0.f ) );
+	tc->push_back( osg::Vec2( 1.f, 0.f ) );
+	tc->push_back( osg::Vec2( 1.f, 1.f ) );
+	tc->push_back( osg::Vec2( 0.f, 1.f ) );
 
 	osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
 	normals->push_back( osg::Vec3(0.0f, 0.0f, -1.0f) );
