@@ -11,21 +11,21 @@ using std::cout;
 using std::endl;
 
 MultiCamViewer::MultiCamViewer(std::string path):
+		win_width(1280),
+		win_height(720),
+		paused(true),
+		with_colour(false),
+		frame_period_s(1.0/30.0),//30fps
+		last_frame_tick_count(0),
 		_dataset_path(path),
 		scene_root(new osg::Group),
 		cam_vis_switch(new osg::Switch),
 		skel_vis_switch(new osg::Switch),
-		win_height(720),
-		win_width(1280),
-		last_frame_tick_count(0),
-		frame_period_s(1.0/30.0),//30fps
-		paused(true),
-		with_colour(false),
-		alpha(0.f),
 		frame_num_text(create_text(
 				osg::Vec3(20.0f, 20.0f, 0.0f),
 				"Frame range XXX-XXX, displaying frame: XXX",
-				18.0f))
+				18.0f)),
+		alpha(0.f)
 {
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;

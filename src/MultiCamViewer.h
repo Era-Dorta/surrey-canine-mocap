@@ -82,12 +82,12 @@ private:
 	std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr;
 	osg::ref_ptr<osg::Group> scene_root;
 
-	osg::ref_ptr<osgText::Text> frame_num_text;
-
 	//Switch to turn camera visualizations on or off:
 	osg::ref_ptr<osg::Switch> cam_vis_switch;
 	//Switch to turn skeleton on or off
 	osg::ref_ptr<osg::Switch> skel_vis_switch;
+
+	osg::ref_ptr<osgText::Text> frame_num_text;
 	float alpha;
 
 	RenderSkeletonization skel_renderer;
