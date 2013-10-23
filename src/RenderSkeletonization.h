@@ -23,12 +23,12 @@ class RenderSkeletonization
 {
 	public:
 		RenderSkeletonization();
-		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_,
+		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 		virtual ~RenderSkeletonization();
 		//Update/Draw the skeleton display every frame
 		void update_dynamics(int disp_frame_no);
-		void set_data(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_,
+		void set_data(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 	protected:
 	private:
@@ -45,7 +45,7 @@ class RenderSkeletonization
 		Skeletonization3D skeleton;
 
 		//Pointer to the camera array
-		std::vector<boost::shared_ptr<RGBD_Camera> >* camera_arr;
+		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
 
 		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;

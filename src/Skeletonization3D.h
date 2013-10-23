@@ -15,7 +15,7 @@ class Skeletonization3D
 
 		virtual ~Skeletonization3D();
 
-		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_);
+		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
 		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num ) const;
@@ -42,9 +42,10 @@ class Skeletonization3D
 		//in a given frame
 		std::vector < osg::ref_ptr<osg::Vec3Array> > skeleton_frames;
 
-		//This pointer is only valid as long as the MultiCameraViewer camera
-		//holds the memory Change this and the camera to boost pointers
-		std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr;
+		//There will not be many cameras, so a copy of the camera vector is not
+		//that painful to do and lest assume the cameras are not going to change
+		//in run time
+		std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr;
 
 		std::vector < cv::Mat > visited_pixels;
 

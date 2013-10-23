@@ -2,10 +2,10 @@
 
 RenderSkeletonization::RenderSkeletonization()
 {
-	camera_arr = NULL;
+
 }
 
-RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_,
+RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
 		osg::ref_ptr<osg::Switch> skel_vis_switch_)
 {
 	set_data(camera_arr_, skel_vis_switch_);
@@ -16,7 +16,7 @@ RenderSkeletonization::~RenderSkeletonization()
 	//dtor
 }
 
-void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_,
+void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
 		osg::ref_ptr<osg::Switch> skel_vis_switch_)
 {
 	camera_arr = camera_arr_;
@@ -24,7 +24,7 @@ void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera
 	skel_vis_switch = skel_vis_switch_;
 
 	osg::ref_ptr<osg::Group> skel_group;
-	for(unsigned int i = 0; i < camera_arr->size(); i++){
+	for(unsigned int i = 0; i < camera_arr.size(); i++){
 		skel_group = new osg::Group;
 		skel_vis_switch->addChild(skel_group.get(), true);
 		//(*camera_arr)[i]->skel_vis_group->addChild(skel_group.get());
@@ -66,7 +66,7 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 void RenderSkeletonization::clean_scene()
 {
 	osg::ref_ptr<osg::Group> skel_group;
-	for(unsigned int i = 0; i < camera_arr->size(); i++){
+	for(unsigned int i = 0; i < camera_arr.size(); i++){
 		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
 		skel_group->removeChildren(0, skel_group->getNumChildren());
 	}
@@ -88,7 +88,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 	//linewidth->setWidth(2.0f);
 
 	//Draw a red cloud of points, where each point represents a small part of a bone
-	for(unsigned int i = 0; i < camera_arr->size(); i++){
+	for(unsigned int i = 0; i < camera_arr.size(); i++){
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
 
@@ -151,7 +151,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 	osg::ref_ptr<osg::Texture2D> tex;
 	osg::ref_ptr<osg::Geode> skel2d_geode;;
 
-	for(unsigned int i = 0; i < camera_arr->size(); i++){
+	for(unsigned int i = 0; i < camera_arr.size(); i++){
 		cvImg = skeleton.skel_arr[i]->get_frame(disp_frame_no);
 
 		osgImage = new osg::Image;
