@@ -3,15 +3,15 @@
 using std::cout;
 using std::endl;
 
-Skeletonization2D::Skeletonization2D(std::map<int, RGBD_Frame>* camera_frames)
+Skeletonization2D::Skeletonization2D(boost::shared_ptr<RGBD_Camera> camera_)
 {
-	frames = camera_frames;
+	camera = camera_;
 	generate_skeletonization();
 }
 
 Skeletonization2D::~Skeletonization2D()
 {
-	frames = NULL;
+
 }
 
 cv::Mat* Skeletonization2D::get_frame( int frame_num )
@@ -21,11 +21,11 @@ cv::Mat* Skeletonization2D::get_frame( int frame_num )
 
 void Skeletonization2D::generate_skeletonization()
 {
-	std::map<int, RGBD_Frame>::iterator i(frames->begin());
-	skeletonized_frames.reserve(frames->size());
-	for(; i != frames->end(); ++i ){
-		skeletonized_frames.push_back(dist_transform_skeletonization(i->second.depth_img));
-		//cv::waitKey(0);
+	int begin = camera->get_first_frame_num();
+	int end = camera->get_last_frame_num();
+	skeletonized_frames.reserve( end - begin);
+	for(int i = begin; i <= end; i++){
+		skeletonized_frames.push_back(dist_transform_skeletonization(camera->get_depth_map(i)));
 	}
 }
 
@@ -56,11 +56,11 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization2D::points_from_image(const cv::Mat&
 }
 
 //Generates a skeletonized image from a depth image
-cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat& seg_img)
+cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* const seg_img)
 {
 
-	int rows = seg_img.rows;
-	int cols = seg_img.cols;
+	int rows = seg_img->rows;
+	int cols = seg_img->cols;
 
 	cv::Mat res, temp1, temp2;
 	//Make binary image of segmented depth map:
@@ -74,24 +74,24 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat& seg_img
 			//set it to background to force an edge there:
 			int threshold = 40;//40mm
 			bool has_consistent_4_neighbours = true;
-			if(row>0 && abs((int)seg_img.at<ushort>(row, col) - (int)seg_img.at<ushort>(row-1, col)) > threshold)
+			if(row>0 && abs((int)seg_img->at<ushort>(row, col) - (int)seg_img->at<ushort>(row-1, col)) > threshold)
 			{
 				has_consistent_4_neighbours = false;
 			}
-			if(row<rows-1 && abs((int)seg_img.at<ushort>(row, col) - (int)seg_img.at<ushort>(row+1, col)) > threshold)
+			if(row<rows-1 && abs((int)seg_img->at<ushort>(row, col) - (int)seg_img->at<ushort>(row+1, col)) > threshold)
 			{
 				has_consistent_4_neighbours = false;
 			}
-			if(col>0 && abs((int)seg_img.at<ushort>(row, col) - (int)seg_img.at<ushort>(row, col-1)) > threshold)
+			if(col>0 && abs((int)seg_img->at<ushort>(row, col) - (int)seg_img->at<ushort>(row, col-1)) > threshold)
 			{
 				has_consistent_4_neighbours = false;
 			}
-			if(col<cols-1 && abs((int)seg_img.at<ushort>(row, col) - (int)seg_img.at<ushort>(row, col+1)) > threshold)
+			if(col<cols-1 && abs((int)seg_img->at<ushort>(row, col) - (int)seg_img->at<ushort>(row, col+1)) > threshold)
 			{
 				has_consistent_4_neighbours = false;
 			}
 
-			if(seg_img.at<ushort>(row, col) != 0 &&
+			if(seg_img->at<ushort>(row, col) != 0 &&
 					has_consistent_4_neighbours)
 			{
 				bin_img.at<uchar>(row, col) = 255;
