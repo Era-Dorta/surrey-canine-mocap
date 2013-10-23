@@ -92,7 +92,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
 
-		vertices = skeleton.get_points_for_camera(i, disp_frame_no);
+		vertices = skeleton.get_simple_3d_projection(i, disp_frame_no);
 
 		skel_geometry->setVertexArray (vertices.get());
 		skel_geometry->setColorArray(colors, osg::Array::BIND_OVERALL);

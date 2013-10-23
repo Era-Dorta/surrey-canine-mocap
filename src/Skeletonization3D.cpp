@@ -64,12 +64,9 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_num, int frame_num )
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num )
 {
-	int rows = (*camera_arr)[0]->get_d_rows();
-	int cols = (*camera_arr)[0]->get_d_cols();
 	//Return vector
-
 	osg::ref_ptr< osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
 	cv::Mat* depth_map;
@@ -81,6 +78,9 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 	depth_map = (*camera_arr)[cam_num]->get_depth_map(frame_num);
 	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
 	inv_K = (*camera_arr)[cam_num]->get_inv_K_f3x3();
+	int rows = depth_map->rows;
+	int cols = depth_map->cols;
+
 	//Generate 3D vertices
 	for(int row = 0; row < rows; row++)
 	{
@@ -90,15 +90,19 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_points_for_camera( int cam_n
 			if( (int)skeleton_img->at<ushort>(row, col) == 255){
 				//Read depth pixel (converted from mm to m):
 				float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
-				//Reproject it:
-				float3 depth_pix_hom = make_float3(col, row, 1.f);
-				float3 vert = depth*(inv_K*depth_pix_hom);
-				//Add to array
-				skeleton_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+				//TODO Depth 0 means background, how a background was mark as skeleton???
+				//Not a clue, but should not be in the projection
+				if(depth != 0 ){
+					//Reproject it:
+					float3 depth_pix_hom = make_float3(col, row, 1.f);
+					float3 vert = depth*(inv_K*depth_pix_hom);
+					//Add to array
+					skeleton_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+				}
+				//cout << "[" << vert.x << "," << vert.y << "," << vert.z  << "]" << endl;
 			}
 		}
 	}
-
 	return skeleton_3d.get();
 }
 

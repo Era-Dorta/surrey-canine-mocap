@@ -18,7 +18,7 @@ class Skeletonization3D
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> >* camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
-		osg::ref_ptr<osg::Vec3Array> get_points_for_camera( int cam_num, int frame_num );
+		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num );
 
 		//TODO This is public to do some debugging, and it should got to private again
 		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
