@@ -97,7 +97,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 		skel_geometry->setVertexArray (vertices.get());
 		skel_geometry->setColorArray(colors, osg::Array::BIND_OVERALL);
 		//Should be POINTS but this is better to see errors
-		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vertices->size()));
+		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
 		skel_geode->addDrawable(skel_geometry.get());
 		//skel_geode->getOrCreateStateSet()->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
 
@@ -135,11 +135,14 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 
 	osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
 	normals->push_back( osg::Vec3(0.0f, 0.0f, -1.0f) );
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+	colors->push_back(osg::Vec4(0.0f, 1.0f, 0.0f, 1.0)); //green
 
 	osg::ref_ptr<osg::Geometry> quad = new osg::Geometry;
 	quad->setVertexArray( vertices.get() );
 	quad->setNormalArray( normals.get() );
 	quad->setNormalBinding( osg::Geometry::BIND_OVERALL );
+	quad->setColorArray(colors, osg::Array::BIND_OVERALL);
 	quad->setTexCoordArray( 0, tc.get() );
 	quad->addPrimitiveSet( new osg::DrawArrays(GL_QUADS, 0, 4) );
 
@@ -158,6 +161,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 
 		tex = new osg::Texture2D;
 		tex->setImage( osgImage.get() );
+
 
 		skel2d_geode = new osg::Geode;
 		skel2d_geode->addDrawable( quad.get() );
