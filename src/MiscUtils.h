@@ -252,7 +252,7 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in)
 
 	//Normal visualization with lines:
 	//-------------------------
-	static const char* normal_vis_geom =
+	/*static const char* normal_vis_geom =
 	{
 		"#version 120\n"
 		"#extension GL_EXT_geometry_shader4 : enable\n"
@@ -275,7 +275,7 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in)
 				"EndPrimitive();\n"
 			"}"
 		"}"
-	};
+	};*/
 	//-------------------------
 
 	//Triangle strip-based circular splat oriented using normal:
@@ -330,26 +330,26 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in)
 
 	//Very basic diffuse lighting fragment shader:
 	//------------------
-	static const char* diffuse_frag = {
+	/*static const char* diffuse_frag = {
 		"varying in vec3 normal_geom_out;\n"
 		"void main()\n"
 		"{\n"
 			"float intensity = dot(normalize(vec3(100,100,100)), normal_geom_out);\n"
 			"gl_FragColor = vec4(intensity, intensity, intensity, 1);\n"
 		"}\n"
-	};
+	};*/
 	//------------------
 
 	//Colour passthrough fragment shader:
 	//------------------
-	static const char* colour_frag = {
+	/*static const char* colour_frag = {
 		"varying in vec3 normal_geom_out;\n"
 		"varying in vec4 colour_geom_out;\n"
 		"void main()\n"
 		"{\n"
 			"gl_FragColor = colour_geom_out;\n"
 		"}\n"
-	};
+	};*/
 	//------------------
 
 	//Normal colouring fragment shader:

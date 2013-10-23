@@ -6,7 +6,8 @@ using std::endl;
 
 DepthMapSurfel::DepthMapSurfel(): depth_surfel_geode(new osg::Geode)
 {
-
+	rows = 0;
+	cols = 0;
 }
 
 void DepthMapSurfel::init(int _rows, int _cols, osg::Vec3 _vis_colour)
