@@ -127,7 +127,7 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 
 	osg::ref_ptr<osg::Image> osgImage = new osg::Image;
 	osgImage->setImage(cvImg->cols,cvImg->rows, 3,
-	                           GL_RGB, GL_RGB, GL_UNSIGNED_BYTE, cvImg->data,
+	                           GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg->data,
 	                           osg::Image::NO_DELETE);
 
 	//osg::ref_ptr<osg::Image> osgImage = osgDB::readImageFile( "../../data/test.jpg" );
