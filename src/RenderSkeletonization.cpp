@@ -146,7 +146,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 	quad->setTexCoordArray( 0, tc.get() );
 	quad->addPrimitiveSet( new osg::DrawArrays(GL_QUADS, 0, 4) );
 
-	cv::Mat* cvImg;
+	const cv::Mat* cvImg;
 	osg::ref_ptr<osg::Image> osgImage;
 	osg::ref_ptr<osg::Texture2D> tex;
 	osg::ref_ptr<osg::Geode> skel2d_geode;;

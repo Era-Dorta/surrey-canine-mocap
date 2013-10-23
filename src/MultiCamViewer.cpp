@@ -30,7 +30,7 @@ MultiCamViewer::MultiCamViewer(std::string path):
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;
 	get_dir_names(path, &cam_names);
-	for(int i = 0; i<cam_names.size(); i++)
+	for(unsigned int i = 0; i<cam_names.size(); i++)
 	{
 		boost::shared_ptr<RGBD_Camera> cam(new RGBD_Camera(_dataset_path, cam_names[i]));
 		camera_arr.push_back(cam);
@@ -39,7 +39,7 @@ MultiCamViewer::MultiCamViewer(std::string path):
 	//Get the range of frames that all cameras have:
 	begin_frame_no = -1e9;
 	end_frame_no = 1e9;
-	for(int i = 0; i<camera_arr.size(); i++)
+	for(unsigned int i = 0; i<camera_arr.size(); i++)
 	{
 
 		if(begin_frame_no < camera_arr[i]->get_first_frame_num())
@@ -125,7 +125,7 @@ void MultiCamViewer::setup_scene(void)
 
 	//Add the geometry for each camera to to the scene:
 	//---------------------------
-	for(int i = 0; i<camera_arr.size(); i++)
+	for(unsigned int i = 0; i<camera_arr.size(); i++)
 	{
 		cam_vis_switch->addChild(camera_arr[i]->cam_group, true);
 	}
@@ -430,7 +430,7 @@ void MultiCamViewer::update_dynamics(void)
 
 	//Update the depth map geometry for all cameras:
 	//------------------------------------------
-	for(int i = 0; i<camera_arr.size(); i++)
+	for(unsigned int i = 0; i<camera_arr.size(); i++)
 	{
 		//DEBUG:
 		//cout << "Updating depth map polygonisation for " << camera_arr[i]->get_cam_name() <<
@@ -455,7 +455,7 @@ void MultiCamViewer::update_dynamics(void)
 
 		camera_arr[i]->skel_vis_group->removeChildren(0,camera_arr[i]->skel_vis_group->getNumChildren());
 
-		for(int sp = 0; sp < surface_paths_3d.size(); sp++)
+		for(unsigned int sp = 0; sp < surface_paths_3d.size(); sp++)
 		{
 			osg::ref_ptr<osg::Geode> path_vis_geode = new osg::Geode;
 			osg::ref_ptr<osg::Geometry> path_vis_geom = new osg::Geometry;
@@ -463,13 +463,13 @@ void MultiCamViewer::update_dynamics(void)
 			osg::ref_ptr<osg::DrawElementsUInt> path_vis_indices =
 					new osg::DrawElementsUInt(GL_LINES, 2*surface_paths_3d[sp].size());
 
-			for(int element = 0; element < surface_paths_3d[sp].size(); element++)
+			for(unsigned int element = 0; element < surface_paths_3d[sp].size(); element++)
 			{
 				(*path_vis_vertices)[element].set(osg::Vec3(surface_paths_3d[sp][element].x,
 						surface_paths_3d[sp][element].y,
 						surface_paths_3d[sp][element].z));
 			}
-			for(int element = 0; element < surface_paths_3d[sp].size()-1; element++)
+			for(unsigned int element = 0; element < surface_paths_3d[sp].size()-1; element++)
 			{
 				(*path_vis_indices)[2*element] = element;
 				(*path_vis_indices)[2*element+1] = element+1;

@@ -14,7 +14,7 @@ Skeletonization2D::~Skeletonization2D()
 
 }
 
-cv::Mat* Skeletonization2D::get_frame( int frame_num )
+cv::Mat* Skeletonization2D::get_frame(const int frame_num )
 {
 	return &(skeletonized_frames[frame_num]);
 }
@@ -147,7 +147,7 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img
 	return res;
 }
 
-cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in, int thresh_length)
+cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in,unsigned int thresh_length)
 {
 	cv::Mat result = img_in.clone();
 
@@ -275,7 +275,7 @@ cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in, int t
 				//Check length of path, deleting points if it's shorted than threshold:
 				if(path.size() < thresh_length)
 				{
-					for(int i = 0; i<path.size(); i++)
+					for(unsigned int i = 0; i<path.size(); i++)
 					{
 						result.at<uchar>(path[i].y, path[i].x) = 0;
 					}

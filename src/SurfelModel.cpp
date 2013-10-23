@@ -122,7 +122,7 @@ void SurfelModel::remove_invalid_surfels(void)
 	//Sort into valid surfels followed by invalid:
 	//-------------------
 
-	int forward_pos = 0;
+	unsigned int forward_pos = 0;
 	int backward_pos = surfel_vertices->size()-1;
 	while(forward_pos < surfel_vertices->size())
 	{
