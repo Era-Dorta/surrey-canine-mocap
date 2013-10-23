@@ -32,6 +32,9 @@ class RenderSkeletonization
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 	protected:
 	private:
+		void clean_scene();
+		void display_3d_skeleon_cloud(int disp_frame_no);
+		void display_2d_skeletons(int disp_frame_no);
 		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeleton;
 		//Pointer to the camera array

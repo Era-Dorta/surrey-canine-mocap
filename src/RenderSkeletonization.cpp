@@ -56,6 +56,24 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	}
 	*/
 
+	clean_scene();
+
+	display_3d_skeleon_cloud(disp_frame_no);
+
+	display_2d_skeletons(disp_frame_no);
+}
+
+void RenderSkeletonization::clean_scene()
+{
+	osg::ref_ptr<osg::Group> skel_group;
+	for(unsigned int i = 0; i < camera_arr->size(); i++){
+		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
+		skel_group->removeChildren(0, skel_group->getNumChildren());
+	}
+}
+
+void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
+{
 	osg::ref_ptr<osg::Geode> skel_geode;
 	osg::ref_ptr<osg::Geometry> skel_geometry;
 	osg::ref_ptr<osg::Vec3Array> vertices;
@@ -73,9 +91,6 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
-		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
-
-		skel_group->removeChildren(0, skel_group->getNumChildren());
 
 		vertices = skeleton.get_points_for_camera(i, disp_frame_no);
 
@@ -86,13 +101,18 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 		skel_geode->addDrawable(skel_geometry.get());
 		//skel_geode->getOrCreateStateSet()->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
 
+		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
 		skel_group->addChild(skel_geode.get());
 	}
+}
 
+void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
+{
 	osg::ref_ptr<osg::MatrixTransform> trans_matrix;
+	osg::ref_ptr<osg::Group> skel_group;
 
 	//Define a quad
-	vertices = new osg::Vec3Array;
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
 	vertices->push_back(osg::Vec3(-0.5f, -0.5f,2.f));
 	vertices->push_back(osg::Vec3(0.5f, -0.5f, 2.f));
 	vertices->push_back(osg::Vec3(0.5f, 0.5f, 2.f));
