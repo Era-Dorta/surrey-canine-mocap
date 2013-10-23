@@ -26,7 +26,7 @@ void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera
 	osg::ref_ptr<osg::Group> skel_group;
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
 		skel_group = new osg::Group;
-		skel_vis_switch->addChild(skel_group.get());
+		skel_vis_switch->addChild(skel_group.get(), true);
 		//(*camera_arr)[i]->skel_vis_group->addChild(skel_group.get());
 	}
 }
@@ -123,43 +123,31 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 	quad->setTexCoordArray( 0, tc.get() );
 	quad->addPrimitiveSet( new osg::DrawArrays(GL_QUADS, 0, 4) );
 
-	cv::Mat* cvImg = skeleton.skel_arr[1]->get_frame(disp_frame_no);
+	cv::Mat* cvImg;
+	osg::ref_ptr<osg::Image> osgImage;
+	osg::ref_ptr<osg::Texture2D> tex;
+	osg::ref_ptr<osg::Geode> skel2d_geode;;
 
-	osg::ref_ptr<osg::Image> osgImage = new osg::Image;
-	osgImage->setImage(cvImg->cols,cvImg->rows, 3,
-	                           GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg->data,
-	                           osg::Image::NO_DELETE);
-
-	//osg::ref_ptr<osg::Image> osgImage = osgDB::readImageFile( "../../data/test.jpg" );
-
-	osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;
-	tex->setImage( osgImage.get() );
-
-	osg::ref_ptr<osg::Geode> root = new osg::Geode;
-	root->addDrawable( quad.get() );
-	root->getOrCreateStateSet()->setTextureAttributeAndModes( 0, tex.get() );
-
-	skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(0));
-	skel_group->addChild(root.get());
-
-	/*osg::ref_ptr<osg::Group> skel_group;
 	for(unsigned int i = 0; i < camera_arr->size(); i++){
-		skel_geode = new osg::Geode;
-		skel_geometry = new osg::Geometry;
-		skel_geometry->setTexCoordArray( 0, tc.get() );
-		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
+		cvImg = skeleton.skel_arr[i]->get_frame(disp_frame_no);
+
+		osgImage = new osg::Image;
+		osgImage->setImage(cvImg->cols,cvImg->rows, 3,
+		                           GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg->data,
+		                           osg::Image::NO_DELETE);
+
+		tex = new osg::Texture2D;
+		tex->setImage( osgImage.get() );
+
+		skel2d_geode = new osg::Geode;
+		skel2d_geode->addDrawable( quad.get() );
+		skel2d_geode->getOrCreateStateSet()->setTextureAttributeAndModes( 0, tex.get() );
+
 		trans_matrix = new osg::MatrixTransform;
-		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(10.f, 0, 10.f)));
+		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(1.1f*i - 1.f, 0.f, 0.f)));
+		trans_matrix->addChild(skel2d_geode.get());
 
-		vertices = skeleton.get_points_for_camera(i, disp_frame_no);
-
-		skel_geometry->setVertexArray (vertices.get());
-		skel_geometry->setColorArray(colors, osg::Array::BIND_OVERALL);
-		//Should be POINTS but this is better to see errors
-		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vertices->size()));
-		skel_geode->addDrawable(skel_geometry.get());
-		//skel_geode->getOrCreateStateSet()->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
-
-		skel_group->addChild(skel_geode.get());
-	}*/
+		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
+		skel_group->addChild(trans_matrix.get());
+	}
 }
