@@ -32,13 +32,22 @@ class RenderSkeletonization
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 	protected:
 	private:
+		//Delete skeleton nodes from previous frame
 		void clean_scene();
+
+		//Show a 3D skeleton projection given a frame number
 		void display_3d_skeleon_cloud(int disp_frame_no);
+
+		//Show the 2D skeleton images of each camera given a frame number
 		void display_2d_skeletons(int disp_frame_no);
+
 		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeleton;
+
 		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> >* camera_arr;
+
+		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;
 };
 
