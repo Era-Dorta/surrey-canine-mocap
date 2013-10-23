@@ -11,7 +11,7 @@
 class Skeletonization3D
 {
 	public:
-		Skeletonization3D();
+		Skeletonization3D( float merge_treshold_ = 5 );
 
 		virtual ~Skeletonization3D();
 
@@ -20,8 +20,8 @@ class Skeletonization3D
 		//Return an array of points, given a camera and a frame number
 		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num ) const;
 
-		//TODO This is public to do some debugging, and it should got to private again
-		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
+		//Get a 2D skeleton frame
+		const cv::Mat* const get_2D_frame(int cam_num, int frame_num ) const;
 	protected:
 	private:
 		//Merges several 2D images to a 3D complete image of a skeleton
@@ -36,7 +36,7 @@ class Skeletonization3D
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
-
+		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
 
 		//Each Vec3Array is a cloud of points that represent a skeleton
 		//in a given frame
@@ -51,6 +51,7 @@ class Skeletonization3D
 
 		int n_cameras;
 		int n_frames;
+		float merge_treshold;
 };
 
 #endif // SKELETONIZATION3D_H

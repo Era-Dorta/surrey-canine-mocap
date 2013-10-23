@@ -152,7 +152,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 	osg::ref_ptr<osg::Geode> skel2d_geode;;
 
 	for(unsigned int i = 0; i < camera_arr.size(); i++){
-		cvImg = skeleton.skel_arr[i]->get_frame(disp_frame_no);
+		cvImg = skeleton.get_2D_frame(i, disp_frame_no);
 
 		osgImage = new osg::Image;
 		osgImage->setImage(cvImg->cols,cvImg->rows, 3,
