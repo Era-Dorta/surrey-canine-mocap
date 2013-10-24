@@ -69,8 +69,9 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num ) const
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num )
 {
+	discarded_pixels = new osg::Vec2Array;
 	//Return vector
 	osg::ref_ptr< osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
@@ -103,6 +104,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 					float3 vert = depth*(inv_K*depth_pix_hom);
 					//Add to array
 					skeleton_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+				}else{
+					discarded_pixels->push_back(osg::Vec2(row, col));
 				}
 				//cout << "[" << vert.x << "," << vert.y << "," << vert.z  << "]" << endl;
 			}
