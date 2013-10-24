@@ -108,9 +108,6 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 {
-	osg::ref_ptr<osg::MatrixTransform> trans_matrix;
-	osg::ref_ptr<osg::Group> skel_group;
-
 	//Define a quad
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
 	vertices->push_back(osg::Vec3(-0.5f, -0.5f,2.f));
@@ -146,32 +143,27 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 	quad->setTexCoordArray( 0, tc.get() );
 	quad->addPrimitiveSet( new osg::DrawArrays(GL_QUADS, 0, 4) );
 
-	const cv::Mat* cvImg;
-	osg::ref_ptr<osg::Image> osgImage;
-	osg::ref_ptr<osg::Texture2D> tex;
-	osg::ref_ptr<osg::Geode> skel2d_geode;;
-
 	for(unsigned int i = 0; i < camera_arr.size(); i++){
-		cvImg = skeleton.get_2D_frame(i, disp_frame_no);
+		const cv::Mat* cvImg = skeleton.get_2D_frame(i, disp_frame_no);
 
-		osgImage = new osg::Image;
+		osg::ref_ptr<osg::Image> osgImage = new osg::Image;
 		osgImage->setImage(cvImg->cols,cvImg->rows, 3,
 		                           GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg->data,
 		                           osg::Image::NO_DELETE);
 
-		tex = new osg::Texture2D;
+		osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;
 		tex->setImage( osgImage.get() );
 
 
-		skel2d_geode = new osg::Geode;
+		osg::ref_ptr<osg::Geode> skel2d_geode = new osg::Geode;
 		skel2d_geode->addDrawable( quad.get() );
 		skel2d_geode->getOrCreateStateSet()->setTextureAttributeAndModes( 0, tex.get() );
 
-		trans_matrix = new osg::MatrixTransform;
+		osg::ref_ptr<osg::MatrixTransform> trans_matrix = new osg::MatrixTransform;
 		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(1.1f*i - 1.f, 0.f, 0.f)));
 		trans_matrix->addChild(skel2d_geode.get());
 
-		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
+		osg::ref_ptr<osg::Group> skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
 		skel_group->addChild(trans_matrix.get());
 	}
 }
