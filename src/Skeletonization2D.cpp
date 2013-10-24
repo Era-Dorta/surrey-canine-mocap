@@ -124,7 +124,6 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img
 	cv::threshold(res, temp1, 0.7, 255, CV_8U);
 	cv::Mat thresh_8bit;
 	temp1.convertTo(thresh_8bit,CV_8U);
-	//cv::imshow("Thresh", thresh_8bit);
 	//---------------------
 
 	//Erode binary image
@@ -141,9 +140,6 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img
 	temp1 = connectivity_preserving_thinning(res);
 	res = remove_isolated_short_segments(temp1, 15);
 
-	cv::imshow("dendrites_removed2", res);
-
-	//cv::waitKey(80);
 	return res;
 }
 
