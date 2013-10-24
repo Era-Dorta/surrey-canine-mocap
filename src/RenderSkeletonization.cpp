@@ -108,12 +108,17 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 {
+	int rows = camera_arr[0]->get_d_rows();
+	int cols = camera_arr[0]->get_d_cols();
+	float ratio_x = cols/(float)rows;
+
 	//Define a quad
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
-	vertices->push_back(osg::Vec3(-0.5f, -0.5f,2.f));
-	vertices->push_back(osg::Vec3(0.5f, -0.5f, 2.f));
-	vertices->push_back(osg::Vec3(0.5f, 0.5f, 2.f));
-	vertices->push_back(osg::Vec3(-0.5f, 0.5f, 2.f));
+	//TODO Quad coordinates are defined
+	vertices->push_back(osg::Vec3(0.f, 0.f,2.f));
+	vertices->push_back(osg::Vec3(ratio_x, 0.f, 2.f));
+	vertices->push_back(osg::Vec3(ratio_x, 1.f, 2.f));
+	vertices->push_back(osg::Vec3(0.f, 1.f, 2.f));
 
 	//Understanding the texture mapping
 	//In a standard Y right Y up axis, quad was defined as
@@ -126,8 +131,8 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 	//definition of the quad
 	osg::ref_ptr<osg::Vec2Array> tc = new osg::Vec2Array;
 	tc->push_back( osg::Vec2( 0.f, 0.f ) );
-	tc->push_back( osg::Vec2( 1.f, 0.f ) );
-	tc->push_back( osg::Vec2( 1.f, 1.f ) );
+	tc->push_back( osg::Vec2( ratio_x, 0.f ) );
+	tc->push_back( osg::Vec2( ratio_x, 1.f ) );
 	tc->push_back( osg::Vec2( 0.f, 1.f ) );
 
 	osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
@@ -160,7 +165,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 		skel2d_geode->getOrCreateStateSet()->setTextureAttributeAndModes( 0, tex.get() );
 
 		osg::ref_ptr<osg::MatrixTransform> trans_matrix = new osg::MatrixTransform;
-		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(1.1f*i - 1.f, 0.f, 0.f)));
+		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(1.4f*i - 2.f, -0.5f, 0.f)));
 		trans_matrix->addChild(skel2d_geode.get());
 
 		osg::ref_ptr<osg::Group> skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
