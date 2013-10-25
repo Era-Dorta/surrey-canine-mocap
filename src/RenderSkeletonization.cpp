@@ -26,18 +26,35 @@ void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera
 
 	//In case this is not first call, do a clean up
 	skel_group_array.clear();
+	skel_group2D_array.clear();
+	skel_group3D_array.clear();
 	skel_vis_switch->removeChildren(0, skel_vis_switch->getNumChildren());
 
 	//Set up the basics nodes
 	for(unsigned int i = 0; i < camera_arr.size(); i++){
-		//Put each node under a camera transformation, so it is drawn correctly
+		//Create main skeleton group for this camera and save it in an vector
+		osg::ref_ptr<osg::Group> skel_group = new osg::Group;
+		skel_vis_switch->addChild(skel_group.get(), true);
+		skel_group_array.push_back(skel_group.get());
+
+		//Create 2D skeleton group for this camera, put it under skeleton group
+		//and save it in an vector
+		osg::ref_ptr<osg::Group> aux_group = new osg::Group;
+		skel_group->addChild(aux_group.get());
+		skel_group2D_array.push_back(aux_group.get());
+
+		//Get this camera transformation
 		osg::ref_ptr<osg::MatrixTransform> cam_transform = new osg::MatrixTransform;
 		//The original camera node is not used to keep the scene graph simpler
 		cam_transform->setMatrix(camera_arr[i]->cam_pose_xform->getMatrix());
-		skel_vis_switch->addChild(cam_transform.get(), true);
-		osg::ref_ptr<osg::Group> skel_group = new osg::Group;
-		cam_transform->addChild(skel_group.get());
-		skel_group_array.push_back(skel_group.get());
+
+		//Add it as child of main skeleton group
+		skel_group->addChild(cam_transform.get());
+
+		//Create 3D skeleton group under the camera transformation
+		aux_group = new osg::Group;
+		cam_transform->addChild(aux_group.get());
+		skel_group3D_array.push_back(aux_group.get());
 	}
 }
 
@@ -75,8 +92,12 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 
 void RenderSkeletonization::clean_scene()
 {
-	for(unsigned int i = 0; i < skel_group_array.size(); i++){
-		skel_group_array[i]->removeChildren(0, skel_group_array[i]->getNumChildren());
+	for(unsigned int i = 0; i < skel_group2D_array.size(); i++){
+		skel_group2D_array[i]->removeChildren(0, skel_group2D_array[i]->getNumChildren());
+	}
+
+	for(unsigned int i = 0; i < skel_group3D_array.size(); i++){
+		skel_group3D_array[i]->removeChildren(0, skel_group3D_array[i]->getNumChildren());
 	}
 }
 
@@ -89,10 +110,6 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
 
-	//Uncoment this to give the lines some width
-	//osg::ref_ptr<osg::LineWidth> linewidth = new osg::LineWidth();
-	//linewidth->setWidth(2.0f);
-
 	//Draw a red cloud of points, where each point represents a small part of a bone
 	for(unsigned int i = 0; i < camera_arr.size(); i++){
 		skel_geode = new osg::Geode;
@@ -102,12 +119,11 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 
 		skel_geometry->setVertexArray (vertices.get());
 		skel_geometry->setColorArray(colors, osg::Array::BIND_OVERALL);
-		//Should be POINTS but this is better to see errors
-		skel_geometry->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
+		skel_geometry->addPrimitiveSet( new osg::DrawArrays(
+				osg::PrimitiveSet::POINTS, 0, vertices->size()));
 		skel_geode->addDrawable(skel_geometry.get());
-		//skel_geode->getOrCreateStateSet()->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
 
-		skel_group_array[i]->addChild(skel_geode.get());
+		skel_group3D_array[i]->addChild(skel_geode.get());
 	}
 }
 
@@ -158,8 +174,8 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 
 		osg::ref_ptr<osg::Image> osgImage = new osg::Image;
 		osgImage->setImage(cvImg->cols,cvImg->rows, 3,
-		                           GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg->data,
-		                           osg::Image::NO_DELETE);
+		                           GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE,
+		                           cvImg->data, osg::Image::NO_DELETE);
 
 		osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;
 		tex->setImage( osgImage.get() );
@@ -173,6 +189,6 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(1.4f*i - 2.f, -0.5f, 0.f)));
 		trans_matrix->addChild(skel2d_geode.get());
 
-		skel_group_array[i]->addChild(trans_matrix.get());
+		skel_group2D_array[i]->addChild(trans_matrix.get());
 	}
 }
