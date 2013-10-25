@@ -64,9 +64,9 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 {
 	clean_scene();
 
-	display_3d_skeleon_cloud(disp_frame_no);
-
 	display_3d_merged_skeleon_cloud(disp_frame_no);
+
+	display_3d_skeleon_cloud(disp_frame_no);
 
 	display_2d_skeletons(disp_frame_no);
 }
@@ -137,7 +137,6 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 
 	//Define a quad
 	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
-	//TODO Quad coordinates are defined
 	vertices->push_back(osg::Vec3(0.f, 0.f,2.f));
 	vertices->push_back(osg::Vec3(ratio_x, 0.f, 2.f));
 	vertices->push_back(osg::Vec3(ratio_x, 1.f, 2.f));

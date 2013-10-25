@@ -41,8 +41,7 @@ void Skeletonization3D::merge_2D_skeletons()
 	std::vector< const cv::Mat* > skeletonized_frames;
 	skeletonized_frames.resize(n_cameras);
 
-	//change back to nframes
-	for( int i = 0; i < 1; i++){
+	for( int i = 0; i < n_frames; i++){
 		//Get all the 2D views of a given frame
 		for(unsigned int j = 0; j < skel_arr.size(); j++){
 			skeletonized_frames[j] = skel_arr[j]->get_frame(i);
@@ -158,7 +157,8 @@ void Skeletonization3D::get_simple_3d_projection(int cam_num, int frame_num, std
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	std::vector<const cv::Mat* >& skeletonized_frames, int frame_num)
 {
-
+	//TODO Skeleton coordinates are relative to each camera transformation
+	//they should be in global axis coordinates
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
 
@@ -192,8 +192,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 			//Set used other image pixels to used
 			//Get next white pixel from path
 
-
-
 	cv::Point3f p0, p1;
 
 	int rows = camera_arr[0]->get_d_rows();
@@ -220,6 +218,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 				p0.x = merged_pixel.x();
 				p0.y = merged_pixel.y();
 				p0.z = merged_pixel.z();
+
 				//We can safely asume that we only have to merge with the images
 				//of the next cameras, since we already treated all the pixels
 				//in the previous ones
@@ -228,16 +227,21 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 					{
 						for(int col = 0; col < cols; col++)
 						{
-							aux_pixel = (projection3d_array[j])[osg::Vec2(row, col)];
-							p1.x = aux_pixel.x();
-							p1.y = aux_pixel.y();
-							p1.z = aux_pixel.z();
-							if( cv::norm(p0 - p1) < merge_treshold ){
-								//Set merging pixel as visited
-								visited_pixels[j].at<uchar>(pixel_row, pixel_col) = 0;
-								merged_pixel = merged_pixel + aux_pixel;
-								total_merge++;
-								treated_pixels[j]++;
+							//TODO It should not take more than 1 pixel per image
+							//to merge, save prev distance and use new one is distance
+							//is smaller
+							if(skeletonized_frames[j]->at<uchar>(row, col) == 255){
+								aux_pixel = (projection3d_array[j])[osg::Vec2(row, col)];
+								p1.x = aux_pixel.x();
+								p1.y = aux_pixel.y();
+								p1.z = aux_pixel.z();
+								if( cv::norm(p0 - p1) < merge_treshold ){
+									//Set merging pixel as visited
+									visited_pixels[j].at<uchar>(pixel_row, pixel_col) = 0;
+									merged_pixel = merged_pixel + aux_pixel;
+									total_merge++;
+									treated_pixels[j]++;
+								}
 							}
 						}
 					}
