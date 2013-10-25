@@ -49,6 +49,9 @@ class RenderSkeletonization
 
 		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;
+
+		//Direct access to skeleton nodes, ordered by cameras
+		std::vector<osg::ref_ptr<osg::Group> > skel_group_array;
 };
 
 #endif // RENDERSKELETONIZATION_H

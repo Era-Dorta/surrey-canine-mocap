@@ -19,15 +19,25 @@ RenderSkeletonization::~RenderSkeletonization()
 void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
 		osg::ref_ptr<osg::Switch> skel_vis_switch_)
 {
+	//Save arguments
 	camera_arr = camera_arr_;
 	skeleton.set_cameras(camera_arr);
 	skel_vis_switch = skel_vis_switch_;
 
-	osg::ref_ptr<osg::Group> skel_group;
+	//In case this is not first call, do a clean up
+	skel_group_array.clear();
+	skel_vis_switch->removeChildren(0, skel_vis_switch->getNumChildren());
+
+	//Set up the basics nodes
 	for(unsigned int i = 0; i < camera_arr.size(); i++){
-		skel_group = new osg::Group;
-		skel_vis_switch->addChild(skel_group.get(), true);
-		//(*camera_arr)[i]->skel_vis_group->addChild(skel_group.get());
+		//Put each node under a camera transformation, so it is drawn correctly
+		osg::ref_ptr<osg::MatrixTransform> cam_transform = new osg::MatrixTransform;
+		//The original camera node is not used to keep the scene graph simpler
+		cam_transform->setMatrix(camera_arr[i]->cam_pose_xform->getMatrix());
+		skel_vis_switch->addChild(cam_transform.get(), true);
+		osg::ref_ptr<osg::Group> skel_group = new osg::Group;
+		cam_transform->addChild(skel_group.get());
+		skel_group_array.push_back(skel_group.get());
 	}
 }
 
@@ -65,10 +75,8 @@ void RenderSkeletonization::update_dynamics( int disp_frame_no )
 
 void RenderSkeletonization::clean_scene()
 {
-	osg::ref_ptr<osg::Group> skel_group;
-	for(unsigned int i = 0; i < camera_arr.size(); i++){
-		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
-		skel_group->removeChildren(0, skel_group->getNumChildren());
+	for(unsigned int i = 0; i < skel_group_array.size(); i++){
+		skel_group_array[i]->removeChildren(0, skel_group_array[i]->getNumChildren());
 	}
 }
 
@@ -77,8 +85,6 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 	osg::ref_ptr<osg::Geode> skel_geode;
 	osg::ref_ptr<osg::Geometry> skel_geometry;
 	osg::ref_ptr<osg::Vec3Array> vertices;
-
-	osg::ref_ptr<osg::Group> skel_group;
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
@@ -101,8 +107,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 		skel_geode->addDrawable(skel_geometry.get());
 		//skel_geode->getOrCreateStateSet()->setAttributeAndModes(linewidth, osg::StateAttribute::ON);
 
-		skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
-		skel_group->addChild(skel_geode.get());
+		skel_group_array[i]->addChild(skel_geode.get());
 	}
 }
 
@@ -168,7 +173,6 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
 		trans_matrix->setMatrix(osg::Matrix::translate(osg::Vec3(1.4f*i - 2.f, -0.5f, 0.f)));
 		trans_matrix->addChild(skel2d_geode.get());
 
-		osg::ref_ptr<osg::Group> skel_group = static_cast<osg::Group*>(skel_vis_switch->getChild(i));
-		skel_group->addChild(trans_matrix.get());
+		skel_group_array[i]->addChild(trans_matrix.get());
 	}
 }
