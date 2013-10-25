@@ -18,8 +18,11 @@ class Skeletonization3D
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
+		//Important: This coordinates are relative to the camera
 		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num) const;
 
+		//Return an array of points, after merging all the camera views
+		//Important: This coordinates are global
 		osg::ref_ptr<osg::Vec3Array> get_merged_3d_projection( int frame_num) const;
 
 		//Get a 2D skeleton frame
@@ -37,7 +40,7 @@ class Skeletonization3D
 		//where in res_row and res_col
 		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col, int i_row = 0, int i_col = 0 );
 
-		void get_simple_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
+		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera

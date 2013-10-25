@@ -116,7 +116,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection( int fr
 	return skeleton_frames[frame_num];
 }
 
-void Skeletonization3D::get_simple_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const
+void Skeletonization3D::get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const
 {
 	const cv::Mat* depth_map;
 	const cv::Mat* skeleton_img;
@@ -172,7 +172,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	for(int i = 0; i < n_cameras; i++){
 		//Calculate 3D projection
-		get_simple_3d_projection(i, frame_num, aux);
+		get_global_coord_3d_projection(i, frame_num, aux);
 		projection3d_array.push_back(aux);
 
 		//Initialise visited pixel matrices
