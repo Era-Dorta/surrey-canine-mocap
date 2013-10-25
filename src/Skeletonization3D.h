@@ -18,12 +18,10 @@ class Skeletonization3D
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
-		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num );
+		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num ) const;
 
 		//Get a 2D skeleton frame
 		const cv::Mat* const get_2D_frame(int cam_num, int frame_num ) const;
-
-		osg::ref_ptr<osg::Vec2Array> discarded_pixels;
 	protected:
 	private:
 		//Merges several 2D images to a 3D complete image of a skeleton

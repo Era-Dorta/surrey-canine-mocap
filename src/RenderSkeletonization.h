@@ -49,10 +49,6 @@ class RenderSkeletonization
 
 		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;
-
-		std::vector<osg::ref_ptr<osg::Vec2Array> > discarded_pixels_array;
-		cv::Mat** dis_p_img_a;
-		void display_2d_not_taken_pixels(int disp_frame_no);
 };
 
 #endif // RENDERSKELETONIZATION_H
