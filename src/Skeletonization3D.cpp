@@ -27,7 +27,7 @@ void Skeletonization3D::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera>
 		skel_arr.push_back(skel);
 	}
 	//TODO Still couses seg fault
-	//merge_2D_skeletons();
+	merge_2D_skeletons();
 }
 
 const cv::Mat* const Skeletonization3D::get_2D_frame(int cam_num, int frame_num ) const
@@ -41,22 +41,22 @@ void Skeletonization3D::merge_2D_skeletons()
 	std::vector< const cv::Mat* > skeletonized_frames;
 	skeletonized_frames.resize(n_cameras);
 
-	for( int i = 0; i < n_frames; i++){
+	//change back to nframes
+	for( int i = 0; i < 1; i++){
 		//Get all the 2D views of a given frame
-		std::vector < boost::shared_ptr<Skeletonization2D> >::iterator j(skel_arr.begin());
-		for(; j != skel_arr.end(); ++j){
-			skeletonized_frames[n_cameras] = (*j)->get_frame(i);
+		for(unsigned int j = 0; j < skel_arr.size(); j++){
+			skeletonized_frames[j] = skel_arr[j]->get_frame(i);
 		}
 		//Save the 3D result
 		skeleton_frames.push_back(merge_2D_skeletons_impl(skeletonized_frames, i));
 	}
 }
 
-bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_col )
+bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_col, int i_row, int i_col )
 {
-	for(int row = 0; row < img->rows; row++)
+	for(int row = i_row; row < img->rows; row++)
 	{
-		for(int col = 0; col < img->cols; col++)
+		for(int col = i_col; col < img->cols; col++)
 		{
 			//If pixel is white
 			if( (int)img->at<uchar>(row, col) == 255){
@@ -86,6 +86,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 	int rows = depth_map->rows;
 	int cols = depth_map->cols;
 
+
 	//Generate 3D vertices
 	for(int row = 0; row < rows; row++)
 	{
@@ -95,8 +96,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 			if( (int)skeleton_img->at<uchar>(row, col) == 255){
 				//Read depth pixel (converted from mm to m):
 				float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
-				//TODO Depth 0 means background, how a background was mark as skeleton???
-				//Not a clue, but should not be in the projection
+				//Depth 0 means background, it should not be in the projection
+				//This is just a safe check, depth should never be 0
 				if(depth != 0 ){
 					//Reproject it:
 					float3 depth_pix_hom = make_float3(col, row, 1.f);
@@ -104,28 +105,73 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 					//Add to array
 					skeleton_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
 				}
-				//cout << "[" << vert.x << "," << vert.y << "," << vert.z  << "]" << endl;
 			}
 		}
 	}
+
 	return skeleton_3d.get();
+}
+
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection( int frame_num ) const
+{
+	return skeleton_frames[frame_num];
+}
+
+void Skeletonization3D::get_simple_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const
+{
+	const cv::Mat* depth_map;
+	const cv::Mat* skeleton_img;
+	float3x3 inv_K;
+
+	//Calculate 3D proyections of 2D skeleton images
+	//Every image is from a different camera
+	depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
+	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
+	inv_K = camera_arr[cam_num]->get_inv_K_f3x3();
+	int rows = depth_map->rows;
+	int cols = depth_map->cols;
+
+
+	//Generate 3D vertices
+	for(int row = 0; row < rows; row++)
+	{
+		for(int col = 0; col < cols; col++)
+		{
+			//If the pixel belongs to the skeleton then calculate it's projection
+			if( (int)skeleton_img->at<uchar>(row, col) == 255){
+				//Read depth pixel (converted from mm to m):
+				float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
+				//Depth 0 means background, it should not be in the projection
+				//This is just a safe check, depth should never be 0
+				if(depth != 0 ){
+					//Reproject it:
+					float3 depth_pix_hom = make_float3(col, row, 1.f);
+					float3 vert = depth*(inv_K*depth_pix_hom);
+					//Add to array
+					projection3d[osg::Vec2(row, col)] = osg::Vec3(vert.x, vert.y, vert.z);
+				}
+			}
+		}
+	}
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	std::vector<const cv::Mat* >& skeletonized_frames, int frame_num)
 {
+
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
 
 	//Vector with 3D projections of 2D skeleton from every camera
-	std::vector< osg::ref_ptr< osg::Vec3Array> > skel_3D_points_array;
-	osg::ref_ptr<osg::Vec3Array> aux;
+	std::vector<std::map<osg::Vec2, osg::Vec3> >projection3d_array;
+	std::map<osg::Vec2, osg::Vec3> aux;
 
+	std::vector < cv::Mat > visited_pixels;
 
 	for(int i = 0; i < n_cameras; i++){
 		//Calculate 3D projection
-		aux = get_simple_3d_projection(i, frame_num);
-		skel_3D_points_array.push_back(aux.get());
+		get_simple_3d_projection(i, frame_num, aux);
+		projection3d_array.push_back(aux);
 
 		//Initialise visited pixel matrices
 		visited_pixels.push_back(skel_arr[i]->get_frame(frame_num)->clone());
@@ -152,10 +198,10 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	int rows = camera_arr[0]->get_d_rows();
 	int cols = camera_arr[0]->get_d_cols();
-	int total_pixels = rows*cols, pixel_row, pixel_col;
+	int total_pixels = rows*cols, pixel_row = 0, pixel_col = 0;
 	int treated_pixels[3] = {0,0,0};
 	int skeleton_num_points = 0;
-	osg::Vec3 merged_pixel;
+	osg::Vec3 merged_pixel, aux_pixel;
 	int total_merge;
 
 	//Merge the skeletons, uses the projections to calculate distances and the
@@ -163,17 +209,17 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	for(int i = 0; i < n_cameras; i++){
 
 		while(treated_pixels[i] < total_pixels){
-			if(get_white_pixel(&visited_pixels[i], pixel_row, pixel_col)){
+			if(get_white_pixel(&visited_pixels[i], pixel_row, pixel_col, pixel_row, pixel_col)){
 				//Mark found pixel as visited
 				visited_pixels[i].at<uchar>(pixel_row, pixel_col) = 0;
 
 				total_merge = 1;
 
-				merged_pixel = (*(skel_3D_points_array[i]))[pixel_row*cols + pixel_col];
+				merged_pixel = (projection3d_array[i])[osg::Vec2(pixel_row, pixel_col)];
 
-				p0.x = (*(skel_3D_points_array[i]))[pixel_row*cols + pixel_col].x();
-				p0.y = (*(skel_3D_points_array[i]))[pixel_row*cols + pixel_col].y();
-				p0.z = (*(skel_3D_points_array[i]))[pixel_row*cols + pixel_col].z();
+				p0.x = merged_pixel.x();
+				p0.y = merged_pixel.y();
+				p0.z = merged_pixel.z();
 				//We can safely asume that we only have to merge with the images
 				//of the next cameras, since we already treated all the pixels
 				//in the previous ones
@@ -182,13 +228,14 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 					{
 						for(int col = 0; col < cols; col++)
 						{
-							p1.x = (*(skel_3D_points_array[j]))[row*cols + col].x();
-							p1.y = (*(skel_3D_points_array[j]))[row*cols + col].y();
-							p1.z = (*(skel_3D_points_array[j]))[row*cols + col].z();
+							aux_pixel = (projection3d_array[j])[osg::Vec2(row, col)];
+							p1.x = aux_pixel.x();
+							p1.y = aux_pixel.y();
+							p1.z = aux_pixel.z();
 							if( cv::norm(p0 - p1) < merge_treshold ){
 								//Set merging pixel as visited
 								visited_pixels[j].at<uchar>(pixel_row, pixel_col) = 0;
-								merged_pixel = merged_pixel + (*(skel_3D_points_array[j]))[row*cols + col];
+								merged_pixel = merged_pixel + aux_pixel;
 								total_merge++;
 								treated_pixels[j]++;
 							}

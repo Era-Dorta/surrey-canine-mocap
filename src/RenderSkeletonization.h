@@ -38,6 +38,9 @@ class RenderSkeletonization
 		//Show a 3D skeleton projection given a frame number
 		void display_3d_skeleon_cloud(int disp_frame_no);
 
+		//Show a 3D skeleton projection given a frame number
+		void display_3d_merged_skeleon_cloud(int disp_frame_no);
+
 		//Show the 2D skeleton images of each camera given a frame number
 		void display_2d_skeletons(int disp_frame_no);
 
@@ -56,6 +59,8 @@ class RenderSkeletonization
 		std::vector<osg::ref_ptr<osg::Group> > skel_group2D_array;
 		//Direct access to skeleton nodes, ordered by cameras
 		std::vector<osg::ref_ptr<osg::Group> > skel_group3D_array;
+
+		bool display_merged;
 };
 
 #endif // RENDERSKELETONIZATION_H

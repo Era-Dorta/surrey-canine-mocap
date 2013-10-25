@@ -18,7 +18,9 @@ class Skeletonization3D
 		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
-		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num ) const;
+		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num) const;
+
+		osg::ref_ptr<osg::Vec3Array> get_merged_3d_projection( int frame_num) const;
 
 		//Get a 2D skeleton frame
 		const cv::Mat* const get_2D_frame(int cam_num, int frame_num ) const;
@@ -28,11 +30,14 @@ class Skeletonization3D
 		void merge_2D_skeletons();
 
 		//Internal method that does the hard work
-		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(std::vector<const cv::Mat* >& skeletonized_frames, int frame_num);
+		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(
+				std::vector<const cv::Mat* >& skeletonized_frames, int frame_num);
 
 		//Auxiliary method that finds a withe pixel in a given image and returns
 		//where in res_row and res_col
-		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col );
+		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col, int i_row = 0, int i_col = 0 );
+
+		void get_simple_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
@@ -46,8 +51,6 @@ class Skeletonization3D
 		//that painful to do and lest assume the cameras are not going to change
 		//in run time
 		std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr;
-
-		std::vector < cv::Mat > visited_pixels;
 
 		int n_cameras;
 		int n_frames;

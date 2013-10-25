@@ -1,12 +1,14 @@
 #include "RenderSkeletonization.h"
 
-RenderSkeletonization::RenderSkeletonization()
+RenderSkeletonization::RenderSkeletonization():
+	display_merged(true)
 {
 
 }
 
 RenderSkeletonization::RenderSkeletonization(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
-		osg::ref_ptr<osg::Switch> skel_vis_switch_)
+		osg::ref_ptr<osg::Switch> skel_vis_switch_):
+	display_merged(true)
 {
 	set_data(camera_arr_, skel_vis_switch_);
 }
@@ -60,32 +62,11 @@ void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera
 
 void RenderSkeletonization::update_dynamics( int disp_frame_no )
 {
-	/*
-	//TODO Since only one camera, remove 1 children, to be changed later
-	skel_root->removeChildren(0, 1);
-	vertices = skel_arr[0]->get_points_for_frame(disp_frame_no);
-	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
-	skel_root->addChild(skel_geode);
-	osg::ref_ptr<osg::Geometry> geom;
-
-	//osg::ref_ptr<osg::Vec4Array> colors (new osg::Vec4Array());
-	//Create geometry node for each cam to draw
-	std::vector < boost::shared_ptr<Skeletonization> >::iterator it = skel_arr.begin();
-	for(; it != skel_arr.end(); ++it) {
-		geom = new osg::Geometry;
-		//TODO, Check this out, best options seems to reserve many points and then
-		//en each iteration tell it how many it should use
-		geom->setVertexArray (vertices.get());
-		//geom->setColorArray (colors.get());
-		//geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-		geom->addPrimitiveSet( new osg::DrawArrays(osg::PrimitiveSet::POINTS, 0, vertices->size()));
-		skel_geode->addDrawable(geom.get());
-	}
-	*/
-
 	clean_scene();
 
 	display_3d_skeleon_cloud(disp_frame_no);
+
+	display_3d_merged_skeleon_cloud(disp_frame_no);
 
 	display_2d_skeletons(disp_frame_no);
 }
@@ -107,24 +88,45 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
 	osg::ref_ptr<osg::Geometry> skel_geometry;
 	osg::ref_ptr<osg::Vec3Array> vertices;
 
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
-
-	//Draw a red cloud of points, where each point represents a small part of a bone
+	//Draw a red cloud of boxes, where each box represents a small part of a bone
 	for(unsigned int i = 0; i < camera_arr.size(); i++){
 		skel_geode = new osg::Geode;
 		skel_geometry = new osg::Geometry;
 
 		vertices = skeleton.get_simple_3d_projection(i, disp_frame_no);
 
-		skel_geometry->setVertexArray (vertices.get());
-		skel_geometry->setColorArray(colors, osg::Array::BIND_OVERALL);
-		skel_geometry->addPrimitiveSet( new osg::DrawArrays(
-				osg::PrimitiveSet::POINTS, 0, vertices->size()));
-		skel_geode->addDrawable(skel_geometry.get());
+		for(unsigned int j = 0; j < vertices->size(); j++){
+			osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
+			shape1->setShape( new osg::Box((*vertices)[j],
+			0.005f, 0.005f, 0.005f) );
+			shape1->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
+			skel_geode->addDrawable(shape1.get());
+		}
 
 		skel_group3D_array[i]->addChild(skel_geode.get());
 	}
+}
+
+void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no)
+{
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+	colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0)); //blue
+
+	//Draw a blue cloud of squares, where each square represents a small part of a bone
+	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
+	osg::ref_ptr<osg::Geometry> skel_geometry = new osg::Geometry;
+
+	osg::ref_ptr<osg::Vec3Array> vertices = skeleton.get_merged_3d_projection(disp_frame_no);
+
+	for(unsigned int j = 0; j < vertices->size(); j++){
+		osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
+		shape1->setShape( new osg::Box((*vertices)[j],
+		0.005f, 0.005f, 0.005f) );
+		shape1->setColor(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0)); //blue
+		skel_geode->addDrawable(shape1.get());
+	}
+
+	skel_group3D_array[0]->addChild(skel_geode.get());
 }
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)
