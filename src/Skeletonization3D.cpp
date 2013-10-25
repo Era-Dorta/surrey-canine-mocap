@@ -198,12 +198,13 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	int rows = camera_arr[0]->get_d_rows();
 	int cols = camera_arr[0]->get_d_cols();
-	int total_pixels = rows*cols, pixel_row = 0, pixel_col = 0;
-	int treated_pixels[3] = {0,0,0};
+	int pixel_row = 0, pixel_col = 0;
 	int skeleton_num_points = 0;
 	osg::Vec3 merged_pixel, aux_pixel;
 	int total_merge;
 
+	//This code just takes all the points and adds them to the result without
+	//modifing any of them
 	/*for(unsigned int i = 0; i < projection3d_array.size(); i++){
 		std::map<osg::Vec2, osg::Vec3> frame = projection3d_array[i];
 		std::map<osg::Vec2, osg::Vec3>::iterator j;
@@ -215,59 +216,62 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
 	for(int i = 0; i < n_cameras; i++){
+		while( get_white_pixel(&visited_pixels[i], pixel_row, pixel_col, pixel_row, pixel_col)){
+			//Mark found pixel as visited
+			visited_pixels[i].at<uchar>(pixel_row, pixel_col) = 0;
 
-		while(treated_pixels[i] < total_pixels){
-			if(get_white_pixel(&visited_pixels[i], pixel_row, pixel_col, pixel_row, pixel_col)){
-				//Mark found pixel as visited
-				visited_pixels[i].at<uchar>(pixel_row, pixel_col) = 0;
+			total_merge = 1;
 
-				total_merge = 1;
+			merged_pixel = (projection3d_array[i])[osg::Vec2(pixel_row, pixel_col)];
 
-				merged_pixel = (projection3d_array[i])[osg::Vec2(pixel_row, pixel_col)];
+			p0.x = merged_pixel.x();
+			p0.y = merged_pixel.y();
+			p0.z = merged_pixel.z();
 
-				p0.x = merged_pixel.x();
-				p0.y = merged_pixel.y();
-				p0.z = merged_pixel.z();
-
-				//We can safely asume that we only have to merge with the images
-				//of the next cameras, since we already treated all the pixels
-				//in the previous ones
-				for(unsigned int j = i + 1; j < skeletonized_frames.size(); j++){
-					for(int row = 0; row < rows; row++)
+			//We can safely assume that we only have to merge with the images
+			//of the next cameras, since we already treated all the pixels
+			//in the previous ones
+			float prev_dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+			float dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+			for(unsigned int j = i + 1; j < skeletonized_frames.size(); j++){
+				bool pixel_found = false;
+				int aux_row = -1, aux_col = -1;
+				for(int row = 0; row < rows; row++)
+				{
+					for(int col = 0; col < cols; col++)
 					{
-						for(int col = 0; col < cols; col++)
-						{
-							//TODO It should not take more than 1 pixel per image
-							//to merge, save prev distance and use new one is distance
-							//is smaller
-							if(skeletonized_frames[j]->at<uchar>(row, col) == 255){
-								aux_pixel = (projection3d_array[j])[osg::Vec2(row, col)];
-								p1.x = aux_pixel.x();
-								p1.y = aux_pixel.y();
-								p1.z = aux_pixel.z();
-								if( cv::norm(p0 - p1) < merge_treshold ){
-									//Set merging pixel as visited
-									visited_pixels[j].at<uchar>(pixel_row, pixel_col) = 0;
-									merged_pixel = merged_pixel + aux_pixel;
-									total_merge++;
-									treated_pixels[j]++;
+						if(skeletonized_frames[j]->at<uchar>(row, col) == 255){
+							aux_pixel = (projection3d_array[j])[osg::Vec2(row, col)];
+							p1.x = aux_pixel.x();
+							p1.y = aux_pixel.y();
+							p1.z = aux_pixel.z();
+							dist[j] = cv::norm(p0 - p1);
+							if( dist[j] < prev_dist[j] ){
+								prev_dist[j] = dist[j];
+								if( dist[j] < merge_treshold ){
+									aux_row = row;
+									aux_col = col;
+									pixel_found = true;
 								}
 							}
 						}
 					}
 				}
-				merged_pixel = merged_pixel / (float)total_merge;
-
-				result->push_back(merged_pixel);
-				skeleton_num_points++;
-
-				treated_pixels[i]++;
-
-				// TODO Instead of calling get_white_pixel each iteration, follow
-				//a path
-			}else{
-				treated_pixels[i] = total_pixels;
+				if(pixel_found){
+					total_merge++;
+					//Set merging pixel as visited
+					visited_pixels[j].at<uchar>(aux_row, aux_col) = 0;
+					aux_pixel = (projection3d_array[j])[osg::Vec2(aux_row, aux_col)];
+					merged_pixel = merged_pixel + aux_pixel;
+				}
 			}
+			merged_pixel = merged_pixel / (float)total_merge;
+
+			result->push_back(merged_pixel);
+			skeleton_num_points++;
+
+			// TODO Instead of calling get_white_pixel each iteration, follow
+			//a path
 		}
 	}
 
