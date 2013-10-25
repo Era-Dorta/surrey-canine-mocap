@@ -45,7 +45,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization2D::points_from_image(const cv::Mat&
 		for(int col = 0; col < cols; col++)
 		{
 			//If point is not background, then save it
-			if((int)seg_img.at<ushort>(row, col) == 255 )
+			if((int)seg_img.at<uchar>(row, col) == 255 )
 			{
 				//TODO Apply transform to get them in 3D space
 				skeleton_points->push_back(osg::Vec3(row, col, 0));

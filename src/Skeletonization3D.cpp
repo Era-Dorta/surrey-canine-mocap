@@ -59,7 +59,7 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 		for(int col = 0; col < img->cols; col++)
 		{
 			//If pixel is white
-			if( (int)img->at<ushort>(row, col) == 255){
+			if( (int)img->at<uchar>(row, col) == 255){
 				res_row = row;
 				res_col = col;
 				return true;
@@ -93,7 +93,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 		for(int col = 0; col < cols; col++)
 		{
 			//If the pixel belongs to the skeleton then calculate it's projection
-			if( (int)skeleton_img->at<ushort>(row, col) == 255){
+			if( (int)skeleton_img->at<uchar>(row, col) == 255){
 				//Read depth pixel (converted from mm to m):
 				float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])*0.001f;
 				//TODO Depth 0 means background, how a background was mark as skeleton???
