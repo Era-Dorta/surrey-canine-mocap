@@ -58,6 +58,9 @@ void RenderSkeletonization::set_data(std::vector < boost::shared_ptr<RGBD_Camera
 		cam_transform->addChild(aux_group.get());
 		skel_group3D_array.push_back(aux_group.get());
 	}
+
+	merged_group = new osg::Group;
+	skel_vis_switch->addChild(merged_group.get(), true);
 }
 
 void RenderSkeletonization::update_dynamics( int disp_frame_no )
@@ -80,6 +83,8 @@ void RenderSkeletonization::clean_scene()
 	for(unsigned int i = 0; i < skel_group3D_array.size(); i++){
 		skel_group3D_array[i]->removeChildren(0, skel_group3D_array[i]->getNumChildren());
 	}
+
+	merged_group->removeChildren(0, merged_group->getNumChildren());
 }
 
 void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no)
@@ -126,7 +131,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no)
 		skel_geode->addDrawable(shape1.get());
 	}
 
-	skel_group3D_array[0]->addChild(skel_geode.get());
+	merged_group->addChild(skel_geode.get());
 }
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no)

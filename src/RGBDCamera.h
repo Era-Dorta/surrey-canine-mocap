@@ -58,6 +58,7 @@ public:
 	cv::Mat get_inv_K_rgb(void);
 	float3x3 get_inv_K_f3x3(void);
 	cv::Mat get_T_rgb(void);
+	float4x4 get_T_f4x4(void);
 	const cv::Mat* get_depth_map(int frame_num);
 	cv::Mat* get_rgb_image(int frame_num);
 	std::string get_cam_name(void);
@@ -99,6 +100,7 @@ private:
 
 	float3x3 K_d_f3x3;
 	float3x3 inv_K_d_f3x3;
+	float4x4 T_float4x4;
 };
 
 #endif /* RGBDCAMERA_H_ */

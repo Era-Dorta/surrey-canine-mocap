@@ -211,6 +211,10 @@ void RGBD_Camera::load_calibration(void)
 	cv::Mat T = cv::Mat(4, 4, CV_32F, T_val, 4*sizeof(float)).clone();
 	T_rgb = T;
 
+	for(int i = 0; i<16; i++){
+		T_float4x4.val[i] = T_rgb.at<float>(i);
+	}
+
 	//DEBUG:
 	//cout << "Extrinsics read from file: " << T << endl;
 
@@ -367,6 +371,11 @@ float3x3 RGBD_Camera::get_inv_K_f3x3(void)
 cv::Mat RGBD_Camera::get_T_rgb(void)
 {
 	return T_rgb;
+}
+
+float4x4 RGBD_Camera::get_T_f4x4(void)
+{
+	return T_float4x4;
 }
 
 const cv::Mat* RGBD_Camera::get_depth_map(int frame_num)

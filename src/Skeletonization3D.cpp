@@ -120,13 +120,13 @@ void Skeletonization3D::get_simple_3d_projection(int cam_num, int frame_num, std
 {
 	const cv::Mat* depth_map;
 	const cv::Mat* skeleton_img;
-	float3x3 inv_K;
 
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
 	depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
 	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
-	inv_K = camera_arr[cam_num]->get_inv_K_f3x3();
+	float3x3 inv_K = camera_arr[cam_num]->get_inv_K_f3x3();
+	float4x4 T = camera_arr[cam_num]->get_T_f4x4();
 	int rows = depth_map->rows;
 	int cols = depth_map->cols;
 
@@ -146,8 +146,10 @@ void Skeletonization3D::get_simple_3d_projection(int cam_num, int frame_num, std
 					//Reproject it:
 					float3 depth_pix_hom = make_float3(col, row, 1.f);
 					float3 vert = depth*(inv_K*depth_pix_hom);
+					float4 vert_hom = make_float4(vert, 1.f);
+					float4 vert_global = T*vert_hom;
 					//Add to array
-					projection3d[osg::Vec2(row, col)] = osg::Vec3(vert.x, vert.y, vert.z);
+					projection3d[osg::Vec2(row, col)] = osg::Vec3(vert_global.x, vert_global.y, vert_global.z);
 				}
 			}
 		}
@@ -201,6 +203,14 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	int skeleton_num_points = 0;
 	osg::Vec3 merged_pixel, aux_pixel;
 	int total_merge;
+
+	/*for(unsigned int i = 0; i < projection3d_array.size(); i++){
+		std::map<osg::Vec2, osg::Vec3> frame = projection3d_array[i];
+		std::map<osg::Vec2, osg::Vec3>::iterator j;
+		for(j = frame.begin(); j != frame.end(); ++j){
+			result->push_back(j->second);
+		}
+	}*/
 
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path

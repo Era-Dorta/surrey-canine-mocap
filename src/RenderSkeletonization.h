@@ -55,10 +55,15 @@ class RenderSkeletonization
 
 		//Direct access to skeleton nodes, ordered by cameras
 		std::vector<osg::ref_ptr<osg::Group> > skel_group_array;
+
 		//Direct access to skeleton nodes, ordered by cameras
 		std::vector<osg::ref_ptr<osg::Group> > skel_group2D_array;
+
 		//Direct access to skeleton nodes, ordered by cameras
 		std::vector<osg::ref_ptr<osg::Group> > skel_group3D_array;
+
+		//Merge skeleton group
+		osg::ref_ptr<osg::Group> merged_group;
 
 		bool display_merged;
 };
