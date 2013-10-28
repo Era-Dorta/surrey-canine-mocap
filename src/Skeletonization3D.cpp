@@ -207,12 +207,10 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
-	int n_total_merge = 0;
 
 	//For each projection
 	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
 	projection3d = projection3d_array->begin();
-
 	for( ;projection3d != projection3d_array->end(); ++projection3d ){
 		//For each point
 		std::map<osg::Vec2, osg::Vec3>::iterator point;
@@ -255,7 +253,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 
 				if(pixel_found){
 					total_merge++;
-					n_total_merge++;
 					merged_pixel = merged_pixel + to_merge_point->second;
 					other_projection3d->erase(to_merge_point);
 				}
