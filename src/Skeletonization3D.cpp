@@ -292,6 +292,10 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
 	for(int i = 0; i < n_cameras; i++){
+		//TODO This searches a white pixel beginning on the bottom-left each time
+		//if I save the position it fails, also it should be better to follow the
+		//path and not take "random" points to merge, also could be useful
+		//to follow the path of the other bones.
 		while( get_bottom_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col)){
 			//Mark found pixel as visited
 			(*visited_pixels)[i].at<uchar>(pixel_row, pixel_col) = 0;
