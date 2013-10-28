@@ -71,11 +71,17 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 
 bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row, int &res_col )
 {
+	return get_bottom_white_pixel(img, res_row, res_col, img->rows - 1, 0);
+}
+
+bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row,
+		int &res_col, int i_row, int i_col )
+{
 	//Since we want the bottom-left white pixel
 	//and 0,0 is top-left in openCV
-	for(int row = img->rows - 1; row > 0; row--)
+	for(int row = i_row; row > 0; row--)
 	{
-		for(int col = 0; col < img->cols; col++)
+		for(int col = i_col; col < img->cols; col++)
 		{
 			//If pixel is white
 			if( (int)img->at<uchar>(row, col) == 255){

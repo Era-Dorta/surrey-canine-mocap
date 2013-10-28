@@ -38,11 +38,14 @@ class Skeletonization3D
 
 		//Auxiliary method that finds a white pixel in a given image and returns
 		//where in res_row and res_col
-		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col, int i_row = 0, int i_col = 0 );
+		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col,
+				int i_row = 0, int i_col = 0 );
 
 		//Auxiliary method that finds the white pixel situated most at the
 		//bottom left of the image.
 		bool get_bottom_white_pixel( cv::Mat* img, int &res_row, int &res_col );
+		bool get_bottom_white_pixel( cv::Mat* img, int &res_row,
+				int &res_col, int i_row, int i_col );
 
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
