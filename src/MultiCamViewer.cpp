@@ -251,6 +251,14 @@ bool MultiCamViewer::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
 			update_dynamics();
 			break;
+
+			//Toggle merge skeleton visibility:
+		case osgGA::GUIEventAdapter::KEY_R:
+			//DEBUG:
+			//std::cout << "[3] pressed" << std::endl;
+			skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
+			update_dynamics();
+			break;
 //
 //		//Write out the entire rendered sequence:
 //		case osgGA::GUIEventAdapter::KEY_Y:

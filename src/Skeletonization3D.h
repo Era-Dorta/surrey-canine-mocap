@@ -54,7 +54,6 @@ class Skeletonization3D
 		//closest one from each camera as long as the distance is smaller than
 		//merge_treshold and does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> simple_2D_merge(
-				std::vector < cv::Mat >* visited_pixels,
 				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array);
 
 		//This merge method finds a white pixel starting from the bottom of the
