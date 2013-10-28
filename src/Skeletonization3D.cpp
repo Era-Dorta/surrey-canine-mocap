@@ -68,6 +68,25 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
+bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row, int &res_col )
+{
+	//Since we want the bottom-left white pixel
+	//and 0,0 is top-left in openCV
+	for(int row = img->rows - 1; row > 0; row--)
+	{
+		for(int col = 0; col < img->cols; col++)
+		{
+			//If pixel is white
+			if( (int)img->at<uchar>(row, col) == 255){
+				res_row = row;
+				res_col = col;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num ) const
 {
 	//Return vector
@@ -175,15 +194,18 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	}
 
 
-	osg::ref_ptr<osg::Vec3Array> result = simple_2D_merge(&visited_pixels,
-			&projection3d_array, &skeletonized_frames);
+	osg::ref_ptr<osg::Vec3Array> result;
+
+	//result = simple_2D_merge(&visited_pixels, &projection3d_array);
+
+	result = follow_path_2D_merge(&visited_pixels, &projection3d_array);
+
 	return result.get();
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 		std::vector < cv::Mat >* visited_pixels,
-		std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
-		std::vector<const cv::Mat* >* skeletonized_frames)
+		std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array)
 {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
@@ -218,14 +240,14 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 			//in the previous ones
 			float smallest_dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
 			float dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
-			for(unsigned int j = i + 1; j < skeletonized_frames->size(); j++){
+			for(unsigned int j = i + 1; j < visited_pixels->size(); j++){
 				bool pixel_found = false;
 				int aux_row = -1, aux_col = -1;
 				for(int row = 0; row < rows; row++)
 				{
 					for(int col = 0; col < cols; col++)
 					{
-						if((*skeletonized_frames)[j]->at<uchar>(row, col) == 255){
+						if((*visited_pixels)[j].at<uchar>(row, col) == 255){
 							aux_pixel = (*projection3d_array)[j][osg::Vec2(row, col)];
 							p1.x = aux_pixel.x();
 							p1.y = aux_pixel.y();

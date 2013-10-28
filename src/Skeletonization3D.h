@@ -36,9 +36,13 @@ class Skeletonization3D
 		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(
 				std::vector<const cv::Mat* >& skeletonized_frames, int frame_num);
 
-		//Auxiliary method that finds a withe pixel in a given image and returns
+		//Auxiliary method that finds a white pixel in a given image and returns
 		//where in res_row and res_col
 		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col, int i_row = 0, int i_col = 0 );
+
+		//Auxiliary method that finds the white pixel situated most at the
+		//bottom left of the image.
+		bool get_bottom_white_pixel( cv::Mat* img, int &res_row, int &res_col );
 
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
@@ -51,8 +55,7 @@ class Skeletonization3D
 		//merge_treshold and does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> simple_2D_merge(
 				std::vector < cv::Mat >* visited_pixels,
-				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
-				std::vector<const cv::Mat* >* skeletonized_frames);
+				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array);
 
 		//This merge method finds a white pixel starting from the bottom of the
 		//image, going up in rows. Then searches for a pixel on the same row
@@ -60,8 +63,7 @@ class Skeletonization3D
 		//merge_treshold, it does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> follow_path_2D_merge(
 				std::vector < cv::Mat >* visited_pixels,
-				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
-				std::vector<const cv::Mat* >* skeletonized_frames);
+				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array);
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
