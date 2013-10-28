@@ -42,6 +42,16 @@ class Skeletonization3D
 
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
+		osg::ref_ptr<osg::Vec3Array> simple_2D_merge(
+				std::vector < cv::Mat >* visited_pixels,
+				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
+				std::vector<const cv::Mat* >* skeletonized_frames);
+
+		osg::ref_ptr<osg::Vec3Array> follow_path_2D_merge(
+				std::vector < cv::Mat >* visited_pixels,
+				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
+				std::vector<const cv::Mat* >* skeletonized_frames);
+
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
 		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
