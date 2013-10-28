@@ -200,8 +200,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
-
-	//
 	for(int i = 0; i < n_cameras; i++){
 		while( get_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col)){
 			//Mark found pixel as visited
@@ -284,8 +282,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
-
-	//
 	for(int i = 0; i < n_cameras; i++){
 		while( get_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col)){
 			//Mark found pixel as visited

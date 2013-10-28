@@ -42,11 +42,22 @@ class Skeletonization3D
 
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
+		//merge_2D_skeletons_impl can call this two methods to actually do the
+		//merging.
+
+		//This method finds a white pixel starting from 0,0 and then calculates
+		//distances to all white pixels in the other camera views, then takes the
+		//closest one from each camera as long as the distance is smaller than
+		//merge_treshold and does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> simple_2D_merge(
 				std::vector < cv::Mat >* visited_pixels,
 				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
 				std::vector<const cv::Mat* >* skeletonized_frames);
 
+		//This merge method finds a white pixel starting from the bottom of the
+		//image, going up in rows. Then searches for a pixel on the same row
+		//in another camera, if the pixel is found and distance is smaller than
+		//merge_treshold, it does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> follow_path_2D_merge(
 				std::vector < cv::Mat >* visited_pixels,
 				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array,
