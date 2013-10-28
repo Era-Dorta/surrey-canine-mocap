@@ -26,7 +26,7 @@ void Skeletonization3D::set_cameras(std::vector < boost::shared_ptr<RGBD_Camera>
 		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D(*i));
 		skel_arr.push_back(skel);
 	}
-	//TODO Still couses seg fault
+
 	merge_2D_skeletons();
 }
 
@@ -216,7 +216,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
 	for(int i = 0; i < n_cameras; i++){
-		while( get_white_pixel(&visited_pixels[i], pixel_row, pixel_col, pixel_row, pixel_col)){
+		while( get_white_pixel(&visited_pixels[i], pixel_row, pixel_col)){
 			//Mark found pixel as visited
 			visited_pixels[i].at<uchar>(pixel_row, pixel_col) = 0;
 
@@ -231,7 +231,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 			//We can safely assume that we only have to merge with the images
 			//of the next cameras, since we already treated all the pixels
 			//in the previous ones
-			float prev_dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
+			float smallest_dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
 			float dist [3] = {FLT_MAX, FLT_MAX, FLT_MAX};
 			for(unsigned int j = i + 1; j < skeletonized_frames.size(); j++){
 				bool pixel_found = false;
@@ -246,8 +246,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 							p1.y = aux_pixel.y();
 							p1.z = aux_pixel.z();
 							dist[j] = cv::norm(p0 - p1);
-							if( dist[j] < prev_dist[j] ){
-								prev_dist[j] = dist[j];
+							if( dist[j] < smallest_dist[j] ){
+								smallest_dist[j] = dist[j];
 								if( dist[j] < merge_treshold ){
 									aux_row = row;
 									aux_col = col;
