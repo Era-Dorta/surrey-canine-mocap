@@ -41,8 +41,8 @@ void Skeletonization3D::merge_2D_skeletons()
 	std::vector< const cv::Mat* > skeletonized_frames;
 	skeletonized_frames.resize(n_cameras);
 
-	//for( int i = 0; i < n_frames; i++){
-	for( int i = 0; i < 10; i++){
+	for( int i = 0; i < n_frames; i++){
+	//for( int i = 0; i < 10; i++){
 		//Get all the 2D views of a given frame
 		for(unsigned int j = 0; j < skel_arr.size(); j++){
 			skeletonized_frames[j] = skel_arr[j]->get_frame(i);
@@ -319,12 +319,13 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 				other_point = other_projection3d->begin();
 				for( ;other_point != other_projection3d->end(); ++other_point){
 
-					cv::Point3f p1;
-					p1.x = other_point->second.x();
-					p1.y = other_point->second.y();
-					p1.z = other_point->second.z();
+					if( p0.z + row_treshold > other_point->second.z() &&
+							p0.z - row_treshold < other_point->second.z() ){
 
-					if( p0.z + row_treshold > p1.z && p0.z - row_treshold < p1.z ){
+						cv::Point3f p1;
+						p1.x = other_point->second.x();
+						p1.y = other_point->second.y();
+						p1.z = other_point->second.z();
 
 						current_dist = cv::norm(p0 - p1);
 						if( current_dist < smallest_dist ){
