@@ -94,6 +94,59 @@ bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row,
 	return false;
 }
 
+bool Skeletonization3D::get_neighbor_white_pixel(cv::Mat* img, int i_row, int i_col,
+		int &res_row, int &res_col){
+	bool go_top, go_bot, go_left, go_right;
+	//TODO Maybe it would be better to calculate this as they are needed
+	//and not all together in the beggining
+	go_top = i_row > 0;
+	go_bot = i_col < img->rows - 1;
+	go_left = i_col > 0;
+	go_right = i_col < img->cols - 1;
+
+	//Search order is
+	// 1 0 2
+	// 3 x 4
+ 	// 6 5 7
+	//This is done since bone merging starts from the bottom, so we want to give
+	//priority to follow the path of the bone upwards. Left over right is an
+	//arbitrary decision
+	if( go_top && (int)img->at<uchar>(i_row - 1, i_col) == 255 ){
+		res_row = i_row - 1;
+		res_col = i_col;
+		return true;
+	}else if(go_top && go_left && (int)img->at<uchar>(i_row - 1, i_col - 1) == 255){
+		res_row = i_row - 1;
+		res_col = i_col - 1;
+		return true;
+	}else if(go_top && go_right && (int)img->at<uchar>(i_row - 1, i_col + 1) == 255){
+		res_row = i_row - 1;
+		res_col = i_col + 1;
+		return true;
+	}else if(go_left && (int)img->at<uchar>(i_row, i_col - 1) == 255){
+		res_row = i_row;
+		res_col = i_col - 1;
+		return true;
+	}else if(go_right && (int)img->at<uchar>(i_row, i_col + 1) == 255){
+		res_row = i_row;
+		res_col = i_col + 1;
+		return true;
+	}else if(go_bot && (int)img->at<uchar>(i_row + 1, i_col) == 255){
+		res_row = i_row + 1;
+		res_col = i_col;
+		return true;
+	}else if(go_bot && go_left && (int)img->at<uchar>(i_row + 1, i_col - 1) == 255){
+		res_row = i_row + 1;
+		res_col = i_col - 1;
+		return true;
+	}else if(go_bot && go_right && (int)img->at<uchar>(i_row + 1, i_col + 1) == 255){
+		res_row = i_row + 1;
+		res_col = i_col + 1;
+		return true;
+	}
+	return false;
+}
+
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num ) const
 {
 	//Return vector
@@ -282,21 +335,28 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 	cv::Point3f p0, p1;
 
-	int pixel_row = 0, pixel_col = 0;
+
 	int skeleton_num_points = 0;
-	osg::Vec3 merged_pixel, aux_pixel;
-	int n_pixel_merge, n_total_merge = 0;
+
+	int n_total_merge = 0;
 	float row_treshold = 0.2;
 	merge_treshold = 0.05;
+	//Timer t("2dpath_merge");
 
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
 	for(int i = 0; i < n_cameras; i++){
 		//TODO This searches a white pixel beginning on the bottom-left each time
-		//if I save the position it fails, also it should be better to follow the
-		//path and not take "random" points to merge, also could be useful
+		//if I save the position it fails, also it could be useful
 		//to follow the path of the other bones.
-		while( get_bottom_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col)){
+		//TODO More ideas to avoid calculating distance, maybe do first box
+		//check, if it is "close" on 3 dimensions then calculate the distance.
+		int pixel_row = 0, pixel_col = 0;
+		osg::Vec3 merged_pixel, aux_pixel;
+		int n_pixel_merge;
+		bool continue_merge = get_bottom_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col);
+
+		while( continue_merge ){
 			//Mark found pixel as visited
 			(*visited_pixels)[i].at<uchar>(pixel_row, pixel_col) = 0;
 
@@ -358,8 +418,26 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 			skeleton_num_points++;
 			merged_pixel = merged_pixel / (float)n_pixel_merge;
 			result->push_back(merged_pixel);
+
+			continue_merge = false;
+			int next_row, next_col;
+
+			//Try to follow the bone, search for next pixel in its Moore
+			//neighbourhood
+			if(get_neighbor_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col,
+					next_row, next_col) ){
+				pixel_row = next_row;
+				pixel_col = next_col;
+				continue_merge = true;
+			}else{
+			//If the search fails, find another pixel starting from top-left
+			//corner
+				continue_merge = get_bottom_white_pixel(&(*visited_pixels)[i],
+						pixel_row, pixel_col);
+			}
 		}
 	}
-	cout << "skeleton_num_points " << skeleton_num_points << " merged points " << n_total_merge << endl;
+	//t.tock_print();
+	//cout << "skeleton_num_points " << skeleton_num_points << " merged points " << n_total_merge << endl;
 	return result.get();
 }

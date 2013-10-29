@@ -47,6 +47,11 @@ class Skeletonization3D
 		bool get_bottom_white_pixel( cv::Mat* img, int &res_row,
 				int &res_col, int i_row, int i_col );
 
+		//Auxiliary method that finds a white pixel in the 8 neighbourhood of
+		//a given position
+		bool get_neighbor_white_pixel(cv::Mat* img, int i_row, int i_col,
+				int &res_row, int &res_col);
+
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
 		//merge_2D_skeletons_impl can call this two methods to actually do the
