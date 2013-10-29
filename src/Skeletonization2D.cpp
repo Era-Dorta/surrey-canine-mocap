@@ -138,6 +138,7 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img
 	res = remove_isolated_short_segments(temp1, 5);
 	temp1 = connectivity_preserving_thinning(res);
 	res = remove_isolated_short_segments(temp1, 15);
+	delete_arm(res);
 
 	return res;
 }
@@ -426,4 +427,81 @@ cv::Mat Skeletonization2D::connectivity_preserving_thinning(cv::Mat& img_in)
 	//cout << "Skeleton thinning done in " << iter << " iterations" << endl;
 
 	return result;
+}
+
+bool Skeletonization2D::get_neighbor_white_pixel(cv::Mat& img, int i_row, int i_col,
+		int &res_row, int &res_col){
+	bool go_top, go_bot, go_left, go_right;
+	//TODO Maybe it would be better to calculate this as they are needed
+	//and not all together in the beggining
+	go_top = i_row > 0;
+	go_bot = i_col < img.rows - 1;
+	go_left = i_col > 0;
+	go_right = i_col < img.cols - 1;
+
+	//Search order is
+	// 1 0 2
+	// 3 x 4
+ 	// 6 5 7
+	//This is done since bone merging starts from the bottom, so we want to give
+	//priority to follow the path of the bone upwards. Left over right is an
+	//arbitrary decision
+	if( go_top && (int)img.at<uchar>(i_row - 1, i_col) == 255 ){
+		res_row = i_row - 1;
+		res_col = i_col;
+		return true;
+	}else if(go_top && go_left && (int)img.at<uchar>(i_row - 1, i_col - 1) == 255){
+		res_row = i_row - 1;
+		res_col = i_col - 1;
+		return true;
+	}else if(go_top && go_right && (int)img.at<uchar>(i_row - 1, i_col + 1) == 255){
+		res_row = i_row - 1;
+		res_col = i_col + 1;
+		return true;
+	}else if(go_left && (int)img.at<uchar>(i_row, i_col - 1) == 255){
+		res_row = i_row;
+		res_col = i_col - 1;
+		return true;
+	}else if(go_right && (int)img.at<uchar>(i_row, i_col + 1) == 255){
+		res_row = i_row;
+		res_col = i_col + 1;
+		return true;
+	}else if(go_bot && (int)img.at<uchar>(i_row + 1, i_col) == 255){
+		res_row = i_row + 1;
+		res_col = i_col;
+		return true;
+	}else if(go_bot && go_left && (int)img.at<uchar>(i_row + 1, i_col - 1) == 255){
+		res_row = i_row + 1;
+		res_col = i_col - 1;
+		return true;
+	}else if(go_bot && go_right && (int)img.at<uchar>(i_row + 1, i_col + 1) == 255){
+		res_row = i_row + 1;
+		res_col = i_col + 1;
+		return true;
+	}
+	return false;
+}
+
+void Skeletonization2D::delete_arm(cv::Mat& img_in)
+{
+	int row = 0, col = 0, next_row, next_col;
+
+	for(row = 0; row < img_in.rows; row++){
+		for(col = 0; col < img_in.cols; col++){
+			if(img_in.at<uchar>(row, col) == 255){
+				goto FoundFirstArmPixel;
+			}
+		}
+	}
+	return;
+
+FoundFirstArmPixel:
+
+	img_in.at<uchar>(row, col) = 0;
+
+	while(get_neighbor_white_pixel(img_in, row, col, next_row, next_col)){
+		img_in.at<uchar>(next_row, next_col) = 0;
+		row = next_row;
+		col = next_col;
+	}
 }
