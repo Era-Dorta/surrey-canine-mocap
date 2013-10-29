@@ -195,7 +195,32 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection( int fr
 	return skeleton_frames[frame_num];
 }
 
-void Skeletonization3D::get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const
+void Skeletonization3D::trasnlate_points_to_inside(std::map<osg::Vec2,
+		osg::Vec3>& projection3d, int cam_num, float distance) const
+{
+	std::map<osg::Vec2, osg::Vec3>::iterator point;
+	float4 aux = make_float4(0, 0, distance, 1);
+	float4 res = aux*camera_arr[cam_num]->get_T_f4x4();
+	osg::Vec3 translation(res.x, res.y, res.z);
+
+	for(point = projection3d.begin(); point != projection3d.end(); ++point){
+		point->second = point->second + translation;
+	}
+}
+
+void Skeletonization3D::trasnlate_points_to_inside(osg::ref_ptr<osg::Vec3Array>
+		projection3d, int cam_num, float distance) const
+{
+	osg::Vec3Array::iterator point;
+	osg::Vec3 translation(0, 0, distance);
+
+	for(point = projection3d->begin(); point != projection3d->end(); ++point){
+		*point = *point + translation;
+	}
+}
+
+void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
+		int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const
 {
 	const cv::Mat* depth_map;
 	const cv::Mat* skeleton_img;
@@ -247,6 +272,13 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		//Calculate 3D projection
 		std::map<osg::Vec2, osg::Vec3> aux;
 		get_global_coord_3d_projection(i, frame_num, aux);
+
+		//Move all points slightly away from its camera, so they represent a
+		//point inside the boy and not on the body
+		trasnlate_points_to_inside(aux, i, 0.01);
+		//TODO A possible optimisation is to multiply camera matrix with this
+		//translation, so everything will be done in one operation
+
 		projection3d_array.push_back(aux);
 
 		//Initialise visited pixel matrices
@@ -340,7 +372,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 	int n_total_merge = 0;
 	float row_treshold = 0.2;
-	merge_treshold = 0.05;
+	merge_treshold = 0.1;
 	//Timer t("2dpath_merge");
 
 	//Merge the skeletons, uses the projections to calculate distances and the

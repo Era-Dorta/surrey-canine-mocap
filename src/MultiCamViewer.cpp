@@ -228,6 +228,12 @@ bool MultiCamViewer::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
 			update_dynamics();
 			break;
+		case osgGA::GUIEventAdapter::KEY_4:
+			cam_vis_switch->setValue(0, !cam_vis_switch->getValue(0));
+			cam_vis_switch->setValue(1, !cam_vis_switch->getValue(1));
+			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
+			update_dynamics();
+			break;
 			//Toggle skel cam 1 visibility:
 		case osgGA::GUIEventAdapter::KEY_Q:
 			//DEBUG:

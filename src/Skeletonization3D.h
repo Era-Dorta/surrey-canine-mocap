@@ -52,6 +52,12 @@ class Skeletonization3D
 		bool get_neighbor_white_pixel(cv::Mat* img, int i_row, int i_col,
 				int &res_row, int &res_col);
 
+		void trasnlate_points_to_inside(std::map<osg::Vec2, osg::Vec3>& projection3d,
+				int cam_num, float distance) const;
+
+		void trasnlate_points_to_inside(osg::ref_ptr<osg::Vec3Array> projection3d,
+				int cam_num, float distance) const;
+
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
 		//merge_2D_skeletons_impl can call this two methods to actually do the
