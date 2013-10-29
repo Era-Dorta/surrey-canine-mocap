@@ -4,6 +4,8 @@
 using std::cout;
 using std::endl;
 
+const double DepthMapSurfel::inv_sq_2 = 1.0/sqrt(2.0);
+
 DepthMapSurfel::DepthMapSurfel(): depth_surfel_geode(new osg::Geode)
 {
 	rows = 0;
@@ -78,7 +80,8 @@ osg::Geode* DepthMapSurfel::create_depth_map_surfel_geode(void)
 void DepthMapSurfel::surfelise_depth_map(
 		const cv::Mat* depth_map,
 		const cv::Mat* rgb_image,
-		const cv::Mat K,
+		const float3x3 K,
+		const float3x3 inv_K,
 		osg::Vec3 vis_colour,
 		bool with_colour,
 		float alpha)
@@ -86,10 +89,6 @@ void DepthMapSurfel::surfelise_depth_map(
 
 	//Timer t_poly_dm("Polygonize depth map cuda vec");
 	//t_poly_dm.tick();
-
-	float3x3 K_d_f3x3;
-	for(int i = 0; i<9; i++)
-		K_d_f3x3.val[i] = K.at<float>(i);
 
 	//Work on one 2x2 block of pixels at a time, generating between 0 and 2 triangles
 	//depending on the depth discontinuity test
@@ -112,7 +111,7 @@ void DepthMapSurfel::surfelise_depth_map(
 			float depth = (((ushort*)(depth_map->data))[row*depth_map->step1() + col])/1000.f;
 			//Reproject it:
 			float3 depth_pix_hom = make_float3(col, row, 1.f);
-			float3 vert = depth*((K_d_f3x3.inverse())*depth_pix_hom);
+			float3 vert = depth*(inv_K*depth_pix_hom);
 			//Add to array (negate y and z to correct orientation)://11/07/2013 Update - don't negate
 			(*dm_vertices)[row*cols + col].set(vert.x, vert.y, vert.z);
 		}
@@ -268,12 +267,12 @@ void DepthMapSurfel::surfelise_depth_map(
 			if(fabs((*dm_normals)[row*cols + col].z()) > 0.2588)//(75 degree angle, Keller2013)
 			{
 				//Sample spacing-based radius: (From Weise, ICCV 2009):
-				r = good_measure*fabs((1.0/sqrt(2.0))*(((*dm_vertices)[row*cols + col].z())/K_d_f3x3.val[0])/
+				r = good_measure*fabs(inv_sq_2*(((*dm_vertices)[row*cols + col].z())/K.val[0])/
 					((*dm_normals)[row*cols + col].z()));
 			}
 			else
 			{
-				r = good_measure*fabs((1.0/sqrt(2.0))*(((*dm_vertices)[row*cols + col].z())/K_d_f3x3.val[0])/
+				r = good_measure*fabs(inv_sq_2*(((*dm_vertices)[row*cols + col].z())/K.val[0])/
 						(0.2588));
 			}
 

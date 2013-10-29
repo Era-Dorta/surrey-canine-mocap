@@ -39,7 +39,8 @@ public:
 	void surfelise_depth_map(
 			const cv::Mat* depth_map,
 			const cv::Mat* rgb_image,
-			const cv::Mat K,
+			const float3x3 K,
+			const float3x3 inv_K,
 			osg::Vec3 vis_colour,
 			bool with_colour,
 			float alpha);
@@ -59,6 +60,8 @@ private:
 	osg::ref_ptr<osg::Vec3Array> dm_normals;
 	osg::ref_ptr<osg::Vec4Array> dm_colours;
 	osg::ref_ptr<osg::Vec3Array> dm_attributes;
+
+	const static double inv_sq_2;
 
 };
 

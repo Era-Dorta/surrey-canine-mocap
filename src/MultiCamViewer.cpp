@@ -267,6 +267,9 @@ bool MultiCamViewer::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
 			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
 			update_dynamics();
 			break;
+		case osgGA::GUIEventAdapter::KEY_Escape :
+			exit( EXIT_SUCCESS );
+			break;
 //
 //		//Write out the entire rendered sequence:
 //		case osgGA::GUIEventAdapter::KEY_Y:
@@ -457,8 +460,8 @@ void MultiCamViewer::update_dynamics(void)
 		//		depth, rgb, camera_arr[i]->get_K_rgb(), camera_arr[i]->get_vis_colour(),
 		//		with_colour, alpha);
 		camera_arr[i]->depth_surf.surfelise_depth_map(
-				depth, rgb, camera_arr[i]->get_K_rgb(), camera_arr[i]->get_vis_colour(),
-				with_colour, alpha);
+				depth, rgb, camera_arr[i]->get_K_f3x3(), camera_arr[i]->get_inv_K_f3x3(),
+				camera_arr[i]->get_vis_colour(), with_colour, alpha);
 
 		//Visualize the path detections in 3D:
 		//------------------------------------------------------
