@@ -1,10 +1,11 @@
 #include "Skeletonization3D.h"
 
-Skeletonization3D::Skeletonization3D(float merge_treshold_)
+Skeletonization3D::Skeletonization3D(float merge_treshold_, float row_treshold_,
+		float move_distance_):
+		n_cameras(0), n_frames(0), merge_treshold(merge_treshold_),
+		row_treshold(row_treshold_), move_distance(move_distance_)
 {
-	n_cameras = 0;
-	n_frames = 0;
-	merge_treshold = merge_treshold_;
+
 }
 
 Skeletonization3D::~Skeletonization3D()
@@ -275,7 +276,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 		//Move all points slightly away from its camera, so they represent a
 		//point inside the boy and not on the body
-		trasnlate_points_to_inside(aux, i, 0.01);
+		trasnlate_points_to_inside(aux, i, move_distance);
 		//TODO A possible optimisation is to multiply camera matrix with this
 		//translation, so everything will be done in one operation
 
@@ -287,8 +288,10 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	osg::ref_ptr<osg::Vec3Array> result;
 
+	//merge_treshold = 0.2;
 	//result = simple_2D_merge(&projection3d_array);
 
+	merge_treshold = 0.1;
 	result = follow_path_2D_merge(&visited_pixels, &projection3d_array);
 
 	return result.get();
@@ -371,8 +374,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 	int skeleton_num_points = 0;
 
 	int n_total_merge = 0;
-	float row_treshold = 0.2;
-	merge_treshold = 0.1;
 	//Timer t("2dpath_merge");
 
 	//Merge the skeletons, uses the projections to calculate distances and the
