@@ -11,8 +11,7 @@
 class Skeletonization3D
 {
 	public:
-		Skeletonization3D( float merge_treshold_ = 0.2, float row_treshold_ = 0.2,
-				float move_distance_ = 0.01 );
+		Skeletonization3D( float merge_treshold_ = 0.2, float move_distance_ = 0.01 );
 
 		virtual ~Skeletonization3D();
 
@@ -55,12 +54,12 @@ class Skeletonization3D
 
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in GLOBAL coordinates
-		void trasnlate_points_to_inside(std::map<osg::Vec2, osg::Vec3>& projection3d,
+		void translate_points_to_inside(std::map<osg::Vec2, osg::Vec3>& projection3d,
 				int cam_num, float distance) const;
 
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in CAMERA coordinates
-		void trasnlate_points_to_inside(osg::ref_ptr<osg::Vec3Array> projection3d,
+		void translate_points_to_inside(osg::ref_ptr<osg::Vec3Array> projection3d,
 				int cam_num, float distance) const;
 
 		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
@@ -99,7 +98,6 @@ class Skeletonization3D
 		int n_cameras;
 		int n_frames;
 		float merge_treshold;
-		float row_treshold;
 		float move_distance;
 };
 

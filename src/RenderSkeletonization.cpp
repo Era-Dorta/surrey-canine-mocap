@@ -127,7 +127,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no)
 		osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
 		shape1->setShape( new osg::Box((*vertices)[j],
 		0.005f, 0.005f, 0.005f) );
-		shape1->setColor(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0)); //blue
+		shape1->setColor(osg::Vec4(0.0f, 1.0f, 0.0f, 1.0)); //green
 		skel_geode->addDrawable(shape1.get());
 	}
 

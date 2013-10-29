@@ -1,9 +1,8 @@
 #include "Skeletonization3D.h"
 
-Skeletonization3D::Skeletonization3D(float merge_treshold_, float row_treshold_,
-		float move_distance_):
+Skeletonization3D::Skeletonization3D(float merge_treshold_,	float move_distance_):
 		n_cameras(0), n_frames(0), merge_treshold(merge_treshold_),
-		row_treshold(row_treshold_), move_distance(move_distance_)
+		move_distance(move_distance_)
 {
 
 }
@@ -188,6 +187,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int ca
 		}
 	}
 
+	translate_points_to_inside(skeleton_3d.get(), cam_num, move_distance);
 	return skeleton_3d.get();
 }
 
@@ -196,7 +196,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection( int fr
 	return skeleton_frames[frame_num];
 }
 
-void Skeletonization3D::trasnlate_points_to_inside(std::map<osg::Vec2,
+void Skeletonization3D::translate_points_to_inside(std::map<osg::Vec2,
 		osg::Vec3>& projection3d, int cam_num, float distance) const
 {
 	std::map<osg::Vec2, osg::Vec3>::iterator point;
@@ -209,7 +209,7 @@ void Skeletonization3D::trasnlate_points_to_inside(std::map<osg::Vec2,
 	}
 }
 
-void Skeletonization3D::trasnlate_points_to_inside(osg::ref_ptr<osg::Vec3Array>
+void Skeletonization3D::translate_points_to_inside(osg::ref_ptr<osg::Vec3Array>
 		projection3d, int cam_num, float distance) const
 {
 	osg::Vec3Array::iterator point;
@@ -276,7 +276,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 		//Move all points slightly away from its camera, so they represent a
 		//point inside the boy and not on the body
-		trasnlate_points_to_inside(aux, i, move_distance);
+		translate_points_to_inside(aux, i, move_distance);
 		//TODO A possible optimisation is to multiply camera matrix with this
 		//translation, so everything will be done in one operation
 
@@ -415,22 +415,17 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 				std::map<osg::Vec2, osg::Vec3>::iterator other_point, to_merge_point;
 				other_point = other_projection3d->begin();
 				for( ;other_point != other_projection3d->end(); ++other_point){
+					cv::Point3f p1;
+					p1.x = other_point->second.x();
+					p1.y = other_point->second.y();
+					p1.z = other_point->second.z();
 
-					if( p0.z + row_treshold > other_point->second.z() &&
-							p0.z - row_treshold < other_point->second.z() ){
-
-						cv::Point3f p1;
-						p1.x = other_point->second.x();
-						p1.y = other_point->second.y();
-						p1.z = other_point->second.z();
-
-						current_dist = cv::norm(p0 - p1);
-						if( current_dist < smallest_dist ){
-							smallest_dist = current_dist;
-							if( current_dist < merge_treshold ){
-								pixel_found = true;
-								to_merge_point = other_point;
-							}
+					current_dist = cv::norm(p0 - p1);
+					if( current_dist < smallest_dist ){
+						smallest_dist = current_dist;
+						if( current_dist < merge_treshold ){
+							pixel_found = true;
+							to_merge_point = other_point;
 						}
 					}
 				}
