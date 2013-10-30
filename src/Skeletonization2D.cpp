@@ -530,28 +530,46 @@ void Skeletonization2D::delete_arm(cv::Mat& img_in)
 	}
 
 	//Find the closer to top cluster
-	int manh_distance_top = img_in.rows, arm_cluster = 0;
+	int distance = img_in.rows, arm_cluster = 0;
 
 	for(int i = 0; i < centers.rows; i++){
-		if(centers.at<cv::Point2f>(i).x < manh_distance_top){
-			manh_distance_top = centers.at<cv::Point2f>(i).x;
+		if(centers.at<cv::Point2f>(i).x < distance){
+			distance = centers.at<cv::Point2f>(i).x;
 			arm_cluster = i;
 		}
 	}
 
 	//Delete all the pixels that belong to that cluster
 	cv::Mat img_out = img_in.clone();
+	distance = 0;
+	int lowest_index;
 
 	for(int i = 0; i < labels.rows; i++){
 		if(labels.at<int>(i) == arm_cluster){
 			int row = data2.at<cv::Point2f>(i).x;
 			int col = data2.at<cv::Point2f>(i).y;
 			img_in.at<uchar>(row, col) = 0;
+			if(row > distance){
+				distance = row;
+				lowest_index = i;
+			}
 		}
 	}
 
-	//cv::imshow("original", img_in);
-	//cv::imshow("arm deleted", img_out);
+	//Check if the lowest pixel in the cluster that was deleted belong to a line
+	//if it did then continue deleting until the line ends.
+	int row, col, next_row, next_col;
+	row = data2.at<cv::Point2f>(lowest_index).x;
+	col = data2.at<cv::Point2f>(lowest_index).y;
+
+	while(get_neighbor_white_pixel(img_in, row, col, next_row, next_col)){
+		img_in.at<uchar>(next_row, next_col) = 0;
+		row = next_row;
+		col = next_col;
+	}
+
+	//cv::imshow("original", img_out);
+	//cv::imshow("arm deleted", img_in);
 	//cv::imshow("clusters", img_clusters);
 	//cv::waitKey(0);
 }
