@@ -52,14 +52,14 @@ void Skeletonization3D::merge_2D_skeletons()
 	}
 }
 
-bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_col, int i_row, int i_col )
+bool Skeletonization3D::get_white_pixel( cv::Mat& img, int &res_row, int &res_col, int i_row, int i_col )
 {
-	for(int row = i_row; row < img->rows; row++)
+	for(int row = i_row; row < img.rows; row++)
 	{
-		for(int col = i_col; col < img->cols; col++)
+		for(int col = i_col; col < img.cols; col++)
 		{
 			//If pixel is white
-			if( (int)img->at<uchar>(row, col) == 255){
+			if( (int)img.at<uchar>(row, col) == 255){
 				res_row = row;
 				res_col = col;
 				return true;
@@ -69,22 +69,22 @@ bool Skeletonization3D::get_white_pixel( cv::Mat* img, int &res_row, int &res_co
 	return false;
 }
 
-bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row, int &res_col )
+bool Skeletonization3D::get_bottom_white_pixel( cv::Mat& img, int &res_row, int &res_col )
 {
-	return get_bottom_white_pixel(img, res_row, res_col, img->rows - 1, 0);
+	return get_bottom_white_pixel(img, res_row, res_col, img.rows - 1, 0);
 }
 
-bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row,
+bool Skeletonization3D::get_bottom_white_pixel( cv::Mat& img, int &res_row,
 		int &res_col, int i_row, int i_col )
 {
 	//Since we want the bottom-left white pixel
 	//and 0,0 is top-left in openCV
 	for(int row = i_row; row > 0; row--)
 	{
-		for(int col = i_col; col < img->cols; col++)
+		for(int col = i_col; col < img.cols; col++)
 		{
 			//If pixel is white
-			if( (int)img->at<uchar>(row, col) == 255){
+			if( (int)img.at<uchar>(row, col) == 255){
 				res_row = row;
 				res_col = col;
 				return true;
@@ -236,24 +236,24 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	osg::ref_ptr<osg::Vec3Array> result;
 
 	//merge_treshold = 0.2;
-	//result = simple_2D_merge(&projection3d_array);
+	//result = simple_2D_merge(projection3d_array);
 
 	merge_treshold = 0.1;
-	result = follow_path_2D_merge(&visited_pixels, &projection3d_array);
+	result = follow_path_2D_merge(visited_pixels, projection3d_array);
 
 	return result.get();
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
-		std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array)
+		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array)
 {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
 
 	//For each projection
 	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
-	projection3d = projection3d_array->begin();
-	for( ;projection3d != projection3d_array->end(); ++projection3d ){
+	projection3d = projection3d_array.begin();
+	for( ;projection3d != projection3d_array.end(); ++projection3d ){
 		//For each point
 		std::map<osg::Vec2, osg::Vec3>::iterator point;
 		for(point = projection3d->begin(); point != projection3d->end(); ++point){
@@ -269,7 +269,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 			//For each other projection
 			std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator other_projection3d;
 			other_projection3d = projection3d + 1;
-			for( ;other_projection3d != projection3d_array->end(); ++other_projection3d ){
+			for( ;other_projection3d != projection3d_array.end(); ++other_projection3d ){
 
 				bool pixel_found = false;
 
@@ -309,8 +309,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
-		std::vector < cv::Mat >* visited_pixels,
-		std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array)
+		std::vector < cv::Mat >& visited_pixels,
+		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array)
 {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
@@ -334,15 +334,15 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 		int pixel_row = 0, pixel_col = 0;
 		osg::Vec3 merged_pixel, aux_pixel;
 		int n_pixel_merge;
-		bool continue_merge = get_bottom_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col);
+		bool continue_merge = get_bottom_white_pixel(visited_pixels[i], pixel_row, pixel_col);
 
 		while( continue_merge ){
 			//Mark found pixel as visited
-			(*visited_pixels)[i].at<uchar>(pixel_row, pixel_col) = 0;
+			visited_pixels[i].at<uchar>(pixel_row, pixel_col) = 0;
 
 			n_pixel_merge = 1;
 
-			merged_pixel = (*projection3d_array)[i][osg::Vec2(pixel_row, pixel_col)];
+			merged_pixel = projection3d_array[i][osg::Vec2(pixel_row, pixel_col)];
 
 			p0.x = merged_pixel.x();
 			p0.y = merged_pixel.y();
@@ -352,9 +352,9 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 			//For each other projection
 			std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator other_projection3d;
-			other_projection3d = projection3d_array->begin() + i + 1;
+			other_projection3d = projection3d_array.begin() + i + 1;
 			int j = 0;
-			for( ;other_projection3d != projection3d_array->end(); ++other_projection3d ){
+			for( ;other_projection3d != projection3d_array.end(); ++other_projection3d ){
 
 				bool pixel_found = false;
 
@@ -382,7 +382,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 					n_total_merge++;
 					merged_pixel = merged_pixel + to_merge_point->second;
 					//Set visited as 0, since it was used
-					(*visited_pixels)[j].at<uchar>(to_merge_point->first.x(),
+					visited_pixels[j].at<uchar>(to_merge_point->first.x(),
 							to_merge_point->first.y()) = 0;
 					//Delete it from the 3D projected points container
 					other_projection3d->erase(to_merge_point);
@@ -399,7 +399,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 			//Try to follow the bone, search for next pixel in its Moore
 			//neighbourhood
-			if(get_neighbor_white_pixel((*visited_pixels)[i], pixel_row, pixel_col,
+			if(get_neighbor_white_pixel(visited_pixels[i], pixel_row, pixel_col,
 					next_row, next_col) ){
 				pixel_row = next_row;
 				pixel_col = next_col;
@@ -407,7 +407,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 			}else{
 			//If the search fails, find another pixel starting from top-left
 			//corner
-				continue_merge = get_bottom_white_pixel(&(*visited_pixels)[i],
+				continue_merge = get_bottom_white_pixel(visited_pixels[i],
 						pixel_row, pixel_col);
 			}
 		}

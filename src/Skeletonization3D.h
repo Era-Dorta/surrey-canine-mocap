@@ -38,13 +38,13 @@ class Skeletonization3D
 
 		//Auxiliary method that finds a white pixel in a given image and returns
 		//where in res_row and res_col
-		bool get_white_pixel( cv::Mat* img, int &res_row, int &res_col,
+		bool get_white_pixel( cv::Mat& img, int &res_row, int &res_col,
 				int i_row = 0, int i_col = 0 );
 
 		//Auxiliary method that finds the white pixel situated most at the
 		//bottom left of the image.
-		bool get_bottom_white_pixel( cv::Mat* img, int &res_row, int &res_col );
-		bool get_bottom_white_pixel( cv::Mat* img, int &res_row,
+		bool get_bottom_white_pixel( cv::Mat& img, int &res_row, int &res_col );
+		bool get_bottom_white_pixel( cv::Mat& img, int &res_row,
 				int &res_col, int i_row, int i_col );
 
 		//Translate a set of given points, away from a camera a distance.
@@ -67,15 +67,15 @@ class Skeletonization3D
 		//closest one from each camera as long as the distance is smaller than
 		//merge_treshold and does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> simple_2D_merge(
-				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array);
+				std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array);
 
 		//This merge method finds a white pixel starting from the bottom of the
 		//image, going up in rows. Then searches for a pixel on the same row
 		//in another camera, if the pixel is found and distance is smaller than
 		//merge_treshold, it does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> follow_path_2D_merge(
-				std::vector < cv::Mat >* visited_pixels,
-				std::vector<std::map<osg::Vec2, osg::Vec3> >* projection3d_array);
+				std::vector < cv::Mat >& visited_pixels,
+				std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array);
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
@@ -88,6 +88,7 @@ class Skeletonization3D
 		//There will not be many cameras, so a copy of the camera vector is not
 		//that painful to do and lest assume the cameras are not going to change
 		//in run time
+		//TODO This could be solved by using a reference instead of a whole copy
 		std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr;
 
 		int n_cameras;
