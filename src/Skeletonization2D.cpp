@@ -484,24 +484,74 @@ bool Skeletonization2D::get_neighbor_white_pixel(cv::Mat& img, int i_row, int i_
 
 void Skeletonization2D::delete_arm(cv::Mat& img_in)
 {
-	int row = 0, col = 0, next_row, next_col;
+    const int MAX_CLUSTERS = 6;
+    cv::Vec3b colorTab[] =
+    {
+		cv::Vec3b(0, 0, 255),
+		cv::Vec3b(0,255,0),
+		cv::Vec3b(255,100,100),
+		cv::Vec3b(255,0,255),
+		cv::Vec3b(0,100,255),
+		cv::Vec3b(100,255,255)
+    };
 
-	for(row = 0; row < img_in.rows; row++){
-		for(col = 0; col < img_in.cols; col++){
-			if(img_in.at<uchar>(row, col) == 255){
-				goto FoundFirstArmPixel;
+    cv::Mat labels;
+    cv::Mat centers(MAX_CLUSTERS, 1, CV_32FC2);
+
+    cv::Mat data(img_in.cols*img_in.rows, 1, CV_32FC2);
+
+    int total_points = 0;
+	for( int row = 0; row < img_in.rows; row++){
+		for( int col = 0; col < img_in.cols; col++){
+			if( img_in.at<uchar>(row, col) == 255 ){
+				cv::Point ipt(row,col);
+				data.at<cv::Point2f>(total_points) = ipt;
+				total_points++;
 			}
 		}
 	}
-	return;
 
-FoundFirstArmPixel:
-
-	img_in.at<uchar>(row, col) = 0;
-
-	while(get_neighbor_white_pixel(img_in, row, col, next_row, next_col)){
-		img_in.at<uchar>(next_row, next_col) = 0;
-		row = next_row;
-		col = next_col;
+	cv::Mat data2(total_points, 1, CV_32FC2);
+	for( int i = 0; i < total_points; i++){
+		data2.at<cv::Point2f>(i) = data.at<cv::Point2f>(i);
 	}
+
+	cv::kmeans(data2, MAX_CLUSTERS, labels,
+			cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0),
+		   3, cv::KMEANS_PP_CENTERS, centers);
+
+	cv::Mat img_clusters(img_in.rows, img_in.cols, CV_8UC3);
+	img_clusters = cv::Scalar::all(0);
+
+	for(int i = 0; i < labels.rows; i++){
+		int row = data2.at<cv::Point2f>(i).x;
+		int col = data2.at<cv::Point2f>(i).y;
+		img_clusters.at<cv::Vec3b>(row, col) = colorTab[labels.at<int>(i)];
+	}
+
+	//Find the closer to top cluster
+	int manh_distance_top = img_in.rows, arm_cluster = 0;
+
+	for(int i = 0; i < centers.rows; i++){
+		if(centers.at<cv::Point2f>(i).x < manh_distance_top){
+			manh_distance_top = centers.at<cv::Point2f>(i).x;
+			arm_cluster = i;
+		}
+	}
+
+	//Delete all the pixels that belong to that cluster
+	cv::Mat img_out = img_in.clone();
+
+	for(int i = 0; i < labels.rows; i++){
+		if(labels.at<int>(i) == arm_cluster){
+			int row = data2.at<cv::Point2f>(i).x;
+			int col = data2.at<cv::Point2f>(i).y;
+			img_in.at<uchar>(row, col) = 0;
+		}
+	}
+
+	//cv::imshow("original", img_in);
+	//cv::imshow("arm deleted", img_out);
+	//cv::imshow("clusters", img_clusters);
+	//cv::waitKey(0);
 }
