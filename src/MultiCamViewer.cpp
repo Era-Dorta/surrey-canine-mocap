@@ -166,7 +166,6 @@ void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer, std::string win
 
 bool MultiCamViewer::handle( const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa )
 {
-	//TODO ADD OPTION TO ENABLE/DISABLE DOG BUT NOT DISABLE SKELETON
 	//Show the visualizations from the last rendered frame:
 	//display_raw_image_overlay();//TEMP - disable the overlay display for speed
 

@@ -94,59 +94,6 @@ bool Skeletonization3D::get_bottom_white_pixel( cv::Mat* img, int &res_row,
 	return false;
 }
 
-bool Skeletonization3D::get_neighbor_white_pixel(cv::Mat* img, int i_row, int i_col,
-		int &res_row, int &res_col){
-	bool go_top, go_bot, go_left, go_right;
-	//TODO Maybe it would be better to calculate this as they are needed
-	//and not all together in the beggining
-	go_top = i_row > 0;
-	go_bot = i_col < img->rows - 1;
-	go_left = i_col > 0;
-	go_right = i_col < img->cols - 1;
-
-	//Search order is
-	// 1 0 2
-	// 3 x 4
- 	// 6 5 7
-	//This is done since bone merging starts from the bottom, so we want to give
-	//priority to follow the path of the bone upwards. Left over right is an
-	//arbitrary decision
-	if( go_top && (int)img->at<uchar>(i_row - 1, i_col) == 255 ){
-		res_row = i_row - 1;
-		res_col = i_col;
-		return true;
-	}else if(go_top && go_left && (int)img->at<uchar>(i_row - 1, i_col - 1) == 255){
-		res_row = i_row - 1;
-		res_col = i_col - 1;
-		return true;
-	}else if(go_top && go_right && (int)img->at<uchar>(i_row - 1, i_col + 1) == 255){
-		res_row = i_row - 1;
-		res_col = i_col + 1;
-		return true;
-	}else if(go_left && (int)img->at<uchar>(i_row, i_col - 1) == 255){
-		res_row = i_row;
-		res_col = i_col - 1;
-		return true;
-	}else if(go_right && (int)img->at<uchar>(i_row, i_col + 1) == 255){
-		res_row = i_row;
-		res_col = i_col + 1;
-		return true;
-	}else if(go_bot && (int)img->at<uchar>(i_row + 1, i_col) == 255){
-		res_row = i_row + 1;
-		res_col = i_col;
-		return true;
-	}else if(go_bot && go_left && (int)img->at<uchar>(i_row + 1, i_col - 1) == 255){
-		res_row = i_row + 1;
-		res_col = i_col - 1;
-		return true;
-	}else if(go_bot && go_right && (int)img->at<uchar>(i_row + 1, i_col + 1) == 255){
-		res_row = i_row + 1;
-		res_col = i_col + 1;
-		return true;
-	}
-	return false;
-}
-
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection( int cam_num, int frame_num ) const
 {
 	//Return vector
@@ -452,7 +399,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 			//Try to follow the bone, search for next pixel in its Moore
 			//neighbourhood
-			if(get_neighbor_white_pixel(&(*visited_pixels)[i], pixel_row, pixel_col,
+			if(get_neighbor_white_pixel((*visited_pixels)[i], pixel_row, pixel_col,
 					next_row, next_col) ){
 				pixel_row = next_row;
 				pixel_col = next_col;
