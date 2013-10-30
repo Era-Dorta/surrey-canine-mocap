@@ -3,9 +3,11 @@
 using std::cout;
 using std::endl;
 
-Skeletonization2D::Skeletonization2D(const boost::shared_ptr<RGBD_Camera> camera_)
+Skeletonization2D::Skeletonization2D(const boost::shared_ptr<RGBD_Camera> camera_,
+		int max_clusters_):
+				camera(camera_),
+				max_clusters(max_clusters_)
 {
-	camera = camera_;
 	generate_skeletonization();
 }
 
@@ -484,20 +486,8 @@ bool Skeletonization2D::get_neighbor_white_pixel(cv::Mat& img, int i_row, int i_
 
 void Skeletonization2D::delete_arm(cv::Mat& img_in)
 {
-    const int MAX_CLUSTERS = 6;
-    cv::Vec3b colorTab[] =
-    {
-		cv::Vec3b(0, 0, 255),
-		cv::Vec3b(0,255,0),
-		cv::Vec3b(255,100,100),
-		cv::Vec3b(255,0,255),
-		cv::Vec3b(0,100,255),
-		cv::Vec3b(100,255,255)
-    };
-
     cv::Mat labels;
-    cv::Mat centers(MAX_CLUSTERS, 1, CV_32FC2);
-
+    cv::Mat centers(max_clusters, 1, CV_32FC2);
     cv::Mat data(img_in.cols*img_in.rows, 1, CV_32FC2);
 
     int total_points = 0;
@@ -516,18 +506,21 @@ void Skeletonization2D::delete_arm(cv::Mat& img_in)
 		data2.at<cv::Point2f>(i) = data.at<cv::Point2f>(i);
 	}
 
-	cv::kmeans(data2, MAX_CLUSTERS, labels,
+	//Kmeans wants:
+	// - data -> a vector of points
+	// - K -> a number of clusters
+	// - bestLabels -> it will return in labels an array that indicates with
+	// an integer to which cluster goes each point in data
+	// - criteria -> a termination criteria, in this case we indicate an epsilon
+	// 1.0 ( how good the solution is) and a number of maximum iterations 10
+	// - attempts -> how many times the algorithm is executed using different
+	// initial labellings
+	// - flags -> how the centers are selected on first iteration
+	// - centers -> output array with the center point of each cluster
+	// for more info -> http://docs.opencv.org/modules/core/doc/clustering.html?highlight=kmeans
+	cv::kmeans(data2, max_clusters, labels,
 			cv::TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10, 1.0),
 		   3, cv::KMEANS_PP_CENTERS, centers);
-
-	cv::Mat img_clusters(img_in.rows, img_in.cols, CV_8UC3);
-	img_clusters = cv::Scalar::all(0);
-
-	for(int i = 0; i < labels.rows; i++){
-		int row = data2.at<cv::Point2f>(i).x;
-		int col = data2.at<cv::Point2f>(i).y;
-		img_clusters.at<cv::Vec3b>(row, col) = colorTab[labels.at<int>(i)];
-	}
 
 	//Find the closer to top cluster
 	int distance = img_in.rows, arm_cluster = 0;
@@ -542,7 +535,7 @@ void Skeletonization2D::delete_arm(cv::Mat& img_in)
 	//Delete all the pixels that belong to that cluster
 	cv::Mat img_out = img_in.clone();
 	distance = 0;
-	int lowest_index;
+	int lowest_index = 0;
 
 	for(int i = 0; i < labels.rows; i++){
 		if(labels.at<int>(i) == arm_cluster){
@@ -567,9 +560,4 @@ void Skeletonization2D::delete_arm(cv::Mat& img_in)
 		row = next_row;
 		col = next_col;
 	}
-
-	//cv::imshow("original", img_out);
-	//cv::imshow("arm deleted", img_in);
-	//cv::imshow("clusters", img_clusters);
-	//cv::waitKey(0);
 }
