@@ -123,6 +123,7 @@ void MultiCamViewer::setup_scene(void) {
 	//Switch for each view of the skeleton
 
 	scene_root->addChild(skel_vis_switch.get());
+	scene_root->addChild(skel_fitting.getOrCreateSelectionBox());
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer,

@@ -9,6 +9,11 @@
 #define SKELETONFITTING_H_
 
 #include <osgGA/GUIEventHandler>
+#include <osgUtil/LineSegmentIntersector>
+#include <osgViewer/Viewer>
+#include <osg/MatrixTransform>
+#include <osg/ShapeDrawable>
+#include <osg/PolygonMode>
 
 #include <iostream>
 using std::cout;
@@ -20,8 +25,12 @@ class SkeletonFitting : public osgGA::GUIEventHandler {
 		virtual ~SkeletonFitting();
 		virtual bool handle(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
+
+		osg::Node* getOrCreateSelectionBox();
 	private:
 		void set_skeleton_point();
+
+		osg::ref_ptr<osg::MatrixTransform> _selectionBox;
 };
 
 #endif /* SKELETONFITTING_H_ */
