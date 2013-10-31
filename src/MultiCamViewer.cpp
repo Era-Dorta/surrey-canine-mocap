@@ -88,6 +88,7 @@ int MultiCamViewer::run_viewer(void) {
 	//osg::ref_ptr<EventHandlingClass> ctrler =
 	//		new EventHandlingClass(&path, &file_names, root, &frame_geom);
 	//viewer.addEventHandler(ctrler.get());
+	viewer.addEventHandler(&skel_fitting);
 
 	return viewer.run();
 }

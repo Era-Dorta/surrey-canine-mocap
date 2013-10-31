@@ -65,7 +65,7 @@ void RenderSkeletonization::set_data(
 void RenderSkeletonization::update_dynamics(int disp_frame_no) {
 	clean_scene();
 
-	display_2d_skeletons(disp_frame_no);
+	//display_2d_skeletons(disp_frame_no);
 
 	display_3d_skeleon_cloud(disp_frame_no);
 
