@@ -37,7 +37,8 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 			viewer->getCamera()->accept(iv);
 
 			if (intersector->containsIntersections()) {
-				std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result = intersector->getIntersections().begin();
+				std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
+				result = intersector->getIntersections().begin();
 
 				osg::BoundingBox bb = result->drawable->getBound();
 				osg::Vec3 worldCenter = bb.center()
@@ -45,7 +46,8 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 
 				_selectionBox->setMatrix(
 						osg::Matrix::scale(bb.xMax() + 0.01 - bb.xMin(),
-								bb.yMax()+ 0.01 - bb.yMin(), bb.zMax()+ 0.01 - bb.zMin())
+								bb.yMax() + 0.01 - bb.yMin(),
+								bb.zMax() + 0.01 - bb.zMin())
 								* osg::Matrix::translate(worldCenter));
 			}
 		}
@@ -56,7 +58,7 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 osg::Node* SkeletonFitting::getOrCreateSelectionBox() {
 
 	if (!_selectionBox) {
-		osg::ref_ptr < osg::Geode > geode = new osg::Geode;
+		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		geode->addDrawable(
 				new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f)));
 		_selectionBox = new osg::MatrixTransform;
