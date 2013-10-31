@@ -7,8 +7,9 @@
 
 #include "SkeletonFitting.h"
 
-SkeletonFitting::SkeletonFitting() {
-	// TODO Auto-generated constructor stub
+SkeletonFitting::SkeletonFitting() :
+			state(ADD_POINTS),
+			points_added(0) {
 
 }
 
@@ -18,7 +19,7 @@ SkeletonFitting::~SkeletonFitting() {
 
 void SkeletonFitting::set_data(osg::ref_ptr<osg::Switch> root_node) {
 	skel_fitting_switch = root_node;
-	skel_fitting_switch->addChild(getOrCreateSelectionBox(), false);
+	//skel_fitting_switch->addChild(getOrCreateSelectionBox(), false);
 }
 
 bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
@@ -43,38 +44,68 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 
 			if (intersector->containsIntersections()) {
 				std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
-				result = intersector->getIntersections().begin();
+				switch(state)
+				{
+				case ADD_POINTS:{
 
-				osg::BoundingBox bb = result->drawable->getBound();
-				osg::Vec3 worldCenter = bb.center()
-						* osg::computeLocalToWorld(result->nodePath);
+					result = intersector->getIntersections().begin();
 
-				_selectionBox->setMatrix(
-						osg::Matrix::scale(bb.xMax() + 0.01 - bb.xMin(),
-								bb.yMax() + 0.01 - bb.yMin(),
-								bb.zMax() + 0.01 - bb.zMin())
-								* osg::Matrix::translate(worldCenter));
-				//If an object is selected then show the box
-				skel_fitting_switch->setValue(0, true);
-			} else {
-				//If no object is selected hide the box
-				skel_fitting_switch->setValue(0, false);
+					osg::BoundingBox bb = result->drawable->getBound();
+					osg::Vec3 worldCenter = bb.center()
+							* osg::computeLocalToWorld(result->nodePath);
+
+					osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+					selectionBox->setMatrix(
+							osg::Matrix::scale(bb.xMax() + 0.01 - bb.xMin(),
+									bb.yMax() + 0.01 - bb.yMin(),
+									bb.zMax() + 0.01 - bb.zMin())
+									* osg::Matrix::translate(worldCenter));
+
+					skel_fitting_switch->addChild(selectionBox.get(), true);
+					points_added++;
+					if(points_added > 1){
+						state = MOVE_POINTS;
+					}
+					break;
+				}
+				case MOVE_POINTS:{
+					result = intersector->getIntersections().begin();
+					osg::MatrixTransform* selected_obj = dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(0)->getParent(0));
+					if(selected_obj){
+						for(unsigned int i = 0; i < skel_fitting_switch->getNumChildren(); i++ ){
+							if(selected_obj == skel_fitting_switch->getChild(i)){
+								skel_fitting_switch->setValue(i, !skel_fitting_switch->getValue(i));
+							}
+						}
+					}
+					break;
+				}
+				case EMPTY:
+				case POINTS_SET:
+					break;
+				}
 			}
 		}
 	}
 	return false;
 }
 
-osg::Node* SkeletonFitting::getOrCreateSelectionBox() {
+osg::ref_ptr<osg::MatrixTransform> SkeletonFitting::createSelectionBox() {
 
-	if (!_selectionBox) {
 		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		geode->addDrawable(
 				new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f)));
-		_selectionBox = new osg::MatrixTransform;
+		osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
 
-		_selectionBox->addChild(geode.get());
-	}
-	return _selectionBox.get();
+		selectionBox->addChild(geode.get());
+
+	return selectionBox;
 }
 
+Fitting_State SkeletonFitting::getState() const {
+	return state;
+}
+
+void SkeletonFitting::setState(Fitting_State state) {
+	this->state = state;
+}
