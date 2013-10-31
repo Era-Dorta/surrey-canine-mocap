@@ -7,18 +7,15 @@
 
 #include "PointFusion.h"
 
-PointFusion::PointFusion()
-{
+PointFusion::PointFusion() {
 	// TODO Auto-generated constructor stub
 
 }
 
-PointFusion::~PointFusion()
-{
+PointFusion::~PointFusion() {
 	// TODO Auto-generated destructor stub
 }
 
-void PointFusion::render_model_pov(void)
-{
+void PointFusion::render_model_pov(void) {
 
 }

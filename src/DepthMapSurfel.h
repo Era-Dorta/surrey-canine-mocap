@@ -30,38 +30,33 @@
 
 #include "MiscUtils.h"
 
-class DepthMapSurfel
-{
-public:
-	DepthMapSurfel();
-	void init(int _width, int _height, osg::Vec3 _vis_colour);
-	virtual ~DepthMapSurfel();
-	void surfelise_depth_map(
-			const cv::Mat* depth_map,
-			const cv::Mat* rgb_image,
-			const float3x3 K,
-			const float3x3 inv_K,
-			osg::Vec3 vis_colour,
-			bool with_colour,
-			float alpha);
-	//Geode:
-	osg::ref_ptr<osg::Geode> depth_surfel_geode;
+class DepthMapSurfel {
+	public:
+		DepthMapSurfel();
+		void init(int _width, int _height, osg::Vec3 _vis_colour);
+		virtual ~DepthMapSurfel();
+		void surfelise_depth_map(const cv::Mat* depth_map,
+				const cv::Mat* rgb_image, const float3x3 K,
+				const float3x3 inv_K, osg::Vec3 vis_colour, bool with_colour,
+				float alpha);
+		//Geode:
+		osg::ref_ptr<osg::Geode> depth_surfel_geode;
 
-private:
-	osg::Geode* create_depth_map_surfel_geode(void);
+	private:
+		osg::Geode* create_depth_map_surfel_geode(void);
 
-	int rows;
-	int cols;
+		int rows;
+		int cols;
 
-	osg::Vec4 vis_colour;
+		osg::Vec4 vis_colour;
 
-	osg::ref_ptr<osg::Geometry> dm_geometry;
-	osg::ref_ptr<osg::Vec3Array> dm_vertices;
-	osg::ref_ptr<osg::Vec3Array> dm_normals;
-	osg::ref_ptr<osg::Vec4Array> dm_colours;
-	osg::ref_ptr<osg::Vec3Array> dm_attributes;
+		osg::ref_ptr<osg::Geometry> dm_geometry;
+		osg::ref_ptr<osg::Vec3Array> dm_vertices;
+		osg::ref_ptr<osg::Vec3Array> dm_normals;
+		osg::ref_ptr<osg::Vec4Array> dm_colours;
+		osg::ref_ptr<osg::Vec3Array> dm_attributes;
 
-	const static double inv_sq_2;
+		const static double inv_sq_2;
 
 };
 

@@ -37,32 +37,33 @@
 
 #include "MiscUtils.h"
 
-class SurfelModel
-{
-public:
-	SurfelModel();
-	virtual ~SurfelModel();
+class SurfelModel {
+	public:
+		SurfelModel();
+		virtual ~SurfelModel();
 
-	//TODO copy constructor, assignment etc
+		//TODO copy constructor, assignment etc
 
-	void pushback_surfel(osg::Vec3 vertex, osg::Vec3 normal, osg::Vec4 colour, float radius, int time_stamp, int label);
-	void set_surfel(int index, osg::Vec3 vertex, osg::Vec3 normal, osg::Vec4 colour, float radius, int time_stamp, int label);
-	void refresh_primative_set(void);
-	void remove_invalid_surfels(void);
-	void copy_surfel(int src_idx, int dst_idx);
+		void pushback_surfel(osg::Vec3 vertex, osg::Vec3 normal,
+				osg::Vec4 colour, float radius, int time_stamp, int label);
+		void set_surfel(int index, osg::Vec3 vertex, osg::Vec3 normal,
+				osg::Vec4 colour, float radius, int time_stamp, int label);
+		void refresh_primative_set(void);
+		void remove_invalid_surfels(void);
+		void copy_surfel(int src_idx, int dst_idx);
 
-	//Geode:
-	osg::ref_ptr<osg::Geode> surfel_geode;
+		//Geode:
+		osg::ref_ptr<osg::Geode> surfel_geode;
 
-private:
+	private:
 
-	osg::Vec4 vis_colour;
+		osg::Vec4 vis_colour;
 
-	osg::ref_ptr<osg::Geometry> surfel_geometry;
-	osg::ref_ptr<osg::Vec3Array> surfel_vertices;
-	osg::ref_ptr<osg::Vec3Array> surfel_normals;
-	osg::ref_ptr<osg::Vec4Array> surfel_colours;
-	osg::ref_ptr<osg::Vec3Array> surfel_attributes;
+		osg::ref_ptr<osg::Geometry> surfel_geometry;
+		osg::ref_ptr<osg::Vec3Array> surfel_vertices;
+		osg::ref_ptr<osg::Vec3Array> surfel_normals;
+		osg::ref_ptr<osg::Vec4Array> surfel_colours;
+		osg::ref_ptr<osg::Vec3Array> surfel_attributes;
 
 };
 

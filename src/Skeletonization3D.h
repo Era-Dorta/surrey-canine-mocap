@@ -8,25 +8,28 @@
 
 #include "boost/shared_ptr.hpp"
 
-class Skeletonization3D
-{
+class Skeletonization3D {
 	public:
-		Skeletonization3D( float merge_treshold_ = 0.2, float move_distance_ = 0.01 );
+		Skeletonization3D(float merge_treshold_ = 0.2, float move_distance_ =
+				0.01);
 
 		virtual ~Skeletonization3D();
 
-		void set_cameras(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_);
+		void set_cameras(
+				std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
 		//Important: This coordinates are relative to the camera
-		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection( int cam_num, int frame_num) const;
+		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection(int cam_num,
+				int frame_num) const;
 
 		//Return an array of points, after merging all the camera views
 		//Important: This coordinates are global
-		osg::ref_ptr<osg::Vec3Array> get_merged_3d_projection( int frame_num) const;
+		osg::ref_ptr<osg::Vec3Array> get_merged_3d_projection(
+				int frame_num) const;
 
 		//Get a 2D skeleton frame
-		const cv::Mat* const get_2D_frame(int cam_num, int frame_num ) const;
+		const cv::Mat* const get_2D_frame(int cam_num, int frame_num) const;
 	protected:
 	private:
 		//Merges several 2D images to a 3D complete image of a skeleton
@@ -34,30 +37,34 @@ class Skeletonization3D
 
 		//Internal method that does the hard work
 		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(
-				std::vector<const cv::Mat* >& skeletonized_frames, int frame_num);
+				std::vector<const cv::Mat*>& skeletonized_frames,
+				int frame_num);
 
 		//Auxiliary method that finds a white pixel in a given image and returns
 		//where in res_row and res_col
-		bool get_white_pixel( cv::Mat& img, int &res_row, int &res_col,
-				int i_row = 0, int i_col = 0 );
+		bool get_white_pixel(cv::Mat& img, int &res_row, int &res_col,
+				int i_row = 0, int i_col = 0);
 
 		//Auxiliary method that finds the white pixel situated most at the
 		//bottom left of the image.
-		bool get_bottom_white_pixel( cv::Mat& img, int &res_row, int &res_col );
-		bool get_bottom_white_pixel( cv::Mat& img, int &res_row,
-				int &res_col, int i_row, int i_col );
+		bool get_bottom_white_pixel(cv::Mat& img, int &res_row, int &res_col);
+		bool get_bottom_white_pixel(cv::Mat& img, int &res_row, int &res_col,
+				int i_row, int i_col);
 
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in GLOBAL coordinates
-		void translate_points_to_inside(std::map<osg::Vec2, osg::Vec3>& projection3d,
-				int cam_num, float distance) const;
+		void translate_points_to_inside(
+				std::map<osg::Vec2, osg::Vec3>& projection3d, int cam_num,
+				float distance) const;
 
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in CAMERA coordinates
-		void translate_points_to_inside(osg::ref_ptr<osg::Vec3Array> projection3d,
-				int cam_num, float distance) const;
+		void translate_points_to_inside(
+				osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num,
+				float distance) const;
 
-		void get_global_coord_3d_projection(int cam_num, int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const;
+		void get_global_coord_3d_projection(int cam_num, int frame_num,
+				std::map<osg::Vec2, osg::Vec3>& projection3d) const;
 
 		//merge_2D_skeletons_impl can call this two methods to actually do the
 		//merging.
@@ -74,22 +81,22 @@ class Skeletonization3D
 		//in another camera, if the pixel is found and distance is smaller than
 		//merge_treshold, it does a mean of the points.
 		osg::ref_ptr<osg::Vec3Array> follow_path_2D_merge(
-				std::vector < cv::Mat >& visited_pixels,
+				std::vector<cv::Mat>& visited_pixels,
 				std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array);
 
 		//Vector of Skeletonization class, there is one instance
 		//for each camera
-		std::vector < boost::shared_ptr<Skeletonization2D> > skel_arr;
+		std::vector<boost::shared_ptr<Skeletonization2D> > skel_arr;
 
 		//Each Vec3Array is a cloud of points that represent a skeleton
 		//in a given frame
-		std::vector < osg::ref_ptr<osg::Vec3Array> > skeleton_frames;
+		std::vector<osg::ref_ptr<osg::Vec3Array> > skeleton_frames;
 
 		//There will not be many cameras, so a copy of the camera vector is not
 		//that painful to do and lest assume the cameras are not going to change
 		//in run time
 		//TODO This could be solved by using a reference instead of a whole copy
-		std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr;
+		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
 
 		int n_cameras;
 		int n_frames;

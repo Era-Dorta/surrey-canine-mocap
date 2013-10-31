@@ -10,17 +10,16 @@
 using std::cout;
 using std::endl;
 
-SurfelModel::SurfelModel()
-{
+SurfelModel::SurfelModel() {
 
 	surfel_geode = new osg::Geode;
 
 	//Allocate arrays:
 	//------------------------
-	surfel_vertices = new osg::Vec3Array;//(5);
-	surfel_normals = new osg::Vec3Array;//(5);
-	surfel_colours = new osg::Vec4Array;//(5);
-	surfel_attributes = new osg::Vec3Array;//(5);
+	surfel_vertices = new osg::Vec3Array;	//(5);
+	surfel_normals = new osg::Vec3Array;	//(5);
+	surfel_colours = new osg::Vec4Array;	//(5);
+	surfel_attributes = new osg::Vec3Array;	//(5);
 	//------------------------
 
 	//Setup geometry node:
@@ -39,7 +38,7 @@ SurfelModel::SurfelModel()
 	surfel_geometry->setVertexAttribArray(6, surfel_attributes.get());
 	surfel_geometry->setVertexAttribBinding(6, osg::Geometry::BIND_PER_VERTEX);
 	surfel_geometry->addPrimitiveSet(
-			new osg::DrawArrays(GL_POINTS, 0, surfel_vertices->size()) );
+			new osg::DrawArrays(GL_POINTS, 0, surfel_vertices->size()));
 	//Use VBO to improve performance:
 	surfel_geometry->setUseVertexBufferObjects(true);
 	surfel_geometry->setUseDisplayList(false);
@@ -73,49 +72,44 @@ SurfelModel::SurfelModel()
 
 }
 
-SurfelModel::~SurfelModel()
-{
+SurfelModel::~SurfelModel() {
 }
 
-void SurfelModel::pushback_surfel(osg::Vec3 vertex, osg::Vec3 normal, osg::Vec4 colour, float radius, int time_stamp, int label)
-{
+void SurfelModel::pushback_surfel(osg::Vec3 vertex, osg::Vec3 normal,
+		osg::Vec4 colour, float radius, int time_stamp, int label) {
 	surfel_vertices->push_back(vertex);
 	surfel_normals->push_back(normal);
 	surfel_colours->push_back(colour);
 	surfel_attributes->push_back(osg::Vec3(radius, time_stamp, label));
 }
 
-void SurfelModel::set_surfel(int index, osg::Vec3 vertex, osg::Vec3 normal, osg::Vec4 colour, float radius, int time_stamp, int label)
-{
+void SurfelModel::set_surfel(int index, osg::Vec3 vertex, osg::Vec3 normal,
+		osg::Vec4 colour, float radius, int time_stamp, int label) {
 	(*surfel_vertices)[index] = vertex;
 	(*surfel_normals)[index] = normal;
 	(*surfel_colours)[index] = colour;
 	(*surfel_attributes)[index] = osg::Vec3(radius, time_stamp, label);
 }
 
-void SurfelModel::copy_surfel(int src_idx, int dst_idx)
-{
+void SurfelModel::copy_surfel(int src_idx, int dst_idx) {
 	(*surfel_vertices)[dst_idx] = (*surfel_vertices)[src_idx];
 	(*surfel_normals)[dst_idx] = (*surfel_normals)[src_idx];
 	(*surfel_colours)[dst_idx] = (*surfel_colours)[src_idx];
 	(*surfel_attributes)[dst_idx] = (*surfel_attributes)[src_idx];
 }
 
-void SurfelModel::refresh_primative_set(void)
-{
-	surfel_geometry->removePrimitiveSet(0,1);
+void SurfelModel::refresh_primative_set(void) {
+	surfel_geometry->removePrimitiveSet(0, 1);
 	surfel_geometry->addPrimitiveSet(
-			new osg::DrawArrays(GL_POINTS, 0, surfel_vertices->size()) );
+			new osg::DrawArrays(GL_POINTS, 0, surfel_vertices->size()));
 }
 
-void SurfelModel::remove_invalid_surfels(void)
-{
+void SurfelModel::remove_invalid_surfels(void) {
 
 	//cout << "Removing invalid surfels" << endl;
 
 	//If no points, just return:
-	if(surfel_vertices->size() == 0)
-	{
+	if (surfel_vertices->size() == 0) {
 		return;
 	}
 
@@ -123,33 +117,27 @@ void SurfelModel::remove_invalid_surfels(void)
 	//-------------------
 
 	unsigned int forward_pos = 0;
-	int backward_pos = surfel_vertices->size()-1;
-	while(forward_pos < surfel_vertices->size())
-	{
+	unsigned int backward_pos = surfel_vertices->size() - 1;
+	while (forward_pos < surfel_vertices->size()) {
 		//DEBUG:
 		//cout << "forward pos: " << forward_pos << ", backward pos: " << backward_pos << endl;
 
 		//If point is invalid
-		if((*surfel_vertices)[forward_pos].z() == 0)//<--NB set the condition here
-		{
-			while((*surfel_vertices)[backward_pos].z() == 0)//<-- and here
+		if ((*surfel_vertices)[forward_pos].z() == 0)//<--NB set the condition here
+				{
+			while ((*surfel_vertices)[backward_pos].z() == 0)	//<-- and here
 			{
 				backward_pos--;
 			}
-			if(backward_pos <= forward_pos)
-			{
+			if (backward_pos <= forward_pos) {
 				break;
-			}
-			else
-			{
+			} else {
 				copy_surfel(backward_pos, forward_pos);
 				forward_pos++;
 				backward_pos--;
 			}
 
-		}
-		else
-		{
+		} else {
 			forward_pos++;
 		}
 	}
@@ -158,10 +146,10 @@ void SurfelModel::remove_invalid_surfels(void)
 
 	//Resize array to remove the invalid points:
 	//-------------------
-	surfel_vertices->resize(forward_pos-1);
-	surfel_normals->resize(forward_pos-1);
-	surfel_colours->resize(forward_pos-1);
-	surfel_attributes->resize(forward_pos-1);
+	surfel_vertices->resize(forward_pos - 1);
+	surfel_normals->resize(forward_pos - 1);
+	surfel_colours->resize(forward_pos - 1);
+	surfel_attributes->resize(forward_pos - 1);
 	refresh_primative_set();
 	//-------------------
 

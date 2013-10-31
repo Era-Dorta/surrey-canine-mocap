@@ -19,16 +19,16 @@
 using std::cout;
 using std::endl;
 
-class RenderSkeletonization
-{
+class RenderSkeletonization {
 	public:
 		RenderSkeletonization();
-		RenderSkeletonization( std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
+		RenderSkeletonization(
+				std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 		virtual ~RenderSkeletonization();
 		//Update/Draw the skeleton display every frame
 		void update_dynamics(int disp_frame_no);
-		void set_data(std::vector < boost::shared_ptr<RGBD_Camera> > camera_arr_,
+		void set_data(std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 	protected:
 	private:
