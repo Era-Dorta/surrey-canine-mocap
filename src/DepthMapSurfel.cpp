@@ -6,7 +6,7 @@ using std::endl;
 const double DepthMapSurfel::inv_sq_2 = 1.0 / sqrt(2.0);
 
 DepthMapSurfel::DepthMapSurfel() :
-		depth_surfel_geode(new osg::Geode) {
+			depth_surfel_geode(new osg::Geode) {
 	rows = 0;
 	cols = 0;
 }

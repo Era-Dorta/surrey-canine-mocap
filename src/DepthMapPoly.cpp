@@ -11,7 +11,7 @@ using std::cout;
 using std::endl;
 
 DepthMapPoly::DepthMapPoly() :
-		depth_poly_geode(new osg::Geode) {
+			depth_poly_geode(new osg::Geode) {
 
 }
 

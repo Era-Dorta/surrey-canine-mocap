@@ -1,14 +1,14 @@
 #include "RenderSkeletonization.h"
 
 RenderSkeletonization::RenderSkeletonization() :
-		display_merged(true) {
+			display_merged(true) {
 
 }
 
 RenderSkeletonization::RenderSkeletonization(
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
 		osg::ref_ptr<osg::Switch> skel_vis_switch_) :
-		display_merged(true) {
+			display_merged(true) {
 	set_data(camera_arr_, skel_vis_switch_);
 }
 

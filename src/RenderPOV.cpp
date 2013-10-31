@@ -40,7 +40,7 @@ RenderPOV::RenderPOV(int tgt_width, int tgt_height) {
 	//----------
 	depth_buffer_tgt_cam_pov = new osg::Image;
 	depth_buffer_tgt_cam_pov->allocateImage(tgt_width, tgt_height, 1,
-			GL_DEPTH_COMPONENT, GL_FLOAT);
+	GL_DEPTH_COMPONENT, GL_FLOAT);
 	tgt_cam->attach(osg::Camera::DEPTH_BUFFER, depth_buffer_tgt_cam_pov.get());
 
 	//colour_buffer_tgt_cam_pov = new osg::Image;

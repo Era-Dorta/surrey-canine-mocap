@@ -2,8 +2,8 @@
 
 Skeletonization3D::Skeletonization3D(float merge_treshold_,
 		float move_distance_) :
-		n_cameras(0), n_frames(0), merge_treshold(merge_treshold_), move_distance(
-				move_distance_) {
+			n_cameras(0), n_frames(0), merge_treshold(merge_treshold_),
+			move_distance(move_distance_) {
 
 }
 

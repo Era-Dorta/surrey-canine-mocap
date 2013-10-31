@@ -19,7 +19,7 @@
 using std::cout;
 using std::endl;
 
-class SkeletonFitting : public osgGA::GUIEventHandler {
+class SkeletonFitting: public osgGA::GUIEventHandler {
 	public:
 		SkeletonFitting();
 		virtual ~SkeletonFitting();

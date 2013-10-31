@@ -87,6 +87,8 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		//Switch to turn skeleton on or off
 		osg::ref_ptr<osg::Switch> skel_vis_switch;
 
+		osg::ref_ptr<osg::Switch> skel_fitting_switch;
+
 		osg::ref_ptr<osgText::Text> frame_num_text;
 		float alpha;
 

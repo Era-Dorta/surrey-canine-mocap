@@ -11,9 +11,9 @@ using std::cout;
 using std::endl;
 
 RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name) :
-		_dataset_path(dataset_path), _cam_name(cam_name), cam_group(
-				new osg::Group), skel_vis_group(new osg::Group), cam_pose_xform(
-				new osg::MatrixTransform) {
+			_dataset_path(dataset_path), _cam_name(cam_name),
+			cam_group(new osg::Group), skel_vis_group(new osg::Group),
+			cam_pose_xform(new osg::MatrixTransform) {
 	cout << "Loading " << _cam_name << endl;
 
 	//Load intrinsic and extrinsic calibration:
@@ -294,7 +294,7 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour) {
 	(*vertices)[3].set(osg::Vec3(0.0561, -0.0421, 0.1));
 	(*vertices)[4].set(osg::Vec3(0.0561, 0.0421, 0.1));
 	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(
-			GL_LINES, 16);
+	GL_LINES, 16);
 	(*indices)[0] = 4;
 	(*indices)[1] = 1;
 	(*indices)[2] = 1;

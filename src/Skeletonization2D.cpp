@@ -5,7 +5,7 @@ using std::endl;
 
 Skeletonization2D::Skeletonization2D(
 		const boost::shared_ptr<RGBD_Camera> camera_, int max_clusters_) :
-		camera(camera_), max_clusters(max_clusters_) {
+			camera(camera_), max_clusters(max_clusters_) {
 	generate_skeletonization();
 }
 
@@ -211,8 +211,8 @@ cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in,
 						for (int d_col = -1; d_col <= 1; d_col++) {
 							if ((d_row == 0 && d_col == 0)
 									|| //(don't count central pixel)
-									//(path[path.size()-1].x == walk_col + d_col
-									//&& path[path.size()-1].y == walk_row + d_row) )
+										//(path[path.size()-1].x == walk_col + d_col
+										//&& path[path.size()-1].y == walk_row + d_row) )
 									path[path.size() - 1]
 											== cv::Point(walk_col + d_col,
 													walk_row + d_row)
