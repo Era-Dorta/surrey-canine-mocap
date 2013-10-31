@@ -9,7 +9,8 @@
 
 SkeletonFitting::SkeletonFitting() :
 			state(ADD_POINTS),
-			points_added(0) {
+			points_added(0),
+			point_selected(false) {
 
 }
 
@@ -43,11 +44,11 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 			viewer->getCamera()->accept(iv);
 
 			if (intersector->containsIntersections()) {
-				std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
 				switch(state)
 				{
 				case ADD_POINTS:{
 
+					std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
 					result = intersector->getIntersections().begin();
 
 					osg::BoundingBox bb = result->drawable->getBound();
@@ -69,14 +70,34 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 					break;
 				}
 				case MOVE_POINTS:{
-					result = intersector->getIntersections().begin();
-					osg::MatrixTransform* selected_obj = dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(0)->getParent(0));
-					if(selected_obj){
-						for(unsigned int i = 0; i < skel_fitting_switch->getNumChildren(); i++ ){
-							if(selected_obj == skel_fitting_switch->getChild(i)){
-								skel_fitting_switch->setValue(i, !skel_fitting_switch->getValue(i));
+					if(!point_selected){
+						std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
+						result = intersector->getIntersections().begin();
+						osg::MatrixTransform* selected_obj = dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(0)->getParent(0));
+						if(selected_obj){
+							for(unsigned int i = 0; i < skel_fitting_switch->getNumChildren(); i++ ){
+								if(selected_obj == skel_fitting_switch->getChild(i)){
+									point_selected = true;
+									selected_point = selected_obj;
+									//TODO Change colour to show that it was selected
+									//skel_fitting_switch->setValue(i, !skel_fitting_switch->getValue(i));
+								}
 							}
 						}
+					}else{
+						std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
+						result = intersector->getIntersections().begin();
+
+						osg::BoundingBox bb = result->drawable->getBound();
+						osg::Vec3 worldCenter = bb.center()
+								* osg::computeLocalToWorld(result->nodePath);
+
+						selected_point->setMatrix(
+								osg::Matrix::scale(bb.xMax() + 0.01 - bb.xMin(),
+										bb.yMax() + 0.01 - bb.yMin(),
+										bb.zMax() + 0.01 - bb.zMin())
+										* osg::Matrix::translate(worldCenter));
+						point_selected = false;
 					}
 					break;
 				}

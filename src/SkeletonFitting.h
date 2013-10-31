@@ -46,6 +46,8 @@ class SkeletonFitting: public osgGA::GUIEventHandler {
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 		Fitting_State state;
 		unsigned int points_added;
+		bool point_selected;
+		osg::ref_ptr<osg::MatrixTransform> selected_point;
 };
 
 #endif /* SKELETONFITTING_H_ */
