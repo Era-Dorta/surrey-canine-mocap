@@ -23,14 +23,15 @@ class SkeletonFitting: public osgGA::GUIEventHandler {
 	public:
 		SkeletonFitting();
 		virtual ~SkeletonFitting();
+		void set_data(osg::ref_ptr<osg::Switch> root_node);
 		virtual bool handle(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
-
-		osg::Node* getOrCreateSelectionBox();
 	private:
 		void set_skeleton_point();
+		osg::Node* getOrCreateSelectionBox();
 
 		osg::ref_ptr<osg::MatrixTransform> _selectionBox;
+		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 };
 
 #endif /* SKELETONFITTING_H_ */

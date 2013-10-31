@@ -56,6 +56,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	disp_frame_no = begin_frame_no;
 
 	skel_renderer.set_data(camera_arr, skel_vis_switch);
+	skel_fitting.set_data(skel_fitting_switch);
 }
 
 MultiCamViewer::~MultiCamViewer() {
@@ -130,7 +131,7 @@ void MultiCamViewer::setup_scene(void) {
 	//Switch for each view of the skeleton
 
 	scene_root->addChild(skel_vis_switch.get());
-	scene_root->addChild(skel_fitting.getOrCreateSelectionBox());
+	scene_root->addChild(skel_fitting_switch.get());
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer,

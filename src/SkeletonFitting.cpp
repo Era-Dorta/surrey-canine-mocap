@@ -16,6 +16,11 @@ SkeletonFitting::~SkeletonFitting() {
 	// TODO Auto-generated destructor stub
 }
 
+void SkeletonFitting::set_data(osg::ref_ptr<osg::Switch> root_node) {
+	skel_fitting_switch = root_node;
+	skel_fitting_switch->addChild(getOrCreateSelectionBox(), false);
+}
+
 bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 
@@ -49,6 +54,11 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 								bb.yMax() + 0.01 - bb.yMin(),
 								bb.zMax() + 0.01 - bb.zMin())
 								* osg::Matrix::translate(worldCenter));
+				//If an object is selected then show the box
+				skel_fitting_switch->setValue(0, true);
+			} else {
+				//If no object is selected hide the box
+				skel_fitting_switch->setValue(0, false);
 			}
 		}
 	}
