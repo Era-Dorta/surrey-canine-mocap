@@ -56,7 +56,6 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 				switch(state)
 				{
 				case ADD_POINTS:{
-
 					std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
 					result = intersector->getIntersections().begin();
 
@@ -66,9 +65,9 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 
 					osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
 					selectionBox->setMatrix(
-							osg::Matrix::scale(bb.xMax() + 0.01 - bb.xMin(),
-									bb.yMax() + 0.01 - bb.yMin(),
-									bb.zMax() + 0.01 - bb.zMin())
+							osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
+									bb.yMax() + 0.005 - bb.yMin(),
+									bb.zMax() + 0.005 - bb.zMin())
 									* osg::Matrix::translate(worldCenter));
 
 					skel_fitting_switch->addChild(selectionBox.get(), true);
@@ -96,6 +95,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 									point_selected = true;
 									selected_point = selected_obj;
 									selected_point_index = i;
+									change_colour_when_selected();
 									//TODO Change colour to show that it was selected
 									//skel_fitting_switch->setValue(i, !skel_fitting_switch->getValue(i));
 								}
@@ -110,11 +110,12 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 								* osg::computeLocalToWorld(result->nodePath);
 
 						selected_point->setMatrix(
-								osg::Matrix::scale(bb.xMax() + 0.01 - bb.xMin(),
-										bb.yMax() + 0.01 - bb.yMin(),
-										bb.zMax() + 0.01 - bb.zMin())
+								osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
+										bb.yMax() + 0.005 - bb.yMin(),
+										bb.zMax() + 0.005 - bb.zMin())
 										* osg::Matrix::translate(worldCenter));
 						point_selected = false;
+						change_colour_when_selected();
 						osg::Vec3 aux = osg::Vec3()*selected_point->getMatrix();
 						skel_fitting.move_joint(selected_point_index, aux);
 					}
@@ -130,11 +131,27 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 	return false;
 }
 
+void SkeletonFitController::change_colour_when_selected() {
+	osg::ref_ptr<osg::ShapeDrawable> box_shape;
+	osg::ref_ptr<osg::Geode> box_geode;
+
+	box_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
+	box_shape = static_cast<osg::ShapeDrawable*>(box_geode->getDrawable(0));
+	if(point_selected){
+		box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0)); //white
+	}else{
+		box_shape->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0)); //black
+	}
+}
+
 osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 
 		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-		geode->addDrawable(
-				new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f)));
+		osg::ref_ptr<osg::ShapeDrawable> box_shape;
+		box_shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f));
+		box_shape->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0)); //black
+
+		geode->addDrawable( box_shape );
 		osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
 
 		selectionBox->addChild(geode.get());

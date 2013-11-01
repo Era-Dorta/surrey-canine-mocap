@@ -41,6 +41,7 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 
 	private:
 		void set_skeleton_point();
+		void change_colour_when_selected();
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 
