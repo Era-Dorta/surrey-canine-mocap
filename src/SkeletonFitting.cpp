@@ -19,9 +19,6 @@ SkeletonFitting::~SkeletonFitting() {
 void SkeletonFitting::add_joint(osg::Vec3& joint) {
 	if(joint_array->size() < max_joints){
 		joint_array->push_back(joint);
-		save_to_file();
-	}else{
-		save_to_file();
 	}
 }
 
@@ -58,16 +55,21 @@ void SkeletonFitting::save_to_file() {
 	out_file.close();
 }
 
-void SkeletonFitting::read_from_file() {
+unsigned int SkeletonFitting::get_num_joints() {
+	return joint_array->size();
+}
+
+void SkeletonFitting::load_from_file() {
 	std::ifstream in_file;
 	in_file.open("joint_points.txt");
 	if (in_file.is_open())
 	{
 		joint_array->clear();
 		std::string line;
-		unsigned int max_lines = atoi( line.c_str() );
+		std::getline (in_file,line);
+		unsigned int num_vectors = atoi( line.c_str() );
 		float x,y,z;
-		for(unsigned int i = 0; i < max_lines; i++){
+		for(unsigned int i = 0; i < num_vectors; i++){
 
 			std::getline (in_file,line);
 			x = atof( line.c_str() );

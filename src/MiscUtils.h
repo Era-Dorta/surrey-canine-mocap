@@ -647,4 +647,9 @@ inline bool get_neighbor_white_pixel(cv::Mat& img, int i_row, int i_col,
 	return false;
 }
 
+inline std::ostream& operator<< (std::ostream &out, const osg::Vec3 &vector){
+	out << "[" << vector.x() << "," << vector.y() << "," << vector.z() << "]";
+	return out;
+}
+
 #endif /* MISCUTILS_H_ */

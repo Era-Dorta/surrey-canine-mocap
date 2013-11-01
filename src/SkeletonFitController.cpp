@@ -20,7 +20,16 @@ SkeletonFitController::~SkeletonFitController() {
 
 void SkeletonFitController::set_data(osg::ref_ptr<osg::Switch> root_node) {
 	skel_fitting_switch = root_node;
-	//skel_fitting_switch->addChild(getOrCreateSelectionBox(), false);
+	skel_fitting.load_from_file();
+	for(unsigned int i = 0; i < skel_fitting.get_num_joints(); i++){
+		osg::Vec3 joint_position = skel_fitting.get_joint(i);
+		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+		selectionBox->setMatrix(
+				osg::Matrix::scale(0.01, 0.01, 0.01)
+						* osg::Matrix::translate(joint_position));
+
+		skel_fitting_switch->addChild(selectionBox.get(), true);
+	}
 }
 
 bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
@@ -67,6 +76,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 					skel_fitting.add_joint(aux);
 					if(skel_fitting.skeleton_full()){
 						state = MOVE_POINTS;
+						skel_fitting.save_to_file();
 					}
 					break;
 				}

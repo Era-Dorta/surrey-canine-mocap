@@ -16,6 +16,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include "MiscUtils.h"
 using std::cout;
 using std::endl;
 
@@ -28,13 +29,14 @@ class SkeletonFitting {
 		void move_joint(unsigned int index, osg::Vec3& new_pos);
 		void delete_joint(unsigned int index);
 		osg::Vec3 get_joint(unsigned int index);
+		unsigned int get_num_joints();
 		unsigned int get_max_joints();
 		bool skeleton_full();
+		void save_to_file();
+		void load_from_file();
 	private:
 		osg::ref_ptr<osg::Vec3Array> joint_array;
 		unsigned int max_joints;
-		void save_to_file();
-		void read_from_file();
 };
 
 #endif /* SKELETONFITTING_H_ */
