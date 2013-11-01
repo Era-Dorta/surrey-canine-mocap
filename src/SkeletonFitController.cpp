@@ -31,6 +31,9 @@ void SkeletonFitController::set_data(osg::ref_ptr<osg::Switch> root_node) {
 	}
 }
 
+//Type def to avoid writing this monster more than once .
+typedef std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator intersecIte;
+
 bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 
@@ -54,7 +57,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 			if (intersector->containsIntersections()) {
 				switch (state) {
 				case ADD_POINTS: {
-					std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator result;
+					intersecIte result;
 					result = intersector->getIntersections().begin();
 
 					osg::BoundingBox bb = result->drawable->getBound();
@@ -85,8 +88,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 				}
 				case MOVE_POINTS: {
 					if (!point_selected) {
-						std::multiset<
-								osgUtil::LineSegmentIntersector::Intersection>::iterator result;
+						intersecIte result;
 						result = intersector->getIntersections().begin();
 						osg::MatrixTransform* selected_obj =
 								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
