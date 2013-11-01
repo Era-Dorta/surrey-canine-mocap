@@ -21,7 +21,9 @@
 using std::cout;
 using std::endl;
 
-enum Fitting_State { EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET };
+enum Fitting_State {
+	EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET
+};
 
 class SkeletonFitController: public osgGA::GUIEventHandler {
 	public:

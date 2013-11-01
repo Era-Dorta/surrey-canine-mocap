@@ -20,7 +20,6 @@
 using std::cout;
 using std::endl;
 
-
 class SkeletonFitting {
 	public:
 		SkeletonFitting();
