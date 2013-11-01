@@ -9,8 +9,8 @@
 
 SkeletonFitController::SkeletonFitController() :
 			state(ADD_POINTS),
-			points_added(0),
-			point_selected(false) {
+			point_selected(false),
+			selected_point_index(0) {
 
 }
 
@@ -63,8 +63,9 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 									* osg::Matrix::translate(worldCenter));
 
 					skel_fitting_switch->addChild(selectionBox.get(), true);
-					points_added++;
-					if(points_added > 1){
+					osg::Vec3 aux = bb.center();
+					skel_fitting.add_joint(aux);
+					if(skel_fitting.skeleton_full()){
 						state = MOVE_POINTS;
 					}
 					break;
@@ -79,6 +80,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 								if(selected_obj == skel_fitting_switch->getChild(i)){
 									point_selected = true;
 									selected_point = selected_obj;
+									selected_point_index = i;
 									//TODO Change colour to show that it was selected
 									//skel_fitting_switch->setValue(i, !skel_fitting_switch->getValue(i));
 								}
@@ -98,6 +100,8 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 										bb.zMax() + 0.01 - bb.zMin())
 										* osg::Matrix::translate(worldCenter));
 						point_selected = false;
+						osg::Vec3 aux = bb.center();
+						skel_fitting.move_joint(selected_point_index, aux);
 					}
 					break;
 				}

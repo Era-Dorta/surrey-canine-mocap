@@ -5,8 +5,10 @@
  *      Author: m04701
  */
 
-#ifndef SKELETONFITTING_H_
-#define SKELETONFITTING_H_
+#ifndef SKELETONFITCONTROLLER_H_
+#define SKELETONFITCONTROLLER_H_
+
+#include "SkeletonFitting.h"
 
 #include <osgGA/GUIEventHandler>
 #include <osgUtil/LineSegmentIntersector>
@@ -45,9 +47,10 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		//osg::ref_ptr<osg::MatrixTransform> _selectionBox;
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 		Fitting_State state;
-		unsigned int points_added;
 		bool point_selected;
 		osg::ref_ptr<osg::MatrixTransform> selected_point;
+		int selected_point_index;
+		SkeletonFitting skel_fitting;
 };
 
-#endif /* SKELETONFITTING_H_ */
+#endif /* SKELETONFITCONTROLLER_H_ */
