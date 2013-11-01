@@ -181,8 +181,6 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 
 		//Toggle aplha of colour rendering:
 		case osgGA::GUIEventAdapter::KEY_A:
-			//DEBUG:
-			//std::cout << "[a] pressed" << std::endl;
 			if (alpha == 0.f)
 				alpha = 0.7f;
 			else {
@@ -193,174 +191,83 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 
 			//Toggle colour rendering:
 		case osgGA::GUIEventAdapter::KEY_C:
-			//DEBUG:
-			//std::cout << "[c] pressed" << std::endl;
 			with_colour = !with_colour;
 			update_dynamics();
 			break;
 
 			//Toggle cam 1 visibility:
 		case osgGA::GUIEventAdapter::KEY_1:
-			//DEBUG:
-			//std::cout << "[1] pressed" << std::endl;
 			cam_vis_switch->setValue(0, !cam_vis_switch->getValue(0));
 			update_dynamics();
 			break;
 
 			//Toggle cam 2 visibility:
 		case osgGA::GUIEventAdapter::KEY_2:
-			//DEBUG:
-			//std::cout << "[2] pressed" << std::endl;
 			cam_vis_switch->setValue(1, !cam_vis_switch->getValue(1));
 			update_dynamics();
 			break;
 
 			//Toggle cam 3 visibility:
 		case osgGA::GUIEventAdapter::KEY_3:
-			//DEBUG:
-			//std::cout << "[3] pressed" << std::endl;
 			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
 			update_dynamics();
 			break;
+
+			//Toggle all cameras visibility
 		case osgGA::GUIEventAdapter::KEY_4:
 			cam_vis_switch->setValue(0, !cam_vis_switch->getValue(0));
 			cam_vis_switch->setValue(1, !cam_vis_switch->getValue(1));
 			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
 			update_dynamics();
 			break;
+
 			//Toggle skel cam 1 visibility:
 		case osgGA::GUIEventAdapter::KEY_Q:
-			//DEBUG:
-			//std::cout << "[1] pressed" << std::endl;
 			skel_vis_switch->setValue(0, !skel_vis_switch->getValue(0));
 			update_dynamics();
 			break;
 
 			//Toggle skel cam 2 visibility:
 		case osgGA::GUIEventAdapter::KEY_W:
-			//DEBUG:
-			//std::cout << "[2] pressed" << std::endl;
 			skel_vis_switch->setValue(1, !skel_vis_switch->getValue(1));
 			update_dynamics();
 			break;
 
 			//Toggle skel cam 3 visibility:
 		case osgGA::GUIEventAdapter::KEY_E:
-			//DEBUG:
-			//std::cout << "[3] pressed" << std::endl;
 			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
 			update_dynamics();
 			break;
 
-			//Toggle merge skeleton visibility:
+			//Toggle all skel cam visibility:
 		case osgGA::GUIEventAdapter::KEY_R:
-			//DEBUG:
-			//std::cout << "[3] pressed" << std::endl;
-			skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
-			update_dynamics();
-			break;
-		case osgGA::GUIEventAdapter::KEY_T:
-			//DEBUG:
-			//std::cout << "[3] pressed" << std::endl;
 			skel_vis_switch->setValue(0, !skel_vis_switch->getValue(0));
 			skel_vis_switch->setValue(1, !skel_vis_switch->getValue(1));
 			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
 			update_dynamics();
 			break;
+
+			//Toggle merged skeleton visibility:
+		case osgGA::GUIEventAdapter::KEY_T:
+			skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
+			update_dynamics();
+			break;
+
+			//Load skeleton from a file:
+		case osgGA::GUIEventAdapter::KEY_L:
+			skel_fitting.load_skeleton_from_file("joint_points.txt");
+			break;
+
+			//Save skeleton to file:
+		case osgGA::GUIEventAdapter::KEY_K:
+			skel_fitting.save_skeleton_to_file("joint_points.txt");
+			break;
+
+			//Exit the app, this avoids the clean up errors.
 		case osgGA::GUIEventAdapter::KEY_Escape:
 			exit( EXIT_SUCCESS);
 			break;
-//
-//		//Write out the entire rendered sequence:
-//		case osgGA::GUIEventAdapter::KEY_Y:
-//			//DEBUG:
-//			//std::cout << "[y] pressed" << std::endl;
-//
-//
-////			//Rewind:
-////			disp_frame_no = begin_frame_no;
-////			//Un-pause:
-////			paused = false;
-////			//Toggle saving:
-////			do_save_images = !do_save_images;
-////
-//			//Pause:
-//			paused = true;
-//			for(int i = begin_frame_no; i <= end_frame_no; i++)
-//			{
-//				disp_frame_no = i;
-//				update_dynamics();
-//				comp_viewer.frame();
-//				comp_viewer.frame();  // necessary to avoid incomplete rendering in buffers
-//				save_images_pov();
-//				save_image_freeview();
-//				//save_image_hausdorff();
-//			}
-//
-////			for(int i = begin_frame_no; i <= end_frame_no; i++)
-////			{
-////				disp_frame_no = i;
-////				update_dynamics();
-////				comp_viewer.frame();
-////				comp_viewer.frame();  // necessary to avoid incomplete rendering in buffers
-////				save_images_pov();
-////			}
-//
-//			break;
-//
-//			//Toggle depth map mesh display
-//		case osgGA::GUIEventAdapter::KEY_D:
-//			//DEBUG:
-//			//std::cout << "[d] pressed" << std::endl;
-//			show_depth_map_mesh = (!show_depth_map_mesh);
-//			update_dynamics();
-//			break;
-//
-//			//Toggle textured/untextured meshes
-//			//(TODO - implement this switching, at the moment only possible to select mode from
-//			//command line)
-//		case osgGA::GUIEventAdapter::KEY_T:
-//			//DEBUG:
-//			//std::cout << "[t] pressed" << std::endl;
-//			with_colour_texture = (!with_colour_texture);
-//			update_dynamics();
-//			break;
-//
-//			//Toggle stereo display
-//		case osgGA::GUIEventAdapter::KEY_B:
-//			//DEBUG:
-//			//std::cout << "[b] pressed" << std::endl;
-//			stereo_display = (!stereo_display);
-//			set_stereo_mode(stereo_display);
-//			break;
-//
-//			//Toggle augmentation display
-//		case osgGA::GUIEventAdapter::KEY_A:
-//			//DEBUG:
-//			//std::cout << "[a] pressed" << std::endl;
-//			with_augmentation = (!with_augmentation);
-//			//Set the switch node:
-//			aug_core_switch->setValue(0, with_augmentation);
-//			aug_core_switch->setValue(1, !with_augmentation);
-//			break;
-//
-//			//Toggle background grid display
-//		case osgGA::GUIEventAdapter::KEY_K:
-//			//DEBUG:
-//			//std::cout << "[k] pressed" << std::endl;
-//			//Toggle the switch node:
-//			background_switch_core->setValue(0, !(background_switch_core->getValue(0)));
-//			background_switch_aug->setValue(0, !(background_switch_aug->getValue(0)));
-//			break;
-//
-//			//Toggle raw RGB frame overlay visibility
-//		case osgGA::GUIEventAdapter::KEY_O:
-//			//DEBUG:
-//			//std::cout << "[o] pressed" << std::endl;
-//			//Toggle the switch node:
-//			rgb_overlay_switch->setValue(0, !(rgb_overlay_switch->getValue(0)));
-//			break;
-//
+
 			//Toggle playing/pausing
 		case osgGA::GUIEventAdapter::KEY_P:
 			//DEBUG:

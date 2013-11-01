@@ -42,9 +42,9 @@ bool SkeletonFitting::skeleton_full() {
 	return max_joints == joint_array->size();
 }
 
-void SkeletonFitting::save_to_file() {
+void SkeletonFitting::save_to_file(std::string file_name) {
 	std::ofstream out_file;
-	out_file.open("joint_points.txt");
+	out_file.open(file_name.c_str());
 
 	out_file << joint_array->size() << endl;
 	for (unsigned int i = 0; i < joint_array->size(); i++) {
@@ -59,9 +59,9 @@ unsigned int SkeletonFitting::get_num_joints() {
 	return joint_array->size();
 }
 
-void SkeletonFitting::load_from_file() {
+void SkeletonFitting::load_from_file(std::string file_name) {
 	std::ifstream in_file;
-	in_file.open("joint_points.txt");
+	in_file.open(file_name.c_str());
 	if (in_file.is_open()) {
 		joint_array->clear();
 		std::string line;

@@ -19,16 +19,6 @@ SkeletonFitController::~SkeletonFitController() {
 
 void SkeletonFitController::set_data(osg::ref_ptr<osg::Switch> root_node) {
 	skel_fitting_switch = root_node;
-	skel_fitting.load_from_file();
-	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
-		osg::Vec3 joint_position = skel_fitting.get_joint(i);
-		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
-		selectionBox->setMatrix(
-				osg::Matrix::scale(0.01, 0.01, 0.01)
-						* osg::Matrix::translate(joint_position));
-
-		skel_fitting_switch->addChild(selectionBox.get(), true);
-	}
 }
 
 //Type def to avoid writing this monster more than once .
@@ -82,7 +72,6 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 					//save current state of the skeleton to output file
 					if (skel_fitting.skeleton_full()) {
 						state = MOVE_POINTS;
-						skel_fitting.save_to_file();
 					}
 					break;
 				}
@@ -109,8 +98,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 							}
 						}
 					} else {
-						std::multiset<
-								osgUtil::LineSegmentIntersector::Intersection>::iterator result;
+						intersecIte result;
 						result = intersector->getIntersections().begin();
 
 						osg::BoundingBox bb = result->drawable->getBound();
@@ -152,6 +140,34 @@ void SkeletonFitController::change_colour_when_selected() {
 	} else {
 		box_shape->setColor(joint_colour);
 	}
+}
+
+void SkeletonFitController::load_skeleton_from_file(std::string file_name) {
+
+	reset_state();
+
+	skel_fitting.load_from_file(file_name);
+
+	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
+		osg::Vec3 joint_position = skel_fitting.get_joint(i);
+		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+		selectionBox->setMatrix(
+				osg::Matrix::scale(0.01, 0.01, 0.01)
+						* osg::Matrix::translate(joint_position));
+
+		skel_fitting_switch->addChild(selectionBox.get(), true);
+	}
+}
+
+void SkeletonFitController::save_skeleton_to_file(std::string file_name) {
+	skel_fitting.save_to_file(file_name);
+}
+
+void SkeletonFitController::reset_state() {
+	skel_fitting_switch->removeChildren(0, skel_fitting_switch->getNumChildren() );
+	point_selected = false;
+	selected_point_index = 0;
+	state = MOVE_POINTS;
 }
 
 osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {

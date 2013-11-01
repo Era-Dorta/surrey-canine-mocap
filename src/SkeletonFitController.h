@@ -41,9 +41,12 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		virtual bool handle(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
 
+		void load_skeleton_from_file(std::string file_name);
+		void save_skeleton_to_file(std::string file_name);
 	private:
 		void set_skeleton_point();
 		void change_colour_when_selected();
+		void reset_state();
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 

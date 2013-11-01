@@ -31,8 +31,8 @@ class SkeletonFitting {
 		unsigned int get_num_joints();
 		unsigned int get_max_joints();
 		bool skeleton_full();
-		void save_to_file();
-		void load_from_file();
+		void save_to_file(std::string file_name);
+		void load_from_file(std::string file_name);
 	private:
 		osg::ref_ptr<osg::Vec3Array> joint_array;
 		unsigned int max_joints;
