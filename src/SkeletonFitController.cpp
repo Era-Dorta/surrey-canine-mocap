@@ -72,8 +72,13 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 									* osg::Matrix::translate(worldCenter));
 
 					skel_fitting_switch->addChild(selectionBox.get(), true);
-					osg::Vec3 aux = bb.center();
+
+					//Get global coordinates of the point
+					osg::Vec3 aux = osg::Vec3()*selectionBox->getMatrix();
+					//Save it as a joint
 					skel_fitting.add_joint(aux);
+					//If the skeleton is full of joints then change state and
+					//save current state of the skeleton to output file
 					if(skel_fitting.skeleton_full()){
 						state = MOVE_POINTS;
 						skel_fitting.save_to_file();
@@ -110,7 +115,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 										bb.zMax() + 0.01 - bb.zMin())
 										* osg::Matrix::translate(worldCenter));
 						point_selected = false;
-						osg::Vec3 aux = bb.center();
+						osg::Vec3 aux = osg::Vec3()*selected_point->getMatrix();
 						skel_fitting.move_joint(selected_point_index, aux);
 					}
 					break;
