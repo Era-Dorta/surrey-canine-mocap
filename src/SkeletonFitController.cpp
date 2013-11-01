@@ -11,7 +11,8 @@ SkeletonFitController::SkeletonFitController() :
 			state(ADD_POINTS),
 			point_selected(false),
 			selected_point_index(0) {
-
+	joint_colour = osg::Vec4(0.0f, 0.0f, 0.0f, 1.0); //Black
+	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
 SkeletonFitController::~SkeletonFitController() {
@@ -138,9 +139,9 @@ void SkeletonFitController::change_colour_when_selected() {
 	box_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
 	box_shape = static_cast<osg::ShapeDrawable*>(box_geode->getDrawable(0));
 	if(point_selected){
-		box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0)); //white
+		box_shape->setColor(selection_colour);
 	}else{
-		box_shape->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0)); //black
+		box_shape->setColor(joint_colour);
 	}
 }
 
@@ -149,7 +150,7 @@ osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		osg::ref_ptr<osg::ShapeDrawable> box_shape;
 		box_shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f));
-		box_shape->setColor(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0)); //black
+		box_shape->setColor(joint_colour);
 
 		geode->addDrawable( box_shape );
 		osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;

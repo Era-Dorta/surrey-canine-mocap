@@ -51,6 +51,8 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		bool point_selected;
 		osg::ref_ptr<osg::MatrixTransform> selected_point;
 		int selected_point_index;
+		osg::Vec4 joint_colour;
+		osg::Vec4 selection_colour;
 		SkeletonFitting skel_fitting;
 };
 
