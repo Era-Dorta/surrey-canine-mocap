@@ -21,11 +21,11 @@ using std::endl;
 
 enum Fitting_State { EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET };
 
-class SkeletonFitting: public osgGA::GUIEventHandler {
+class SkeletonFitController: public osgGA::GUIEventHandler {
 	public:
-		SkeletonFitting();
+		SkeletonFitController();
 
-		virtual ~SkeletonFitting();
+		virtual ~SkeletonFitController();
 
 		//Set root node for this class, it should be call after creation
 		void set_data(osg::ref_ptr<osg::Switch> root_node);

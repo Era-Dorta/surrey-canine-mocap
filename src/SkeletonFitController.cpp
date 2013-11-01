@@ -5,25 +5,25 @@
  *      Author: m04701
  */
 
-#include "SkeletonFitting.h"
+#include "SkeletonFitController.h"
 
-SkeletonFitting::SkeletonFitting() :
+SkeletonFitController::SkeletonFitController() :
 			state(ADD_POINTS),
 			points_added(0),
 			point_selected(false) {
 
 }
 
-SkeletonFitting::~SkeletonFitting() {
+SkeletonFitController::~SkeletonFitController() {
 	// TODO Auto-generated destructor stub
 }
 
-void SkeletonFitting::set_data(osg::ref_ptr<osg::Switch> root_node) {
+void SkeletonFitController::set_data(osg::ref_ptr<osg::Switch> root_node) {
 	skel_fitting_switch = root_node;
 	//skel_fitting_switch->addChild(getOrCreateSelectionBox(), false);
 }
 
-bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
+bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 
 	//If the user release the left mouse button while pressing control
@@ -111,7 +111,7 @@ bool SkeletonFitting::handle(const osgGA::GUIEventAdapter& ea,
 	return false;
 }
 
-osg::ref_ptr<osg::MatrixTransform> SkeletonFitting::createSelectionBox() {
+osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 
 		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 		geode->addDrawable(
@@ -123,10 +123,10 @@ osg::ref_ptr<osg::MatrixTransform> SkeletonFitting::createSelectionBox() {
 	return selectionBox;
 }
 
-Fitting_State SkeletonFitting::getState() const {
+Fitting_State SkeletonFitController::getState() const {
 	return state;
 }
 
-void SkeletonFitting::setState(Fitting_State state) {
+void SkeletonFitController::setState(Fitting_State state) {
 	this->state = state;
 }

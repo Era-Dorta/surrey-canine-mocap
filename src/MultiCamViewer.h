@@ -14,7 +14,7 @@
 #include "SurfelModel.h"
 #include "SimpleTimer.h"
 #include "RenderSkeletonization.h"
-#include "SkeletonFitting.h"
+#include "SkeletonFitController.h"
 
 #include <string>
 #include <vector>
@@ -93,7 +93,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		float alpha;
 
 		RenderSkeletonization skel_renderer;
-		SkeletonFitting skel_fitting;
+		SkeletonFitController skel_fitting;
 
 };
 
