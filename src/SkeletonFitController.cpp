@@ -143,10 +143,9 @@ void SkeletonFitController::change_colour_when_selected() {
 
 void SkeletonFitController::load_skeleton_from_file(std::string file_name) {
 
-	reset_state();
-
 	skel_fitting.load_from_file(file_name);
 
+	reset_state();
 }
 
 void SkeletonFitController::save_skeleton_to_file(std::string file_name) {
@@ -154,11 +153,15 @@ void SkeletonFitController::save_skeleton_to_file(std::string file_name) {
 }
 
 void SkeletonFitController::reset_state() {
-	skel_fitting_switch->removeChildren(0,
-			skel_fitting_switch->getNumChildren());
+	clear_scene();
 	point_selected = false;
 	selected_point_index = 0;
-	state = MOVE_POINTS;
+	if(skel_fitting.skeleton_full()){
+		state = MOVE_POINTS;
+	}else{
+		state = ADD_POINTS;
+	}
+
 }
 
 void SkeletonFitController::draw_complete_skeleton() {
@@ -204,7 +207,7 @@ void SkeletonFitController::clear_scene() {
 }
 
 void SkeletonFitController::update_dynamics(int disp_frame_no) {
-	clear_scene();
+	reset_state();
 	skel_fitting.set_current_frame(disp_frame_no);
 	draw_complete_skeleton();
 }
