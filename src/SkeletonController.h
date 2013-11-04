@@ -5,10 +5,11 @@
  *      Author: m04701
  */
 
-#ifndef SKELETONFITCONTROLLER_H_
-#define SKELETONFITCONTROLLER_H_
+#ifndef SKELETONCONTROLLER_H_
+#define SKELETONCONTROLLER_H_
 
 #include "SkeletonFitting.h"
+#include "RenderSkeletonization.h"
 
 #include <osgGA/GUIEventHandler>
 #include <osgUtil/LineSegmentIntersector>
@@ -27,11 +28,11 @@ enum Fitting_State {
 	EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET
 };
 
-class SkeletonFitController: public osgGA::GUIEventHandler {
+class SkeletonController: public osgGA::GUIEventHandler {
 	public:
-		SkeletonFitController();
+		SkeletonController();
 
-		virtual ~SkeletonFitController();
+		virtual ~SkeletonController();
 
 		//Set root node for this class, it should be call after creation
 		void set_data(osg::ref_ptr<osg::Switch> root_node);
@@ -74,4 +75,4 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		int current_frame;
 };
 
-#endif /* SKELETONFITCONTROLLER_H_ */
+#endif /* SKELETONCONTROLLER_H_ */

@@ -5,9 +5,9 @@
  *      Author: m04701
  */
 
-#include "SkeletonFitController.h"
+#include "SkeletonController.h"
 
-SkeletonFitController::SkeletonFitController() :
+SkeletonController::SkeletonController() :
 			state(ADD_POINTS), point_selected(false), selected_point_index(0),
 			current_frame(0) {
 	joint_colour = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
@@ -15,18 +15,18 @@ SkeletonFitController::SkeletonFitController() :
 	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
-SkeletonFitController::~SkeletonFitController() {
+SkeletonController::~SkeletonController() {
 	// TODO Auto-generated destructor stub
 }
 
-void SkeletonFitController::set_data(osg::ref_ptr<osg::Switch> root_node) {
+void SkeletonController::set_data(osg::ref_ptr<osg::Switch> root_node) {
 	skel_fitting_switch = root_node;
 }
 
 //Type def to avoid writing this monster more than once .
 typedef std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator intersecIte;
 
-bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
+bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 
 	//If the user release the left mouse button while pressing control
@@ -136,7 +136,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 	return false;
 }
 
-void SkeletonFitController::change_colour_when_selected() {
+void SkeletonController::change_colour_when_selected() {
 	osg::ref_ptr<osg::ShapeDrawable> box_shape;
 	osg::ref_ptr<osg::Geode> box_geode;
 
@@ -149,18 +149,18 @@ void SkeletonFitController::change_colour_when_selected() {
 	}
 }
 
-void SkeletonFitController::load_skeleton_from_file(std::string file_name) {
+void SkeletonController::load_skeleton_from_file(std::string file_name) {
 
 	skel_fitting.load_from_file(file_name);
 
 	reset_state();
 }
 
-void SkeletonFitController::save_skeleton_to_file(std::string file_name) {
+void SkeletonController::save_skeleton_to_file(std::string file_name) {
 	skel_fitting.save_to_file(file_name);
 }
 
-void SkeletonFitController::reset_state() {
+void SkeletonController::reset_state() {
 	clear_scene();
 	point_selected = false;
 	selected_point_index = 0;
@@ -172,7 +172,7 @@ void SkeletonFitController::reset_state() {
 
 }
 
-void SkeletonFitController::draw_complete_skeleton() {
+void SkeletonController::draw_complete_skeleton() {
 	osg::Vec3 bone_start_position, bone_end_position;
 
 	draw_joints();
@@ -232,26 +232,26 @@ void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
 	pAddToThisGroup->addChild(geode);
 }
 
-void SkeletonFitController::draw_bone(osg::Vec3& bone_start,
+void SkeletonController::draw_bone(osg::Vec3& bone_start,
 		osg::Vec3& bone_end) {
 
 	AddCylinderBetweenPoints(bone_start, bone_end, 0.01f, bone_colour,
 			skel_fitting_switch);
 }
 
-void SkeletonFitController::clear_scene() {
+void SkeletonController::clear_scene() {
 	skel_fitting_switch->removeChildren(0,
 			skel_fitting_switch->getNumChildren());
 }
 
-void SkeletonFitController::update_dynamics(int disp_frame_no) {
+void SkeletonController::update_dynamics(int disp_frame_no) {
 	current_frame = disp_frame_no;
 	reset_state();
 	skel_fitting.set_current_frame(disp_frame_no);
 	draw_complete_skeleton();
 }
 
-void SkeletonFitController::draw_joints() {
+void SkeletonController::draw_joints() {
 
 	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
 		osg::Vec3 joint_position = skel_fitting.get_joint(i);
@@ -264,7 +264,7 @@ void SkeletonFitController::draw_joints() {
 	}
 }
 
-osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
+osg::ref_ptr<osg::MatrixTransform> SkeletonController::createSelectionBox() {
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	osg::ref_ptr<osg::ShapeDrawable> box_shape;
@@ -282,10 +282,10 @@ osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 	return selectionBox;
 }
 
-Fitting_State SkeletonFitController::getState() const {
+Fitting_State SkeletonController::getState() const {
 	return state;
 }
 
-void SkeletonFitController::setState(Fitting_State state) {
+void SkeletonController::setState(Fitting_State state) {
 	this->state = state;
 }

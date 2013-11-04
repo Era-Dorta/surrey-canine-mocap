@@ -96,7 +96,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		float alpha;
 
 		RenderSkeletonization skel_renderer;
-		SkeletonFitController skel_fitting;
+		SkeletonController skel_fitting;
 
 };
 
