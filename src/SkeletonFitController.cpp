@@ -8,7 +8,8 @@
 #include "SkeletonFitController.h"
 
 SkeletonFitController::SkeletonFitController() :
-			state(ADD_POINTS), point_selected(false), selected_point_index(0) {
+			state(ADD_POINTS), point_selected(false), selected_point_index(0),
+			current_frame(0){
 	joint_colour = osg::Vec4(0.0f, 0.0f, 0.0f, 1.0); //Black
 	bone_colour = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
 	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
@@ -115,6 +116,7 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 						osg::Vec3 aux = osg::Vec3()
 								* selected_point->getMatrix();
 						skel_fitting.move_joint(selected_point_index, aux);
+						update_dynamics(current_frame);
 					}
 					break;
 				}
@@ -237,6 +239,7 @@ void SkeletonFitController::clear_scene() {
 }
 
 void SkeletonFitController::update_dynamics(int disp_frame_no) {
+	current_frame = disp_frame_no;
 	reset_state();
 	skel_fitting.set_current_frame(disp_frame_no);
 	draw_complete_skeleton();

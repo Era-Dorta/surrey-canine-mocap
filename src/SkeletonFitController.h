@@ -71,6 +71,7 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		osg::Vec4 bone_colour;
 		osg::Vec4 selection_colour;
 		SkeletonFitting skel_fitting;
+		int current_frame;
 };
 
 #endif /* SKELETONFITCONTROLLER_H_ */
