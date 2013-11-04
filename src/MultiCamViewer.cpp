@@ -463,6 +463,7 @@ void MultiCamViewer::update_dynamics(void) {
 
 	}
 	skel_renderer.update_dynamics(disp_frame_no);
+	skel_fitting.update_dynamics();
 	//------------------------------------------
 
 //	//DEBUG TEST: Render POV

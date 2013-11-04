@@ -14,6 +14,7 @@
 #include <osgUtil/LineSegmentIntersector>
 #include <osgViewer/Viewer>
 #include <osg/MatrixTransform>
+#include <osg/Geometry>
 #include <osg/ShapeDrawable>
 #include <osg/PolygonMode>
 
@@ -43,10 +44,18 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 
 		void load_skeleton_from_file(std::string file_name);
 		void save_skeleton_to_file(std::string file_name);
+
+		//TODO Move all drawing related code to render skeletonization
+		//or create another render class, but not here, this is a controller
+		void update_dynamics();
 	private:
 		void set_skeleton_point();
 		void change_colour_when_selected();
 		void reset_state();
+		void draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end );
+		void draw_complete_skeleton();
+		void draw_joints();
+		void clear_scene();
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 
@@ -57,6 +66,7 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		osg::ref_ptr<osg::MatrixTransform> selected_point;
 		int selected_point_index;
 		osg::Vec4 joint_colour;
+		osg::Vec4 bone_colour;
 		osg::Vec4 selection_colour;
 		SkeletonFitting skel_fitting;
 };

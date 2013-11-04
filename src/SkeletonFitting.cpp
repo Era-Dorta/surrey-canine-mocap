@@ -8,8 +8,41 @@
 #include "SkeletonFitting.h"
 
 SkeletonFitting::SkeletonFitting() :
-			max_joints(3) {
+			max_joints(19) {
 	joint_array = new osg::Vec3Array();
+	bone_array.reserve(18);
+
+	//Right front Leg
+	bone_array.push_back(std::make_pair(0, 1));
+	bone_array.push_back(std::make_pair(1, 2));
+	bone_array.push_back(std::make_pair(2, 3));
+	bone_array.push_back(std::make_pair(3, 4));
+
+	//Left front Leg
+	bone_array.push_back(std::make_pair(4, 5));
+	bone_array.push_back(std::make_pair(5, 6));
+	bone_array.push_back(std::make_pair(6, 7));
+	bone_array.push_back(std::make_pair(7, 8));
+
+	//Right back Leg
+	bone_array.push_back(std::make_pair(9, 10));
+	bone_array.push_back(std::make_pair(10, 11));
+	bone_array.push_back(std::make_pair(11, 12));
+
+	//Left back Leg
+	bone_array.push_back(std::make_pair(12, 13));
+	bone_array.push_back(std::make_pair(13, 14));
+	bone_array.push_back(std::make_pair(14, 15));
+
+	//Head
+	bone_array.push_back(std::make_pair(4, 17));
+	bone_array.push_back(std::make_pair(16, 17));
+
+	//Back
+	bone_array.push_back(std::make_pair(4, 12));
+
+	//Tail
+	bone_array.push_back(std::make_pair(12, 18));
 }
 
 SkeletonFitting::~SkeletonFitting() {
@@ -82,4 +115,13 @@ void SkeletonFitting::load_from_file(std::string file_name) {
 		}
 	}
 	in_file.close();
+}
+
+unsigned int SkeletonFitting::get_num_bones() {
+	return bone_array.size();
+}
+
+void SkeletonFitting::get_bone(unsigned int index, osg::Vec3& i_pos, osg::Vec3& e_pos) {
+	i_pos = (*joint_array)[bone_array[index].first];
+	e_pos = (*joint_array)[bone_array[index].second];
 }

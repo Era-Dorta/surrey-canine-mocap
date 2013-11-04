@@ -10,6 +10,7 @@
 SkeletonFitController::SkeletonFitController() :
 			state(ADD_POINTS), point_selected(false), selected_point_index(0) {
 	joint_colour = osg::Vec4(0.0f, 0.0f, 0.0f, 1.0); //Black
+	bone_colour = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
 	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
@@ -92,8 +93,6 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 									selected_point = selected_obj;
 									selected_point_index = i;
 									change_colour_when_selected();
-									//TODO Change colour to show that it was selected
-									//skel_fitting_switch->setValue(i, !skel_fitting_switch->getValue(i));
 								}
 							}
 						}
@@ -148,15 +147,6 @@ void SkeletonFitController::load_skeleton_from_file(std::string file_name) {
 
 	skel_fitting.load_from_file(file_name);
 
-	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
-		osg::Vec3 joint_position = skel_fitting.get_joint(i);
-		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
-		selectionBox->setMatrix(
-				osg::Matrix::scale(0.01, 0.01, 0.01)
-						* osg::Matrix::translate(joint_position));
-
-		skel_fitting_switch->addChild(selectionBox.get(), true);
-	}
 }
 
 void SkeletonFitController::save_skeleton_to_file(std::string file_name) {
@@ -168,6 +158,65 @@ void SkeletonFitController::reset_state() {
 	point_selected = false;
 	selected_point_index = 0;
 	state = MOVE_POINTS;
+}
+
+void SkeletonFitController::draw_complete_skeleton() {
+	osg::Vec3 bone_start_position, bone_end_position;
+
+	draw_joints();
+
+	if(skel_fitting.skeleton_full()){
+		for(unsigned int i = 0; i < skel_fitting.get_num_bones(); i++){
+			skel_fitting.get_bone(i, bone_start_position, bone_end_position);
+			draw_bone(bone_start_position, bone_end_position);
+		}
+	}
+}
+
+void SkeletonFitController::draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end ) {
+
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
+	vertices->push_back(bone_start);
+	vertices->push_back(bone_end);
+
+	osg::ref_ptr<osg::Geometry> line_geometry( new osg::Geometry);
+	line_geometry->setVertexArray(vertices.get());
+
+	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+	color->push_back(bone_colour);
+	line_geometry->setColorArray(color);
+	line_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+	line_geometry->addPrimitiveSet(new osg::DrawArrays(GL_LINES,0,2));
+
+	geode->addDrawable(line_geometry.get());
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
+
+	skel_fitting_switch->addChild(geode.get());
+}
+
+void SkeletonFitController::clear_scene() {
+	skel_fitting_switch->removeChildren(0, skel_fitting_switch->getNumChildren());
+}
+
+void SkeletonFitController::update_dynamics() {
+	clear_scene();
+
+	draw_complete_skeleton();
+}
+
+void SkeletonFitController::draw_joints() {
+
+	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
+		osg::Vec3 joint_position = skel_fitting.get_joint(i);
+		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+		selectionBox->setMatrix(
+				osg::Matrix::scale(0.01, 0.01, 0.01)
+						* osg::Matrix::translate(joint_position));
+
+		skel_fitting_switch->addChild(selectionBox.get(), true);
+	}
 }
 
 osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
