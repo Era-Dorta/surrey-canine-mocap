@@ -19,6 +19,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			last_frame_tick_count(0),
 			_dataset_path(path),
 			scene_root(new osg::Group),
+			rgb_render_interactive_view(new osg::Image),
 			cam_vis_switch(new osg::Switch),
 			skel_vis_switch(new osg::Switch),
 			skel_fitting_switch(new osg::Switch),
@@ -67,7 +68,6 @@ int MultiCamViewer::run_viewer(void) {
 
 	setup_scene();
 
-	osgViewer::Viewer viewer;
 	viewer.setUpViewInWindow(100, 100, win_width, win_height, 0);
 	set_window_title(&viewer, "MultiCamViewer:  " + _dataset_path, 80, 80);
 	viewer.setSceneData(scene_root);
@@ -97,6 +97,10 @@ int MultiCamViewer::run_viewer(void) {
 	//		new EventHandlingClass(&path, &file_names, root, &frame_geom);
 	//viewer.addEventHandler(ctrler.get());
 	viewer.addEventHandler(&skel_fitting);
+
+	//Free viewpoint rendering:
+	rgb_render_interactive_view->allocateImage( win_width, win_height, 1, GL_RGBA, GL_UNSIGNED_BYTE );
+	viewer.getCamera()->attach( osg::Camera::COLOR_BUFFER, rgb_render_interactive_view.get() );
 
 	return viewer.run();
 }
@@ -251,6 +255,24 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 		case osgGA::GUIEventAdapter::KEY_T:
 			skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
 			update_dynamics();
+			break;
+
+			//Write out the entire rendered sequence:
+		case osgGA::GUIEventAdapter::KEY_Y:
+			//DEBUG:
+			//std::cout << "[y] pressed" << std::endl;
+
+			//Pause:
+			paused = true;
+			//Cycle through frames and save them:
+			for(int i = begin_frame_no; i <= end_frame_no; i++)
+			{
+				disp_frame_no = i;
+				update_dynamics();
+				viewer.frame();
+				viewer.frame();  // necessary to avoid incomplete rendering in buffers
+				save_image_freeview();
+			}
 			break;
 
 			//Load skeleton from a file:
@@ -525,4 +547,19 @@ osg::Camera* MultiCamViewer::create_hud_camera(double left, double right,
 	camera->getOrCreateStateSet()->setMode(GL_LIGHTING,
 			osg::StateAttribute::OFF);
 	return camera.release();
+}
+
+void MultiCamViewer::save_image_freeview()
+{
+    char fn[1024];
+    sprintf(fn,  "%s/Desktop/Viewer_Rendering/%05d.png", getenv("HOME"), disp_frame_no);
+    std::string rgb_freeview_fn(fn);
+
+    //Save RGB image:
+    if(!osgDB::writeImageFile(*rgb_render_interactive_view, rgb_freeview_fn))
+    {
+        std::cerr << "Failed to save: " << rgb_freeview_fn << endl;
+        exit(-1);
+    }
+
 }

@@ -66,6 +66,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 				const std::string& content, float size);
 		osg::Camera* create_hud_camera(double left, double right, double bottom,
 				double top);
+		void save_image_freeview();
 
 		int win_width;
 		int win_height;
@@ -81,6 +82,8 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		std::string _dataset_path;
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
 		osg::ref_ptr<osg::Group> scene_root;
+		osg::ref_ptr<osg::Image> rgb_render_interactive_view;
+		osgViewer::Viewer viewer;
 
 		//Switch to turn camera visualizations on or off:
 		osg::ref_ptr<osg::Switch> cam_vis_switch;
