@@ -17,6 +17,7 @@
 #include <osg/Geometry>
 #include <osg/ShapeDrawable>
 #include <osg/PolygonMode>
+#include <osg/Material>
 
 #include <iostream>
 using std::cout;

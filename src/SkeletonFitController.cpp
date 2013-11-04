@@ -177,33 +177,58 @@ void SkeletonFitController::draw_complete_skeleton() {
 	}
 }
 
+
+void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
+		float radius, osg::Vec4 CylinderColor, osg::Group *pAddToThisGroup) {
+	osg::Vec3 center;
+	float height;
+
+	osg::ref_ptr<osg::Cylinder> cylinder;
+	osg::ref_ptr<osg::ShapeDrawable> cylinderDrawable;
+	osg::ref_ptr<osg::Material> pMaterial;
+	osg::ref_ptr<osg::Geode> geode;
+
+	height = (StartPoint - EndPoint).length();
+	center = osg::Vec3((StartPoint.x() + EndPoint.x()) / 2,
+			(StartPoint.y() + EndPoint.y()) / 2,
+			(StartPoint.z() + EndPoint.z()) / 2);
+
+	// This is the default direction for the cylinders to face in OpenGL
+	osg::Vec3 z = osg::Vec3(0, 0, 1);
+
+	// Get diff between two points you want cylinder along
+	osg::Vec3 p = (StartPoint - EndPoint);
+
+	// Get CROSS product (the axis of rotation)
+	osg::Vec3 t = z ^ p;
+
+	// Get angle. length is magnitude of the vector
+	double angle = acos((z * p) / p.length());
+
+	//   Create a cylinder between the two points with the given radius
+	cylinder = new osg::Cylinder(center, radius, height);
+	cylinder->setRotation(osg::Quat(angle, osg::Vec3(t.x(), t.y(), t.z())));
+
+	//   A geode to hold our cylinder
+	geode = new osg::Geode;
+	cylinderDrawable = new osg::ShapeDrawable(cylinder);
+	geode->addDrawable(cylinderDrawable);
+
+	//   Set the color of the cylinder that extends between the two points.
+	pMaterial = new osg::Material;
+	pMaterial->setDiffuse(osg::Material::FRONT, CylinderColor);
+	geode->getOrCreateStateSet()->setAttribute(pMaterial,
+			osg::StateAttribute::OVERRIDE);
+
+	//   Add the cylinder between the two points to an existing group
+	pAddToThisGroup->addChild(geode);
+}
+
 void SkeletonFitController::draw_bone(osg::Vec3& bone_start,
 		osg::Vec3& bone_end) {
 
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-
-	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
-	vertices->push_back(bone_start);
-	vertices->push_back(bone_end);
-
-	osg::ref_ptr<osg::Geometry> line_geometry(new osg::Geometry);
-	line_geometry->setVertexArray(vertices.get());
-
-	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-	color->push_back(bone_colour);
-	line_geometry->setColorArray(color);
-	line_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-	line_geometry->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, 2));
-
-	geode->addDrawable(line_geometry.get());
-	osg::LineWidth* linewidth = new osg::LineWidth();
-	linewidth->setWidth(4.0f);
-	geode->getOrCreateStateSet()->setAttributeAndModes(linewidth,
-			osg::StateAttribute::ON);
-
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
-
-	skel_fitting_switch->addChild(geode.get());
+	AddCylinderBetweenPoints(bone_start, bone_end, 0.01f, bone_colour,
+			skel_fitting_switch);
 }
 
 void SkeletonFitController::clear_scene() {
@@ -223,7 +248,7 @@ void SkeletonFitController::draw_joints() {
 		osg::Vec3 joint_position = skel_fitting.get_joint(i);
 		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
 		selectionBox->setMatrix(
-				osg::Matrix::scale(0.01, 0.01, 0.01)
+				osg::Matrix::scale(0.02, 0.02, 0.02)
 						* osg::Matrix::translate(joint_position));
 
 		skel_fitting_switch->addChild(selectionBox.get(), true);
