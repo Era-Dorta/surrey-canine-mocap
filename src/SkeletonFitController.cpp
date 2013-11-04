@@ -156,9 +156,9 @@ void SkeletonFitController::reset_state() {
 	clear_scene();
 	point_selected = false;
 	selected_point_index = 0;
-	if(skel_fitting.skeleton_full()){
+	if (skel_fitting.skeleton_full()) {
 		state = MOVE_POINTS;
-	}else{
+	} else {
 		state = ADD_POINTS;
 	}
 
@@ -196,6 +196,11 @@ void SkeletonFitController::draw_bone(osg::Vec3& bone_start,
 	line_geometry->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, 2));
 
 	geode->addDrawable(line_geometry.get());
+	osg::LineWidth* linewidth = new osg::LineWidth();
+	linewidth->setWidth(4.0f);
+	geode->getOrCreateStateSet()->setAttributeAndModes(linewidth,
+			osg::StateAttribute::ON);
+
 	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
 
 	skel_fitting_switch->addChild(geode.get());
@@ -229,7 +234,7 @@ osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	osg::ref_ptr<osg::ShapeDrawable> box_shape;
-	box_shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f));
+	box_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
 	box_shape->setColor(joint_colour);
 
 	geode->addDrawable(box_shape);
