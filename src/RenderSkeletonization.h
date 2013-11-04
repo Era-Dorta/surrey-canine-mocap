@@ -26,27 +26,25 @@ class RenderSkeletonization {
 				std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
 		virtual ~RenderSkeletonization();
-		//Update/Draw the skeleton display every frame
-		void update_dynamics(int disp_frame_no);
+
 		void set_data(std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
 				osg::ref_ptr<osg::Switch> skel_vis_switch_);
-	protected:
-	private:
 		//Delete skeleton nodes from previous frame
 		void clean_scene();
 
-		//Show a 3D skeleton projection given a frame number
-		void display_3d_skeleon_cloud(int disp_frame_no);
-
-		//Show a 3D skeleton projection given a frame number
-		void display_3d_merged_skeleon_cloud(int disp_frame_no);
-
 		//Show the 2D skeleton images of each camera given a frame number
-		void display_2d_skeletons(int disp_frame_no);
+		void display_2d_skeletons(int disp_frame_no,
+				Skeletonization3D& skeleton);
 
-		//Class that creates a skeleton from a given set of frames
-		Skeletonization3D skeleton;
+		//Show a 3D skeleton projection given a frame number
+		void display_3d_skeleon_cloud(int disp_frame_no,
+				Skeletonization3D& skeleton);
 
+		//Show a 3D skeleton projection given a frame number
+		void display_3d_merged_skeleon_cloud(int disp_frame_no,
+				Skeletonization3D& skeleton);
+	protected:
+	private:
 		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
 

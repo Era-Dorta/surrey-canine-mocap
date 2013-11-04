@@ -64,6 +64,9 @@ class SkeletonController {
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 
+		//Class that creates a skeleton from a given set of frames
+		Skeletonization3D skeletonized3D;
+
 		//osg::ref_ptr<osg::MatrixTransform> _selectionBox;
 		RenderSkeletonization skel_renderer;
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;

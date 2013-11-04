@@ -21,7 +21,6 @@ void RenderSkeletonization::set_data(
 		osg::ref_ptr<osg::Switch> skel_vis_switch_) {
 	//Save arguments
 	camera_arr = camera_arr_;
-	skeleton.set_cameras(camera_arr);
 	skel_vis_switch = skel_vis_switch_;
 
 	//In case this is not first call, do a clean up
@@ -62,16 +61,6 @@ void RenderSkeletonization::set_data(
 	skel_vis_switch->addChild(merged_group.get(), true);
 }
 
-void RenderSkeletonization::update_dynamics(int disp_frame_no) {
-	clean_scene();
-
-	//display_2d_skeletons(disp_frame_no);
-
-	display_3d_skeleon_cloud(disp_frame_no);
-
-	display_3d_merged_skeleon_cloud(disp_frame_no);
-}
-
 void RenderSkeletonization::clean_scene() {
 	for (unsigned int i = 0; i < skel_group2D_array.size(); i++) {
 		skel_group2D_array[i]->removeChildren(0,
@@ -86,7 +75,8 @@ void RenderSkeletonization::clean_scene() {
 	merged_group->removeChildren(0, merged_group->getNumChildren());
 }
 
-void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no) {
+void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
+		Skeletonization3D& skeleton) {
 	osg::ref_ptr<osg::Geode> skel_geode;
 	osg::ref_ptr<osg::Geometry> skel_geometry;
 	osg::ref_ptr<osg::Vec3Array> vertices;
@@ -110,7 +100,8 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no) {
 	}
 }
 
-void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no) {
+void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
+		Skeletonization3D& skeleton) {
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0)); //blue
 
@@ -131,7 +122,8 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no) {
 	merged_group->addChild(skel_geode.get());
 }
 
-void RenderSkeletonization::display_2d_skeletons(int disp_frame_no) {
+void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
+		Skeletonization3D& skeleton) {
 	int rows = camera_arr[0]->get_d_rows();
 	int cols = camera_arr[0]->get_d_cols();
 	float ratio_x = cols / (float) rows;

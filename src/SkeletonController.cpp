@@ -24,6 +24,7 @@ void SkeletonController::set_data(osg::ref_ptr<osg::Switch> root_node,
 		osg::ref_ptr<osg::Switch> skel_vis_switch) {
 	skel_fitting_switch = root_node;
 	skel_renderer.set_data(camera_arr, skel_vis_switch);
+	skeletonized3D.set_cameras(camera_arr);
 }
 
 //Type def to avoid writing this monster more than once .
@@ -235,8 +236,7 @@ void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
 	pAddToThisGroup->addChild(geode);
 }
 
-void SkeletonController::draw_bone(osg::Vec3& bone_start,
-		osg::Vec3& bone_end) {
+void SkeletonController::draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end) {
 
 	AddCylinderBetweenPoints(bone_start, bone_end, 0.01f, bone_colour,
 			skel_fitting_switch);
@@ -250,7 +250,12 @@ void SkeletonController::clear_scene() {
 void SkeletonController::update_dynamics(int disp_frame_no) {
 	current_frame = disp_frame_no;
 	reset_state();
-	skel_renderer.update_dynamics(current_frame);
+
+	skel_renderer.clean_scene();
+	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
+	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
+			skeletonized3D);
+
 	skel_fitting.set_current_frame(current_frame);
 	draw_complete_skeleton();
 }

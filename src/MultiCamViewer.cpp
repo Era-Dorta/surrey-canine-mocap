@@ -99,7 +99,7 @@ int MultiCamViewer::run_viewer(void) {
 
 	//Free viewpoint rendering:
 	rgb_render_interactive_view->allocateImage(win_width, win_height, 1,
-			GL_RGBA, GL_UNSIGNED_BYTE);
+	GL_RGBA, GL_UNSIGNED_BYTE);
 	viewer.getCamera()->attach(osg::Camera::COLOR_BUFFER,
 			rgb_render_interactive_view.get());
 
