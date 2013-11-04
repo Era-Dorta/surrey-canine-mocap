@@ -11,7 +11,7 @@
 class Skeletonization3D {
 	public:
 		Skeletonization3D(float merge_treshold_ = 0.2, float move_distance_ =
-				0.01);
+				0.025);
 
 		virtual ~Skeletonization3D();
 
