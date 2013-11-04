@@ -2,14 +2,9 @@
 
 RenderSkeletonization::RenderSkeletonization() :
 			display_merged(true) {
-
-}
-
-RenderSkeletonization::RenderSkeletonization(
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
-		osg::ref_ptr<osg::Switch> skel_vis_switch_) :
-			display_merged(true) {
-	set_data(camera_arr_, skel_vis_switch_);
+	joint_colour = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
+	bone_colour = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
+	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
@@ -18,10 +13,12 @@ RenderSkeletonization::~RenderSkeletonization() {
 
 void RenderSkeletonization::set_data(
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
-		osg::ref_ptr<osg::Switch> skel_vis_switch_) {
+		osg::ref_ptr<osg::Switch> skel_vis_switch_,
+		osg::ref_ptr<osg::Switch> skel_fitting_switch_) {
 	//Save arguments
 	camera_arr = camera_arr_;
 	skel_vis_switch = skel_vis_switch_;
+	skel_fitting_switch = skel_fitting_switch_;
 
 	//In case this is not first call, do a clean up
 	skel_group_array.clear();
@@ -73,6 +70,9 @@ void RenderSkeletonization::clean_scene() {
 	}
 
 	merged_group->removeChildren(0, merged_group->getNumChildren());
+
+	skel_fitting_switch->removeChildren(0,
+			skel_fitting_switch->getNumChildren());
 }
 
 void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
@@ -187,4 +187,146 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 
 		skel_group2D_array[i]->addChild(trans_matrix.get());
 	}
+}
+
+void RenderSkeletonization::draw_joints(
+		osg::ref_ptr<osg::Vec3Array> joint_array) {
+	for (unsigned int i = 0; i < joint_array->size(); i++) {
+		osg::Vec3 joint_position = (*joint_array)[i];
+		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+		selectionBox->setMatrix(
+				osg::Matrix::scale(0.02, 0.02, 0.02)
+						* osg::Matrix::translate(joint_position));
+
+		skel_fitting_switch->addChild(selectionBox.get(), true);
+	}
+}
+
+osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox() {
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	osg::ref_ptr<osg::ShapeDrawable> box_shape;
+	box_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
+	box_shape->setColor(joint_colour);
+
+	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+	geode->addDrawable(box_shape);
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
+
+	selectionBox->addChild(geode.get());
+
+	return selectionBox;
+}
+
+void RenderSkeletonization::change_colour_when_selected(
+		osg::ref_ptr<osg::MatrixTransform> selected_point,
+		bool point_selected) {
+	osg::ref_ptr<osg::ShapeDrawable> box_shape;
+	osg::ref_ptr<osg::Geode> box_geode;
+
+	box_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
+	box_shape = static_cast<osg::ShapeDrawable*>(box_geode->getDrawable(0));
+	if (point_selected) {
+		box_shape->setColor(selection_colour);
+	} else {
+		box_shape->setColor(joint_colour);
+	}
+}
+
+void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
+		osg::Vec3 EndPoint, float radius, osg::Vec4 CylinderColor,
+		osg::Group *pAddToThisGroup) {
+	osg::Vec3 center;
+	float height;
+
+	osg::ref_ptr<osg::Cylinder> cylinder;
+	osg::ref_ptr<osg::ShapeDrawable> cylinderDrawable;
+	osg::ref_ptr<osg::Material> pMaterial;
+	osg::ref_ptr<osg::Geode> geode;
+
+	height = (StartPoint - EndPoint).length();
+	center = osg::Vec3((StartPoint.x() + EndPoint.x()) / 2,
+			(StartPoint.y() + EndPoint.y()) / 2,
+			(StartPoint.z() + EndPoint.z()) / 2);
+
+	// This is the default direction for the cylinders to face in OpenGL
+	osg::Vec3 z = osg::Vec3(0, 0, 1);
+
+	// Get diff between two points you want cylinder along
+	osg::Vec3 p = (StartPoint - EndPoint);
+
+	// Get CROSS product (the axis of rotation)
+	osg::Vec3 t = z ^ p;
+
+	// Get angle. length is magnitude of the vector
+	double angle = acos((z * p) / p.length());
+
+	//   Create a cylinder between the two points with the given radius
+	cylinder = new osg::Cylinder(center, radius, height);
+	cylinder->setRotation(osg::Quat(angle, osg::Vec3(t.x(), t.y(), t.z())));
+
+	//   A geode to hold our cylinder
+	geode = new osg::Geode;
+	cylinderDrawable = new osg::ShapeDrawable(cylinder);
+	geode->addDrawable(cylinderDrawable);
+
+	//   Set the color of the cylinder that extends between the two points.
+	pMaterial = new osg::Material;
+	pMaterial->setDiffuse(osg::Material::FRONT, CylinderColor);
+	geode->getOrCreateStateSet()->setAttribute(pMaterial,
+			osg::StateAttribute::OVERRIDE);
+
+	//   Add the cylinder between the two points to an existing group
+	pAddToThisGroup->addChild(geode);
+}
+
+osg::Vec3 RenderSkeletonization::add_sphere(intersecIte intersection) {
+	osg::BoundingBox bb = intersection->drawable->getBound();
+	osg::Vec3 worldCenter = bb.center()
+			* osg::computeLocalToWorld(intersection->nodePath);
+
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+	selectionBox->setMatrix(
+			osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
+					bb.yMax() + 0.005 - bb.yMin(),
+					bb.zMax() + 0.005 - bb.zMin())
+					* osg::Matrix::translate(worldCenter));
+
+	skel_fitting_switch->addChild(selectionBox.get(), true);
+
+	//Return global coordinates of the point
+	return osg::Vec3() * selectionBox->getMatrix();
+}
+
+osg::Vec3 RenderSkeletonization::move_sphere(intersecIte intersection,
+		osg::ref_ptr<osg::MatrixTransform> obj) {
+	osg::BoundingBox bb = intersection->drawable->getBound();
+	osg::Vec3 worldCenter = bb.center()
+			* osg::computeLocalToWorld(intersection->nodePath);
+
+	obj->setMatrix(
+			osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
+					bb.yMax() + 0.005 - bb.yMin(),
+					bb.zMax() + 0.005 - bb.zMin())
+					* osg::Matrix::translate(worldCenter));
+
+	//Return global coordinates of the point
+	return osg::Vec3() * obj->getMatrix();
+}
+
+int RenderSkeletonization::obj_belong_skel(osg::MatrixTransform* selected_obj) {
+	for (unsigned int i = 0; i < skel_fitting_switch->getNumChildren(); i++) {
+		if (selected_obj == skel_fitting_switch->getChild(i)) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+void RenderSkeletonization::draw_bone(osg::Vec3& bone_start,
+		osg::Vec3& bone_end) {
+
+	AddCylinderBetweenPoints(bone_start, bone_end, 0.01f, bone_colour,
+			skel_fitting_switch);
 }

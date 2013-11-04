@@ -36,6 +36,8 @@ class SkeletonFitting {
 		void save_to_file(std::string file_name);
 		void load_from_file(std::string file_name);
 		void set_current_frame(int frame_no);
+		const osg::ref_ptr<osg::Vec3Array> getJointArray() const;
+
 	private:
 		void reset_state();
 

@@ -169,3 +169,7 @@ void SkeletonFitting::set_current_frame(int frame_no) {
 void SkeletonFitting::reset_state() {
 	set_current_frame(current_frame);
 }
+
+const osg::ref_ptr<osg::Vec3Array> SkeletonFitting::getJointArray() const {
+	return joint_array;
+}

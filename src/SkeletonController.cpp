@@ -10,25 +10,18 @@
 SkeletonController::SkeletonController() :
 			state(ADD_POINTS), point_selected(false), selected_point_index(0),
 			current_frame(0) {
-	joint_colour = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
-	bone_colour = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
-	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
 SkeletonController::~SkeletonController() {
 	// TODO Auto-generated destructor stub
 }
 
-void SkeletonController::set_data(osg::ref_ptr<osg::Switch> root_node,
+void SkeletonController::set_data(osg::ref_ptr<osg::Switch> skel_fitting_switch,
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
 		osg::ref_ptr<osg::Switch> skel_vis_switch) {
-	skel_fitting_switch = root_node;
-	skel_renderer.set_data(camera_arr, skel_vis_switch);
+	skel_renderer.set_data(camera_arr, skel_vis_switch, skel_fitting_switch);
 	skeletonized3D.set_cameras(camera_arr);
 }
-
-//Type def to avoid writing this monster more than once .
-typedef std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator intersecIte;
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
@@ -56,23 +49,8 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 					intersecIte result;
 					result = intersector->getIntersections().begin();
 
-					osg::BoundingBox bb = result->drawable->getBound();
-					osg::Vec3 worldCenter = bb.center()
-							* osg::computeLocalToWorld(result->nodePath);
-
-					osg::ref_ptr<osg::MatrixTransform> selectionBox =
-							createSelectionBox();
-					selectionBox->setMatrix(
-							osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
-									bb.yMax() + 0.005 - bb.yMin(),
-									bb.zMax() + 0.005 - bb.zMin())
-									* osg::Matrix::translate(worldCenter));
-
-					skel_fitting_switch->addChild(selectionBox.get(), true);
-
-					//Get global coordinates of the point
-					osg::Vec3 aux = osg::Vec3() * selectionBox->getMatrix();
 					//Save it as a joint
+					osg::Vec3 aux = skel_renderer.add_sphere(result);
 					skel_fitting.add_joint(aux);
 					//If the skeleton is full of joints then change state and
 					//save current state of the skeleton to output file
@@ -83,48 +61,35 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 					break;
 				}
 				case MOVE_POINTS: {
-					//TODO This check should not be necessary, investigate where
-					//it is not changing state when it should
-					if (!skel_fitting.skeleton_full()) {
-						state = ADD_POINTS;
-					}
+					//Uncomment if not able to add points in given frame
+					//if (!skel_fitting.skeleton_full()) {
+					//	state = ADD_POINTS;
+					//}
 					if (!point_selected) {
-						intersecIte result;
-						result = intersector->getIntersections().begin();
+						intersecIte result =
+								intersector->getIntersections().begin();
 						osg::MatrixTransform* selected_obj =
 								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
 										0)->getParent(0));
 						if (selected_obj) {
-							for (unsigned int i = 0;
-									i < skel_fitting_switch->getNumChildren();
-									i++) {
-								if (selected_obj
-										== skel_fitting_switch->getChild(i)) {
-									point_selected = true;
-									selected_point = selected_obj;
-									selected_point_index = i;
-									change_colour_when_selected();
-								}
+							selected_point_index =
+									skel_renderer.obj_belong_skel(selected_obj);
+							if (selected_point_index >= 0) {
+								point_selected = true;
+								selected_point = selected_obj;
+								skel_renderer.change_colour_when_selected(
+										selected_point, point_selected);
 							}
 						}
 					} else {
-						intersecIte result;
-						result = intersector->getIntersections().begin();
+						intersecIte result =
+								intersector->getIntersections().begin();
 
-						osg::BoundingBox bb = result->drawable->getBound();
-						osg::Vec3 worldCenter = bb.center()
-								* osg::computeLocalToWorld(result->nodePath);
-
-						selected_point->setMatrix(
-								osg::Matrix::scale(
-										bb.xMax() + 0.005 - bb.xMin(),
-										bb.yMax() + 0.005 - bb.yMin(),
-										bb.zMax() + 0.005 - bb.zMin())
-										* osg::Matrix::translate(worldCenter));
 						point_selected = false;
-						change_colour_when_selected();
-						osg::Vec3 aux = osg::Vec3()
-								* selected_point->getMatrix();
+						skel_renderer.change_colour_when_selected(
+								selected_point, point_selected);
+						osg::Vec3 aux = skel_renderer.move_sphere(result,
+								selected_point);
 						skel_fitting.move_joint(selected_point_index, aux);
 						update_dynamics(current_frame);
 					}
@@ -140,24 +105,13 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 	return false;
 }
 
-void SkeletonController::change_colour_when_selected() {
-	osg::ref_ptr<osg::ShapeDrawable> box_shape;
-	osg::ref_ptr<osg::Geode> box_geode;
-
-	box_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
-	box_shape = static_cast<osg::ShapeDrawable*>(box_geode->getDrawable(0));
-	if (point_selected) {
-		box_shape->setColor(selection_colour);
-	} else {
-		box_shape->setColor(joint_colour);
-	}
-}
-
 void SkeletonController::load_skeleton_from_file(std::string file_name) {
 
 	skel_fitting.load_from_file(file_name);
 
 	reset_state();
+
+	update_dynamics(current_frame);
 }
 
 void SkeletonController::save_skeleton_to_file(std::string file_name) {
@@ -165,7 +119,6 @@ void SkeletonController::save_skeleton_to_file(std::string file_name) {
 }
 
 void SkeletonController::reset_state() {
-	clear_scene();
 	point_selected = false;
 	selected_point_index = 0;
 	if (skel_fitting.skeleton_full()) {
@@ -173,78 +126,19 @@ void SkeletonController::reset_state() {
 	} else {
 		state = ADD_POINTS;
 	}
-
 }
 
 void SkeletonController::draw_complete_skeleton() {
 	osg::Vec3 bone_start_position, bone_end_position;
 
-	draw_joints();
+	skel_renderer.draw_joints(skel_fitting.getJointArray());
 
 	if (skel_fitting.skeleton_full()) {
 		for (unsigned int i = 0; i < skel_fitting.get_num_bones(); i++) {
 			skel_fitting.get_bone(i, bone_start_position, bone_end_position);
-			draw_bone(bone_start_position, bone_end_position);
+			skel_renderer.draw_bone(bone_start_position, bone_end_position);
 		}
 	}
-}
-
-//TODO Move from here, maybe in MiscUtils
-void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
-		float radius, osg::Vec4 CylinderColor, osg::Group *pAddToThisGroup) {
-	osg::Vec3 center;
-	float height;
-
-	osg::ref_ptr<osg::Cylinder> cylinder;
-	osg::ref_ptr<osg::ShapeDrawable> cylinderDrawable;
-	osg::ref_ptr<osg::Material> pMaterial;
-	osg::ref_ptr<osg::Geode> geode;
-
-	height = (StartPoint - EndPoint).length();
-	center = osg::Vec3((StartPoint.x() + EndPoint.x()) / 2,
-			(StartPoint.y() + EndPoint.y()) / 2,
-			(StartPoint.z() + EndPoint.z()) / 2);
-
-	// This is the default direction for the cylinders to face in OpenGL
-	osg::Vec3 z = osg::Vec3(0, 0, 1);
-
-	// Get diff between two points you want cylinder along
-	osg::Vec3 p = (StartPoint - EndPoint);
-
-	// Get CROSS product (the axis of rotation)
-	osg::Vec3 t = z ^ p;
-
-	// Get angle. length is magnitude of the vector
-	double angle = acos((z * p) / p.length());
-
-	//   Create a cylinder between the two points with the given radius
-	cylinder = new osg::Cylinder(center, radius, height);
-	cylinder->setRotation(osg::Quat(angle, osg::Vec3(t.x(), t.y(), t.z())));
-
-	//   A geode to hold our cylinder
-	geode = new osg::Geode;
-	cylinderDrawable = new osg::ShapeDrawable(cylinder);
-	geode->addDrawable(cylinderDrawable);
-
-	//   Set the color of the cylinder that extends between the two points.
-	pMaterial = new osg::Material;
-	pMaterial->setDiffuse(osg::Material::FRONT, CylinderColor);
-	geode->getOrCreateStateSet()->setAttribute(pMaterial,
-			osg::StateAttribute::OVERRIDE);
-
-	//   Add the cylinder between the two points to an existing group
-	pAddToThisGroup->addChild(geode);
-}
-
-void SkeletonController::draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end) {
-
-	AddCylinderBetweenPoints(bone_start, bone_end, 0.01f, bone_colour,
-			skel_fitting_switch);
-}
-
-void SkeletonController::clear_scene() {
-	skel_fitting_switch->removeChildren(0,
-			skel_fitting_switch->getNumChildren());
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -258,37 +152,6 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 
 	skel_fitting.set_current_frame(current_frame);
 	draw_complete_skeleton();
-}
-
-void SkeletonController::draw_joints() {
-
-	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
-		osg::Vec3 joint_position = skel_fitting.get_joint(i);
-		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
-		selectionBox->setMatrix(
-				osg::Matrix::scale(0.02, 0.02, 0.02)
-						* osg::Matrix::translate(joint_position));
-
-		skel_fitting_switch->addChild(selectionBox.get(), true);
-	}
-}
-
-osg::ref_ptr<osg::MatrixTransform> SkeletonController::createSelectionBox() {
-
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	osg::ref_ptr<osg::ShapeDrawable> box_shape;
-	box_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
-	box_shape->setColor(joint_colour);
-
-	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
-			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-	geode->addDrawable(box_shape);
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
-
-	selectionBox->addChild(geode.get());
-
-	return selectionBox;
 }
 
 Fitting_State SkeletonController::getState() const {
