@@ -56,8 +56,8 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	//Set currently displayed frame to beginning:
 	disp_frame_no = begin_frame_no;
 
-	skel_renderer.set_data(camera_arr, skel_vis_switch);
-	skel_fitting.set_data(skel_fitting_switch);
+	//skel_renderer.set_data();
+	skel_controller.set_data(skel_fitting_switch, camera_arr, skel_vis_switch);
 }
 
 MultiCamViewer::~MultiCamViewer() {
@@ -96,7 +96,6 @@ int MultiCamViewer::run_viewer(void) {
 	//osg::ref_ptr<EventHandlingClass> ctrler =
 	//		new EventHandlingClass(&path, &file_names, root, &frame_geom);
 	//viewer.addEventHandler(ctrler.get());
-	viewer.addEventHandler(&skel_fitting);
 
 	//Free viewpoint rendering:
 	rgb_render_interactive_view->allocateImage(win_width, win_height, 1,
@@ -278,12 +277,12 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
-			skel_fitting.load_skeleton_from_file("joint_points.txt");
+			skel_controller.load_skeleton_from_file("joint_points.txt");
 			break;
 
 			//Save skeleton to file:
 		case osgGA::GUIEventAdapter::KEY_K:
-			skel_fitting.save_skeleton_to_file("joint_points.txt");
+			skel_controller.save_skeleton_to_file("joint_points.txt");
 			break;
 
 			//Exit the app, this avoids the clean up errors.
@@ -355,6 +354,7 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 		}
 	}
 
+	skel_controller.handle(ea, aa);
 	return false;
 }
 
@@ -485,8 +485,8 @@ void MultiCamViewer::update_dynamics(void) {
 		//t_3d_vis.tock_print();
 
 	}
-	skel_renderer.update_dynamics(disp_frame_no);
-	skel_fitting.update_dynamics(disp_frame_no);
+	//skel_renderer.update_dynamics(disp_frame_no);
+	skel_controller.update_dynamics(disp_frame_no);
 	//------------------------------------------
 
 //	//DEBUG TEST: Render POV

@@ -19,8 +19,11 @@ SkeletonController::~SkeletonController() {
 	// TODO Auto-generated destructor stub
 }
 
-void SkeletonController::set_data(osg::ref_ptr<osg::Switch> root_node) {
+void SkeletonController::set_data(osg::ref_ptr<osg::Switch> root_node,
+		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
+		osg::ref_ptr<osg::Switch> skel_vis_switch) {
 	skel_fitting_switch = root_node;
+	skel_renderer.set_data(camera_arr, skel_vis_switch);
 }
 
 //Type def to avoid writing this monster more than once .
@@ -247,7 +250,8 @@ void SkeletonController::clear_scene() {
 void SkeletonController::update_dynamics(int disp_frame_no) {
 	current_frame = disp_frame_no;
 	reset_state();
-	skel_fitting.set_current_frame(disp_frame_no);
+	skel_renderer.update_dynamics(current_frame);
+	skel_fitting.set_current_frame(current_frame);
 	draw_complete_skeleton();
 }
 

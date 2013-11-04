@@ -10,8 +10,8 @@
 
 #include "SkeletonFitting.h"
 #include "RenderSkeletonization.h"
+#include "Skeletonization3D.h"
 
-#include <osgGA/GUIEventHandler>
 #include <osgUtil/LineSegmentIntersector>
 #include <osgViewer/Viewer>
 #include <osg/MatrixTransform>
@@ -28,20 +28,22 @@ enum Fitting_State {
 	EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET
 };
 
-class SkeletonController: public osgGA::GUIEventHandler {
+class SkeletonController {
 	public:
 		SkeletonController();
 
 		virtual ~SkeletonController();
 
 		//Set root node for this class, it should be call after creation
-		void set_data(osg::ref_ptr<osg::Switch> root_node);
+		void set_data(osg::ref_ptr<osg::Switch> root_node,
+				std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
+				osg::ref_ptr<osg::Switch> skel_vis_switch);
 
 		Fitting_State getState() const;
 		void setState(Fitting_State state);
 
 		//Handle mouse events, to set up fitting points
-		virtual bool handle(const osgGA::GUIEventAdapter& ea,
+		bool handle(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
 
 		void load_skeleton_from_file(std::string file_name);
@@ -63,6 +65,7 @@ class SkeletonController: public osgGA::GUIEventHandler {
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 
 		//osg::ref_ptr<osg::MatrixTransform> _selectionBox;
+		RenderSkeletonization skel_renderer;
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 		Fitting_State state;
 		bool point_selected;
