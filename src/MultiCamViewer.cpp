@@ -99,8 +99,10 @@ int MultiCamViewer::run_viewer(void) {
 	viewer.addEventHandler(&skel_fitting);
 
 	//Free viewpoint rendering:
-	rgb_render_interactive_view->allocateImage( win_width, win_height, 1, GL_RGBA, GL_UNSIGNED_BYTE );
-	viewer.getCamera()->attach( osg::Camera::COLOR_BUFFER, rgb_render_interactive_view.get() );
+	rgb_render_interactive_view->allocateImage(win_width, win_height, 1,
+			GL_RGBA, GL_UNSIGNED_BYTE);
+	viewer.getCamera()->attach(osg::Camera::COLOR_BUFFER,
+			rgb_render_interactive_view.get());
 
 	return viewer.run();
 }
@@ -265,12 +267,11 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			//Pause:
 			paused = true;
 			//Cycle through frames and save them:
-			for(int i = begin_frame_no; i <= end_frame_no; i++)
-			{
+			for (int i = begin_frame_no; i <= end_frame_no; i++) {
 				disp_frame_no = i;
 				update_dynamics();
 				viewer.frame();
-				viewer.frame();  // necessary to avoid incomplete rendering in buffers
+				viewer.frame(); // necessary to avoid incomplete rendering in buffers
 				save_image_freeview();
 			}
 			break;
@@ -549,17 +550,16 @@ osg::Camera* MultiCamViewer::create_hud_camera(double left, double right,
 	return camera.release();
 }
 
-void MultiCamViewer::save_image_freeview()
-{
-    char fn[1024];
-    sprintf(fn,  "%s/Desktop/Viewer_Rendering/%05d.png", getenv("HOME"), disp_frame_no);
-    std::string rgb_freeview_fn(fn);
+void MultiCamViewer::save_image_freeview() {
+	char fn[1024];
+	sprintf(fn, "%s/Desktop/Viewer_Rendering/%05d.png", getenv("HOME"),
+			disp_frame_no);
+	std::string rgb_freeview_fn(fn);
 
-    //Save RGB image:
-    if(!osgDB::writeImageFile(*rgb_render_interactive_view, rgb_freeview_fn))
-    {
-        std::cerr << "Failed to save: " << rgb_freeview_fn << endl;
-        exit(-1);
-    }
+	//Save RGB image:
+	if (!osgDB::writeImageFile(*rgb_render_interactive_view, rgb_freeview_fn)) {
+		std::cerr << "Failed to save: " << rgb_freeview_fn << endl;
+		exit(-1);
+	}
 
 }

@@ -9,8 +9,8 @@
 
 SkeletonFitController::SkeletonFitController() :
 			state(ADD_POINTS), point_selected(false), selected_point_index(0),
-			current_frame(0){
-	joint_colour = osg::Vec4(0.0f, 0.0f, 0.0f, 1.0); //Black
+			current_frame(0) {
+	joint_colour = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
 	bone_colour = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
 	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
@@ -74,10 +74,16 @@ bool SkeletonFitController::handle(const osgGA::GUIEventAdapter& ea,
 					//save current state of the skeleton to output file
 					if (skel_fitting.skeleton_full()) {
 						state = MOVE_POINTS;
+						//update_dynamics(current_frame);
 					}
 					break;
 				}
 				case MOVE_POINTS: {
+					//TODO This check should not be necessary, investigate where
+					//it is not changing state when it should
+					if (!skel_fitting.skeleton_full()) {
+						state = ADD_POINTS;
+					}
 					if (!point_selected) {
 						intersecIte result;
 						result = intersector->getIntersections().begin();
@@ -179,7 +185,7 @@ void SkeletonFitController::draw_complete_skeleton() {
 	}
 }
 
-
+//TODO Move from here, maybe in MiscUtils
 void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
 		float radius, osg::Vec4 CylinderColor, osg::Group *pAddToThisGroup) {
 	osg::Vec3 center;
@@ -264,6 +270,9 @@ osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 	osg::ref_ptr<osg::ShapeDrawable> box_shape;
 	box_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
 	box_shape->setColor(joint_colour);
+
+	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	geode->addDrawable(box_shape);
 	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
