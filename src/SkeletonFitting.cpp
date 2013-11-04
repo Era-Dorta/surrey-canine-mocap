@@ -8,7 +8,7 @@
 #include "SkeletonFitting.h"
 
 SkeletonFitting::SkeletonFitting() :
-			max_joints(19) {
+			max_joints(19), current_frame(0) {
 	joint_array = new osg::Vec3Array();
 	bone_array.reserve(18);
 
@@ -121,7 +121,11 @@ unsigned int SkeletonFitting::get_num_bones() {
 	return bone_array.size();
 }
 
-void SkeletonFitting::get_bone(unsigned int index, osg::Vec3& i_pos, osg::Vec3& e_pos) {
+void SkeletonFitting::get_bone(unsigned int index, osg::Vec3& i_pos,
+		osg::Vec3& e_pos) {
 	i_pos = (*joint_array)[bone_array[index].first];
 	e_pos = (*joint_array)[bone_array[index].second];
+}
+
+void SkeletonFitting::set_current_frame(int frame_no) {
 }

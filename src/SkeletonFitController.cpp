@@ -154,26 +154,28 @@ void SkeletonFitController::save_skeleton_to_file(std::string file_name) {
 }
 
 void SkeletonFitController::reset_state() {
-	skel_fitting_switch->removeChildren(0, skel_fitting_switch->getNumChildren() );
+	skel_fitting_switch->removeChildren(0,
+			skel_fitting_switch->getNumChildren());
 	point_selected = false;
 	selected_point_index = 0;
 	state = MOVE_POINTS;
 }
 
-void SkeletonFitController::draw_complete_skeleton() {
+void SkeletonFitController::draw_complete_skeleton(int disp_frame_no) {
 	osg::Vec3 bone_start_position, bone_end_position;
 
 	draw_joints();
 
-	if(skel_fitting.skeleton_full()){
-		for(unsigned int i = 0; i < skel_fitting.get_num_bones(); i++){
+	if (skel_fitting.skeleton_full()) {
+		for (unsigned int i = 0; i < skel_fitting.get_num_bones(); i++) {
 			skel_fitting.get_bone(i, bone_start_position, bone_end_position);
 			draw_bone(bone_start_position, bone_end_position);
 		}
 	}
 }
 
-void SkeletonFitController::draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end ) {
+void SkeletonFitController::draw_bone(osg::Vec3& bone_start,
+		osg::Vec3& bone_end) {
 
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 
@@ -181,14 +183,14 @@ void SkeletonFitController::draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end
 	vertices->push_back(bone_start);
 	vertices->push_back(bone_end);
 
-	osg::ref_ptr<osg::Geometry> line_geometry( new osg::Geometry);
+	osg::ref_ptr<osg::Geometry> line_geometry(new osg::Geometry);
 	line_geometry->setVertexArray(vertices.get());
 
 	osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
 	color->push_back(bone_colour);
 	line_geometry->setColorArray(color);
 	line_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
-	line_geometry->addPrimitiveSet(new osg::DrawArrays(GL_LINES,0,2));
+	line_geometry->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, 2));
 
 	geode->addDrawable(line_geometry.get());
 	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
@@ -197,47 +199,48 @@ void SkeletonFitController::draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end
 }
 
 void SkeletonFitController::clear_scene() {
-	skel_fitting_switch->removeChildren(0, skel_fitting_switch->getNumChildren());
+	skel_fitting_switch->removeChildren(0,
+			skel_fitting_switch->getNumChildren());
 }
 
-void SkeletonFitController::update_dynamics() {
+void SkeletonFitController::update_dynamics(int disp_frame_no) {
 	clear_scene();
 
-	draw_complete_skeleton();
+draw_complete_skeleton(int disp_frame_no);
 }
 
 void SkeletonFitController::draw_joints() {
 
-	for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
-		osg::Vec3 joint_position = skel_fitting.get_joint(i);
-		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
-		selectionBox->setMatrix(
-				osg::Matrix::scale(0.01, 0.01, 0.01)
-						* osg::Matrix::translate(joint_position));
+for (unsigned int i = 0; i < skel_fitting.get_num_joints(); i++) {
+	osg::Vec3 joint_position = skel_fitting.get_joint(i);
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+	selectionBox->setMatrix(
+			osg::Matrix::scale(0.01, 0.01, 0.01)
+					* osg::Matrix::translate(joint_position));
 
-		skel_fitting_switch->addChild(selectionBox.get(), true);
-	}
+	skel_fitting_switch->addChild(selectionBox.get(), true);
+}
 }
 
 osg::ref_ptr<osg::MatrixTransform> SkeletonFitController::createSelectionBox() {
 
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	osg::ref_ptr<osg::ShapeDrawable> box_shape;
-	box_shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f));
-	box_shape->setColor(joint_colour);
+osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+osg::ref_ptr<osg::ShapeDrawable> box_shape;
+box_shape = new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.0f));
+box_shape->setColor(joint_colour);
 
-	geode->addDrawable(box_shape);
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
+geode->addDrawable(box_shape);
+osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
 
-	selectionBox->addChild(geode.get());
+selectionBox->addChild(geode.get());
 
-	return selectionBox;
+return selectionBox;
 }
 
 Fitting_State SkeletonFitController::getState() const {
-	return state;
+return state;
 }
 
 void SkeletonFitController::setState(Fitting_State state) {
-	this->state = state;
+this->state = state;
 }
