@@ -9,9 +9,9 @@
 
 SkeletonFitting::SkeletonFitting() :
 			max_joints(19), current_frame(0) {
-	joint_array = new osg::Vec3Array();
 	bone_array.reserve(18);
 
+	joint_array = new osg::Vec3Array;
 	//Right front Leg
 	bone_array.push_back(std::make_pair(0, 1));
 	bone_array.push_back(std::make_pair(1, 2));
@@ -79,11 +79,19 @@ void SkeletonFitting::save_to_file(std::string file_name) {
 	std::ofstream out_file;
 	out_file.open(file_name.c_str());
 
-	out_file << joint_array->size() << endl;
-	for (unsigned int i = 0; i < joint_array->size(); i++) {
-		out_file << (*joint_array)[i][0] << endl;
-		out_file << (*joint_array)[i][1] << endl;
-		out_file << (*joint_array)[i][2] << endl;
+	out_file << joint_frame_array.size() << endl;
+	for (unsigned int i = 0; i < joint_frame_array.size(); i++) {
+		joint_array = joint_frame_array[i];
+		if (joint_array.valid()) {
+			out_file << joint_array->size() << endl;
+			for (unsigned int j = 0; j < joint_array->size(); j++) {
+				out_file << (*joint_array)[j][0] << endl;
+				out_file << (*joint_array)[j][1] << endl;
+				out_file << (*joint_array)[j][2] << endl;
+			}
+		} else {
+			out_file << "0" << endl;
+		}
 	}
 	out_file.close();
 }
@@ -96,25 +104,40 @@ void SkeletonFitting::load_from_file(std::string file_name) {
 	std::ifstream in_file;
 	in_file.open(file_name.c_str());
 	if (in_file.is_open()) {
-		joint_array->clear();
+		if (joint_array.valid()) {
+			joint_array->clear();
+		}
+		joint_frame_array.clear();
 		std::string line;
 		std::getline(in_file, line);
-		unsigned int num_vectors = atoi(line.c_str());
+		unsigned int num_frames = atoi(line.c_str());
+		joint_frame_array.resize(num_frames);
 		float x, y, z;
-		for (unsigned int i = 0; i < num_vectors; i++) {
 
+		for (unsigned int i = 0; i < num_frames; i++) {
 			std::getline(in_file, line);
-			x = atof(line.c_str());
-			std::getline(in_file, line);
-			y = atof(line.c_str());
-			std::getline(in_file, line);
-			z = atof(line.c_str());
+			unsigned int num_vectors = atoi(line.c_str());
 
-			osg::Vec3 point(x, y, z);
-			joint_array->push_back(point);
+			joint_array = new osg::Vec3Array;
+
+			for (unsigned int j = 0; j < num_vectors; j++) {
+
+				std::getline(in_file, line);
+				x = atof(line.c_str());
+				std::getline(in_file, line);
+				y = atof(line.c_str());
+				std::getline(in_file, line);
+				z = atof(line.c_str());
+
+				osg::Vec3 point(x, y, z);
+				joint_array->push_back(point);
+			}
+			joint_frame_array[i] = joint_array;
 		}
 	}
 	in_file.close();
+
+	reset_state();
 }
 
 unsigned int SkeletonFitting::get_num_bones() {
@@ -128,4 +151,21 @@ void SkeletonFitting::get_bone(unsigned int index, osg::Vec3& i_pos,
 }
 
 void SkeletonFitting::set_current_frame(int frame_no) {
+	current_frame = frame_no;
+
+	//Frame beyond vector
+	if (current_frame >= joint_frame_array.size()) {
+		joint_frame_array.resize(current_frame + 1);
+	}
+
+	//Joint no still initialised
+	if (!joint_frame_array[current_frame].valid()) {
+		joint_frame_array[current_frame] = new osg::Vec3Array();
+	}
+
+	joint_array = joint_frame_array[current_frame];
+}
+
+void SkeletonFitting::reset_state() {
+	set_current_frame(current_frame);
 }

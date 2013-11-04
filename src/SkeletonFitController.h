@@ -53,7 +53,7 @@ class SkeletonFitController: public osgGA::GUIEventHandler {
 		void change_colour_when_selected();
 		void reset_state();
 		void draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end);
-		void draw_complete_skeleton(int disp_frame_no);
+		void draw_complete_skeleton();
 		void draw_joints();
 		void clear_scene();
 
