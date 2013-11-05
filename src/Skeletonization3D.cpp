@@ -312,8 +312,20 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 	int n_total_merge = 0;
 
-	//Merge the skeletons, uses the projections to calculate distances and the
-	//2D images to follow the bone path
+
+	/*std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
+	projection3d = projection3d_array.begin();
+	for (; projection3d != projection3d_array.end(); ++projection3d) {
+		//For each point
+		std::map<osg::Vec2, osg::Vec3>::iterator point;
+		for (point = projection3d->begin(); point != projection3d->end();
+				++point) {
+			result->push_back(point->second);
+		}
+	}*/
+
+	//Finds the first white pixel in the bottom-left of one of the 2D skeleton
+	//images, then merges it with the closest pixel in the other images.
 	for (int i = 0; i < n_cameras; i++) {
 		//TODO This searches a white pixel beginning on the bottom-left each time
 		//if I save the position it fails, also it could be useful
@@ -341,12 +353,19 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 			float current_dist, smallest_dist = FLT_MAX;
 
-			//For each other projection
+			//For each projection
 			std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator other_projection3d;
-			other_projection3d = projection3d_array.begin() + i + 1;
+			other_projection3d = projection3d_array.begin();
 			int j = 0;
 			for (; other_projection3d != projection3d_array.end();
 					++other_projection3d) {
+
+				//If this is current projection, do not average with self
+				//pixels, so continue
+				if(other_projection3d == projection3d_array.begin() + i){
+					j++;
+					continue;
+				}
 
 				bool pixel_found = false;
 
@@ -375,11 +394,11 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 					n_pixel_merge++;
 					n_total_merge++;
 					merged_pixel = merged_pixel + to_merge_point->second;
-					//Set visited as 0, since it was used
+					//Set visited as 0, since it was used, but do not deleted
+					//from the array of points, so it can be used to average
+					//other points
 					visited_pixels[j].at<uchar>(to_merge_point->first.x(),
 							to_merge_point->first.y()) = 0;
-					//Delete it from the 3D projected points container
-					other_projection3d->erase(to_merge_point);
 				}
 				j++;
 			}
