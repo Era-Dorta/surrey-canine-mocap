@@ -92,7 +92,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 			osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
 			shape1->setShape(
 					new osg::Box((*vertices)[j], 0.005f, 0.005f, 0.005f));
-			shape1->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //red
+			shape1->setColor(osg::Vec4(camera_arr[i]->getVisColour(), 1.0f));
 			skel_geode->addDrawable(shape1.get());
 		}
 
@@ -115,7 +115,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 	for (unsigned int j = 0; j < vertices->size(); j++) {
 		osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
 		shape1->setShape(new osg::Box((*vertices)[j], 0.005f, 0.005f, 0.005f));
-		shape1->setColor(osg::Vec4(0.0f, 1.0f, 0.0f, 1.0)); //green
+		shape1->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //Red
 		skel_geode->addDrawable(shape1.get());
 	}
 
@@ -222,15 +222,15 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox() {
 void RenderSkeletonization::change_colour_when_selected(
 		osg::ref_ptr<osg::MatrixTransform> selected_point,
 		bool point_selected) {
-	osg::ref_ptr<osg::ShapeDrawable> box_shape;
-	osg::ref_ptr<osg::Geode> box_geode;
+	osg::ref_ptr<osg::ShapeDrawable> obj_shape;
+	osg::ref_ptr<osg::Geode> obj_geode;
 
-	box_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
-	box_shape = static_cast<osg::ShapeDrawable*>(box_geode->getDrawable(0));
+	obj_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
+	obj_shape = static_cast<osg::ShapeDrawable*>(obj_geode->getDrawable(0));
 	if (point_selected) {
-		box_shape->setColor(selection_colour);
+		obj_shape->setColor(selection_colour);
 	} else {
-		box_shape->setColor(joint_colour);
+		obj_shape->setColor(joint_colour);
 	}
 }
 

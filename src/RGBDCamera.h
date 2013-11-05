@@ -65,6 +65,8 @@ class RGBD_Camera {
 				std::vector<std::vector<cv::Point> >& surface_paths);
 		void get_surface_paths_3d(int frame_num,
 				std::vector<std::vector<float3> >& surface_paths_3d);
+		const osg::Vec3& getVisColour() const;
+
 		osg::ref_ptr<osg::Group> cam_group;
 		osg::ref_ptr<osg::Group> skel_vis_group;
 		//DepthMapPoly depth_poly;

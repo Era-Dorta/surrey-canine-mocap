@@ -753,3 +753,7 @@ void RGBD_Camera::bilateral_filter_frames(void) {
 		depth_bilateral_filtered.convertTo(((*i).second.depth_img), CV_16U);
 	}
 }
+
+const osg::Vec3& RGBD_Camera::getVisColour() const {
+	return vis_colour;
+}
