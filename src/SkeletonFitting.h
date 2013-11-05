@@ -15,8 +15,11 @@ class SkeletonFitting {
 	public:
 		SkeletonFitting();
 		virtual ~SkeletonFitting();
-		void fit_skeleton_into_cloud(Skeleton& skeleton, osg::ref_ptr<osg::Vec3Array> cloud);
+		void fit_skeleton_into_cloud(Skeleton& skeleton,
+				osg::ref_ptr<osg::Vec3Array> cloud);
 		void fit_skeleton_with_prev_nex_frame(Skeleton& skeleton, int frame);
+	private:
+		float move_joint_max_dist;
 };
 
 #endif /* SKELETONFITTING_H_ */
