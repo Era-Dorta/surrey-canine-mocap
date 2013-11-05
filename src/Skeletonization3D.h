@@ -55,12 +55,6 @@ class Skeletonization3D {
 				int i_row, int i_col);
 
 		//Translate a set of given points, away from a camera a distance.
-		//Points should be in GLOBAL coordinates
-		void translate_points_to_inside(
-				std::map<osg::Vec2, osg::Vec3>& projection3d,
-				int cam_num) const;
-
-		//Translate a set of given points, away from a camera a distance.
 		//Points should be in CAMERA coordinates
 		void translate_points_to_inside(
 				osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num) const;

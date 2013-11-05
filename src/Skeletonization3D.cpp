@@ -136,19 +136,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
 	return skeleton_frames[frame_num];
 }
 
-//TODO This is not translating as it should.. dont know what to to
-void Skeletonization3D::translate_points_to_inside(
-		std::map<osg::Vec2, osg::Vec3>& projection3d, int cam_num) const {
-	std::map<osg::Vec2, osg::Vec3>::iterator point;
-	float4 aux = make_float4(0, 0, move_distance, 1);
-	float4 res = aux * camera_arr[cam_num]->get_T_f4x4();
-	osg::Vec3 translation(res.x, res.y, res.z);
-
-	for (point = projection3d.begin(); point != projection3d.end(); ++point) {
-		point->second = point->second + translation;
-	}
-}
-
 void Skeletonization3D::translate_points_to_inside(
 		osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num) const {
 	osg::Vec3Array::iterator point;
@@ -187,6 +174,8 @@ void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 					//Reproject it:
 					float3 depth_pix_hom = make_float3(col, row, 1.f);
 					float3 vert = depth * (inv_K * depth_pix_hom);
+					//Move all points slightly away from its camera, so they represent a
+					//point inside the boy and not on the body
 					vert.z = vert.z + move_distance;
 					float4 vert_hom = make_float4(vert, 1.f);
 					float4 vert_global = T * vert_hom;
@@ -210,15 +199,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		//Calculate 3D projection
 		std::map<osg::Vec2, osg::Vec3> aux;
 		get_global_coord_3d_projection(i, frame_num, aux);
-
-		//Move all points slightly away from its camera, so they represent a
-		//point inside the boy and not on the body
-		//translate_points_to_inside(aux, i, move_distance);
-		//TODO A possible optimisation is to multiply camera matrix with this
-		//translation, so everything will be done in one operation
-
 		projection3d_array.push_back(aux);
-
 		//Initialise visited pixel matrices
 		visited_pixels.push_back(skel_arr[i]->get_frame(frame_num)->clone());
 	}
