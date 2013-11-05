@@ -136,6 +136,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
 	return skeleton_frames[frame_num];
 }
 
+//TODO This is not translating as it should.. dont know what to to
 void Skeletonization3D::translate_points_to_inside(
 		std::map<osg::Vec2, osg::Vec3>& projection3d, int cam_num,
 		float distance) const {
@@ -225,10 +226,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	osg::ref_ptr<osg::Vec3Array> result;
 
-	//merge_treshold = 0.2;
 	//result = simple_2D_merge(projection3d_array);
 
-	merge_treshold = 0.1;
 	result = follow_path_2D_merge(visited_pixels, projection3d_array);
 
 	return result.get();
@@ -312,7 +311,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 	int skeleton_num_points = 0;
 
 	int n_total_merge = 0;
-	//Timer t("2dpath_merge");
 
 	//Merge the skeletons, uses the projections to calculate distances and the
 	//2D images to follow the bone path
@@ -408,7 +406,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 			}
 		}
 	}
-	//t.tock_print();
+
 	//cout << "skeleton_num_points " << skeleton_num_points << " merged points " << n_total_merge << endl;
 	return result.get();
 }

@@ -10,7 +10,10 @@
 
 class Skeletonization3D {
 	public:
-		Skeletonization3D(float merge_treshold_ = 0.2, float move_distance_ =
+		//Merge bone which are 5 cm apart from each other
+		//Move bones inside the skin 2.5 cm since cameras indicate where is the
+		//skin but not the bones.
+		Skeletonization3D(float merge_treshold_ = 0.05, float move_distance_ =
 				0.025);
 
 		virtual ~Skeletonization3D();
