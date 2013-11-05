@@ -20,10 +20,10 @@
 using std::cout;
 using std::endl;
 
-class SkeletonFitting {
+class Skeleton {
 	public:
-		SkeletonFitting();
-		virtual ~SkeletonFitting();
+		Skeleton();
+		virtual ~Skeleton();
 		void add_joint(osg::Vec3& joint);
 		void move_joint(unsigned int index, osg::Vec3& new_pos);
 		void delete_joint(unsigned int index);

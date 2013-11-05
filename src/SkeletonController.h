@@ -8,7 +8,7 @@
 #ifndef SKELETONCONTROLLER_H_
 #define SKELETONCONTROLLER_H_
 
-#include "SkeletonFitting.h"
+#include "Skeleton.h"
 #include "RenderSkeletonization.h"
 #include "Skeletonization3D.h"
 
@@ -61,7 +61,7 @@ class SkeletonController {
 		bool point_selected;
 		osg::ref_ptr<osg::MatrixTransform> selected_point;
 		int selected_point_index;
-		SkeletonFitting skel_fitting;
+		Skeleton skeleton;
 		int current_frame;
 };
 

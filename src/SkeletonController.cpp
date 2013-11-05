@@ -51,10 +51,10 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 
 					//Save it as a joint
 					osg::Vec3 aux = skel_renderer.add_sphere(result);
-					skel_fitting.add_joint(aux);
+					skeleton.add_joint(aux);
 					//If the skeleton is full of joints then change state and
 					//save current state of the skeleton to output file
-					if (skel_fitting.skeleton_full()) {
+					if (skeleton.skeleton_full()) {
 						state = MOVE_POINTS;
 						//update_dynamics(current_frame);
 					}
@@ -90,7 +90,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 								selected_point, point_selected);
 						osg::Vec3 aux = skel_renderer.move_sphere(result,
 								selected_point);
-						skel_fitting.move_joint(selected_point_index, aux);
+						skeleton.move_joint(selected_point_index, aux);
 						update_dynamics(current_frame);
 					}
 					break;
@@ -107,7 +107,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 
 void SkeletonController::load_skeleton_from_file(std::string file_name) {
 
-	skel_fitting.load_from_file(file_name);
+	skeleton.load_from_file(file_name);
 
 	reset_state();
 
@@ -115,13 +115,13 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 }
 
 void SkeletonController::save_skeleton_to_file(std::string file_name) {
-	skel_fitting.save_to_file(file_name);
+	skeleton.save_to_file(file_name);
 }
 
 void SkeletonController::reset_state() {
 	point_selected = false;
 	selected_point_index = 0;
-	if (skel_fitting.skeleton_full()) {
+	if (skeleton.skeleton_full()) {
 		state = MOVE_POINTS;
 	} else {
 		state = ADD_POINTS;
@@ -131,11 +131,11 @@ void SkeletonController::reset_state() {
 void SkeletonController::draw_complete_skeleton() {
 	osg::Vec3 bone_start_position, bone_end_position;
 
-	skel_renderer.draw_joints(skel_fitting.getJointArray());
+	skel_renderer.draw_joints(skeleton.getJointArray());
 
-	if (skel_fitting.skeleton_full()) {
-		for (unsigned int i = 0; i < skel_fitting.get_num_bones(); i++) {
-			skel_fitting.get_bone(i, bone_start_position, bone_end_position);
+	if (skeleton.skeleton_full()) {
+		for (unsigned int i = 0; i < skeleton.get_num_bones(); i++) {
+			skeleton.get_bone(i, bone_start_position, bone_end_position);
 			skel_renderer.draw_bone(bone_start_position, bone_end_position);
 		}
 	}
@@ -150,7 +150,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
 			skeletonized3D);
 
-	skel_fitting.set_current_frame(current_frame);
+	skeleton.set_current_frame(current_frame);
 	draw_complete_skeleton();
 }
 

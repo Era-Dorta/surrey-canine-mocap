@@ -5,9 +5,9 @@
  *      Author: m04701
  */
 
-#include "SkeletonFitting.h"
+#include "Skeleton.h"
 
-SkeletonFitting::SkeletonFitting() :
+Skeleton::Skeleton() :
 			max_joints(19), current_frame(0) {
 	bone_array.reserve(18);
 
@@ -45,37 +45,37 @@ SkeletonFitting::SkeletonFitting() :
 	bone_array.push_back(std::make_pair(12, 18));
 }
 
-SkeletonFitting::~SkeletonFitting() {
+Skeleton::~Skeleton() {
 	// TODO Auto-generated destructor stub
 }
 
-void SkeletonFitting::add_joint(osg::Vec3& joint) {
+void Skeleton::add_joint(osg::Vec3& joint) {
 	if (joint_array->size() < max_joints) {
 		joint_array->push_back(joint);
 	}
 }
 
-void SkeletonFitting::move_joint(unsigned int index, osg::Vec3& new_pos) {
+void Skeleton::move_joint(unsigned int index, osg::Vec3& new_pos) {
 	(*joint_array)[index] = new_pos;
 }
 
-void SkeletonFitting::delete_joint(unsigned int index) {
+void Skeleton::delete_joint(unsigned int index) {
 	joint_array->erase(joint_array->begin() + index);
 }
 
-osg::Vec3 SkeletonFitting::get_joint(unsigned int index) {
+osg::Vec3 Skeleton::get_joint(unsigned int index) {
 	return (*joint_array)[index];
 }
 
-unsigned int SkeletonFitting::get_max_joints() {
+unsigned int Skeleton::get_max_joints() {
 	return max_joints;
 }
 
-bool SkeletonFitting::skeleton_full() {
+bool Skeleton::skeleton_full() {
 	return max_joints == joint_array->size();
 }
 
-void SkeletonFitting::save_to_file(std::string file_name) {
+void Skeleton::save_to_file(std::string file_name) {
 	std::ofstream out_file;
 	out_file.open(file_name.c_str());
 
@@ -96,11 +96,11 @@ void SkeletonFitting::save_to_file(std::string file_name) {
 	out_file.close();
 }
 
-unsigned int SkeletonFitting::get_num_joints() {
+unsigned int Skeleton::get_num_joints() {
 	return joint_array->size();
 }
 
-void SkeletonFitting::load_from_file(std::string file_name) {
+void Skeleton::load_from_file(std::string file_name) {
 	std::ifstream in_file;
 	in_file.open(file_name.c_str());
 	if (in_file.is_open()) {
@@ -140,17 +140,17 @@ void SkeletonFitting::load_from_file(std::string file_name) {
 	reset_state();
 }
 
-unsigned int SkeletonFitting::get_num_bones() {
+unsigned int Skeleton::get_num_bones() {
 	return bone_array.size();
 }
 
-void SkeletonFitting::get_bone(unsigned int index, osg::Vec3& i_pos,
+void Skeleton::get_bone(unsigned int index, osg::Vec3& i_pos,
 		osg::Vec3& e_pos) {
 	i_pos = (*joint_array)[bone_array[index].first];
 	e_pos = (*joint_array)[bone_array[index].second];
 }
 
-void SkeletonFitting::set_current_frame(int frame_no) {
+void Skeleton::set_current_frame(int frame_no) {
 	current_frame = frame_no;
 
 	//Frame beyond vector
@@ -166,10 +166,10 @@ void SkeletonFitting::set_current_frame(int frame_no) {
 	joint_array = joint_frame_array[current_frame];
 }
 
-void SkeletonFitting::reset_state() {
+void Skeleton::reset_state() {
 	set_current_frame(current_frame);
 }
 
-const osg::ref_ptr<osg::Vec3Array> SkeletonFitting::getJointArray() const {
+const osg::ref_ptr<osg::Vec3Array> Skeleton::getJointArray() const {
 	return joint_array;
 }

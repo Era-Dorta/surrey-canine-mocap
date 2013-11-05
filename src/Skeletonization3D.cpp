@@ -127,7 +127,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
 		}
 	}
 
-	translate_points_to_inside(skeleton_3d.get(), cam_num, move_distance);
+	//translate_points_to_inside(skeleton_3d.get(), cam_num, move_distance);
 	return skeleton_3d.get();
 }
 
@@ -214,7 +214,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 		//Move all points slightly away from its camera, so they represent a
 		//point inside the boy and not on the body
-		translate_points_to_inside(aux, i, move_distance);
+		//translate_points_to_inside(aux, i, move_distance);
 		//TODO A possible optimisation is to multiply camera matrix with this
 		//translation, so everything will be done in one operation
 
