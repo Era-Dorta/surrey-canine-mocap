@@ -65,7 +65,7 @@ void Skeleton::delete_joint(unsigned int index) {
 	joint_array->erase(joint_array->begin() + index);
 }
 
-osg::Vec3 Skeleton::get_joint(unsigned int index) {
+const osg::Vec3& Skeleton::get_joint(unsigned int index) {
 	return (*joint_array)[index];
 }
 

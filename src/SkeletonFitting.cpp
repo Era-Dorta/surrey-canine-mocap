@@ -16,3 +16,10 @@ SkeletonFitting::~SkeletonFitting() {
 	// TODO Auto-generated destructor stub
 }
 
+void SkeletonFitting::fit_skeleton_into_cloud(Skeleton& skeleton,
+		osg::ref_ptr<osg::Vec3Array> cloud) {
+}
+
+void SkeletonFitting::fit_skeleton_with_prev_nex_frame(Skeleton& skeleton,
+		int frame) {
+}

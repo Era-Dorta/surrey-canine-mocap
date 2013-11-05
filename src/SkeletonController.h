@@ -11,6 +11,7 @@
 #include "Skeleton.h"
 #include "RenderSkeletonization.h"
 #include "Skeletonization3D.h"
+#include "SkeletonFitting.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -56,6 +57,10 @@ class SkeletonController {
 
 		//Class that renders all skeleton related objects
 		RenderSkeletonization skel_renderer;
+
+		//Class with methods to modify(and create???) a skeleton to fit into a
+		//cloud of points that represent a skeleton.
+		SkeletonFitting skel_fitter;
 
 		Fitting_State state;
 		bool point_selected;

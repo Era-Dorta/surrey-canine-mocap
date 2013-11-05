@@ -5,8 +5,8 @@
  *      Author: m04701
  */
 
-#ifndef SKELETONFITTING_H_
-#define SKELETONFITTING_H_
+#ifndef SKELETON_H_
+#define SKELETON_H_
 
 #include <osg/Vec3>
 #include <osg/Group>
@@ -27,7 +27,7 @@ class Skeleton {
 		void add_joint(osg::Vec3& joint);
 		void move_joint(unsigned int index, osg::Vec3& new_pos);
 		void delete_joint(unsigned int index);
-		osg::Vec3 get_joint(unsigned int index);
+		const osg::Vec3& get_joint(unsigned int index);
 		unsigned int get_num_joints();
 		unsigned int get_max_joints();
 		unsigned int get_num_bones();
@@ -48,4 +48,4 @@ class Skeleton {
 		int current_frame;
 };
 
-#endif /* SKELETONFITTING_H_ */
+#endif /* SKELETON_H_ */
