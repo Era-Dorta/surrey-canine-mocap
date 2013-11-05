@@ -1,9 +1,9 @@
 #include "Skeletonization3D.h"
 
-Skeletonization3D::Skeletonization3D(float merge_treshold_,
+Skeletonization3D::Skeletonization3D(float merge_treshold_, float row_treshold_,
 		float move_distance_) :
 			n_cameras(0), n_frames(0), merge_treshold(merge_treshold_),
-			move_distance(move_distance_) {
+			row_treshold(row_treshold_), move_distance(move_distance_) {
 
 }
 
@@ -312,18 +312,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 	int n_total_merge = 0;
 
-
-	/*std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
-	projection3d = projection3d_array.begin();
-	for (; projection3d != projection3d_array.end(); ++projection3d) {
-		//For each point
-		std::map<osg::Vec2, osg::Vec3>::iterator point;
-		for (point = projection3d->begin(); point != projection3d->end();
-				++point) {
-			result->push_back(point->second);
-		}
-	}*/
-
 	//Finds the first white pixel in the bottom-left of one of the 2D skeleton
 	//images, then merges it with the closest pixel in the other images.
 	for (int i = 0; i < n_cameras; i++) {
@@ -362,7 +350,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 				//If this is current projection, do not average with self
 				//pixels, so continue
-				if(other_projection3d == projection3d_array.begin() + i){
+				if (other_projection3d == projection3d_array.begin() + i) {
 					j++;
 					continue;
 				}
@@ -375,17 +363,25 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 				other_point = other_projection3d->begin();
 				for (; other_point != other_projection3d->end();
 						++other_point) {
-					cv::Point3f p1;
-					p1.x = other_point->second.x();
-					p1.y = other_point->second.y();
-					p1.z = other_point->second.z();
 
-					current_dist = cv::norm(p0 - p1);
-					if (current_dist < smallest_dist) {
-						smallest_dist = current_dist;
-						if (current_dist < merge_treshold) {
-							pixel_found = true;
-							to_merge_point = other_point;
+					//The merging is usually for vertical bones,
+					//this helps not to merge vertical with horizontal bones
+					//and loose important information. It also increases speed
+					//as it avoids calculating many costly distances
+					if (p0.z + row_treshold > other_point->second.z()
+							&& p0.z - row_treshold < other_point->second.z()) {
+						cv::Point3f p1;
+						p1.x = other_point->second.x();
+						p1.y = other_point->second.y();
+						p1.z = other_point->second.z();
+
+						current_dist = cv::norm(p0 - p1);
+						if (current_dist < smallest_dist) {
+							smallest_dist = current_dist;
+							if (current_dist < merge_treshold) {
+								pixel_found = true;
+								to_merge_point = other_point;
+							}
 						}
 					}
 				}
@@ -426,6 +422,5 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 		}
 	}
 
-	//cout << "skeleton_num_points " << skeleton_num_points << " merged points " << n_total_merge << endl;
 	return result.get();
 }
