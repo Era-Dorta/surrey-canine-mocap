@@ -8,7 +8,7 @@
 #include "Skeleton.h"
 
 Skeleton::Skeleton() :
-			max_joints(19), current_frame(0) {
+			max_joints(21), current_frame(0) {
 	bone_array.reserve(18);
 
 	joint_array = new osg::Vec3Array;
@@ -28,21 +28,23 @@ Skeleton::Skeleton() :
 	bone_array.push_back(std::make_pair(9, 10));
 	bone_array.push_back(std::make_pair(10, 11));
 	bone_array.push_back(std::make_pair(11, 12));
+	bone_array.push_back(std::make_pair(12, 13));
 
 	//Left back Leg
-	bone_array.push_back(std::make_pair(12, 13));
 	bone_array.push_back(std::make_pair(13, 14));
 	bone_array.push_back(std::make_pair(14, 15));
-
-	//Head
-	bone_array.push_back(std::make_pair(4, 17));
+	bone_array.push_back(std::make_pair(15, 16));
 	bone_array.push_back(std::make_pair(16, 17));
 
+	//Head
+	bone_array.push_back(std::make_pair(4, 19));
+	bone_array.push_back(std::make_pair(18, 19));
+
 	//Back
-	bone_array.push_back(std::make_pair(4, 12));
+	bone_array.push_back(std::make_pair(4, 13));
 
 	//Tail
-	bone_array.push_back(std::make_pair(12, 18));
+	bone_array.push_back(std::make_pair(13, 20));
 }
 
 Skeleton::~Skeleton() {
