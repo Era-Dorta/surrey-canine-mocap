@@ -127,7 +127,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
 		}
 	}
 
-	//translate_points_to_inside(skeleton_3d.get(), cam_num, move_distance);
+	translate_points_to_inside(skeleton_3d.get(), cam_num);
 	return skeleton_3d.get();
 }
 
@@ -138,10 +138,9 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
 
 //TODO This is not translating as it should.. dont know what to to
 void Skeletonization3D::translate_points_to_inside(
-		std::map<osg::Vec2, osg::Vec3>& projection3d, int cam_num,
-		float distance) const {
+		std::map<osg::Vec2, osg::Vec3>& projection3d, int cam_num) const {
 	std::map<osg::Vec2, osg::Vec3>::iterator point;
-	float4 aux = make_float4(0, 0, distance, 1);
+	float4 aux = make_float4(0, 0, move_distance, 1);
 	float4 res = aux * camera_arr[cam_num]->get_T_f4x4();
 	osg::Vec3 translation(res.x, res.y, res.z);
 
@@ -151,10 +150,9 @@ void Skeletonization3D::translate_points_to_inside(
 }
 
 void Skeletonization3D::translate_points_to_inside(
-		osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num,
-		float distance) const {
+		osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num) const {
 	osg::Vec3Array::iterator point;
-	osg::Vec3 translation(0, 0, distance);
+	osg::Vec3 translation(0, 0, move_distance);
 
 	for (point = projection3d->begin(); point != projection3d->end(); ++point) {
 		*point = *point + translation;
@@ -189,6 +187,7 @@ void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 					//Reproject it:
 					float3 depth_pix_hom = make_float3(col, row, 1.f);
 					float3 vert = depth * (inv_K * depth_pix_hom);
+					vert.z = vert.z + move_distance;
 					float4 vert_hom = make_float4(vert, 1.f);
 					float4 vert_global = T * vert_hom;
 					//Add to array

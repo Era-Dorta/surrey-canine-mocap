@@ -14,7 +14,7 @@ class Skeletonization3D {
 		//Move bones inside the skin 2.5 cm since cameras indicate where is the
 		//skin but not the bones.
 		Skeletonization3D(float merge_treshold_ = 0.05, float row_treshold_ =
-				0.005, float move_distance_ = 0.025);
+				0.01, float move_distance_ = 0.025);
 
 		virtual ~Skeletonization3D();
 
@@ -57,14 +57,13 @@ class Skeletonization3D {
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in GLOBAL coordinates
 		void translate_points_to_inside(
-				std::map<osg::Vec2, osg::Vec3>& projection3d, int cam_num,
-				float distance) const;
+				std::map<osg::Vec2, osg::Vec3>& projection3d,
+				int cam_num) const;
 
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in CAMERA coordinates
 		void translate_points_to_inside(
-				osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num,
-				float distance) const;
+				osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num) const;
 
 		void get_global_coord_3d_projection(int cam_num, int frame_num,
 				std::map<osg::Vec2, osg::Vec3>& projection3d) const;
