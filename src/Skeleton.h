@@ -17,6 +17,8 @@
 #include <iostream>
 #include <string>
 #include "MiscUtils.h"
+#include "BVHFormat.h"
+
 using std::cout;
 using std::endl;
 
