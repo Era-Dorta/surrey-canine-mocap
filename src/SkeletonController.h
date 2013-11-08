@@ -68,6 +68,8 @@ class SkeletonController {
 		int selected_point_index;
 		Skeleton skeleton;
 		int current_frame;
+		int last_mouse_pos_x;
+		int last_mouse_pos_y;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

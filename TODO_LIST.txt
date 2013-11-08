@@ -1,0 +1,8 @@
+- Move joints freely once they are set. Currently they are attached to a real
+	object in the scene.
+- Save skeleton in some como file format.
+- Implement method to optimize bone length for all frames.
+- Implement method to optimize joint movement in single frame.
+- Implement method to optimize joint movement with frame by frame coherence.
+- Improve cluterization method to delete the arm of the person, maybe super
+	pixel segmentation or watershed, ...

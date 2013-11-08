@@ -9,7 +9,7 @@
 
 SkeletonController::SkeletonController() :
 			state(ADD_POINTS), point_selected(false), selected_point_index(0),
-			current_frame(0) {
+			current_frame(0), last_mouse_pos_x(0), last_mouse_pos_y(0) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -99,8 +99,34 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				case POINTS_SET:
 					break;
 				}
+			}else{
+				switch (state) {
+				case MOVE_POINTS: {
+					if(point_selected){
+						point_selected = false;
+						skel_renderer.change_colour_when_selected(
+								selected_point, point_selected);
+						//TODO Not sure if using homogeneous coordinates here,
+						//maybe it should be 0.0.
+						osg::Vec3 aux(last_mouse_pos_x - ea.getX(),
+								 last_mouse_pos_y - ea.getY(), 1.0f);
+						aux = skel_renderer.move_sphere( aux,
+								viewer->getCamera(),
+								selected_point);
+						skeleton.move_joint(selected_point_index, aux);
+						update_dynamics(current_frame);
+					}
+					break;
+				}
+				case ADD_POINTS:
+				case EMPTY:
+				case POINTS_SET:
+					break;
+				}
 			}
 		}
+		last_mouse_pos_x = ea.getX();
+		last_mouse_pos_y = ea.getY();
 	}
 	return false;
 }
