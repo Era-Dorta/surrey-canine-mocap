@@ -61,8 +61,7 @@ class RenderSkeletonization {
 		osg::Vec3 add_sphere(intersecIte intersection);
 		osg::Vec3 move_sphere(intersecIte intersection,
 				osg::ref_ptr<osg::MatrixTransform> obj);
-		osg::Vec3 move_sphere( osg::Vec3& move_vec,
-				osg::Camera* cam,
+		osg::Vec3 move_sphere(osg::Vec3& move_vec, osg::Camera* cam,
 				osg::MatrixTransform* obj);
 
 		int obj_belong_skel(osg::MatrixTransform* selected_obj);

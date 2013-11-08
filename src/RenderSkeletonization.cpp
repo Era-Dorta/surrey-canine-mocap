@@ -315,16 +315,15 @@ osg::Vec3 RenderSkeletonization::move_sphere(intersecIte intersection,
 	return osg::Vec3() * obj->getMatrix();
 }
 
-osg::Vec3 RenderSkeletonization::move_sphere( osg::Vec3& move_vec,
-		osg::Camera* cam,
-		osg::MatrixTransform* obj) {
+osg::Vec3 RenderSkeletonization::move_sphere(osg::Vec3& move_vec,
+		osg::Camera* cam, osg::MatrixTransform* obj) {
 
-	osg::Vec3 aux_vec = osg::Matrixd::inverse(cam->getProjectionMatrix()) * move_vec * 0.01;
+	osg::Vec3 aux_vec = osg::Matrixd::inverse(cam->getProjectionMatrix())
+			* move_vec * 0.01;
 	osg::Matrix aux_matrix = osg::Matrix::translate(aux_vec);
-	aux_matrix = cam->getViewMatrix() * aux_matrix *
-			cam->getInverseViewMatrix();
-	osg::Matrix new_matrix =
-			obj->getMatrix() * aux_matrix;
+	aux_matrix = cam->getViewMatrix() * aux_matrix
+			* cam->getInverseViewMatrix();
+	osg::Matrix new_matrix = obj->getMatrix() * aux_matrix;
 
 	return osg::Vec3() * new_matrix;
 }
