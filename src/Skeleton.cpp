@@ -12,7 +12,7 @@ Skeleton::Skeleton() :
 
 	bvhf.SetHeader(&mocap_header);
 	bvhf.ImportData(
-			"/home/cvssp/misc/m04701/workspace/MCVEclp/Release/example.bvh");
+			"/home/cvssp/misc/m04701/workspace/data/bvh/example.bvh");
 
 	max_joints = mocap_header.noofsegments;
 
