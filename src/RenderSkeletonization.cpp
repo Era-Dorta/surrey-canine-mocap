@@ -236,41 +236,72 @@ void RenderSkeletonization::change_colour_when_selected(
 
 void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 		int current_frame) {
-	//cout << "drawing children" << endl;
 
-	glPushMatrix();
-	glTranslatef(node->offset[0] + node->froset[current_frame][0],
-			node->offset[1] + node->froset[current_frame][1],
-			node->offset[2] + node->froset[current_frame][2]);
+	//Draw a blue cloud of squares, where each square represents a small part of a bone
+	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
+	osg::ref_ptr<osg::Geometry> skel_geometry = new osg::Geometry;
+	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 
-	glRotatef(node->euler[0], (float) header.euler[0][0],
-			(float) header.euler[0][1], (float) header.euler[0][2]);
-	glRotatef(node->euler[1], (float) header.euler[1][0],
-			(float) header.euler[1][1], (float) header.euler[1][2]);
-	glRotatef(node->euler[2], (float) header.euler[2][0],
-			(float) header.euler[2][1], (float) header.euler[2][2]);
+	skel_transform->setMatrix(
+			osg::Matrix::translate(
+					osg::Vec3(node->offset[0] + node->froset[current_frame][0],
+							node->offset[1] + node->froset[current_frame][1],
+							node->offset[2] + node->froset[current_frame][2]))
+					* osg::Matrix::rotate(node->euler[0],
+							(float) header.euler[0][0],
+							(float) header.euler[0][1],
+							(float) header.euler[0][2])
+					* osg::Matrix::rotate(node->euler[0],
+							(float) header.euler[0][0],
+							(float) header.euler[0][1],
+							(float) header.euler[0][2])
+					* osg::Matrix::rotate(node->euler[1],
+							(float) header.euler[1][0],
+							(float) header.euler[1][1],
+							(float) header.euler[1][2])
+					* osg::Matrix::rotate(node->euler[2],
+							(float) header.euler[2][0],
+							(float) header.euler[2][1],
+							(float) header.euler[2][2])
+					* osg::Matrix::rotate(node->freuler[current_frame][0],
+							(float) header.euler[0][0],
+							(float) header.euler[0][1],
+							(float) header.euler[0][2])
+					* osg::Matrix::rotate(node->freuler[current_frame][1],
+							(float) header.euler[1][0],
+							(float) header.euler[1][1],
+							(float) header.euler[1][2])
+					* osg::Matrix::rotate(node->freuler[current_frame][2],
+							(float) header.euler[2][0],
+							(float) header.euler[2][1],
+							(float) header.euler[2][2]));
 
-	glRotatef(node->freuler[current_frame][0], (float) header.euler[0][0],
-			(float) header.euler[0][1], (float) header.euler[0][2]);
-	glRotatef(node->freuler[current_frame][1], (float) header.euler[1][0],
-			(float) header.euler[1][1], (float) header.euler[1][2]);
-	glRotatef(node->freuler[current_frame][2], (float) header.euler[2][0],
-			(float) header.euler[2][1], (float) header.euler[2][2]);
+	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
+	colors->push_back(
+			osg::Vec4(node->colour[0], node->colour[1], node->colour[2], 1.0));
+	skel_geometry->setColorArray(colors);
 
-	glBegin(GL_LINES);
-		glColor3f(node->colour[0], node->colour[1], node->colour[2]);
-		glVertex3f(0.0f, 0.0f, 0.0f);
-		glVertex3f(node->length[0] * node->scale[current_frame],
-				node->length[1] * node->scale[current_frame],
-				node->length[2] * node->scale[current_frame]);
-	glEnd();
+	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
+	vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+	vertices->push_back(
+			osg::Vec3(node->length[0] * node->scale[current_frame],
+					node->length[1] * node->scale[current_frame],
+					node->length[2] * node->scale[current_frame]));
+
+	skel_geometry->setVertexArray(vertices.get());
+	skel_geometry->addPrimitiveSet(
+			new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, vertices->size()));
+
+	skel_geode->addDrawable(skel_geometry.get());
+	skel_transform->addChild(skel_geode.get());
+
+	merged_group->addChild(skel_transform.get());
 
 	if (node->children) {
 		for (int i = 0; i < node->noofchildren; i++)
 			evaluate_children(node->children[i], header, current_frame);
 	}
 
-	glPopMatrix();
 }
 
 void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
