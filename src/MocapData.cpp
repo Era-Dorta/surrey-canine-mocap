@@ -30,14 +30,13 @@ void MocapData::free_node_memory(struct NODE* to_delete) {
 }
 
 void MocapData::delete_recursive(struct NODE* to_delete) {
-	cout << "delete recursive" << endl;
 	if (to_delete == NULL) {
 		return;
 	}
 	for (int i = 0; i < to_delete->noofchildren; i++) {
 		delete_recursive(to_delete->children[i]);
 	}
-	if(to_delete->noofchildren > 0){
+	if (to_delete->noofchildren > 0) {
 		free(to_delete->children);
 	}
 	free_node_memory(to_delete);

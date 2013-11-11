@@ -3,6 +3,7 @@
 
 #include "Skeletonization3D.h"
 #include "RGBDCamera.h"
+#include "Extras.h"
 
 #include <vector>
 
@@ -52,6 +53,9 @@ class RenderSkeletonization {
 		void draw_joints(osg::ref_ptr<osg::Vec3Array> joint_array);
 
 		void draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end);
+
+		void evaluate_children(NODE* node, MOCAPHEADER& header,
+				int current_frame);
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 		void change_colour_when_selected(

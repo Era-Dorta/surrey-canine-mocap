@@ -8,11 +8,13 @@
 #include "Skeleton.h"
 
 Skeleton::Skeleton() :
-			max_joints(21), current_frame(0) {
+			current_frame(0) {
 
 	bvhf.SetHeader(&mocap_header);
 	bvhf.ImportData(
 			"/home/cvssp/misc/m04701/workspace/MCVEclp/Release/example.bvh");
+
+	max_joints = mocap_header.noofsegments;
 
 	bone_array.reserve(18);
 
@@ -171,6 +173,14 @@ void Skeleton::set_current_frame(int frame_no) {
 	}
 
 	joint_array = joint_frame_array[current_frame];
+}
+
+NODE* Skeleton::get_root() {
+	return bvhf.GetRootNode();
+}
+
+MOCAPHEADER& Skeleton::get_header() {
+	return mocap_header;
 }
 
 void Skeleton::reset_state() {

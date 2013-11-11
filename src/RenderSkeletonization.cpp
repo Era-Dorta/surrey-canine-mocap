@@ -234,6 +234,45 @@ void RenderSkeletonization::change_colour_when_selected(
 	}
 }
 
+void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
+		int current_frame) {
+	//cout << "drawing children" << endl;
+
+	glPushMatrix();
+	glTranslatef(node->offset[0] + node->froset[current_frame][0],
+			node->offset[1] + node->froset[current_frame][1],
+			node->offset[2] + node->froset[current_frame][2]);
+
+	glRotatef(node->euler[0], (float) header.euler[0][0],
+			(float) header.euler[0][1], (float) header.euler[0][2]);
+	glRotatef(node->euler[1], (float) header.euler[1][0],
+			(float) header.euler[1][1], (float) header.euler[1][2]);
+	glRotatef(node->euler[2], (float) header.euler[2][0],
+			(float) header.euler[2][1], (float) header.euler[2][2]);
+
+	glRotatef(node->freuler[current_frame][0], (float) header.euler[0][0],
+			(float) header.euler[0][1], (float) header.euler[0][2]);
+	glRotatef(node->freuler[current_frame][1], (float) header.euler[1][0],
+			(float) header.euler[1][1], (float) header.euler[1][2]);
+	glRotatef(node->freuler[current_frame][2], (float) header.euler[2][0],
+			(float) header.euler[2][1], (float) header.euler[2][2]);
+
+	glBegin(GL_LINES);
+		glColor3f(node->colour[0], node->colour[1], node->colour[2]);
+		glVertex3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(node->length[0] * node->scale[current_frame],
+				node->length[1] * node->scale[current_frame],
+				node->length[2] * node->scale[current_frame]);
+	glEnd();
+
+	if (node->children) {
+		for (int i = 0; i < node->noofchildren; i++)
+			evaluate_children(node->children[i], header, current_frame);
+	}
+
+	glPopMatrix();
+}
+
 void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
 		osg::Vec3 EndPoint, float radius, osg::Vec4 CylinderColor,
 		osg::Group *pAddToThisGroup) {

@@ -174,6 +174,8 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
 			skeletonized3D);
+	skel_renderer.evaluate_children(skeleton.get_root(), skeleton.get_header(),
+			disp_frame_no);
 
 	skeleton.set_current_frame(current_frame);
 	draw_complete_skeleton();
