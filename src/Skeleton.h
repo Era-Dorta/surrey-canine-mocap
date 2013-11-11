@@ -48,6 +48,8 @@ class Skeleton {
 		std::vector<std::pair<int, int> > bone_array;
 		unsigned int max_joints;
 		int current_frame;
+		BVHFormat bvhf;
+		MOCAPHEADER mocap_header;
 };
 
 #endif /* SKELETON_H_ */

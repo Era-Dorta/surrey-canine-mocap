@@ -9,6 +9,9 @@
 
 Skeleton::Skeleton() :
 			max_joints(21), current_frame(0) {
+	bvhf.SetHeader(&mocap_header);
+	bvhf.ImportData("/home/cvssp/misc/m04701/workspace/MCVEclp/Release/example.bvh");
+
 	bone_array.reserve(18);
 
 	joint_array = new osg::Vec3Array;
