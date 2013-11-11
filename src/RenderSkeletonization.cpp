@@ -236,6 +236,11 @@ void RenderSkeletonization::change_colour_when_selected(
 
 void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 		int current_frame) {
+	evaluate_children(node, header, merged_group, current_frame);
+}
+
+void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
+		osg::Group *pAddToThisGroup, int current_frame) {
 
 	//Draw a blue cloud of squares, where each square represents a small part of a bone
 	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
@@ -247,31 +252,35 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 					osg::Vec3(node->offset[0] + node->froset[current_frame][0],
 							node->offset[1] + node->froset[current_frame][1],
 							node->offset[2] + node->froset[current_frame][2]))
-					* osg::Matrix::rotate(node->euler[0],
+
+					* osg::Matrix::rotate(osg::DegreesToRadians(node->euler[0]),
 							(float) header.euler[0][0],
 							(float) header.euler[0][1],
 							(float) header.euler[0][2])
-					* osg::Matrix::rotate(node->euler[0],
-							(float) header.euler[0][0],
-							(float) header.euler[0][1],
-							(float) header.euler[0][2])
-					* osg::Matrix::rotate(node->euler[1],
+					* osg::Matrix::rotate(osg::DegreesToRadians(node->euler[1]),
 							(float) header.euler[1][0],
 							(float) header.euler[1][1],
 							(float) header.euler[1][2])
-					* osg::Matrix::rotate(node->euler[2],
+					* osg::Matrix::rotate(osg::DegreesToRadians(node->euler[2]),
 							(float) header.euler[2][0],
 							(float) header.euler[2][1],
 							(float) header.euler[2][2])
-					* osg::Matrix::rotate(node->freuler[current_frame][0],
+
+					* osg::Matrix::rotate(
+							osg::DegreesToRadians(
+									node->freuler[current_frame][0]),
 							(float) header.euler[0][0],
 							(float) header.euler[0][1],
 							(float) header.euler[0][2])
-					* osg::Matrix::rotate(node->freuler[current_frame][1],
+					* osg::Matrix::rotate(
+							osg::DegreesToRadians(
+									node->freuler[current_frame][1]),
 							(float) header.euler[1][0],
 							(float) header.euler[1][1],
 							(float) header.euler[1][2])
-					* osg::Matrix::rotate(node->freuler[current_frame][2],
+					* osg::Matrix::rotate(
+							osg::DegreesToRadians(
+									node->freuler[current_frame][2]),
 							(float) header.euler[2][0],
 							(float) header.euler[2][1],
 							(float) header.euler[2][2]));
@@ -295,11 +304,12 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 	skel_geode->addDrawable(skel_geometry.get());
 	skel_transform->addChild(skel_geode.get());
 
-	merged_group->addChild(skel_transform.get());
+	pAddToThisGroup->addChild(skel_transform.get());
 
 	if (node->children) {
 		for (int i = 0; i < node->noofchildren; i++)
-			evaluate_children(node->children[i], header, current_frame);
+			evaluate_children(node->children[i], header, skel_transform.get(),
+					current_frame);
 	}
 
 }
