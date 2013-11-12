@@ -339,34 +339,10 @@ bool BVHFormat::ExportData(const char* filename) {
 	out_file.precision(6);
 	out_file.setf(std::ios::fixed, std::ios::floatfield);
 
-	out_file << "HIERARCHY" << endl;
-	out_file << "ROOT " << root->name << endl;
-	out_file << "{" << endl;
-	bool print_data = true;
-	for (int i = 0; i < root->noofchildren; i++) {
-		ExportDataJoint(out_file, root, root->children[i], 1, print_data);
-		print_data = false;
-	}
-	if (root->noofchildren == 0) {
-		ExportEndSite(out_file, root, 1);
-	}
-	out_file << "}" << endl;
-	out_file << "MOTION" << endl;
-	out_file << "Frames: " << header->noofframes << endl;
-	out_file << "Frame Time: " << header->frametime << endl;
+	ExportHierarchy(out_file);
 
-	for (int i = 0; i < header->noofframes; i++) {
-		int j;
-		for (j = 0; j < header->noofsegments - 1; j++) {
-			out_file << nodelist[j]->froset[i][0] << " "
-					<< nodelist[j]->froset[i][1] << " "
-					<< nodelist[j]->froset[i][2] << " ";
-		}
-		//Last line without spaces and with line feed
-		out_file << nodelist[j]->froset[i][0] << " "
-				<< nodelist[j]->froset[i][1] << " " << nodelist[j]->froset[i][2]
-				<< endl;
-	}
+	ExportMotion(out_file);
+
 	return true;
 }
 
@@ -427,6 +403,40 @@ void BVHFormat::ExportEndSite(std::ofstream& out_file, NODE* joint, int tabs) {
 	out_file << tabs_str + "\t" << "OFFSET " << joint->length[0] << " "
 			<< joint->length[1] << " " << joint->length[2] << endl;
 	out_file << tabs_str << "}" << endl;
+}
+
+void BVHFormat::ExportHierarchy(std::ofstream& out_file) {
+	out_file << "HIERARCHY" << endl;
+	out_file << "ROOT " << root->name << endl;
+	out_file << "{" << endl;
+	bool print_data = true;
+	for (int i = 0; i < root->noofchildren; i++) {
+		ExportDataJoint(out_file, root, root->children[i], 1, print_data);
+		print_data = false;
+	}
+	if (root->noofchildren == 0) {
+		ExportEndSite(out_file, root, 1);
+	}
+	out_file << "}" << endl;
+}
+
+void BVHFormat::ExportMotion(std::ofstream& out_file) {
+	out_file << "MOTION" << endl;
+	out_file << "Frames: " << header->noofframes << endl;
+	out_file << "Frame Time: " << header->frametime << endl;
+
+	for (int i = 0; i < header->noofframes; i++) {
+		int j;
+		for (j = 0; j < header->noofsegments - 1; j++) {
+			out_file << nodelist[j]->froset[i][0] << " "
+					<< nodelist[j]->froset[i][1] << " "
+					<< nodelist[j]->froset[i][2] << " ";
+		}
+		//Last line without spaces and with line feed
+		out_file << nodelist[j]->froset[i][0] << " "
+				<< nodelist[j]->froset[i][1] << " " << nodelist[j]->froset[i][2]
+				<< endl;
+	}
 }
 
 void BVHFormat::IncreaseChildren(NODE* node) {
