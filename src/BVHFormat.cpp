@@ -230,6 +230,7 @@ bool BVHFormat::ImportData(const char *filename) {
 							header->currentframe = 0;
 						} else if (strcompEx(line[0], "FRAME")
 								&& strcompEx(line[1], "TIME:")) {
+							header->frametime = atof(line[2]);
 							header->datarate = (int) (1 / (atof(line[2])));
 							if ((int) (0.49 + (1 / atof(line[2])))
 									> header->datarate)
@@ -334,6 +335,9 @@ bool BVHFormat::ImportData(const char *filename) {
 bool BVHFormat::ExportData(const char* filename) {
 	std::ofstream out_file;
 	out_file.open(filename);
+	//Set so that all float numbers are written with 6 decimals
+	out_file.precision(6);
+	out_file.setf(std::ios::fixed, std::ios::floatfield);
 
 	out_file << "HIERARCHY" << endl;
 	out_file << "ROOT " << root->name << endl;
@@ -347,6 +351,22 @@ bool BVHFormat::ExportData(const char* filename) {
 		ExportEndSite(out_file, root, 1);
 	}
 	out_file << "}" << endl;
+	out_file << "MOTION" << endl;
+	out_file << "Frames: " << header->noofframes << endl;
+	out_file << "Frame Time: " << header->frametime << endl;
+
+	for (int i = 0; i < header->noofframes; i++) {
+		int j;
+		for (j = 0; j < header->noofsegments - 1; j++) {
+			out_file << nodelist[j]->froset[i][0] << " "
+					<< nodelist[j]->froset[i][1] << " "
+					<< nodelist[j]->froset[i][2] << " ";
+		}
+		//Last line without spaces and with line feed
+		out_file << nodelist[j]->froset[i][0] << " "
+				<< nodelist[j]->froset[i][1] << " " << nodelist[j]->froset[i][2]
+				<< endl;
+	}
 	return true;
 }
 

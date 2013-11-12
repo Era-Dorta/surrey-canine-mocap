@@ -75,6 +75,7 @@ struct MOCAPHEADER {
 		int noofsegments;       // Number of body segments
 		long noofframes;     // Number of frames
 		int datarate;         // Number of frames per second
+		float frametime;
 		int euler[3][3];      // Specifies how the euler angle is defined
 		float callib; // Scale factor for converting current translational units into meters
 		bool degrees;         // Are the rotational measurements in degrees
