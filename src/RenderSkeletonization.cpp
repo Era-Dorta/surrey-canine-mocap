@@ -244,7 +244,6 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 
 	//Draw a blue cloud of squares, where each square represents a small part of a bone
 	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
-	osg::ref_ptr<osg::Geometry> skel_geometry = new osg::Geometry;
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 
 	skel_transform->setMatrix(
@@ -293,21 +292,27 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(
 			osg::Vec4(node->colour[0], node->colour[1], node->colour[2], 1.0));
-	skel_geometry->setColorArray(colors);
 
-	osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array;
-	vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
-	vertices->push_back(
-			osg::Vec3(node->length[0] * node->scale[current_frame],
-					node->length[1] * node->scale[current_frame],
-					node->length[2] * node->scale[current_frame]));
+	osg::Vec3 bone_pos = osg::Vec3(node->length[0] * node->scale[current_frame],
+			node->length[1] * node->scale[current_frame],
+			node->length[2] * node->scale[current_frame]);
 
-	skel_geometry->setVertexArray(vertices.get());
-	skel_geometry->addPrimitiveSet(
-			new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, vertices->size()));
+	AddCylinderBetweenPoints(osg::Vec3(), bone_pos, 0.01f, bone_colour,
+			static_cast<osg::Group*>(skel_transform.get()));
 
-	skel_geode->addDrawable(skel_geometry.get());
-	skel_transform->addChild(skel_geode.get());
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+	selectionBox->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
+
+	skel_transform->addChild(selectionBox.get());
+
+	if (!node->children) {
+		selectionBox = createSelectionBox();
+		selectionBox->setMatrix(
+				osg::Matrix::scale(0.02, 0.02, 0.02)
+						* osg::Matrix::translate(bone_pos));
+
+		skel_transform->addChild(selectionBox.get());
+	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
