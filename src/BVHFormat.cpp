@@ -91,7 +91,8 @@ bool BVHFormat::ImportData(const char *filename) {
 	header->euler[2][2] = header->euler[2][0] = 0;
 	header->euler[2][1] = 1;
 
-	header->callib = 0.03f;
+	//TODO They had this calibration to make every model smaller
+	//header->callib = 0.03f;
 	header->degrees = true;
 	header->scalefactor = 1.0f;
 
@@ -156,6 +157,7 @@ bool BVHFormat::ImportData(const char *filename) {
 							curnode->name = (char*) malloc(strlen(line[1]) + 1);
 							strcpy(curnode->name, line[1]);
 							curnode->DOFs = 0;
+							curnode->noofchannels = 0;
 							SetupChildren(curnode, 0);
 							SetupColour(curnode);
 							SetupEuler(curnode);
@@ -187,6 +189,7 @@ bool BVHFormat::ImportData(const char *filename) {
 							}
 						} else if (strcompEx(line[0], "CHANNELS") && !endsite) {
 							channels += atoi(line[1]);
+							curnode->noofchannels = atoi(line[1]);
 							int d = 2;
 							while (line[d] && d < 8) {
 								if ((line[d][0] & 0xdf) == 'X') {
@@ -326,6 +329,84 @@ bool BVHFormat::ImportData(const char *filename) {
 		strcpy(error, "Cannot Open File");
 		return false;
 	}
+}
+
+bool BVHFormat::ExportData(const char* filename) {
+	std::ofstream out_file;
+	out_file.open(filename);
+
+	out_file << "HIERARCHY" << endl;
+	out_file << "ROOT " << root->name << endl;
+	out_file << "{" << endl;
+	bool print_data = true;
+	for (int i = 0; i < root->noofchildren; i++) {
+		ExportDataJoint(out_file, root, root->children[i], 1, print_data);
+		print_data = false;
+	}
+	if (root->noofchildren == 0) {
+		ExportEndSite(out_file, root, 1);
+	}
+	out_file << "}" << endl;
+	return true;
+}
+
+void BVHFormat::ExportDataJoint(std::ofstream& out_file, NODE* parent,
+		NODE* joint, int tabs, bool print_parent) {
+	std::string tabs_str;
+	for (int i = 0; i < tabs; i++) {
+		tabs_str += "\t";
+	}
+	tabs++;
+
+	if (print_parent) {
+		out_file << tabs_str << "OFFSET " << parent->offset[0] << " "
+				<< parent->offset[1] << " " << parent->offset[2] << endl;
+		out_file << tabs_str << "CHANNELS " << parent->noofchannels;
+		if (parent->noofchannels == 3) {
+			out_file << " Xrotation Yrotation Zrotation" << endl;
+		} else {
+			out_file
+					<< " Xposition Yposition Zposition Xrotation Yrotation Zrotation"
+					<< endl;
+		}
+	}
+	out_file << tabs_str << "JOINT " << joint->name << endl;
+	out_file << tabs_str << "{" << endl;
+	tabs_str += "\t";
+
+	bool print_data = true;
+	for (int i = 0; i < joint->noofchildren; i++) {
+		ExportDataJoint(out_file, joint, joint->children[i], tabs, print_data);
+		print_data = false;
+	}
+
+	if (joint->noofchildren == 0) {
+		ExportEndSite(out_file, joint, tabs);
+	}
+	tabs_str.erase(tabs_str.length() - 1);
+	out_file << tabs_str << "}" << endl;
+}
+
+void BVHFormat::ExportEndSite(std::ofstream& out_file, NODE* joint, int tabs) {
+	std::string tabs_str;
+	for (int i = 0; i < tabs; i++) {
+		tabs_str += "\t";
+	}
+	out_file << tabs_str << "OFFSET " << joint->offset[0] << " "
+			<< joint->offset[1] << " " << joint->offset[2] << endl;
+	out_file << tabs_str << "CHANNELS " << joint->noofchannels;
+	if (joint->noofchannels == 3) {
+		out_file << " Xrotation Yrotation Zrotation" << endl;
+	} else {
+		out_file
+				<< " Xposition Yposition Zposition Xrotation Yrotation Zrotation"
+				<< endl;
+	}
+	out_file << tabs_str << "End Site" << endl;
+	out_file << tabs_str << "{" << endl;
+	out_file << tabs_str + "\t" << "OFFSET " << joint->length[0] << " "
+			<< joint->length[1] << " " << joint->length[2] << endl;
+	out_file << tabs_str << "}" << endl;
 }
 
 void BVHFormat::IncreaseChildren(NODE* node) {

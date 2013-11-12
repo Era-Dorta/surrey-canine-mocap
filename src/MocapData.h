@@ -56,7 +56,8 @@ class MocapData {
 		virtual ~MocapData();
 
 		void SetHeader(MOCAPHEADER *header); // Sets up a pointer to the header structure
-		virtual bool ImportData(const char* filename) = 0; // Starts the import of the HTR file
+		virtual bool ImportData(const char* filename) = 0; // Starts the import of the BVH file
+		virtual bool ExportData(const char* filename) = 0; // Starts the import of the BVH file
 		NODE* GetRootNode();                      // Returns the root node
 		NODE** GetNodeList();       // Returns an array that holds all the nodes
 

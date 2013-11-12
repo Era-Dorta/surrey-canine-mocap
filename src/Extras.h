@@ -67,6 +67,7 @@ struct NODE {
 		float **freuler;    // Array of angles for each frame
 		float *scale;       // Array of scalefactors for each frame
 		BYTE DOFs;          // Used to determine what DOFs the segment has
+		int noofchannels;
 };
 
 struct MOCAPHEADER {

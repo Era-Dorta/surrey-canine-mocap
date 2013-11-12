@@ -43,15 +43,23 @@
 #ifndef __bvhformat_h__
 #define __bvhformat_h__
 #include "MocapData.h"
+#include <fstream>
+#include <iostream>
+using std::cout;
+using std::endl;
 
 class BVHFormat: public MocapData {
 	public:
 		BVHFormat();
 		BVHFormat(MOCAPHEADER *header);
 
-		bool ImportData(const char* filename); // Starts the import of the HTR file
+		bool ImportData(const char* filename); // Starts the import of the BVH file
+		bool ExportData(const char* filename); // Starts the export of the BVH file
 
 	private:
+		void ExportDataJoint(std::ofstream& out_file, NODE* parent, NODE* joint,
+				int tabs, bool print_parent);
+		void ExportEndSite(std::ofstream& out_file, NODE* joint, int tabs);
 		void EnlargeNodeList();
 		void IncreaseChildren(NODE *node);
 };
