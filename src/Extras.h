@@ -43,6 +43,7 @@
 #ifndef __extras_h__
 #define __extras_h__
 #include <stdlib.h>
+#include <osg/Geometry>
 
 #define XROT 1
 #define YROT 2
@@ -56,10 +57,10 @@ typedef unsigned char BYTE;
 
 struct NODE {
 		char *name;
-		float length[3];    // length of segment
-		float offset[3]; // Transitional offset with respect to the end of the partent link
-		float euler[3];     // Rotation
-		float colour[3];
+		osg::Vec3f length;    // length of segment
+		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
+		osg::Vec3f euler;     // Rotation
+		osg::Vec3f colour;
 		int noofchildren;
 		NODE **children;    // Array of pointers to child nodes
 		NODE *parent;       // Back pointer to parent node
