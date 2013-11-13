@@ -11,7 +11,7 @@ MocapData::MocapData() :
 			root(0), nodelist(0), header(0), xpos(0), ypos(0), zpos(0) {
 }
 
-MocapData::MocapData(MOCAPHEADER *header) :
+MocapData::MocapData(MocapHeader *header) :
 			root(0), nodelist(0), header(header), xpos(0), ypos(0), zpos(0) {
 }
 
@@ -34,7 +34,7 @@ MocapData::~MocapData() {
 	free(nodelist);
 }
 
-void MocapData::SetHeader(MOCAPHEADER *header) {
+void MocapData::SetHeader(MocapHeader *header) {
 	this->header = header;
 }
 

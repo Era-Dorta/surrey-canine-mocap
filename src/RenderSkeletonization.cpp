@@ -234,12 +234,12 @@ void RenderSkeletonization::change_colour_when_selected(
 	}
 }
 
-void RenderSkeletonization::evaluate_children(Node* node, MOCAPHEADER& header,
+void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 		int current_frame) {
 	evaluate_children(node, header, merged_group, current_frame);
 }
 
-void RenderSkeletonization::evaluate_children(Node* node, MOCAPHEADER& header,
+void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 		osg::Group *pAddToThisGroup, int current_frame) {
 
 	//Draw a blue cloud of squares, where each square represents a small part of a bone
@@ -249,20 +249,15 @@ void RenderSkeletonization::evaluate_children(Node* node, MOCAPHEADER& header,
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(
 					osg::DegreesToRadians(node->freuler->at(current_frame)[0]),
-					(float) header.euler[0][0], (float) header.euler[0][1],
-					(float) header.euler[0][2])
+					header.euler->at(0))
 					* osg::Matrix::rotate(
 							osg::DegreesToRadians(
 									node->freuler->at(current_frame)[1]),
-							(float) header.euler[1][0],
-							(float) header.euler[1][1],
-							(float) header.euler[1][2])
+							header.euler->at(1))
 					* osg::Matrix::rotate(
 							osg::DegreesToRadians(
 									node->freuler->at(current_frame)[2]),
-							(float) header.euler[2][0],
-							(float) header.euler[2][1],
-							(float) header.euler[2][2])
+							header.euler->at(2))
 
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));

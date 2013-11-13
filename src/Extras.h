@@ -43,9 +43,6 @@
 #ifndef __extras_h__
 #define __extras_h__
 #include <stdlib.h>
-#include <osg/Geometry>
-#include "DebugUtil.h"
-#include "Node.h"
 
 #define XROT 1
 #define YROT 2
@@ -54,19 +51,6 @@
 #define YTRA 64
 #define ZTRA 128
 #define PI 3.141592
-
-struct MOCAPHEADER {
-		// Assumes that all angles are in degrees if not then they need to be converted
-		int noofsegments;       // Number of body segments
-		long noofframes;     // Number of frames
-		int datarate;         // Number of frames per second
-		float frametime;
-		int euler[3][3];      // Specifies how the euler angle is defined
-		float callib; // Scale factor for converting current translational units into meters
-		bool degrees;         // Are the rotational measurements in degrees
-		float scalefactor;    // Global Scale factor
-		long currentframe;    // Stores the currentframe to render
-};
 
 int strstrEx(const char *string, const char *strCharSet);
 int strstrEx(const char *string, char strChar);

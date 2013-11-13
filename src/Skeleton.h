@@ -39,7 +39,7 @@ class Skeleton {
 		void set_current_frame(int frame_no);
 		const osg::ref_ptr<osg::Vec3Array> getJointArray() const;
 		Node* get_root();
-		MOCAPHEADER& get_header();
+		MocapHeader& get_header();
 
 	private:
 		void reset_state();
@@ -50,7 +50,7 @@ class Skeleton {
 		unsigned int max_joints;
 		int current_frame;
 		BVHFormat bvhf;
-		MOCAPHEADER mocap_header;
+		MocapHeader mocap_header;
 };
 
 #endif /* SKELETON_H_ */

@@ -181,7 +181,7 @@ Node* Skeleton::get_root() {
 	return bvhf.GetRootNode();
 }
 
-MOCAPHEADER& Skeleton::get_header() {
+MocapHeader& Skeleton::get_header() {
 	return mocap_header;
 }
 

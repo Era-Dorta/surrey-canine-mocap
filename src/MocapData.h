@@ -43,6 +43,8 @@
 #ifndef __mocapdata_h__
 #define __mocapdata_h__
 #include "Extras.h"
+#include "Node.h"
+#include "MocapHeader.h"
 
 #include <iostream>
 
@@ -52,10 +54,10 @@ using std::endl;
 class MocapData {
 	public:
 		MocapData();
-		MocapData(MOCAPHEADER *header);
+		MocapData(MocapHeader *header);
 		virtual ~MocapData();
 
-		void SetHeader(MOCAPHEADER *header); // Sets up a pointer to the header structure
+		void SetHeader(MocapHeader *header); // Sets up a pointer to the header structure
 		virtual bool ImportData(const char* filename) = 0; // Starts the import of the BVH file
 		virtual bool ExportData(const char* filename) = 0; // Starts the import of the BVH file
 		Node* GetRootNode();                      // Returns the root node
@@ -65,7 +67,7 @@ class MocapData {
 
 	protected:
 		Node *root, **nodelist;
-		MOCAPHEADER* header;
+		MocapHeader* header;
 		int xpos, ypos, zpos;
 
 		char error[255];          // Used to store any errors that occured

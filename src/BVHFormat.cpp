@@ -49,7 +49,7 @@ BVHFormat::BVHFormat() :
 			MocapData() {
 }
 
-BVHFormat::BVHFormat(MOCAPHEADER *header) :
+BVHFormat::BVHFormat(MocapHeader *header) :
 			MocapData(header) {
 }
 
@@ -82,14 +82,9 @@ bool BVHFormat::ImportData(const char *filename) {
 	ypos = 2;
 	zpos = 0;
 
-	header->euler[0][1] = header->euler[0][0] = 0;
-	header->euler[0][2] = 1;
-
-	header->euler[1][2] = header->euler[1][1] = 0;
-	header->euler[1][0] = 1;
-
-	header->euler[2][2] = header->euler[2][0] = 0;
-	header->euler[2][1] = 1;
+	header->euler->at(0).set(0, 0, 1);
+	header->euler->at(1).set(1, 0, 0);
+	header->euler->at(2).set(0, 1, 0);
 
 	//TODO They had this calibration to make every model smaller
 	header->callib = 0.03f;

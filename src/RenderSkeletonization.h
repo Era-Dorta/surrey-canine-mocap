@@ -4,7 +4,7 @@
 #include "Skeletonization3D.h"
 #include "RGBDCamera.h"
 #include "Node.h"
-#include "Extras.h"
+#include "MocapHeader.h"
 
 #include <vector>
 
@@ -55,7 +55,7 @@ class RenderSkeletonization {
 
 		void draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end);
 
-		void evaluate_children(Node* node, MOCAPHEADER& header,
+		void evaluate_children(Node* node, MocapHeader& header,
 				int current_frame);
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
@@ -72,7 +72,7 @@ class RenderSkeletonization {
 		int obj_belong_skel(osg::MatrixTransform* selected_obj);
 	protected:
 	private:
-		void evaluate_children(Node* node, MOCAPHEADER& header,
+		void evaluate_children(Node* node, MocapHeader& header,
 				osg::Group *pAddToThisGroup, int current_frame);
 
 		void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,

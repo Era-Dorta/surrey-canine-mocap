@@ -51,7 +51,7 @@ using std::endl;
 class BVHFormat: public MocapData {
 	public:
 		BVHFormat();
-		BVHFormat(MOCAPHEADER *header);
+		BVHFormat(MocapHeader *header);
 
 		bool ImportData(const char* filename); // Starts the import of the BVH file
 		bool ExportData(const char* filename); // Starts the export of the BVH file
