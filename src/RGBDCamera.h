@@ -31,7 +31,6 @@
 #include <osg/PolygonMode>
 #include <osgViewer/CompositeViewer>
 #include <osg/Geometry>
-#include <osgUtil/SmoothingVisitor>
 #include <osg/LineWidth>
 
 #include "boost/filesystem.hpp"

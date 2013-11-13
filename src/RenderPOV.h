@@ -18,7 +18,6 @@
 #include <osg/PolygonMode>
 #include <osgViewer/CompositeViewer>
 #include <osg/Geometry>
-#include <osgUtil/SmoothingVisitor>
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/gpu/gpu.hpp"

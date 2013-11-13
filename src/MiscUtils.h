@@ -30,7 +30,6 @@
 #include <osg/PolygonMode>
 #include <osgViewer/CompositeViewer>
 #include <osg/Geometry>
-#include <osgUtil/SmoothingVisitor>
 #include <osg/GraphicsContext>
 #include <osg/BlendFunc>
 #include <osg/LineWidth>
