@@ -21,7 +21,7 @@
 using std::cout;
 using std::endl;
 
-class Skeleton {
+class Skeleton: public BVHFormat {
 	public:
 		Skeleton();
 		virtual ~Skeleton();
@@ -49,7 +49,6 @@ class Skeleton {
 		std::vector<std::pair<int, int> > bone_array;
 		unsigned int max_joints;
 		int current_frame;
-		BVHFormat bvhf;
 		MocapHeader mocap_header;
 };
 

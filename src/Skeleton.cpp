@@ -10,8 +10,8 @@
 Skeleton::Skeleton() :
 			current_frame(0) {
 
-	bvhf.SetHeader(&mocap_header);
-	bvhf.ImportData(
+	SetHeader(&mocap_header);
+	ImportData(
 	//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
 			"/home/cvssp/misc/m04701/workspace/data/bvh/example.bvh");
 	//bvhf.ExportData("/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
@@ -178,7 +178,7 @@ void Skeleton::set_current_frame(int frame_no) {
 }
 
 Node* Skeleton::get_root() {
-	return bvhf.GetRootNode();
+	return GetRootNode();
 }
 
 MocapHeader& Skeleton::get_header() {
