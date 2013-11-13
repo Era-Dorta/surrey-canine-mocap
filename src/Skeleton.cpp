@@ -72,7 +72,7 @@ void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 
 void Skeleton::translate_root(osg::Vec3& translation) {
 	translation *= 0.005;
-	root->offset += translation;
+	root->froset->at(current_frame) += translation;
 }
 
 void Skeleton::delete_joint(unsigned int index) {
