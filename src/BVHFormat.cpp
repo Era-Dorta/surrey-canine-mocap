@@ -54,12 +54,7 @@ BVHFormat::BVHFormat(MocapHeader *header) :
 }
 
 void BVHFormat::EnlargeNodeList() {
-	Node **temp = nodelist;
-	nodelist = (Node**) malloc(sizeof(Node*) * (header->noofsegments + 1));
-	for (int i = 0; i < header->noofsegments; ++i)
-		nodelist[i] = temp[i];
-
-	free(temp);
+	nodelist.push_back(NULL);
 }
 
 bool BVHFormat::ImportData(const char *filename) {

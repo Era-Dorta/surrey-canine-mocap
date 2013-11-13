@@ -19,6 +19,10 @@ void MocapData::free_node_memory(struct Node* to_delete) {
 	free(to_delete);
 }
 
+const std::vector<Node*>& MocapData::getNodelist() const {
+	return nodelist;
+}
+
 void MocapData::delete_recursive(struct Node* to_delete) {
 	if (to_delete == NULL) {
 		return;
@@ -31,7 +35,6 @@ void MocapData::delete_recursive(struct Node* to_delete) {
 
 MocapData::~MocapData() {
 	delete_recursive(root);
-	free(nodelist);
 }
 
 void MocapData::SetHeader(MocapHeader *header) {
@@ -40,10 +43,6 @@ void MocapData::SetHeader(MocapHeader *header) {
 
 Node* MocapData::GetRootNode() {
 	return root;
-}
-
-Node** MocapData::GetNodeList() {
-	return nodelist;
 }
 
 const char* MocapData::GetError() {

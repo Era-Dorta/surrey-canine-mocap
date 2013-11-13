@@ -42,14 +42,11 @@
 
 #ifndef __mocapdata_h__
 #define __mocapdata_h__
-#include "Extras.h"
+#include <stdlib.h>
 #include "Node.h"
 #include "MocapHeader.h"
 
-#include <iostream>
-
-using std::cout;
-using std::endl;
+#include <vector>
 
 class MocapData {
 	public:
@@ -61,12 +58,12 @@ class MocapData {
 		virtual bool ImportData(const char* filename) = 0; // Starts the import of the BVH file
 		virtual bool ExportData(const char* filename) = 0; // Starts the import of the BVH file
 		Node* GetRootNode();                      // Returns the root node
-		Node** GetNodeList();       // Returns an array that holds all the nodes
-
+		const std::vector<Node*>& getNodelist() const; // Returns an array that holds all the nodes
 		const char* GetError();
 
 	protected:
-		Node *root, **nodelist;
+		Node *root;
+		std::vector<Node*> nodelist;
 		MocapHeader* header;
 		int xpos, ypos, zpos;
 
