@@ -10,7 +10,7 @@
 SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), is_point_selected(false),
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
-			last_mouse_pos_y(0), move_on_z(false) {
+			last_mouse_pos_y(0), move_on_z(false), translate_root(false) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -89,12 +89,18 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		if (viewer) {
 			osg::Vec3 move_axis;
 			if(move_on_z){
-				move_axis.set(0.0,0.0, last_mouse_pos_x - ea.getX());
+				move_axis.set(0.0,0.0, ea.getY() - last_mouse_pos_y);
 			}else{
-				move_axis.set(last_mouse_pos_x - ea.getX(),
+				move_axis.set(ea.getX() - last_mouse_pos_x,
 						last_mouse_pos_y - ea.getY(), 0.0);
 			}
-			skeleton.move_joint(selected_point_index, move_axis);
+
+			if(!translate_root){
+				skeleton.rotate_joint(selected_point_index, move_axis);
+			}else{
+				skeleton.translate_root(move_axis);
+			}
+
 			update_dynamics(current_frame);
 
 			last_mouse_pos_x = ea.getX();
@@ -133,7 +139,13 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 						selected_point_color, is_point_selected);
 				is_point_selected = false;
 				move_on_z = false;
+				translate_root = false;
 				update_dynamics(current_frame);
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_X:
+			if (is_point_selected) {
+				translate_root = !translate_root;
 			}
 			break;
 		default:

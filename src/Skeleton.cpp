@@ -65,9 +65,14 @@ void Skeleton::add_joint(osg::Vec3& joint) {
 	}
 }
 
-void Skeleton::move_joint(unsigned int index, osg::Vec3& new_pos) {
-	new_pos *= 0.1;
-	nodelist[index]->freuler->at(current_frame) += new_pos;
+void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
+	angle *= 0.1;
+	nodelist[index]->freuler->at(current_frame) += angle;
+}
+
+void Skeleton::translate_root(osg::Vec3& translation) {
+	translation *= 0.005;
+	root->offset += translation;
 }
 
 void Skeleton::delete_joint(unsigned int index) {

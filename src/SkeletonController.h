@@ -71,6 +71,7 @@ class SkeletonController {
 		int last_mouse_pos_x;
 		int last_mouse_pos_y;
 		bool move_on_z;
+		bool translate_root;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

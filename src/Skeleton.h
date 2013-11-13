@@ -26,7 +26,8 @@ class Skeleton: public BVHFormat {
 		Skeleton();
 		virtual ~Skeleton();
 		void add_joint(osg::Vec3& joint);
-		void move_joint(unsigned int index, osg::Vec3& new_pos);
+		void rotate_joint(unsigned int index, osg::Vec3& angle);
+		void translate_root(osg::Vec3& translation);
 		void delete_joint(unsigned int index);
 		const osg::Vec3& get_joint(unsigned int index);
 		unsigned int get_num_joints();
