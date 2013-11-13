@@ -234,12 +234,12 @@ void RenderSkeletonization::change_colour_when_selected(
 	}
 }
 
-void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
+void RenderSkeletonization::evaluate_children(Node* node, MOCAPHEADER& header,
 		int current_frame) {
 	evaluate_children(node, header, merged_group, current_frame);
 }
 
-void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
+void RenderSkeletonization::evaluate_children(Node* node, MOCAPHEADER& header,
 		osg::Group *pAddToThisGroup, int current_frame) {
 
 	//Draw a blue cloud of squares, where each square represents a small part of a bone

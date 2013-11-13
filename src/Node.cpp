@@ -6,7 +6,7 @@
  */
 #include "Node.h"
 
-NODE::NODE() {
+Node::Node() {
 	noofchildren = 0;
 	parent = NULL;
 	froset = new osg::Vec3Array;
@@ -15,6 +15,6 @@ NODE::NODE() {
 	noofchannels = 0;
 }
 
-NODE::~NODE() {
+Node::~Node() {
 }
 

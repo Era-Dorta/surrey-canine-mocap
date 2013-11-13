@@ -58,20 +58,20 @@ class MocapData {
 		void SetHeader(MOCAPHEADER *header); // Sets up a pointer to the header structure
 		virtual bool ImportData(const char* filename) = 0; // Starts the import of the BVH file
 		virtual bool ExportData(const char* filename) = 0; // Starts the import of the BVH file
-		NODE* GetRootNode();                      // Returns the root node
-		NODE** GetNodeList();       // Returns an array that holds all the nodes
+		Node* GetRootNode();                      // Returns the root node
+		Node** GetNodeList();       // Returns an array that holds all the nodes
 
 		const char* GetError();
 
 	protected:
-		NODE *root, **nodelist;
+		Node *root, **nodelist;
 		MOCAPHEADER* header;
 		int xpos, ypos, zpos;
 
 		char error[255];          // Used to store any errors that occured
 	private:
-		void free_node_memory(struct NODE* to_delete);
-		void delete_recursive(struct NODE* to_delete);
+		void free_node_memory(struct Node* to_delete);
+		void delete_recursive(struct Node* to_delete);
 };
 
 #endif

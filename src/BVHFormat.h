@@ -58,11 +58,11 @@ class BVHFormat: public MocapData {
 
 	private:
 		//Recursive method that writes a node information to a file BVH file
-		void ExportDataJoint(std::ofstream& out_file, NODE* parent, NODE* joint,
+		void ExportDataJoint(std::ofstream& out_file, Node* parent, Node* joint,
 				int tabs, bool print_parent);
 
 		//Method that writes a node information to a BVH file
-		void ExportEndSite(std::ofstream& out_file, NODE* joint, int tabs);
+		void ExportEndSite(std::ofstream& out_file, Node* joint, int tabs);
 
 		//Method that writes the hierarchy part to a BVH file
 		void ExportHierarchy(std::ofstream& out_file);
@@ -71,7 +71,7 @@ class BVHFormat: public MocapData {
 		void ExportMotion(std::ofstream& out_file);
 
 		void EnlargeNodeList();
-		void IncreaseChildren(NODE *node);
+		void IncreaseChildren(Node *node);
 };
 
 #endif

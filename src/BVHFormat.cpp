@@ -54,8 +54,8 @@ BVHFormat::BVHFormat(MOCAPHEADER *header) :
 }
 
 void BVHFormat::EnlargeNodeList() {
-	NODE **temp = nodelist;
-	nodelist = (NODE**) malloc(sizeof(NODE*) * (header->noofsegments + 1));
+	Node **temp = nodelist;
+	nodelist = (Node**) malloc(sizeof(Node*) * (header->noofsegments + 1));
 	for (int i = 0; i < header->noofsegments; ++i)
 		nodelist[i] = temp[i];
 
@@ -68,7 +68,7 @@ bool BVHFormat::ImportData(const char *filename) {
 	char line[8][40]; // Used to store the attribute and the corresponding value
 	char buffer[4097];
 	int section = 0;     // Indicates which section is currently being processed
-	NODE *curnode = 0; // Used to indicate the current node that is being processed
+	Node *curnode = 0; // Used to indicate the current node that is being processed
 	int index, channels = 0;
 	bool endsite = false;
 
@@ -129,7 +129,7 @@ bool BVHFormat::ImportData(const char *filename) {
 							} else {
 								EnlargeNodeList();
 								root = nodelist[header->noofsegments++] =
-										new NODE();
+										new Node();
 								root->name = std::string(line[1]);
 								root->DOFs = 0;
 								SetupChildren(root, 0);
@@ -146,7 +146,7 @@ bool BVHFormat::ImportData(const char *filename) {
 
 							curnode->children[curnode->noofchildren - 1] =
 									nodelist[header->noofsegments++] =
-											new NODE();
+											new Node();
 							curnode->children[curnode->noofchildren - 1]->parent =
 									curnode;
 							curnode = curnode->children[curnode->noofchildren
@@ -345,8 +345,8 @@ bool BVHFormat::ExportData(const char* filename) {
 	return true;
 }
 
-void BVHFormat::ExportDataJoint(std::ofstream& out_file, NODE* parent,
-		NODE* joint, int tabs, bool print_parent) {
+void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
+		Node* joint, int tabs, bool print_parent) {
 	std::string tabs_str;
 	for (int i = 0; i < tabs; i++) {
 		tabs_str += "\t";
@@ -382,7 +382,7 @@ void BVHFormat::ExportDataJoint(std::ofstream& out_file, NODE* parent,
 	out_file << tabs_str << "}" << endl;
 }
 
-void BVHFormat::ExportEndSite(std::ofstream& out_file, NODE* joint, int tabs) {
+void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
 	std::string tabs_str;
 	for (int i = 0; i < tabs; i++) {
 		tabs_str += "\t";
@@ -438,7 +438,7 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 	}
 }
 
-void BVHFormat::IncreaseChildren(NODE* node) {
+void BVHFormat::IncreaseChildren(Node* node) {
 	node->noofchildren++;
 	SetupChildren(node, node->noofchildren);
 }

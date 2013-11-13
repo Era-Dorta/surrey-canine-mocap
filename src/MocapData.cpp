@@ -15,11 +15,11 @@ MocapData::MocapData(MOCAPHEADER *header) :
 			root(0), nodelist(0), header(header), xpos(0), ypos(0), zpos(0) {
 }
 
-void MocapData::free_node_memory(struct NODE* to_delete) {
+void MocapData::free_node_memory(struct Node* to_delete) {
 	free(to_delete);
 }
 
-void MocapData::delete_recursive(struct NODE* to_delete) {
+void MocapData::delete_recursive(struct Node* to_delete) {
 	if (to_delete == NULL) {
 		return;
 	}
@@ -38,11 +38,11 @@ void MocapData::SetHeader(MOCAPHEADER *header) {
 	this->header = header;
 }
 
-NODE* MocapData::GetRootNode() {
+Node* MocapData::GetRootNode() {
 	return root;
 }
 
-NODE** MocapData::GetNodeList() {
+Node** MocapData::GetNodeList() {
 	return nodelist;
 }
 

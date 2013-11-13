@@ -16,18 +16,18 @@
 
 typedef unsigned char BYTE;
 
-class NODE {
+class Node {
 	public:
-		NODE();
-		virtual ~NODE();
+		Node();
+		virtual ~Node();
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
 		osg::Vec3f euler;     // Rotation
 		osg::Vec3f colour;
 		int noofchildren;
-		std::vector<NODE *> children;    // Array of pointers to child nodes
-		NODE *parent;       // Back pointer to parent node
+		std::vector<Node *> children;    // Array of pointers to child nodes
+		Node *parent;       // Back pointer to parent node
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame
 		std::vector<float> scale;       // Array of scalefactors for each frame

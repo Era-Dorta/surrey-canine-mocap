@@ -177,7 +177,7 @@ void Skeleton::set_current_frame(int frame_no) {
 	joint_array = joint_frame_array[current_frame];
 }
 
-NODE* Skeleton::get_root() {
+Node* Skeleton::get_root() {
 	return bvhf.GetRootNode();
 }
 

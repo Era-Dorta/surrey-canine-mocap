@@ -73,33 +73,33 @@ int strstrEx(const char *string, char strChar);
 bool strcompEx(const char *string, const char *strCharSet);
 float sqr(float a);
 
-inline void SetupChildren(NODE* seg, int children) {
+inline void SetupChildren(Node* seg, int children) {
 	seg->noofchildren = children;
 	seg->children.resize(children);
 }
 
-inline void SetupOffset(NODE* seg, float x = 0.0f, float y = 0.0f, float z =
+inline void SetupOffset(Node* seg, float x = 0.0f, float y = 0.0f, float z =
 		0.0f) {
 	seg->offset[0] = x;
 	seg->offset[1] = y;
 	seg->offset[2] = z;
 }
 
-inline void SetupEuler(NODE* seg, float r1 = 0.0f, float r2 = 0.0f, float r3 =
+inline void SetupEuler(Node* seg, float r1 = 0.0f, float r2 = 0.0f, float r3 =
 		0.0f) {
 	seg->euler[0] = r1;
 	seg->euler[1] = r2;
 	seg->euler[2] = r3;
 }
 
-inline void SetupColour(NODE* seg, float r = 0.0f, float g = 0.0f, float b =
+inline void SetupColour(Node* seg, float r = 0.0f, float g = 0.0f, float b =
 		0.0f) {
 	seg->colour[0] = r;
 	seg->colour[1] = g;
 	seg->colour[2] = b;
 }
 
-inline void SetupFrames(NODE* seg, long frames) {
+inline void SetupFrames(Node* seg, long frames) {
 	seg->scale.resize(frames);
 	seg->froset->resize(frames);
 	seg->freuler->resize(frames);

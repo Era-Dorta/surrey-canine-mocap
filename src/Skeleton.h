@@ -38,7 +38,7 @@ class Skeleton {
 		void load_from_file(std::string file_name);
 		void set_current_frame(int frame_no);
 		const osg::ref_ptr<osg::Vec3Array> getJointArray() const;
-		NODE* get_root();
+		Node* get_root();
 		MOCAPHEADER& get_header();
 
 	private:
