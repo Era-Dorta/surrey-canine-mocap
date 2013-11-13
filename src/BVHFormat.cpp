@@ -92,7 +92,7 @@ bool BVHFormat::ImportData(const char *filename) {
 	header->euler[2][1] = 1;
 
 	//TODO They had this calibration to make every model smaller
-	//header->callib = 0.03f;
+	header->callib = 0.03f;
 	header->degrees = true;
 	header->scalefactor = 1.0f;
 
@@ -129,7 +129,7 @@ bool BVHFormat::ImportData(const char *filename) {
 							} else {
 								EnlargeNodeList();
 								root = nodelist[header->noofsegments++] =
-										(NODE*) malloc(sizeof(NODE));
+										new NODE();
 								root->name = (char*) malloc(
 										strlen(line[1]) + 1);
 								strcpy(root->name, line[1]);
@@ -148,7 +148,7 @@ bool BVHFormat::ImportData(const char *filename) {
 
 							curnode->children[curnode->noofchildren - 1] =
 									nodelist[header->noofsegments++] =
-											(NODE*) malloc(sizeof(NODE));
+											new NODE();
 							curnode->children[curnode->noofchildren - 1]->parent =
 									curnode;
 							curnode = curnode->children[curnode->noofchildren
@@ -247,37 +247,39 @@ bool BVHFormat::ImportData(const char *filename) {
 						if (header->currentframe < header->noofframes) {
 							if (curnode->DOFs == 231) {
 								if (!endsite) {
-									curnode->froset[header->currentframe][0] =
+									curnode->froset->at(header->currentframe)[0] =
 											(float) atof(line[0])
 													* header->callib;
-									curnode->froset[header->currentframe][1] =
+									curnode->froset->at(header->currentframe)[1] =
 											(float) atof(line[1])
 													* header->callib;
-									curnode->froset[header->currentframe][2] =
+									curnode->froset->at(header->currentframe)[2] =
 											(float) atof(line[2])
 													* header->callib;
 									endsite = true;
 								} else {
-									curnode->freuler[header->currentframe][xpos] =
+									curnode->freuler->at(header->currentframe)[xpos] =
 											(float) atof(line[1]);
-									curnode->freuler[header->currentframe][ypos] =
+									curnode->freuler->at(header->currentframe)[ypos] =
 											(float) atof(line[2]);
-									curnode->freuler[header->currentframe][zpos] =
+									curnode->freuler->at(header->currentframe)[zpos] =
 											(float) atof(line[0]);
 									curnode->scale[header->currentframe] = 1.0f;
 									curnode = nodelist[++index];
 									endsite = false;
 								}
 							} else {
-								curnode->froset[header->currentframe][0] =
-										curnode->froset[header->currentframe][1] =
-												curnode->froset[header->currentframe][2] =
+								curnode->froset->at(header->currentframe)[0] =
+										curnode->froset->at(
+												header->currentframe)[1] =
+												curnode->froset->at(
+														header->currentframe)[2] =
 														0.0f;
-								curnode->freuler[header->currentframe][xpos] =
+								curnode->freuler->at(header->currentframe)[xpos] =
 										(float) atof(line[1]);
-								curnode->freuler[header->currentframe][ypos] =
+								curnode->freuler->at(header->currentframe)[ypos] =
 										(float) atof(line[2]);
-								curnode->freuler[header->currentframe][zpos] =
+								curnode->freuler->at(header->currentframe)[zpos] =
 										(float) atof(line[0]);
 								curnode->scale[header->currentframe] = 1.0f;
 
@@ -428,14 +430,14 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 	for (int i = 0; i < header->noofframes; i++) {
 		int j;
 		for (j = 0; j < header->noofsegments - 1; j++) {
-			out_file << nodelist[j]->froset[i][0] << " "
-					<< nodelist[j]->froset[i][1] << " "
-					<< nodelist[j]->froset[i][2] << " ";
+			out_file << nodelist[j]->froset->at(i)[0] << " "
+					<< nodelist[j]->froset->at(i)[1] << " "
+					<< nodelist[j]->froset->at(i)[2] << " ";
 		}
 		//Last line without spaces and with line feed
-		out_file << nodelist[j]->froset[i][0] << " "
-				<< nodelist[j]->froset[i][1] << " " << nodelist[j]->froset[i][2]
-				<< endl;
+		out_file << nodelist[j]->froset->at(i)[0] << " "
+				<< nodelist[j]->froset->at(i)[1] << " "
+				<< nodelist[j]->froset->at(i)[2] << endl;
 	}
 }
 

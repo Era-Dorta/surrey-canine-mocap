@@ -16,12 +16,6 @@ MocapData::MocapData(MOCAPHEADER *header) :
 }
 
 void MocapData::free_node_memory(struct NODE* to_delete) {
-	for (long i = 0; i < header->noofframes; i++) {
-		free(to_delete->froset[i]);
-		free(to_delete->freuler[i]);
-	}
-	free(to_delete->froset);
-	free(to_delete->freuler);
 	free(to_delete->scale);
 
 	free(to_delete->name);

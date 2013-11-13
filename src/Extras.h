@@ -44,6 +44,8 @@
 #define __extras_h__
 #include <stdlib.h>
 #include <osg/Geometry>
+#include "DebugUtil.h"
+#include "Node.h"
 
 #define XROT 1
 #define YROT 2
@@ -52,24 +54,6 @@
 #define YTRA 64
 #define ZTRA 128
 #define PI 3.141592
-
-typedef unsigned char BYTE;
-
-struct NODE {
-		char *name;
-		osg::Vec3f length;    // length of segment
-		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
-		osg::Vec3f euler;     // Rotation
-		osg::Vec3f colour;
-		int noofchildren;
-		NODE **children;    // Array of pointers to child nodes
-		NODE *parent;       // Back pointer to parent node
-		float **froset;     // Array of offsets for each frame
-		float **freuler;    // Array of angles for each frame
-		float *scale;       // Array of scalefactors for each frame
-		BYTE DOFs;          // Used to determine what DOFs the segment has
-		int noofchannels;
-};
 
 struct MOCAPHEADER {
 		// Assumes that all angles are in degrees if not then they need to be converted
@@ -119,13 +103,12 @@ inline void SetupColour(NODE* seg, float r = 0.0f, float g = 0.0f, float b =
 }
 
 inline void SetupFrames(NODE* seg, long frames) {
-	seg->froset = (float**) malloc(sizeof(float*) * frames);
-	seg->freuler = (float**) malloc(sizeof(float*) * frames);
 	seg->scale = (float*) malloc(sizeof(float) * frames);
 	for (long i = 0; i < frames; ++i) {
-		seg->froset[i] = (float*) malloc(sizeof(float*) * 3);
-		seg->freuler[i] = (float*) malloc(sizeof(float*) * 3);
+		seg->froset->push_back(osg::Vec3f());
+		seg->freuler->push_back(osg::Vec3f());
 	}
+
 }
 
 inline float sqr(float a) {

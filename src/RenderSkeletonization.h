@@ -3,6 +3,7 @@
 
 #include "Skeletonization3D.h"
 #include "RGBDCamera.h"
+#include "Node.h"
 #include "Extras.h"
 
 #include <vector>

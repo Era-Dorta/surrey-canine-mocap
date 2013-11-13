@@ -248,34 +248,24 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(
-							osg::DegreesToRadians(
-									node->freuler[current_frame][0]),
-							(float) header.euler[0][0],
-							(float) header.euler[0][1],
-							(float) header.euler[0][2])
+					osg::DegreesToRadians(node->freuler->at(current_frame)[0]),
+					(float) header.euler[0][0], (float) header.euler[0][1],
+					(float) header.euler[0][2])
 					* osg::Matrix::rotate(
 							osg::DegreesToRadians(
-									node->freuler[current_frame][1]),
+									node->freuler->at(current_frame)[1]),
 							(float) header.euler[1][0],
 							(float) header.euler[1][1],
 							(float) header.euler[1][2])
 					* osg::Matrix::rotate(
 							osg::DegreesToRadians(
-									node->freuler[current_frame][2]),
+									node->freuler->at(current_frame)[2]),
 							(float) header.euler[2][0],
 							(float) header.euler[2][1],
 							(float) header.euler[2][2])
 
 					* osg::Matrix::translate(
-							osg::Vec3(
-									node->offset[0]
-											+ node->froset[current_frame][0],
-									node->offset[1]
-											+ node->froset[current_frame][1],
-									node->offset[2]
-											+ node->froset[current_frame][2]))
-
-											);
+							node->offset + node->froset->at(current_frame)));
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(
