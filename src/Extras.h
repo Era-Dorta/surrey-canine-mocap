@@ -75,10 +75,7 @@ float sqr(float a);
 
 inline void SetupChildren(NODE* seg, int children) {
 	seg->noofchildren = children;
-	if (children)
-		seg->children = (NODE**) malloc(sizeof(NODE*) * children);
-	else
-		seg->children = 0;
+	seg->children.resize(children);
 }
 
 inline void SetupOffset(NODE* seg, float x = 0.0f, float y = 0.0f, float z =
@@ -104,11 +101,8 @@ inline void SetupColour(NODE* seg, float r = 0.0f, float g = 0.0f, float b =
 
 inline void SetupFrames(NODE* seg, long frames) {
 	seg->scale.resize(frames);
-	for (long i = 0; i < frames; ++i) {
-		seg->froset->push_back(osg::Vec3f());
-		seg->freuler->push_back(osg::Vec3f());
-	}
-
+	seg->froset->resize(frames);
+	seg->freuler->resize(frames);
 }
 
 inline float sqr(float a) {

@@ -8,7 +8,6 @@
 
 NODE::NODE() {
 	noofchildren = 0;
-	children = NULL;
 	parent = NULL;
 	froset = new osg::Vec3Array;
 	freuler = new osg::Vec3Array;

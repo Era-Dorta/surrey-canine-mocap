@@ -283,7 +283,7 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 
 	skel_transform->addChild(selectionBox.get());
 
-	if (!node->children) {
+	if (node->noofchildren == 0) {
 		selectionBox = createSelectionBox();
 		selectionBox->setMatrix(
 				osg::Matrix::scale(0.02, 0.02, 0.02)
@@ -294,12 +294,9 @@ void RenderSkeletonization::evaluate_children(NODE* node, MOCAPHEADER& header,
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
-	if (node->children) {
-		for (int i = 0; i < node->noofchildren; i++)
-			evaluate_children(node->children[i], header, skel_transform.get(),
-					current_frame);
-	}
-
+	for (int i = 0; i < node->noofchildren; i++)
+		evaluate_children(node->children[i], header, skel_transform.get(),
+				current_frame);
 }
 
 void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,

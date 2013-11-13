@@ -26,7 +26,7 @@ class NODE {
 		osg::Vec3f euler;     // Rotation
 		osg::Vec3f colour;
 		int noofchildren;
-		NODE **children;    // Array of pointers to child nodes
+		std::vector<NODE *> children;    // Array of pointers to child nodes
 		NODE *parent;       // Back pointer to parent node
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame

@@ -439,19 +439,6 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 }
 
 void BVHFormat::IncreaseChildren(NODE* node) {
-	int i;
-	NODE **temp;
-	if (node->children) {
-		// Parent already has children
-		temp = node->children;
-		temp = (NODE**) malloc(sizeof(NODE*) * node->noofchildren);
-		for (i = 0; i < node->noofchildren; ++i)
-			temp[i] = node->children[i];
-		free(node->children);
-		node->children = (NODE**) malloc(sizeof(NODE*) * ++node->noofchildren);
-		for (i = 0; i < node->noofchildren; ++i)
-			node->children[i] = temp[i];
-		free(temp);
-	} else
-		SetupChildren(node, ++node->noofchildren);
+	node->noofchildren++;
+	SetupChildren(node, node->noofchildren);
 }
