@@ -175,14 +175,10 @@ bool BVHFormat::ImportData(const char *filename) {
 												&& curnode->parent->length[2]
 														== 0.0f)) {
 									curnode->parent->setup_euler(rx, ry, rz);
-									curnode->parent->length[0] = x;
-									curnode->parent->length[1] = y;
-									curnode->parent->length[2] = z;
+									curnode->parent->length.set(x, y, z);
 								}
 							} else {
-								curnode->length[0] = x;
-								curnode->length[1] = y;
-								curnode->length[2] = z;
+								curnode->length.set(x, y, z);
 							}
 						} else if (strcompEx(line[0], "CHANNELS") && !endsite) {
 							channels += atoi(line[1]);
@@ -242,25 +238,20 @@ bool BVHFormat::ImportData(const char *filename) {
 					} else {
 						//Process DOFs
 						if (header->currentframe < header->noofframes) {
+							float v0, v1, v2;
+							v0 = (float) atof(line[0]);
+							v1 = (float) atof(line[1]);
+							v2 = (float) atof(line[2]);
 							if (curnode->DOFs == 231) {
 								if (!endsite) {
-									curnode->froset->at(header->currentframe)[0] =
-											(float) atof(line[0])
-													* header->callib;
-									curnode->froset->at(header->currentframe)[1] =
-											(float) atof(line[1])
-													* header->callib;
-									curnode->froset->at(header->currentframe)[2] =
-											(float) atof(line[2])
-													* header->callib;
+									curnode->froset->at(header->currentframe).set(
+											v0 * header->callib,
+											v1 * header->callib,
+											v2 * header->callib);
 									endsite = true;
 								} else {
-									curnode->freuler->at(header->currentframe)[xpos] =
-											(float) atof(line[1]);
-									curnode->freuler->at(header->currentframe)[ypos] =
-											(float) atof(line[2]);
-									curnode->freuler->at(header->currentframe)[zpos] =
-											(float) atof(line[0]);
+									curnode->freuler->at(header->currentframe).set(
+											v0, v1, v2);
 									curnode->scale[header->currentframe] = 1.0f;
 									curnode = nodelist[++index];
 									endsite = false;
@@ -272,12 +263,8 @@ bool BVHFormat::ImportData(const char *filename) {
 												curnode->froset->at(
 														header->currentframe)[2] =
 														0.0f;
-								curnode->freuler->at(header->currentframe)[xpos] =
-										(float) atof(line[1]);
-								curnode->freuler->at(header->currentframe)[ypos] =
-										(float) atof(line[2]);
-								curnode->freuler->at(header->currentframe)[zpos] =
-										(float) atof(line[0]);
+								curnode->freuler->at(header->currentframe).set(
+										v0, v1, v2);
 								curnode->scale[header->currentframe] = 1.0f;
 
 								if (index + 1 < header->noofsegments)
