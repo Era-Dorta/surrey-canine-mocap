@@ -71,7 +71,6 @@ class BVHFormat: public MocapData {
 		void ExportMotion(std::ofstream& out_file);
 
 		void EnlargeNodeList();
-		void IncreaseChildren(Node *node);
 };
 
 #endif

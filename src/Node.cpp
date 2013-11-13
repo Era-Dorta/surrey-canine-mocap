@@ -18,3 +18,36 @@ Node::Node() {
 Node::~Node() {
 }
 
+void Node::setup_children(int new_no_children) {
+	noofchildren = new_no_children;
+	children.resize(new_no_children);
+}
+
+void Node::setup_offset(float x, float y, float z) {
+	offset[0] = x;
+	offset[1] = y;
+	offset[2] = z;
+}
+
+void Node::setup_euler(float r1, float r2, float r3) {
+	euler[0] = r1;
+	euler[1] = r2;
+	euler[2] = r3;
+}
+
+void Node::setup_colour(float r, float g, float b) {
+	colour[0] = r;
+	colour[1] = g;
+	colour[2] = b;
+}
+
+void Node::increase_no_children() {
+	noofchildren++;
+	children.push_back(NULL);
+}
+
+void Node::setup_frames(long frames) {
+	scale.resize(frames);
+	froset->resize(frames);
+	freuler->resize(frames);
+}

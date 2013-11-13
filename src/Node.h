@@ -20,6 +20,19 @@ class Node {
 	public:
 		Node();
 		virtual ~Node();
+
+		void increase_no_children();
+
+		void setup_children(int new_no_children);
+
+		void setup_offset(float x = 0.0f, float y = 0.0f, float z = 0.0f);
+
+		void setup_euler(float r1 = 0.0f, float r2 = 0.0f, float r3 = 0.0f);
+
+		void setup_colour(float r = 0.0f, float g = 0.0f, float b = 0.0f);
+
+		void setup_frames(long frames);
+
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link

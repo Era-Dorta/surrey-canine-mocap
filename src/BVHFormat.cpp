@@ -132,16 +132,16 @@ bool BVHFormat::ImportData(const char *filename) {
 										new Node();
 								root->name = std::string(line[1]);
 								root->DOFs = 0;
-								SetupChildren(root, 0);
-								SetupColour(root);
-								SetupEuler(root);
+								root->setup_children(0);
+								root->setup_colour();
+								root->setup_euler();
 								root->parent = 0;
 								root->length[2] = root->length[1] =
 										root->length[0] = 0.0f;
 								curnode = root;
 							}
 						} else if (strcompEx(line[0], "JOINT")) {
-							IncreaseChildren(curnode);
+							curnode->increase_no_children();
 							EnlargeNodeList();
 
 							curnode->children[curnode->noofchildren - 1] =
@@ -155,9 +155,9 @@ bool BVHFormat::ImportData(const char *filename) {
 							curnode->name = std::string(line[1]);
 							curnode->DOFs = 0;
 							curnode->noofchannels = 0;
-							SetupChildren(curnode, 0);
-							SetupColour(curnode);
-							SetupEuler(curnode);
+							curnode->setup_children(0);
+							curnode->setup_colour();
+							curnode->setup_euler();
 							curnode->length[2] = curnode->length[1] =
 									curnode->length[0] = 0.0f;
 						} else if (strcompEx(line[0], "OFFSET")) {
@@ -167,14 +167,14 @@ bool BVHFormat::ImportData(const char *filename) {
 							z = (float) atof(line[3]) * header->callib;
 							rx = ry = rz = 0.0f;
 							if (!endsite) {
-								SetupOffset(curnode, x, y, z);
+								curnode->setup_offset(x, y, z);
 								if (curnode != root
 										&& (curnode->parent->length[0] == 0.0f
 												&& curnode->parent->length[1]
 														== 0.0f
 												&& curnode->parent->length[2]
 														== 0.0f)) {
-									SetupEuler(curnode->parent, rx, ry, rz);
+									curnode->parent->setup_euler(rx, ry, rz);
 									curnode->parent->length[0] = x;
 									curnode->parent->length[1] = y;
 									curnode->parent->length[2] = z;
@@ -223,7 +223,7 @@ bool BVHFormat::ImportData(const char *filename) {
 						if (strcompEx(line[0], "FRAMES:")) {
 							header->noofframes = atoi(line[1]);
 							for (int i = 0; i < header->noofsegments; ++i)
-								SetupFrames(nodelist[i], header->noofframes);
+								nodelist[i]->setup_frames(header->noofframes);
 							header->currentframe = 0;
 						} else if (strcompEx(line[0], "FRAME")
 								&& strcompEx(line[1], "TIME:")) {
@@ -436,9 +436,4 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 				<< nodelist[j]->froset->at(i)[1] << " "
 				<< nodelist[j]->froset->at(i)[2] << endl;
 	}
-}
-
-void BVHFormat::IncreaseChildren(Node* node) {
-	node->noofchildren++;
-	SetupChildren(node, node->noofchildren);
 }
