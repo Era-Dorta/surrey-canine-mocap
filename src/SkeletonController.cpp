@@ -8,8 +8,8 @@
 #include "SkeletonController.h"
 
 SkeletonController::SkeletonController() :
-			state(ADD_POINTS), point_selected(false), selected_point_index(0),
-			current_frame(0), last_mouse_pos_x(0), last_mouse_pos_y(0) {
+			state(MOVE_POINTS), is_point_selected(false), current_frame(0),
+			last_mouse_pos_x(0), last_mouse_pos_y(0) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -45,7 +45,38 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 
 			if (intersector->containsIntersections()) {
 				switch (state) {
-				case ADD_POINTS: {
+				case MOVE_POINTS: {
+					if (!is_point_selected) {
+						intersecIte result =
+								intersector->getIntersections().begin();
+						osg::MatrixTransform* selected_obj =
+								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
+										0)->getParent(0));
+						if (selected_obj) {
+							selected_point = skel_renderer.obj_belong_skel(
+									selected_obj);
+							if (selected_point) {
+								is_point_selected = true;
+								skel_renderer.change_colour_when_selected(
+										selected_point, is_point_selected);
+							}
+						}
+					} else {
+						skel_renderer.change_colour_when_selected(
+								selected_point, is_point_selected);
+						is_point_selected = false;
+						update_dynamics(current_frame);
+					}
+					break;
+				}
+				case EMPTY:
+				case ADD_POINTS:
+				case POINTS_SET:
+					break;
+				}
+			} else {
+				switch (state) {
+				{
 					intersecIte result;
 					result = intersector->getIntersections().begin();
 
@@ -60,72 +91,41 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 					}
 					break;
 				}
-				case MOVE_POINTS: {
-					//Uncomment if not able to add points in given frame
-					//if (!skel_fitting.skeleton_full()) {
-					//	state = ADD_POINTS;
-					//}
-					if (!point_selected) {
-						intersecIte result =
-								intersector->getIntersections().begin();
-						osg::MatrixTransform* selected_obj =
-								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
-										0)->getParent(0));
-						if (selected_obj) {
-							selected_point_index =
-									skel_renderer.obj_belong_skel(selected_obj);
-							if (selected_point_index >= 0) {
-								point_selected = true;
-								selected_point = selected_obj;
-								skel_renderer.change_colour_when_selected(
-										selected_point, point_selected);
-							}
-						}
-					} else {
-						intersecIte result =
-								intersector->getIntersections().begin();
-
-						point_selected = false;
-						skel_renderer.change_colour_when_selected(
-								selected_point, point_selected);
-						osg::Vec3 aux = skel_renderer.move_sphere(result,
-								selected_point);
-						skeleton.move_joint(selected_point_index, aux);
-						update_dynamics(current_frame);
-					}
-					break;
+			case MOVE_POINTS: {
+				if (is_point_selected) {
+					skel_renderer.change_colour_when_selected(selected_point,
+							is_point_selected);
+					is_point_selected = false;
+					update_dynamics(current_frame);
 				}
-				case EMPTY:
-				case POINTS_SET:
-					break;
-				}
-			} else {
-				switch (state) {
-				case MOVE_POINTS: {
-					if (point_selected) {
-						point_selected = false;
-						skel_renderer.change_colour_when_selected(
-								selected_point, point_selected);
-						//TODO Not sure if using homogeneous coordinates here,
-						//maybe it should be 0.0.
-						osg::Vec3 aux(last_mouse_pos_x - ea.getX(),
-								last_mouse_pos_y - ea.getY(), 1.0f);
-						aux = skel_renderer.move_sphere(aux,
-								viewer->getCamera(), selected_point);
-						skeleton.move_joint(selected_point_index, aux);
-						update_dynamics(current_frame);
-					}
-					break;
-				}
-				case ADD_POINTS:
-				case EMPTY:
-				case POINTS_SET:
-					break;
+				break;
+			}
+			case ADD_POINTS:
+			case EMPTY:
+			case POINTS_SET:
+				break;
 				}
 			}
 		}
 		last_mouse_pos_x = ea.getX();
 		last_mouse_pos_y = ea.getY();
+	}
+
+	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG
+			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+
+		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
+
+		if (viewer) {
+			int index = skeleton.get_node(selected_point);
+			osg::Vec3 move_axis(last_mouse_pos_x - ea.getX(),
+					last_mouse_pos_y - ea.getY(), 0.0);
+			skeleton.move_joint(index, move_axis);
+			update_dynamics(current_frame);
+			last_mouse_pos_x = ea.getX();
+			last_mouse_pos_y = ea.getY();
+			return true;
+		}
 	}
 	return false;
 }
@@ -144,13 +144,7 @@ void SkeletonController::save_skeleton_to_file(std::string file_name) {
 }
 
 void SkeletonController::reset_state() {
-	point_selected = false;
-	selected_point_index = 0;
-	if (skeleton.skeleton_full()) {
-		state = MOVE_POINTS;
-	} else {
-		state = ADD_POINTS;
-	}
+	state = MOVE_POINTS;
 }
 
 void SkeletonController::draw_complete_skeleton() {

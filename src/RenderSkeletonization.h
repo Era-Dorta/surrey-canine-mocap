@@ -69,9 +69,14 @@ class RenderSkeletonization {
 		osg::Vec3 move_sphere(osg::Vec3& move_vec, osg::Camera* cam,
 				osg::MatrixTransform* obj);
 
-		int obj_belong_skel(osg::MatrixTransform* selected_obj);
+		osg::MatrixTransform* obj_belong_skel(
+				osg::MatrixTransform* selected_obj);
 	protected:
 	private:
+		osg::MatrixTransform* obj_belong_skel(
+				osg::MatrixTransform* selected_obj,
+				osg::MatrixTransform* current_node);
+
 		void evaluate_children(Node* node, MocapHeader& header,
 				osg::Group *pAddToThisGroup, int current_frame);
 

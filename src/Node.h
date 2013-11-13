@@ -9,6 +9,7 @@
 #define NODE_H_
 
 #include <osg/Array>
+#include <osg/MatrixTransform>
 #include <cstddef>
 #include <vector>
 #include <string>
@@ -45,6 +46,10 @@ class Node {
 		std::vector<float> scale;       // Array of scalefactors for each frame
 		BYTE DOFs;          // Used to determine what DOFs the segment has
 		int noofchannels;
+
+		//TODO Better to have a list or some other kind of struture in controller
+		//model should not know about the viewer
+		osg::ref_ptr<osg::MatrixTransform> osg_node;
 };
 
 #endif /* NODE_H_ */

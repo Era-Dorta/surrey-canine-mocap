@@ -40,6 +40,7 @@ class Skeleton: public BVHFormat {
 		const osg::ref_ptr<osg::Vec3Array> getJointArray() const;
 		Node* get_root();
 		MocapHeader& get_header();
+		int get_node(osg::ref_ptr<osg::MatrixTransform> node_transform);
 
 	private:
 		void reset_state();

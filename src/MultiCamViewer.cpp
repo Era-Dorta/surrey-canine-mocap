@@ -354,8 +354,7 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 		}
 	}
 
-	skel_controller.handle(ea, aa);
-	return false;
+	return skel_controller.handle(ea, aa);
 }
 
 void MultiCamViewer::update_dynamics(void) {

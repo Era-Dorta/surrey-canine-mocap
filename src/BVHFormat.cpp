@@ -82,7 +82,7 @@ bool BVHFormat::ImportData(const char *filename) {
 	header->euler->at(2).set(0, 1, 0);
 
 	//TODO They had this calibration to make every model smaller
-	header->callib = 0.03f;
+	//header->callib = 0.03f;
 	header->degrees = true;
 	header->scalefactor = 1.0f;
 

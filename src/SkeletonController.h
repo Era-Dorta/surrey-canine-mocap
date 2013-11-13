@@ -63,9 +63,8 @@ class SkeletonController {
 		SkeletonFitting skel_fitter;
 
 		Fitting_State state;
-		bool point_selected;
+		bool is_point_selected;
 		osg::ref_ptr<osg::MatrixTransform> selected_point;
-		int selected_point_index;
 		Skeleton skeleton;
 		int current_frame;
 		int last_mouse_pos_x;

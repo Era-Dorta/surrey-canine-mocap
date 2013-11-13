@@ -11,9 +11,8 @@ Skeleton::Skeleton() :
 			current_frame(0) {
 
 	SetHeader(&mocap_header);
-	ImportData(
-	//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-			"/home/cvssp/misc/m04701/workspace/data/bvh/example.bvh");
+	ImportData("/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+	//"/home/cvssp/misc/m04701/workspace/data/bvh/example.bvh");
 	//bvhf.ExportData("/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
 
 	max_joints = mocap_header.noofsegments;
@@ -67,7 +66,8 @@ void Skeleton::add_joint(osg::Vec3& joint) {
 }
 
 void Skeleton::move_joint(unsigned int index, osg::Vec3& new_pos) {
-	(*joint_array)[index] = new_pos;
+	new_pos *= 0.1;
+	nodelist[index]->freuler->at(current_frame) += new_pos;
 }
 
 void Skeleton::delete_joint(unsigned int index) {
@@ -191,4 +191,13 @@ void Skeleton::reset_state() {
 
 const osg::ref_ptr<osg::Vec3Array> Skeleton::getJointArray() const {
 	return joint_array;
+}
+
+int Skeleton::get_node(osg::ref_ptr<osg::MatrixTransform> node_transform) {
+	for (unsigned int i = 0; i < nodelist.size(); i++) {
+		if (nodelist[i]->osg_node == node_transform) {
+			return i;
+		}
+	}
+	return 0;
 }

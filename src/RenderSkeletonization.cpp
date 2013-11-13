@@ -19,6 +19,7 @@ void RenderSkeletonization::set_data(
 	camera_arr = camera_arr_;
 	skel_vis_switch = skel_vis_switch_;
 	skel_fitting_switch = skel_fitting_switch_;
+	skel_fitting_switch->setNewChildDefaultValue(true);
 
 	//In case this is not first call, do a clean up
 	skel_group_array.clear();
@@ -236,7 +237,7 @@ void RenderSkeletonization::change_colour_when_selected(
 
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 		int current_frame) {
-	evaluate_children(node, header, merged_group, current_frame);
+	evaluate_children(node, header, skel_fitting_switch, current_frame);
 }
 
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
@@ -292,6 +293,39 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 	for (int i = 0; i < node->noofchildren; i++)
 		evaluate_children(node->children[i], header, skel_transform.get(),
 				current_frame);
+
+	node->osg_node = skel_transform.get();
+}
+
+osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
+		osg::MatrixTransform* selected_obj) {
+	if (skel_fitting_switch->getNumChildren() > 0) {
+		return obj_belong_skel(selected_obj,
+				static_cast<osg::MatrixTransform*>(skel_fitting_switch->getChild(
+						0)));
+	} else {
+		return NULL;
+	}
+}
+
+osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
+		osg::MatrixTransform* selected_obj,
+		osg::MatrixTransform* current_node) {
+	if (selected_obj == current_node) {
+		return current_node;
+	}
+
+	for (unsigned int i = 2; i < current_node->getNumChildren(); i++) {
+		osg::MatrixTransform* aux =
+				dynamic_cast<osg::MatrixTransform*>(current_node->getChild(i));
+		if (aux) {
+			aux = obj_belong_skel(selected_obj, aux);
+			if (aux) {
+				return aux;
+			}
+		}
+	}
+	return NULL;
 }
 
 void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
@@ -386,15 +420,6 @@ osg::Vec3 RenderSkeletonization::move_sphere(osg::Vec3& move_vec,
 	osg::Matrix new_matrix = obj->getMatrix() * aux_matrix;
 
 	return osg::Vec3() * new_matrix;
-}
-
-int RenderSkeletonization::obj_belong_skel(osg::MatrixTransform* selected_obj) {
-	for (unsigned int i = 0; i < skel_fitting_switch->getNumChildren(); i++) {
-		if (selected_obj == skel_fitting_switch->getChild(i)) {
-			return i;
-		}
-	}
-	return -1;
 }
 
 void RenderSkeletonization::draw_bone(osg::Vec3& bone_start,
