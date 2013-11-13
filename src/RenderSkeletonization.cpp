@@ -243,8 +243,6 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 		osg::Group *pAddToThisGroup, int current_frame) {
 
-	//Draw a blue cloud of squares, where each square represents a small part of a bone
-	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 
 	skel_transform->setMatrix(
@@ -278,7 +276,6 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 	selectionBox->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
 
 	skel_transform->addChild(selectionBox.get());
-
 	if (node->noofchildren == 0) {
 		selectionBox = createSelectionBox();
 		selectionBox->setMatrix(
@@ -315,7 +312,7 @@ osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
 		return current_node;
 	}
 
-	for (unsigned int i = 2; i < current_node->getNumChildren(); i++) {
+	for (unsigned int i = 0; i < current_node->getNumChildren(); i++) {
 		osg::MatrixTransform* aux =
 				dynamic_cast<osg::MatrixTransform*>(current_node->getChild(i));
 		if (aux) {

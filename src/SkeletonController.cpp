@@ -8,8 +8,9 @@
 #include "SkeletonController.h"
 
 SkeletonController::SkeletonController() :
-			state(MOVE_POINTS), is_point_selected(false), current_frame(0),
-			last_mouse_pos_x(0), last_mouse_pos_y(0) {
+			state(MOVE_POINTS), is_point_selected(false),
+			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
+			last_mouse_pos_y(0) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -53,17 +54,23 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
 										0)->getParent(0));
 						if (selected_obj) {
-							selected_point = skel_renderer.obj_belong_skel(
-									selected_obj);
-							if (selected_point) {
+							selected_point_color =
+									skel_renderer.obj_belong_skel(selected_obj);
+							if (selected_point_color) {
 								is_point_selected = true;
+								osg::ref_ptr<osg::MatrixTransform> selected_point =
+										static_cast<osg::MatrixTransform*>(selected_point_color->getParent(
+												0));
+								selected_point_index = skeleton.get_node(
+										selected_point);
 								skel_renderer.change_colour_when_selected(
-										selected_point, is_point_selected);
+										selected_point_color,
+										is_point_selected);
 							}
 						}
 					} else {
 						skel_renderer.change_colour_when_selected(
-								selected_point, is_point_selected);
+								selected_point_color, is_point_selected);
 						is_point_selected = false;
 						update_dynamics(current_frame);
 					}
@@ -93,8 +100,8 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				}
 			case MOVE_POINTS: {
 				if (is_point_selected) {
-					skel_renderer.change_colour_when_selected(selected_point,
-							is_point_selected);
+					skel_renderer.change_colour_when_selected(
+							selected_point_color, is_point_selected);
 					is_point_selected = false;
 					update_dynamics(current_frame);
 				}
@@ -117,10 +124,9 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
 		if (viewer) {
-			int index = skeleton.get_node(selected_point);
 			osg::Vec3 move_axis(last_mouse_pos_x - ea.getX(),
 					last_mouse_pos_y - ea.getY(), 0.0);
-			skeleton.move_joint(index, move_axis);
+			skeleton.move_joint(selected_point_index, move_axis);
 			update_dynamics(current_frame);
 			last_mouse_pos_x = ea.getX();
 			last_mouse_pos_y = ea.getY();

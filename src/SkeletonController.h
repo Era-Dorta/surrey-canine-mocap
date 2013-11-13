@@ -64,7 +64,8 @@ class SkeletonController {
 
 		Fitting_State state;
 		bool is_point_selected;
-		osg::ref_ptr<osg::MatrixTransform> selected_point;
+		int selected_point_index;
+		osg::ref_ptr<osg::MatrixTransform> selected_point_color;
 		Skeleton skeleton;
 		int current_frame;
 		int last_mouse_pos_x;

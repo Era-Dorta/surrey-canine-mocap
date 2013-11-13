@@ -195,9 +195,9 @@ const osg::ref_ptr<osg::Vec3Array> Skeleton::getJointArray() const {
 
 int Skeleton::get_node(osg::ref_ptr<osg::MatrixTransform> node_transform) {
 	for (unsigned int i = 0; i < nodelist.size(); i++) {
-		if (nodelist[i]->osg_node == node_transform) {
+		if (nodelist[i]->osg_node.get() == node_transform.get()) {
 			return i;
 		}
 	}
-	return 0;
+	return -1;
 }
