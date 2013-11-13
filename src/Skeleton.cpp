@@ -12,9 +12,9 @@ Skeleton::Skeleton() :
 
 	bvhf.SetHeader(&mocap_header);
 	bvhf.ImportData(
-	//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-			"/home/cvssp/misc/m04701/workspace/data/bvh/example.bvh");
-	//bvhf.ExportData("/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+	//"/home/cvssp/misc/m04701/workspace/data/bvh/example.bvh");
+	bvhf.ExportData("/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
 
 	max_joints = mocap_header.noofsegments;
 

@@ -130,9 +130,7 @@ bool BVHFormat::ImportData(const char *filename) {
 								EnlargeNodeList();
 								root = nodelist[header->noofsegments++] =
 										new NODE();
-								root->name = (char*) malloc(
-										strlen(line[1]) + 1);
-								strcpy(root->name, line[1]);
+								root->name = std::string(line[1]);
 								root->DOFs = 0;
 								SetupChildren(root, 0);
 								SetupColour(root);
@@ -154,8 +152,7 @@ bool BVHFormat::ImportData(const char *filename) {
 							curnode = curnode->children[curnode->noofchildren
 									- 1];
 
-							curnode->name = (char*) malloc(strlen(line[1]) + 1);
-							strcpy(curnode->name, line[1]);
+							curnode->name = std::string(line[1]);
 							curnode->DOFs = 0;
 							curnode->noofchannels = 0;
 							SetupChildren(curnode, 0);

@@ -103,7 +103,7 @@ inline void SetupColour(NODE* seg, float r = 0.0f, float g = 0.0f, float b =
 }
 
 inline void SetupFrames(NODE* seg, long frames) {
-	seg->scale = (float*) malloc(sizeof(float) * frames);
+	seg->scale.resize(frames);
 	for (long i = 0; i < frames; ++i) {
 		seg->froset->push_back(osg::Vec3f());
 		seg->freuler->push_back(osg::Vec3f());
