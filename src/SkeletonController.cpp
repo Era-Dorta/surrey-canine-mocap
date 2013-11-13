@@ -10,7 +10,7 @@
 SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), is_point_selected(false),
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
-			last_mouse_pos_y(0) {
+			last_mouse_pos_y(0), move_on_z(false) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -68,11 +68,6 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 										is_point_selected);
 							}
 						}
-					} else {
-						skel_renderer.change_colour_when_selected(
-								selected_point_color, is_point_selected);
-						is_point_selected = false;
-						update_dynamics(current_frame);
 					}
 					break;
 				}
@@ -81,57 +76,72 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				case POINTS_SET:
 					break;
 				}
-			} else {
-				switch (state) {
-				{
-					intersecIte result;
-					result = intersector->getIntersections().begin();
-
-					//Save it as a joint
-					osg::Vec3 aux = skel_renderer.add_sphere(result);
-					skeleton.add_joint(aux);
-					//If the skeleton is full of joints then change state and
-					//save current state of the skeleton to output file
-					if (skeleton.skeleton_full()) {
-						state = MOVE_POINTS;
-						//update_dynamics(current_frame);
-					}
-					break;
-				}
-			case MOVE_POINTS: {
-				if (is_point_selected) {
-					skel_renderer.change_colour_when_selected(
-							selected_point_color, is_point_selected);
-					is_point_selected = false;
-					update_dynamics(current_frame);
-				}
-				break;
-			}
-			case ADD_POINTS:
-			case EMPTY:
-			case POINTS_SET:
-				break;
-				}
 			}
 		}
 		last_mouse_pos_x = ea.getX();
 		last_mouse_pos_y = ea.getY();
 	}
 
-	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG
-			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG) {
 
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
 		if (viewer) {
-			osg::Vec3 move_axis(last_mouse_pos_x - ea.getX(),
-					last_mouse_pos_y - ea.getY(), 0.0);
+			osg::Vec3 move_axis;
+			if(move_on_z){
+				move_axis.set(0.0,0.0, last_mouse_pos_x - ea.getX());
+			}else{
+				move_axis.set(last_mouse_pos_x - ea.getX(),
+						last_mouse_pos_y - ea.getY(), 0.0);
+			}
 			skeleton.move_joint(selected_point_index, move_axis);
 			update_dynamics(current_frame);
+
 			last_mouse_pos_x = ea.getX();
 			last_mouse_pos_y = ea.getY();
 			return true;
 		}
+	}
+
+	if ( is_point_selected && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
+			&& ea.getEventType() == osgGA::GUIEventAdapter::PUSH
+			) {
+			last_mouse_pos_x = ea.getX();
+			last_mouse_pos_y = ea.getY();
+	}
+
+	if ( is_point_selected && ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
+			) {
+		if(ea.getEventType() == osgGA::GUIEventAdapter::PUSH){
+			move_on_z = true;
+			last_mouse_pos_x = ea.getX();
+			last_mouse_pos_y = ea.getY();
+		}
+		if(ea.getEventType() == osgGA::GUIEventAdapter::RELEASE){
+			move_on_z = false;
+			last_mouse_pos_x = ea.getX();
+			last_mouse_pos_y = ea.getY();
+		}
+	}
+
+	switch (ea.getEventType()) {
+	case osgGA::GUIEventAdapter::KEYDOWN:
+		switch (ea.getKey()) {
+		case osgGA::GUIEventAdapter::KEY_Z:
+			if (is_point_selected) {
+				skel_renderer.change_colour_when_selected(
+						selected_point_color, is_point_selected);
+				is_point_selected = false;
+				move_on_z = false;
+				update_dynamics(current_frame);
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
 	}
 	return false;
 }

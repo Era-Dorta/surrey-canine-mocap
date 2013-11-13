@@ -70,6 +70,7 @@ class SkeletonController {
 		int current_frame;
 		int last_mouse_pos_x;
 		int last_mouse_pos_y;
+		bool move_on_z;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */
