@@ -52,12 +52,12 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				case MOVE_POINTS: {
 					if (!is_point_selected) {
 						if (inter_number
-								<= intersector->getIntersections().size()) {
+								>= intersector->getIntersections().size()) {
 							inter_number = 0;
 						}
 						intersecIte result =
 								intersector->getIntersections().begin();
-						for (int i = 0; i < inter_number; i++) {
+						for (unsigned int i = 0; i < inter_number; i++) {
 							result++;
 						}
 						osg::MatrixTransform* selected_obj =
@@ -261,7 +261,7 @@ void SkeletonController::draw_edit_text() {
 		out << inter_number;
 		edit_text += out.str();
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 20.0f, 0.0f));
-		edit_text = "v(finish) b(frames) n(rot) m(inter)";
+		edit_text = "v(finish) b(rot) n(frames) m(inter)";
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
 }
