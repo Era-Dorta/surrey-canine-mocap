@@ -72,6 +72,7 @@ class SkeletonController {
 		int last_mouse_pos_y;
 		bool move_on_z;
 		bool translate_root;
+		bool change_all_frames;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

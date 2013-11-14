@@ -26,10 +26,10 @@ class Skeleton: public BVHFormat {
 		Skeleton();
 		virtual ~Skeleton();
 		void rotate_joint(unsigned int index, osg::Vec3& angle);
+		void rotate_every_frame(osg::Vec3& angle);
 		void translate_root(osg::Vec3& translation);
+		void translate_every_frame(osg::Vec3& translation);
 
-		const osg::Vec3& get_joint(unsigned int index);
-		unsigned int get_num_joints();
 		unsigned int get_num_bones();
 		void save_to_file(std::string file_name);
 		void load_from_file(std::string file_name);

@@ -20,9 +20,22 @@ void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 	nodelist[index]->freuler->at(mocap_header.currentframe) += angle;
 }
 
+void Skeleton::rotate_every_frame(osg::Vec3& angle) {
+	angle *= 0.1;
+	osg::Vec3Array::iterator i;
+	for (i = root->freuler->begin(); i != root->freuler->end(); ++i) {
+		(*i) += angle;
+	}
+}
+
 void Skeleton::translate_root(osg::Vec3& translation) {
 	translation *= 0.005;
 	root->froset->at(mocap_header.currentframe) += translation;
+}
+
+void Skeleton::translate_every_frame(osg::Vec3& translation) {
+	translation *= 0.005;
+	root->offset += translation;
 }
 
 void Skeleton::save_to_file(std::string file_name) {
