@@ -403,14 +403,20 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 
 	for (int i = 0; i < header->noofframes; i++) {
 		int j;
+		//Root node is the only one with per frame offset and 6 channels
+		out_file << nodelist[0]->froset->at(i)[0] << " "
+				<< nodelist[0]->froset->at(i)[1] << " "
+				<< nodelist[0]->froset->at(i)[2] << " ";
+
+		//All the other nodes is just angles
 		for (j = 0; j < header->noofsegments - 1; j++) {
-			out_file << nodelist[j]->froset->at(i)[0] << " "
-					<< nodelist[j]->froset->at(i)[1] << " "
-					<< nodelist[j]->froset->at(i)[2] << " ";
+			out_file << nodelist[j]->freuler->at(i)[0] << " "
+					<< nodelist[j]->freuler->at(i)[1] << " "
+					<< nodelist[j]->freuler->at(i)[2] << " ";
 		}
-		//Last line without spaces and with line feed
-		out_file << nodelist[j]->froset->at(i)[0] << " "
-				<< nodelist[j]->froset->at(i)[1] << " "
-				<< nodelist[j]->froset->at(i)[2] << endl;
+		//Last line substitute space for with line feed
+		out_file << nodelist[j]->freuler->at(i)[0] << " "
+				<< nodelist[j]->freuler->at(i)[1] << " "
+				<< nodelist[j]->freuler->at(i)[2] << endl;
 	}
 }

@@ -7,7 +7,8 @@
 
 #include "Skeleton.h"
 
-Skeleton::Skeleton(): skel_loaded(false) {
+Skeleton::Skeleton() :
+			skel_loaded(false) {
 	SetHeader(&mocap_header);
 }
 
@@ -41,9 +42,9 @@ void Skeleton::set_current_frame(int frame_no) {
 	mocap_header.currentframe = frame_no;
 
 	//Frame beyond vector
-	if (frame_no >= (long)mocap_header.noofframes) {
-		for(int i = mocap_header.noofframes; i <= frame_no; i++){
-			for(NodeIte j = nodelist.begin(); j != nodelist.end(); ++j ){
+	if (frame_no >= (long) mocap_header.noofframes) {
+		for (int i = mocap_header.noofframes; i <= frame_no; i++) {
+			for (NodeIte j = nodelist.begin(); j != nodelist.end(); ++j) {
 				(*j)->freuler->push_back((*j)->freuler->back());
 				(*j)->froset->push_back((*j)->freuler->back());
 			}

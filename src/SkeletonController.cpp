@@ -82,22 +82,23 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		last_mouse_pos_y = ea.getY();
 	}
 
-	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG) {
+	if (is_point_selected
+			&& ea.getEventType() == osgGA::GUIEventAdapter::DRAG) {
 
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
 		if (viewer) {
 			osg::Vec3 move_axis;
-			if(move_on_z){
-				move_axis.set(0.0,0.0, ea.getY() - last_mouse_pos_y);
-			}else{
+			if (move_on_z) {
+				move_axis.set(0.0, 0.0, ea.getY() - last_mouse_pos_y);
+			} else {
 				move_axis.set(ea.getX() - last_mouse_pos_x,
 						last_mouse_pos_y - ea.getY(), 0.0);
 			}
 
-			if(!translate_root){
+			if (!translate_root) {
 				skeleton.rotate_joint(selected_point_index, move_axis);
-			}else{
+			} else {
 				skeleton.translate_root(move_axis);
 			}
 
@@ -109,21 +110,21 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		}
 	}
 
-	if ( is_point_selected && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
-			&& ea.getEventType() == osgGA::GUIEventAdapter::PUSH
-			) {
-			last_mouse_pos_x = ea.getX();
-			last_mouse_pos_y = ea.getY();
+	if (is_point_selected
+			&& ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
+			&& ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
+		last_mouse_pos_x = ea.getX();
+		last_mouse_pos_y = ea.getY();
 	}
 
-	if ( is_point_selected && ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
-			) {
-		if(ea.getEventType() == osgGA::GUIEventAdapter::PUSH){
+	if (is_point_selected
+			&& ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) {
+		if (ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
 			move_on_z = true;
 			last_mouse_pos_x = ea.getX();
 			last_mouse_pos_y = ea.getY();
 		}
-		if(ea.getEventType() == osgGA::GUIEventAdapter::RELEASE){
+		if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE) {
 			move_on_z = false;
 			last_mouse_pos_x = ea.getX();
 			last_mouse_pos_y = ea.getY();
@@ -135,8 +136,8 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		switch (ea.getKey()) {
 		case osgGA::GUIEventAdapter::KEY_Z:
 			if (is_point_selected) {
-				skel_renderer.change_colour_when_selected(
-						selected_point_color, is_point_selected);
+				skel_renderer.change_colour_when_selected(selected_point_color,
+						is_point_selected);
 				is_point_selected = false;
 				move_on_z = false;
 				translate_root = false;
@@ -176,9 +177,9 @@ void SkeletonController::reset_state() {
 }
 
 void SkeletonController::draw_complete_skeleton() {
-	if(skeleton.isSkelLoaded()){
-		skel_renderer.evaluate_children(skeleton.get_root(), skeleton.get_header(),
-				current_frame);
+	if (skeleton.isSkelLoaded()) {
+		skel_renderer.evaluate_children(skeleton.get_root(),
+				skeleton.get_header(), current_frame);
 	}
 }
 

@@ -278,12 +278,14 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
 			//skel_controller.load_skeleton_from_file("/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-			skel_controller.load_skeleton_from_file("/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			skel_controller.load_skeleton_from_file(
+					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
 			break;
 
 			//Save skeleton to file:
 		case osgGA::GUIEventAdapter::KEY_K:
-			skel_controller.save_skeleton_to_file("/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			skel_controller.save_skeleton_to_file(
+					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
 			break;
 
 			//Exit the app, this avoids the clean up errors.
