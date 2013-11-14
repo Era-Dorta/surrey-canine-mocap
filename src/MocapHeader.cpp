@@ -15,6 +15,7 @@ MocapHeader::MocapHeader() {
 	euler = new osg::Vec3Array;
 	euler->resize(3);
 	callib = 1.0;
+	inv_callib = 1.0;
 	degrees = true;
 	scalefactor = 1.0;
 	currentframe = 0;

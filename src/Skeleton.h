@@ -43,6 +43,8 @@ class Skeleton: public BVHFormat {
 		void reset_state();
 		MocapHeader mocap_header;
 		bool skel_loaded;
+		float rotate_scale_factor;
+		float translate_scale_factor;
 };
 
 #endif /* SKELETON_H_ */

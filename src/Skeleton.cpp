@@ -10,18 +10,20 @@
 Skeleton::Skeleton() :
 			skel_loaded(false) {
 	SetHeader(&mocap_header);
+	rotate_scale_factor = 0.2;
+	translate_scale_factor = 0.002;
 }
 
 Skeleton::~Skeleton() {
 }
 
 void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
-	angle *= 0.1;
+	angle *= rotate_scale_factor;
 	nodelist[index]->freuler->at(mocap_header.currentframe) += angle;
 }
 
 void Skeleton::rotate_every_frame(osg::Vec3& angle) {
-	angle *= 0.1;
+	angle *= rotate_scale_factor;
 	osg::Vec3Array::iterator i;
 	for (i = root->freuler->begin(); i != root->freuler->end(); ++i) {
 		(*i) += angle;
@@ -29,12 +31,12 @@ void Skeleton::rotate_every_frame(osg::Vec3& angle) {
 }
 
 void Skeleton::translate_root(osg::Vec3& translation) {
-	translation *= 0.005;
+	translation *= translate_scale_factor;
 	root->froset->at(mocap_header.currentframe) += translation;
 }
 
 void Skeleton::translate_every_frame(osg::Vec3& translation) {
-	translation *= 0.005;
+	translation *= translate_scale_factor;
 	root->offset += translation;
 }
 

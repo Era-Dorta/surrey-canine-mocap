@@ -83,8 +83,8 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		last_mouse_pos_y = ea.getY();
 	}
 
-	if (is_point_selected
-			&& ea.getEventType() == osgGA::GUIEventAdapter::DRAG) {
+	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG
+			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
 
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
@@ -121,13 +121,15 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 
 	if (is_point_selected
 			&& ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
-			&& ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
+			&& ea.getEventType() == osgGA::GUIEventAdapter::PUSH
+			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
 		last_mouse_pos_x = ea.getX();
 		last_mouse_pos_y = ea.getY();
 	}
 
 	if (is_point_selected
-			&& ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) {
+			&& ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
+			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
 		if (ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
 			move_on_z = true;
 			last_mouse_pos_x = ea.getX();

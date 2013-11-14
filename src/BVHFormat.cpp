@@ -82,7 +82,8 @@ bool BVHFormat::ImportData(const char *filename) {
 	header->euler->at(2).set(0, 1, 0);
 
 	//TODO They had this calibration to make every model smaller
-	//header->callib = 0.03f;
+	header->callib = 0.2f;
+	header->inv_callib = 1.0 / header->callib;
 	header->degrees = true;
 	header->scalefactor = 1.0f;
 
@@ -331,8 +332,10 @@ void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
 	tabs++;
 
 	if (print_parent) {
-		out_file << tabs_str << "OFFSET " << parent->offset[0] << " "
-				<< parent->offset[1] << " " << parent->offset[2] << endl;
+		out_file << tabs_str << "OFFSET "
+				<< parent->offset[0] * header->inv_callib << " "
+				<< parent->offset[1] * header->inv_callib << " "
+				<< parent->offset[2] * header->inv_callib << endl;
 		out_file << tabs_str << "CHANNELS " << parent->noofchannels;
 		if (parent->noofchannels == 3) {
 			out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -364,8 +367,9 @@ void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
 	for (int i = 0; i < tabs; i++) {
 		tabs_str += "\t";
 	}
-	out_file << tabs_str << "OFFSET " << joint->offset[0] << " "
-			<< joint->offset[1] << " " << joint->offset[2] << endl;
+	out_file << tabs_str << "OFFSET " << joint->offset[0] * header->inv_callib
+			<< " " << joint->offset[1] * header->inv_callib << " "
+			<< joint->offset[2] * header->inv_callib << endl;
 	out_file << tabs_str << "CHANNELS " << joint->noofchannels;
 	if (joint->noofchannels == 3) {
 		out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -376,8 +380,10 @@ void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
 	}
 	out_file << tabs_str << "End Site" << endl;
 	out_file << tabs_str << "{" << endl;
-	out_file << tabs_str + "\t" << "OFFSET " << joint->length[0] << " "
-			<< joint->length[1] << " " << joint->length[2] << endl;
+	out_file << tabs_str + "\t" << "OFFSET "
+			<< joint->length[0] * header->inv_callib << " "
+			<< joint->length[1] * header->inv_callib << " "
+			<< joint->length[2] * header->inv_callib << endl;
 	out_file << tabs_str << "}" << endl;
 }
 
@@ -404,9 +410,9 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 	for (int i = 0; i < header->noofframes; i++) {
 		int j;
 		//Root node is the only one with per frame offset and 6 channels
-		out_file << nodelist[0]->froset->at(i)[0] << " "
-				<< nodelist[0]->froset->at(i)[1] << " "
-				<< nodelist[0]->froset->at(i)[2] << " ";
+		out_file << nodelist[0]->froset->at(i)[0] * header->inv_callib << " "
+				<< nodelist[0]->froset->at(i)[1] * header->inv_callib << " "
+				<< nodelist[0]->froset->at(i)[2] * header->inv_callib << " ";
 
 		//All the other nodes is just angles
 		for (j = 0; j < header->noofsegments - 1; j++) {
