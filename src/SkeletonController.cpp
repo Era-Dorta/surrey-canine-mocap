@@ -176,30 +176,22 @@ void SkeletonController::reset_state() {
 }
 
 void SkeletonController::draw_complete_skeleton() {
-	osg::Vec3 bone_start_position, bone_end_position;
-
-	skel_renderer.draw_joints(skeleton.getJointArray());
-
-	if (skeleton.skeleton_full()) {
-		for (unsigned int i = 0; i < skeleton.get_num_bones(); i++) {
-			skeleton.get_bone(i, bone_start_position, bone_end_position);
-			skel_renderer.draw_bone(bone_start_position, bone_end_position);
-		}
+	if(skeleton.isSkelLoaded()){
+		skel_renderer.evaluate_children(skeleton.get_root(), skeleton.get_header(),
+				current_frame);
 	}
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
 	current_frame = disp_frame_no;
 	reset_state();
+	skeleton.set_current_frame(current_frame);
 
 	skel_renderer.clean_scene();
 	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
 			skeletonized3D);
-	skel_renderer.evaluate_children(skeleton.get_root(), skeleton.get_header(),
-			disp_frame_no);
 
-	skeleton.set_current_frame(current_frame);
 	draw_complete_skeleton();
 }
 

@@ -25,33 +25,24 @@ class Skeleton: public BVHFormat {
 	public:
 		Skeleton();
 		virtual ~Skeleton();
-		void add_joint(osg::Vec3& joint);
 		void rotate_joint(unsigned int index, osg::Vec3& angle);
 		void translate_root(osg::Vec3& translation);
-		void delete_joint(unsigned int index);
+
 		const osg::Vec3& get_joint(unsigned int index);
 		unsigned int get_num_joints();
-		unsigned int get_max_joints();
 		unsigned int get_num_bones();
-		void get_bone(unsigned int index, osg::Vec3& i_pos, osg::Vec3& e_pos);
-		bool skeleton_full();
 		void save_to_file(std::string file_name);
 		void load_from_file(std::string file_name);
 		void set_current_frame(int frame_no);
-		const osg::ref_ptr<osg::Vec3Array> getJointArray() const;
 		Node* get_root();
 		MocapHeader& get_header();
 		int get_node(osg::ref_ptr<osg::MatrixTransform> node_transform);
+		bool isSkelLoaded() const;
 
 	private:
 		void reset_state();
-
-		osg::ref_ptr<osg::Vec3Array> joint_array;
-		std::vector<osg::ref_ptr<osg::Vec3Array> > joint_frame_array;
-		std::vector<std::pair<int, int> > bone_array;
-		unsigned int max_joints;
-		int current_frame;
 		MocapHeader mocap_header;
+		bool skel_loaded;
 };
 
 #endif /* SKELETON_H_ */

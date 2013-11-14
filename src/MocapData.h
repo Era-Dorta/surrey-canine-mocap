@@ -48,6 +48,8 @@
 
 #include <vector>
 
+typedef std::vector<Node*>::iterator NodeIte;
+
 class MocapData {
 	public:
 		MocapData();

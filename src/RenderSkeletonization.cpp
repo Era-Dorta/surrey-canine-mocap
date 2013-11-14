@@ -190,19 +190,6 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 	}
 }
 
-void RenderSkeletonization::draw_joints(
-		osg::ref_ptr<osg::Vec3Array> joint_array) {
-	for (unsigned int i = 0; i < joint_array->size(); i++) {
-		osg::Vec3 joint_position = (*joint_array)[i];
-		osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
-		selectionBox->setMatrix(
-				osg::Matrix::scale(0.02, 0.02, 0.02)
-						* osg::Matrix::translate(joint_position));
-
-		skel_fitting_switch->addChild(selectionBox.get(), true);
-	}
-}
-
 osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox() {
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	osg::ref_ptr<osg::ShapeDrawable> box_shape;
@@ -417,11 +404,4 @@ osg::Vec3 RenderSkeletonization::move_sphere(osg::Vec3& move_vec,
 	osg::Matrix new_matrix = obj->getMatrix() * aux_matrix;
 
 	return osg::Vec3() * new_matrix;
-}
-
-void RenderSkeletonization::draw_bone(osg::Vec3& bone_start,
-		osg::Vec3& bone_end) {
-
-	AddCylinderBetweenPoints(bone_start, bone_end, 0.01f, bone_colour,
-			skel_fitting_switch);
 }

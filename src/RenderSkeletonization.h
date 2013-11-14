@@ -51,10 +51,6 @@ class RenderSkeletonization {
 		void display_3d_merged_skeleon_cloud(int disp_frame_no,
 				Skeletonization3D& skeleton);
 
-		void draw_joints(osg::ref_ptr<osg::Vec3Array> joint_array);
-
-		void draw_bone(osg::Vec3& bone_start, osg::Vec3& bone_end);
-
 		void evaluate_children(Node* node, MocapHeader& header,
 				int current_frame);
 
