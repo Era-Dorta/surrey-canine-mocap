@@ -11,7 +11,8 @@ SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), is_point_selected(false),
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
 			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
-			change_all_frames(false), inter_number(0) {
+			change_all_frames(false), transforming_skeleton(false),
+			inter_number(0) {
 	unselected_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
 	selected_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
@@ -68,6 +69,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 									skel_renderer.obj_belong_skel(selected_obj);
 							if (selected_point_color) {
 								is_point_selected = true;
+								transforming_skeleton = true;
 								osg::ref_ptr<osg::MatrixTransform> selected_point =
 										static_cast<osg::MatrixTransform*>(selected_point_color->getParent(
 												0));
@@ -93,7 +95,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 	}
 
 	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG
-			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+			&& transforming_skeleton) {
 
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
@@ -131,14 +133,14 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 	if (is_point_selected
 			&& ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
 			&& ea.getEventType() == osgGA::GUIEventAdapter::PUSH
-			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+			&& transforming_skeleton) {
 		last_mouse_pos_x = ea.getX();
 		last_mouse_pos_y = ea.getY();
 	}
 
 	if (is_point_selected
 			&& ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
-			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+			&& transforming_skeleton) {
 		if (ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
 			move_on_z = true;
 			last_mouse_pos_x = ea.getX();
@@ -160,6 +162,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				move_on_z = false;
 				translate_root = false;
 				change_all_frames = false;
+				transforming_skeleton = false;
 				skeleton.change_color(selected_point_index, unselected_color);
 				update_dynamics(current_frame);
 			}
@@ -182,6 +185,12 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				inter_number = 0;
 			}
 			update_dynamics(current_frame);
+			break;
+		case osgGA::GUIEventAdapter::KEY_Control_L:
+			if (is_point_selected) {
+				transforming_skeleton = !transforming_skeleton;
+				update_dynamics(current_frame);
+			}
 			break;
 		default:
 			break;

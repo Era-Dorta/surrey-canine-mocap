@@ -73,6 +73,7 @@ class SkeletonController {
 		bool move_on_z;
 		bool translate_root;
 		bool change_all_frames;
+		bool transforming_skeleton;
 		osg::Vec4 unselected_color;
 		osg::Vec4 selected_color;
 		unsigned int inter_number;
