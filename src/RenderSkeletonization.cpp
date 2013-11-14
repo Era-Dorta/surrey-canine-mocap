@@ -330,10 +330,10 @@ osg::Camera* RenderSkeletonization::create_hud_camera(double left, double right,
 	return camera.release();
 }
 
-void RenderSkeletonization::display_text(std::string text) {
+void RenderSkeletonization::display_text(std::string text, osg::Vec3 pos) {
 	osg::ref_ptr<osg::Geode> text_geode = new osg::Geode;
 	osg::ref_ptr<osgText::Text> osg_text;
-	osg_text = create_text(osg::Vec3(600.0f, 20.0f, 0.0f), text, 18.0f);
+	osg_text = create_text(pos, text, 18.0f);
 	//Very NB! This next line stops the program hanging when I change the text value:
 	osg_text->setDataVariance(osg::Object::DYNAMIC);
 	text_geode->addDrawable(osg_text);

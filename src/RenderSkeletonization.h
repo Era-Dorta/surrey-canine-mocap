@@ -57,7 +57,7 @@ class RenderSkeletonization {
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox(osg::Vec4 color);
 
-		void display_text(std::string text);
+		void display_text(std::string text, osg::Vec3 pos);
 
 		osg::MatrixTransform* obj_belong_skel(
 				osg::MatrixTransform* selected_obj);

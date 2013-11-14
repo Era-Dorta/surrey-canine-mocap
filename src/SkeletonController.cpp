@@ -11,7 +11,7 @@ SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), is_point_selected(false),
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
 			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
-			change_all_frames(false) {
+			change_all_frames(false), inter_number(0) {
 	unselected_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
 	selected_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
@@ -51,8 +51,15 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				switch (state) {
 				case MOVE_POINTS: {
 					if (!is_point_selected) {
+						if (inter_number
+								<= intersector->getIntersections().size()) {
+							inter_number = 0;
+						}
 						intersecIte result =
 								intersector->getIntersections().begin();
+						for (int i = 0; i < inter_number; i++) {
+							result++;
+						}
 						osg::MatrixTransform* selected_obj =
 								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
 										0)->getParent(0));
@@ -147,7 +154,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 	switch (ea.getEventType()) {
 	case osgGA::GUIEventAdapter::KEYDOWN:
 		switch (ea.getKey()) {
-		case osgGA::GUIEventAdapter::KEY_B:
+		case osgGA::GUIEventAdapter::KEY_V:
 			if (is_point_selected) {
 				is_point_selected = false;
 				move_on_z = false;
@@ -157,17 +164,24 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				update_dynamics(current_frame);
 			}
 			break;
-		case osgGA::GUIEventAdapter::KEY_N:
+		case osgGA::GUIEventAdapter::KEY_B:
 			if (is_point_selected) {
 				translate_root = !translate_root;
 				update_dynamics(current_frame);
 			}
 			break;
-		case osgGA::GUIEventAdapter::KEY_M:
+		case osgGA::GUIEventAdapter::KEY_N:
 			if (is_point_selected) {
 				change_all_frames = !change_all_frames;
 				update_dynamics(current_frame);
 			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_M:
+			inter_number++;
+			if (inter_number == 3) {
+				inter_number = 0;
+			}
+			update_dynamics(current_frame);
 			break;
 		default:
 			break;
@@ -241,6 +255,13 @@ void SkeletonController::draw_edit_text() {
 		} else {
 			edit_text += "rotating ";
 		}
-		skel_renderer.display_text(edit_text);
+		edit_text += "intersect num ";
+
+		std::stringstream out;
+		out << inter_number;
+		edit_text += out.str();
+		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 20.0f, 0.0f));
+		edit_text = "v(finish) b(frames) n(rot) m(inter)";
+		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
 }

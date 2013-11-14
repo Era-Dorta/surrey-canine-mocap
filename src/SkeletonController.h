@@ -75,6 +75,7 @@ class SkeletonController {
 		bool change_all_frames;
 		osg::Vec4 unselected_color;
 		osg::Vec4 selected_color;
+		unsigned int inter_number;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */
