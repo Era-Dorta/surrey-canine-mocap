@@ -29,7 +29,7 @@ class Node {
 
 		void setup_euler(float r1 = 0.0f, float r2 = 0.0f, float r3 = 0.0f);
 
-		void setup_colour(float r = 0.0f, float g = 0.0f, float b = 0.0f);
+		void setup_color(float r = 0.5f, float g = 0.5f, float b = 0.5f);
 
 		void setup_frames(long frames);
 
@@ -37,7 +37,7 @@ class Node {
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
 		osg::Vec3f euler;     // Rotation
-		osg::Vec3f colour;
+		osg::Vec4 color;
 		int noofchildren;
 		std::vector<Node *> children;    // Array of pointers to child nodes
 		Node *parent;       // Back pointer to parent node

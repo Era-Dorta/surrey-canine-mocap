@@ -47,10 +47,10 @@ class SkeletonController {
 
 		void update_dynamics(int disp_frame_no);
 	private:
-		void set_skeleton_point();
 		void reset_state();
 		void update_state();
 		void draw_complete_skeleton();
+		void draw_edit_text();
 
 		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeletonized3D;
@@ -73,6 +73,8 @@ class SkeletonController {
 		bool move_on_z;
 		bool translate_root;
 		bool change_all_frames;
+		osg::Vec4 unselected_color;
+		osg::Vec4 selected_color;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

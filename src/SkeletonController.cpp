@@ -12,6 +12,8 @@ SkeletonController::SkeletonController() :
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
 			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
 			change_all_frames(false) {
+	unselected_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
+	selected_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
 SkeletonController::~SkeletonController() {
@@ -64,9 +66,9 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 												0));
 								selected_point_index = skeleton.get_node(
 										selected_point);
-								skel_renderer.change_colour_when_selected(
-										selected_point_color,
-										is_point_selected);
+								skeleton.change_color(selected_point_index,
+										selected_color);
+								update_dynamics(current_frame);
 							}
 						}
 					}
@@ -147,23 +149,24 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		switch (ea.getKey()) {
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (is_point_selected) {
-				skel_renderer.change_colour_when_selected(selected_point_color,
-						is_point_selected);
 				is_point_selected = false;
 				move_on_z = false;
 				translate_root = false;
 				change_all_frames = false;
+				skeleton.change_color(selected_point_index, unselected_color);
 				update_dynamics(current_frame);
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_N:
 			if (is_point_selected) {
 				translate_root = !translate_root;
+				update_dynamics(current_frame);
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_M:
 			if (is_point_selected) {
 				change_all_frames = !change_all_frames;
+				update_dynamics(current_frame);
 			}
 			break;
 		default:
@@ -201,6 +204,8 @@ void SkeletonController::draw_complete_skeleton() {
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
+	//TODO This recreates the scene over and over, should just be some updating
+	//not creating everything from scratch
 	current_frame = disp_frame_no;
 	reset_state();
 	skeleton.set_current_frame(current_frame);
@@ -210,6 +215,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
 			skeletonized3D);
 
+	draw_edit_text();
 	draw_complete_skeleton();
 }
 
@@ -219,4 +225,22 @@ Fitting_State SkeletonController::getState() const {
 
 void SkeletonController::setState(Fitting_State state) {
 	this->state = state;
+}
+
+void SkeletonController::draw_edit_text() {
+	if (is_point_selected) {
+		std::string edit_text;
+		edit_text += "Editing ";
+		if (change_all_frames) {
+			edit_text += "all frames ";
+		} else {
+			edit_text += "current frames ";
+		}
+		if (translate_root) {
+			edit_text += "translating ";
+		} else {
+			edit_text += "rotating ";
+		}
+		skel_renderer.display_text(edit_text);
+	}
 }

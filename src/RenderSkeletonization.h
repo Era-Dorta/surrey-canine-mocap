@@ -55,20 +55,20 @@ class RenderSkeletonization {
 				int current_frame);
 
 		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
-		void change_colour_when_selected(
-				osg::ref_ptr<osg::MatrixTransform> selected_point,
-				bool point_selected);
+		osg::ref_ptr<osg::MatrixTransform> createSelectionBox(osg::Vec4 color);
 
-		osg::Vec3 add_sphere(intersecIte intersection);
-		osg::Vec3 move_sphere(intersecIte intersection,
-				osg::ref_ptr<osg::MatrixTransform> obj);
-		osg::Vec3 move_sphere(osg::Vec3& move_vec, osg::Camera* cam,
-				osg::MatrixTransform* obj);
+		void display_text(std::string text);
 
 		osg::MatrixTransform* obj_belong_skel(
 				osg::MatrixTransform* selected_obj);
 	protected:
 	private:
+		osgText::Text* create_text(const osg::Vec3& pos,
+				const std::string& content, float size);
+
+		osg::Camera* create_hud_camera(double left, double right, double bottom,
+				double top);
+
 		osg::MatrixTransform* obj_belong_skel(
 				osg::MatrixTransform* selected_obj,
 				osg::MatrixTransform* current_node);
@@ -107,9 +107,9 @@ class RenderSkeletonization {
 
 		bool display_merged;
 
-		osg::Vec4 joint_colour;
-		osg::Vec4 bone_colour;
-		osg::Vec4 selection_colour;
+		osg::Vec4 joint_color;
+		osg::Vec4 bone_color;
+		osg::Vec4 selection_color;
 };
 
 #endif // RENDERSKELETONIZATION_H

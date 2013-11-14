@@ -2,9 +2,9 @@
 
 RenderSkeletonization::RenderSkeletonization() :
 			display_merged(true) {
-	joint_colour = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
-	bone_colour = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
-	selection_colour = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
+	joint_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
+	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
+	selection_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
@@ -191,10 +191,15 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 }
 
 osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox() {
+	return createSelectionBox(joint_color);
+}
+
+osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox(
+		osg::Vec4 color) {
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	osg::ref_ptr<osg::ShapeDrawable> box_shape;
 	box_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
-	box_shape->setColor(joint_colour);
+	box_shape->setColor(color);
 
 	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
 			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
@@ -205,21 +210,6 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox() {
 	selectionBox->addChild(geode.get());
 
 	return selectionBox;
-}
-
-void RenderSkeletonization::change_colour_when_selected(
-		osg::ref_ptr<osg::MatrixTransform> selected_point,
-		bool point_selected) {
-	osg::ref_ptr<osg::ShapeDrawable> obj_shape;
-	osg::ref_ptr<osg::Geode> obj_geode;
-
-	obj_geode = static_cast<osg::Geode*>(selected_point->getChild(0));
-	obj_shape = static_cast<osg::ShapeDrawable*>(obj_geode->getDrawable(0));
-	if (point_selected) {
-		obj_shape->setColor(selection_colour);
-	} else {
-		obj_shape->setColor(joint_colour);
-	}
 }
 
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
@@ -250,21 +240,22 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(
-			osg::Vec4(node->colour[0], node->colour[1], node->colour[2], 1.0));
+			osg::Vec4(node->color[0], node->color[1], node->color[2], 1.0));
 
 	osg::Vec3 bone_pos = osg::Vec3(node->length[0] * node->scale[current_frame],
 			node->length[1] * node->scale[current_frame],
 			node->length[2] * node->scale[current_frame]);
 
-	AddCylinderBetweenPoints(osg::Vec3(), bone_pos, 0.01f, bone_colour,
+	AddCylinderBetweenPoints(osg::Vec3(), bone_pos, 0.01f, bone_color,
 			static_cast<osg::Group*>(skel_transform.get()));
 
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox(
+			node->color);
 	selectionBox->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
 
 	skel_transform->addChild(selectionBox.get());
 	if (node->noofchildren == 0) {
-		selectionBox = createSelectionBox();
+		selectionBox = createSelectionBox(node->color);
 		selectionBox->setMatrix(
 				osg::Matrix::scale(0.02, 0.02, 0.02)
 						* osg::Matrix::translate(bone_pos));
@@ -312,6 +303,45 @@ osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
 	return NULL;
 }
 
+osgText::Text* RenderSkeletonization::create_text(const osg::Vec3& pos,
+		const std::string& content, float size) {
+	osg::ref_ptr<osgText::Font> g_font = osgText::readFontFile("FreeSans.ttf");
+
+	osg::ref_ptr<osgText::Text> text = new osgText::Text;
+	text->setFont(g_font.get());
+	text->setCharacterSize(size);
+	text->setAxisAlignment(osgText::TextBase::XY_PLANE);
+	text->setPosition(pos);
+	text->setColor(osg::Vec4(1.0, 0.0, 0.0, 1));
+	text->setText(content);
+	return text.release();
+}
+
+osg::Camera* RenderSkeletonization::create_hud_camera(double left, double right,
+		double bottom, double top) {
+	osg::ref_ptr<osg::Camera> camera = new osg::Camera;
+	camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+	camera->setClearMask( GL_DEPTH_BUFFER_BIT);
+	camera->setRenderOrder(osg::Camera::POST_RENDER);
+	camera->setAllowEventFocus(false);
+	camera->setProjectionMatrix(osg::Matrix::ortho2D(left, right, bottom, top));
+	camera->getOrCreateStateSet()->setMode(GL_LIGHTING,
+			osg::StateAttribute::OFF);
+	return camera.release();
+}
+
+void RenderSkeletonization::display_text(std::string text) {
+	osg::ref_ptr<osg::Geode> text_geode = new osg::Geode;
+	osg::ref_ptr<osgText::Text> osg_text;
+	osg_text = create_text(osg::Vec3(600.0f, 20.0f, 0.0f), text, 18.0f);
+	//Very NB! This next line stops the program hanging when I change the text value:
+	osg_text->setDataVariance(osg::Object::DYNAMIC);
+	text_geode->addDrawable(osg_text);
+	osg::ref_ptr<osg::Camera> text_cam = create_hud_camera(0, 1280, 0, 720);
+	text_cam->addChild(text_geode.get());
+	skel_fitting_switch->addChild(text_cam);
+}
+
 void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
 		osg::Vec3 EndPoint, float radius, osg::Vec4 CylinderColor,
 		osg::Group *pAddToThisGroup) {
@@ -357,51 +387,4 @@ void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
 
 	//   Add the cylinder between the two points to an existing group
 	pAddToThisGroup->addChild(geode);
-}
-
-osg::Vec3 RenderSkeletonization::add_sphere(intersecIte intersection) {
-	osg::BoundingBox bb = intersection->drawable->getBound();
-	osg::Vec3 worldCenter = bb.center()
-			* osg::computeLocalToWorld(intersection->nodePath);
-
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox();
-	selectionBox->setMatrix(
-			osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
-					bb.yMax() + 0.005 - bb.yMin(),
-					bb.zMax() + 0.005 - bb.zMin())
-					* osg::Matrix::translate(worldCenter));
-
-	skel_fitting_switch->addChild(selectionBox.get(), true);
-
-	//Return global coordinates of the point
-	return osg::Vec3() * selectionBox->getMatrix();
-}
-
-osg::Vec3 RenderSkeletonization::move_sphere(intersecIte intersection,
-		osg::ref_ptr<osg::MatrixTransform> obj) {
-	osg::BoundingBox bb = intersection->drawable->getBound();
-	osg::Vec3 worldCenter = bb.center()
-			* osg::computeLocalToWorld(intersection->nodePath);
-
-	obj->setMatrix(
-			osg::Matrix::scale(bb.xMax() + 0.005 - bb.xMin(),
-					bb.yMax() + 0.005 - bb.yMin(),
-					bb.zMax() + 0.005 - bb.zMin())
-					* osg::Matrix::translate(worldCenter));
-
-	//Return global coordinates of the point
-	return osg::Vec3() * obj->getMatrix();
-}
-
-osg::Vec3 RenderSkeletonization::move_sphere(osg::Vec3& move_vec,
-		osg::Camera* cam, osg::MatrixTransform* obj) {
-
-	osg::Vec3 aux_vec = osg::Matrixd::inverse(cam->getProjectionMatrix())
-			* move_vec * 0.01;
-	osg::Matrix aux_matrix = osg::Matrix::translate(aux_vec);
-	aux_matrix = cam->getViewMatrix() * aux_matrix
-			* cam->getInverseViewMatrix();
-	osg::Matrix new_matrix = obj->getMatrix() * aux_matrix;
-
-	return osg::Vec3() * new_matrix;
 }

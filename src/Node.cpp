@@ -5,7 +5,6 @@
  *      Author: m04701
  */
 #include "Node.h"
-
 Node::Node() {
 	noofchildren = 0;
 	parent = NULL;
@@ -13,6 +12,7 @@ Node::Node() {
 	freuler = new osg::Vec3Array;
 	DOFs = 0;
 	noofchannels = 0;
+	color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0);
 }
 
 Node::~Node() {
@@ -35,10 +35,10 @@ void Node::setup_euler(float r1, float r2, float r3) {
 	euler[2] = r3;
 }
 
-void Node::setup_colour(float r, float g, float b) {
-	colour[0] = r;
-	colour[1] = g;
-	colour[2] = b;
+void Node::setup_color(float r, float g, float b) {
+	color[0] = r;
+	color[1] = g;
+	color[2] = b;
 }
 
 void Node::increase_no_children() {

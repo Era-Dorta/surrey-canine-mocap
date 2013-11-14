@@ -76,6 +76,10 @@ MocapHeader& Skeleton::get_header() {
 	return mocap_header;
 }
 
+void Skeleton::change_color(int index, osg::Vec4 color) {
+	nodelist[index]->color = color;
+}
+
 void Skeleton::reset_state() {
 	set_current_frame(mocap_header.currentframe);
 }

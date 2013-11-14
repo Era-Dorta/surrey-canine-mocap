@@ -122,19 +122,11 @@ bool BVHFormat::ImportData(const char *filename) {
 								root = nodelist[header->noofsegments++] =
 										new Node();
 								root->name = std::string(line[1]);
-								root->DOFs = 0;
-								root->setup_children(0);
-								root->setup_colour();
-								root->setup_euler();
-								root->parent = 0;
-								root->length[2] = root->length[1] =
-										root->length[0] = 0.0f;
 								curnode = root;
 							}
 						} else if (strcompEx(line[0], "JOINT")) {
 							curnode->increase_no_children();
 							EnlargeNodeList();
-
 							curnode->children[curnode->noofchildren - 1] =
 									nodelist[header->noofsegments++] =
 											new Node();
@@ -144,13 +136,6 @@ bool BVHFormat::ImportData(const char *filename) {
 									- 1];
 
 							curnode->name = std::string(line[1]);
-							curnode->DOFs = 0;
-							curnode->noofchannels = 0;
-							curnode->setup_children(0);
-							curnode->setup_colour();
-							curnode->setup_euler();
-							curnode->length[2] = curnode->length[1] =
-									curnode->length[0] = 0.0f;
 						} else if (strcompEx(line[0], "OFFSET")) {
 							float x, y, z, rx, ry, rz;
 							x = (float) atof(line[1]) * header->callib;
