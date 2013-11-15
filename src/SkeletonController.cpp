@@ -215,7 +215,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 }
 
 void SkeletonController::load_skeleton_from_file(std::string file_name) {
-	skel_renderer.clean_evaluate_children();
+	skel_renderer.clean_skeleton();
 
 	skeleton.load_from_file(file_name);
 
@@ -234,7 +234,7 @@ void SkeletonController::reset_state() {
 
 void SkeletonController::draw_complete_skeleton() {
 	if (skeleton.isSkelLoaded()) {
-		skel_renderer.evaluate_children(skeleton.get_root(),
+		skel_renderer.display_skeleton(skeleton.get_root(),
 				skeleton.get_header(), current_frame);
 	}
 }

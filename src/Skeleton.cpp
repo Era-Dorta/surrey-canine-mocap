@@ -45,7 +45,6 @@ void Skeleton::save_to_file(std::string file_name) {
 }
 
 void Skeleton::load_from_file(std::string file_name) {
-	cout << "skel load from file" << endl;
 	//After reset state, the skeleton have been unload, so just to be sure
 	//change the state
 	reset_state();

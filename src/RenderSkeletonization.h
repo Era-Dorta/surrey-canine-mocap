@@ -40,7 +40,7 @@ class RenderSkeletonization {
 		void clean_2d_skeletons();
 		void clean_3d_skeleon_cloud();
 		void clean_3d_merged_skeleon_cloud();
-		void clean_evaluate_children();
+		void clean_skeleton();
 
 		//TODO Should not give Skeletonization3D as argument, still much
 		//coupling in the code
@@ -56,7 +56,7 @@ class RenderSkeletonization {
 		void display_3d_merged_skeleon_cloud(int disp_frame_no,
 				Skeletonization3D& skeleton);
 
-		void evaluate_children(Node* node, MocapHeader& header,
+		void display_skeleton(Node* node, MocapHeader& header,
 				int current_frame);
 
 		void display_text(std::string text, osg::Vec3 pos);
@@ -77,10 +77,10 @@ class RenderSkeletonization {
 				osg::MatrixTransform* selected_obj,
 				osg::MatrixTransform* current_node);
 
-		void evaluate_children(Node* node, MocapHeader& header,
+		void create_skeleton(Node* node, MocapHeader& header,
 				osg::Group *pAddToThisGroup, int current_frame);
 
-		void evaluate_children_graph_created(Node* node, MocapHeader& header,
+		void update_skeleton(Node* node, MocapHeader& header,
 				int current_frame);
 
 		void create_cylinder(osg::Vec3 StartPoint, osg::Vec3 EndPoint,

@@ -64,7 +64,7 @@ void RenderSkeletonization::clean_scene() {
 	clean_2d_skeletons();
 	clean_3d_skeleon_cloud();
 	clean_3d_merged_skeleon_cloud();
-	clean_evaluate_children();
+	clean_skeleton();
 }
 
 void RenderSkeletonization::clean_2d_skeletons() {
@@ -85,7 +85,7 @@ void RenderSkeletonization::clean_3d_merged_skeleon_cloud() {
 	merged_group->removeChildren(0, merged_group->getNumChildren());
 }
 
-void RenderSkeletonization::clean_evaluate_children() {
+void RenderSkeletonization::clean_skeleton() {
 	skel_fitting_switch->removeChildren(0,
 			skel_fitting_switch->getNumChildren());
 
@@ -224,17 +224,17 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 	return sphere_trans;
 }
 
-void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
+void RenderSkeletonization::display_skeleton(Node* node, MocapHeader& header,
 		int current_frame) {
 	if (skel_created) {
-		evaluate_children_graph_created(node, header, current_frame);
+		update_skeleton(node, header, current_frame);
 	} else {
-		evaluate_children(node, header, skel_fitting_switch, current_frame);
+		create_skeleton(node, header, skel_fitting_switch, current_frame);
 		skel_created = true;
 	}
 }
 
-void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
+void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 		osg::Group *pAddToThisGroup, int current_frame) {
 
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
@@ -276,13 +276,13 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 	pAddToThisGroup->addChild(skel_transform.get());
 
 	for (int i = 0; i < node->noofchildren; i++)
-		evaluate_children(node->children[i], header, skel_transform.get(),
+		create_skeleton(node->children[i], header, skel_transform.get(),
 				current_frame);
 
 	node->osg_node = skel_transform.get();
 }
 
-void RenderSkeletonization::evaluate_children_graph_created(Node* node,
+void RenderSkeletonization::update_skeleton(Node* node,
 		MocapHeader& header, int current_frame) {
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
 
@@ -309,7 +309,7 @@ void RenderSkeletonization::evaluate_children_graph_created(Node* node,
 	}
 
 	for (int i = 0; i < node->noofchildren; i++)
-		evaluate_children_graph_created(node->children[i], header,
+		update_skeleton(node->children[i], header,
 				current_frame);
 }
 
