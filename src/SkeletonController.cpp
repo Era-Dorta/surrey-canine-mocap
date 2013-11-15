@@ -18,7 +18,6 @@ SkeletonController::SkeletonController() :
 }
 
 SkeletonController::~SkeletonController() {
-	// TODO Auto-generated destructor stub
 }
 
 void SkeletonController::set_data(osg::ref_ptr<osg::Switch> skel_fitting_switch,

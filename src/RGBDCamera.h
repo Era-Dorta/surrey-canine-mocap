@@ -105,4 +105,6 @@ class RGBD_Camera {
 		float4x4 T_float4x4;
 };
 
+typedef std::vector<boost::shared_ptr<RGBD_Camera> >::iterator camVecIte;
+
 #endif /* RGBDCAMERA_H_ */

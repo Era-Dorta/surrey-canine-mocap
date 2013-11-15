@@ -30,7 +30,7 @@ void RenderSkeletonization::set_data(
 	skel_vis_switch->removeChildren(0, skel_vis_switch->getNumChildren());
 
 	//Set up the basics nodes
-	for (unsigned int i = 0; i < camera_arr.size(); i++) {
+	for (camVecIte i = camera_arr.begin(); i != camera_arr.end(); ++i) {
 		//Create main skeleton group for this camera and save it in an vector
 		osg::ref_ptr<osg::Group> skel_group = new osg::Group;
 		skel_vis_switch->addChild(skel_group.get(), true);
@@ -46,7 +46,7 @@ void RenderSkeletonization::set_data(
 		osg::ref_ptr<osg::MatrixTransform> cam_transform =
 				new osg::MatrixTransform;
 		//The original camera node is not used to keep the scene graph simpler
-		cam_transform->setMatrix(camera_arr[i]->cam_pose_xform->getMatrix());
+		cam_transform->setMatrix((*i)->cam_pose_xform->getMatrix());
 
 		//Add it as child of main skeleton group
 		skel_group->addChild(cam_transform.get());
