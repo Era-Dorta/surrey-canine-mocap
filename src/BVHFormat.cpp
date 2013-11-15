@@ -81,10 +81,11 @@ bool BVHFormat::ImportData(const char *filename) {
 	header->euler->at(1).set(1, 0, 0);
 	header->euler->at(2).set(0, 1, 0);
 
-	//TODO They had this calibration to make every model smaller
+	//This calibration to make every model smaller
 	header->callib = 0.3f;
 	header->inv_callib = 1.0 / header->callib;
-	header->degrees = true;
+	//We convert all values to radians
+	header->degrees = false;
 	header->scalefactor = 1.0f;
 
 	FILE *file = fopen(filename, "rb");
@@ -137,11 +138,10 @@ bool BVHFormat::ImportData(const char *filename) {
 
 							curnode->name = std::string(line[1]);
 						} else if (strcompEx(line[0], "OFFSET")) {
-							float x, y, z, rx, ry, rz;
+							float x, y, z;
 							x = (float) atof(line[1]) * header->callib;
 							y = (float) atof(line[2]) * header->callib;
 							z = (float) atof(line[3]) * header->callib;
-							rx = ry = rz = 0.0f;
 							if (!endsite) {
 								curnode->setup_offset(x, y, z);
 								if (curnode != root
@@ -150,7 +150,6 @@ bool BVHFormat::ImportData(const char *filename) {
 														== 0.0f
 												&& curnode->parent->length[2]
 														== 0.0f)) {
-									curnode->parent->setup_euler(rx, ry, rz);
 									curnode->parent->length.set(x, y, z);
 								}
 							} else {
@@ -227,7 +226,9 @@ bool BVHFormat::ImportData(const char *filename) {
 									endsite = true;
 								} else {
 									curnode->freuler->at(header->currentframe).set(
-											v0, v1, v2);
+											osg::DegreesToRadians(v0),
+											osg::DegreesToRadians(v1),
+											osg::DegreesToRadians(v2));
 									curnode->scale[header->currentframe] = 1.0f;
 									curnode = nodelist[++index];
 									endsite = false;
@@ -240,7 +241,9 @@ bool BVHFormat::ImportData(const char *filename) {
 														header->currentframe)[2] =
 														0.0f;
 								curnode->freuler->at(header->currentframe).set(
-										v0, v1, v2);
+										osg::DegreesToRadians(v0),
+										osg::DegreesToRadians(v1),
+										osg::DegreesToRadians(v2));
 								curnode->scale[header->currentframe] = 1.0f;
 
 								if (index + 1 < header->noofsegments)
@@ -297,15 +300,27 @@ bool BVHFormat::ImportData(const char *filename) {
 bool BVHFormat::ExportData(const char* filename) {
 	std::ofstream out_file;
 	out_file.open(filename);
-	//Set so that all float numbers are written with 6 decimals
-	out_file.precision(6);
-	out_file.setf(std::ios::fixed, std::ios::floatfield);
 
-	ExportHierarchy(out_file);
+	if (out_file.is_open()) {
+		try {
+			//Set so that all float numbers are written with 6 decimals
+			out_file.precision(6);
+			out_file.setf(std::ios::fixed, std::ios::floatfield);
 
-	ExportMotion(out_file);
+			ExportHierarchy(out_file);
 
-	return true;
+			ExportMotion(out_file);
+		} catch (...) {
+			cout << "Error when saving BVH file" << endl;
+			out_file.close();
+			throw;
+		}
+		out_file.close();
+		return true;
+	} else {
+		cout << "Could not open file to save BVH";
+		return false;
+	}
 }
 
 void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
@@ -401,13 +416,17 @@ void BVHFormat::ExportMotion(std::ofstream& out_file) {
 
 		//All the other nodes is just angles
 		for (j = 0; j < header->noofsegments - 1; j++) {
-			out_file << nodelist[j]->freuler->at(i)[0] << " "
-					<< nodelist[j]->freuler->at(i)[1] << " "
-					<< nodelist[j]->freuler->at(i)[2] << " ";
+			out_file << osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[0])
+					<< " "
+					<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[1])
+					<< " "
+					<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[2])
+					<< " ";
 		}
 		//Last line substitute space for with line feed
-		out_file << nodelist[j]->freuler->at(i)[0] << " "
-				<< nodelist[j]->freuler->at(i)[1] << " "
-				<< nodelist[j]->freuler->at(i)[2] << endl;
+		out_file << osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[0]) << " "
+				<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[1]) << " "
+				<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[2])
+				<< endl;
 	}
 }

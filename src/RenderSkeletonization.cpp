@@ -223,17 +223,10 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 
 	skel_transform->setMatrix(
-			osg::Matrix::rotate(
-					osg::DegreesToRadians(node->freuler->at(current_frame)[0]),
-					header.euler->at(0))
-					* osg::Matrix::rotate(
-							osg::DegreesToRadians(
-									node->freuler->at(current_frame)[1]),
-							header.euler->at(1))
-					* osg::Matrix::rotate(
-							osg::DegreesToRadians(
-									node->freuler->at(current_frame)[2]),
-							header.euler->at(2))
+			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
+					header.euler->at(0), node->freuler->at(current_frame)[1],
+					header.euler->at(1), node->freuler->at(current_frame)[2],
+					header.euler->at(2))
 
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));

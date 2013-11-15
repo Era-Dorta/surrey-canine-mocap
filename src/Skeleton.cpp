@@ -10,7 +10,7 @@
 Skeleton::Skeleton() :
 			skel_loaded(false) {
 	SetHeader(&mocap_header);
-	rotate_scale_factor = 0.2;
+	rotate_scale_factor = 0.02;
 	translate_scale_factor = 0.002;
 }
 
