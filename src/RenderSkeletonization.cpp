@@ -190,26 +190,22 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 	}
 }
 
-osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox() {
-	return createSelectionBox(joint_color);
-}
-
-osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::createSelectionBox(
+osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 		osg::Vec4 color) {
 	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	osg::ref_ptr<osg::ShapeDrawable> box_shape;
-	box_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
-	box_shape->setColor(color);
+	osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+	sphere_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
+	sphere_shape->setColor(color);
 
 	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
 			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-	geode->addDrawable(box_shape);
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = new osg::MatrixTransform;
+	geode->addDrawable(sphere_shape);
+	osg::ref_ptr<osg::MatrixTransform> sphere_trans = new osg::MatrixTransform;
 
-	selectionBox->addChild(geode.get());
+	sphere_trans->addChild(geode.get());
 
-	return selectionBox;
+	return sphere_trans;
 }
 
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
@@ -242,13 +238,13 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 	AddCylinderBetweenPoints(osg::Vec3(), bone_pos, 0.01f, bone_color,
 			static_cast<osg::Group*>(skel_transform.get()));
 
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = createSelectionBox(
+	osg::ref_ptr<osg::MatrixTransform> selectionBox = create_sphere(
 			node->color);
 	selectionBox->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
 
 	skel_transform->addChild(selectionBox.get());
 	if (node->noofchildren == 0) {
-		selectionBox = createSelectionBox(node->color);
+		selectionBox = create_sphere(node->color);
 		selectionBox->setMatrix(
 				osg::Matrix::scale(0.02, 0.02, 0.02)
 						* osg::Matrix::translate(bone_pos));

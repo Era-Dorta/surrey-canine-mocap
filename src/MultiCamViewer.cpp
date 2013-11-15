@@ -279,7 +279,7 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 		case osgGA::GUIEventAdapter::KEY_L:
 			skel_controller.load_skeleton_from_file(
 					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling2.bvh");
 			break;
 
 			//Save skeleton to file:

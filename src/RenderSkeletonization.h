@@ -54,15 +54,14 @@ class RenderSkeletonization {
 		void evaluate_children(Node* node, MocapHeader& header,
 				int current_frame);
 
-		osg::ref_ptr<osg::MatrixTransform> createSelectionBox();
-		osg::ref_ptr<osg::MatrixTransform> createSelectionBox(osg::Vec4 color);
-
 		void display_text(std::string text, osg::Vec3 pos);
 
 		osg::MatrixTransform* obj_belong_skel(
 				osg::MatrixTransform* selected_obj);
 	protected:
 	private:
+		osg::ref_ptr<osg::MatrixTransform> create_sphere(osg::Vec4 color);
+
 		osgText::Text* create_text(const osg::Vec3& pos,
 				const std::string& content, float size);
 
