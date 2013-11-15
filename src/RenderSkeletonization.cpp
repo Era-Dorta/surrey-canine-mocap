@@ -5,6 +5,7 @@ RenderSkeletonization::RenderSkeletonization() :
 	joint_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
 	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
 	selection_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
+	skel_created = false;
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
@@ -60,20 +61,35 @@ void RenderSkeletonization::set_data(
 }
 
 void RenderSkeletonization::clean_scene() {
+	clean_2d_skeletons();
+	clean_3d_skeleon_cloud();
+	clean_3d_merged_skeleon_cloud();
+	clean_evaluate_children();
+}
+
+void RenderSkeletonization::clean_2d_skeletons() {
 	for (unsigned int i = 0; i < skel_group2D_array.size(); i++) {
 		skel_group2D_array[i]->removeChildren(0,
 				skel_group2D_array[i]->getNumChildren());
 	}
+}
 
+void RenderSkeletonization::clean_3d_skeleon_cloud() {
 	for (unsigned int i = 0; i < skel_group3D_array.size(); i++) {
 		skel_group3D_array[i]->removeChildren(0,
 				skel_group3D_array[i]->getNumChildren());
 	}
+}
 
+void RenderSkeletonization::clean_3d_merged_skeleon_cloud() {
 	merged_group->removeChildren(0, merged_group->getNumChildren());
+}
 
+void RenderSkeletonization::clean_evaluate_children() {
 	skel_fitting_switch->removeChildren(0,
 			skel_fitting_switch->getNumChildren());
+
+	skel_created = false;
 }
 
 void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
@@ -210,7 +226,12 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 		int current_frame) {
-	evaluate_children(node, header, skel_fitting_switch, current_frame);
+	if (skel_created) {
+		evaluate_children_graph_created(node, header, current_frame);
+	} else {
+		evaluate_children(node, header, skel_fitting_switch, current_frame);
+		skel_created = true;
+	}
 }
 
 void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
@@ -235,7 +256,7 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 			node->length[1] * node->scale[current_frame],
 			node->length[2] * node->scale[current_frame]);
 
-	AddCylinderBetweenPoints(osg::Vec3(), bone_pos, 0.01f, bone_color,
+	create_cylinder(osg::Vec3(), bone_pos, 0.01f, bone_color,
 			static_cast<osg::Group*>(skel_transform.get()));
 
 	osg::ref_ptr<osg::MatrixTransform> selectionBox = create_sphere(
@@ -259,6 +280,37 @@ void RenderSkeletonization::evaluate_children(Node* node, MocapHeader& header,
 				current_frame);
 
 	node->osg_node = skel_transform.get();
+}
+
+void RenderSkeletonization::evaluate_children_graph_created(Node* node,
+		MocapHeader& header, int current_frame) {
+	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
+
+	skel_transform->setMatrix(
+			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
+					header.euler->at(0), node->freuler->at(current_frame)[1],
+					header.euler->at(1), node->freuler->at(current_frame)[2],
+					header.euler->at(2))
+
+					* osg::Matrix::translate(
+							node->offset + node->froset->at(current_frame)));
+
+	osg::ref_ptr<osg::MatrixTransform> selectionBox =
+			static_cast<osg::MatrixTransform*>(skel_transform->getChild(1));
+	static_cast<osg::ShapeDrawable*>(static_cast<osg::Geode*>(selectionBox->getChild(
+			0))->getDrawable(0))->setColor(node->color);
+
+	skel_transform->addChild(selectionBox.get());
+	if (node->noofchildren == 0) {
+		selectionBox =
+				static_cast<osg::MatrixTransform*>(skel_transform->getChild(2));
+		static_cast<osg::ShapeDrawable*>(static_cast<osg::Geode*>(selectionBox->getChild(
+				0))->getDrawable(0))->setColor(node->color);
+	}
+
+	for (int i = 0; i < node->noofchildren; i++)
+		evaluate_children_graph_created(node->children[i], header,
+				current_frame);
 }
 
 osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
@@ -328,10 +380,10 @@ void RenderSkeletonization::display_text(std::string text, osg::Vec3 pos) {
 	text_geode->addDrawable(osg_text);
 	osg::ref_ptr<osg::Camera> text_cam = create_hud_camera(0, 1280, 0, 720);
 	text_cam->addChild(text_geode.get());
-	skel_fitting_switch->addChild(text_cam);
+	merged_group->addChild(text_cam);
 }
 
-void RenderSkeletonization::AddCylinderBetweenPoints(osg::Vec3 StartPoint,
+void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,
 		osg::Vec3 EndPoint, float radius, osg::Vec4 CylinderColor,
 		osg::Group *pAddToThisGroup) {
 	osg::Vec3 center;

@@ -37,11 +37,10 @@ class Skeleton: public BVHFormat {
 		void set_current_frame(int frame_no);
 		Node* get_root();
 		MocapHeader& get_header();
-		int get_node(osg::ref_ptr<osg::MatrixTransform> node_transform);
+		int get_node(osg::MatrixTransform* node_transform);
 		bool isSkelLoaded() const;
 
 	private:
-		void reset_state();
 		MocapHeader mocap_header;
 		bool skel_loaded;
 		float rotate_scale_factor;

@@ -42,15 +42,15 @@ class SkeletonController {
 		bool handle(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
 
-		void load_skeleton_from_file(std::string file_name);
-		void save_skeleton_to_file(std::string file_name);
-
 		void update_dynamics(int disp_frame_no);
 	private:
 		void reset_state();
 		void update_state();
 		void draw_complete_skeleton();
 		void draw_edit_text();
+
+		void load_skeleton_from_file(std::string file_name);
+		void save_skeleton_to_file(std::string file_name);
 
 		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeletonized3D;

@@ -45,6 +45,11 @@ void Skeleton::save_to_file(std::string file_name) {
 }
 
 void Skeleton::load_from_file(std::string file_name) {
+	cout << "skel load from file" << endl;
+	//After reset state, the skeleton have been unload, so just to be sure
+	//change the state
+	reset_state();
+	skel_loaded = false;
 	ImportData(file_name.c_str());
 	skel_loaded = true;
 }
@@ -80,13 +85,9 @@ void Skeleton::change_color(int index, osg::Vec4 color) {
 	nodelist[index]->color = color;
 }
 
-void Skeleton::reset_state() {
-	set_current_frame(mocap_header.currentframe);
-}
-
-int Skeleton::get_node(osg::ref_ptr<osg::MatrixTransform> node_transform) {
+int Skeleton::get_node(osg::MatrixTransform* node_transform) {
 	for (unsigned int i = 0; i < nodelist.size(); i++) {
-		if (nodelist[i]->osg_node.get() == node_transform.get()) {
+		if (nodelist[i]->osg_node == node_transform) {
 			return i;
 		}
 	}

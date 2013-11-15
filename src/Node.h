@@ -49,7 +49,7 @@ class Node {
 
 		//TODO Better to have a list or some other kind of struture in controller
 		//model should not know about the viewer
-		osg::ref_ptr<osg::MatrixTransform> osg_node;
+		osg::MatrixTransform* osg_node;
 };
 
 #endif /* NODE_H_ */

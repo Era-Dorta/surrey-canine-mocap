@@ -23,6 +23,12 @@ const std::vector<Node*>& MocapData::getNodelist() const {
 	return nodelist;
 }
 
+void MocapData::reset_state() {
+	delete_recursive(root);
+	root = NULL;
+	nodelist.clear();
+}
+
 void MocapData::delete_recursive(struct Node* to_delete) {
 	if (to_delete == NULL) {
 		return;

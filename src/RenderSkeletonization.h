@@ -37,6 +37,11 @@ class RenderSkeletonization {
 		//Delete skeleton nodes from previous frame
 		void clean_scene();
 
+		void clean_2d_skeletons();
+		void clean_3d_skeleon_cloud();
+		void clean_3d_merged_skeleon_cloud();
+		void clean_evaluate_children();
+
 		//TODO Should not give Skeletonization3D as argument, still much
 		//coupling in the code
 		//Show the 2D skeleton images of each camera given a frame number
@@ -75,7 +80,10 @@ class RenderSkeletonization {
 		void evaluate_children(Node* node, MocapHeader& header,
 				osg::Group *pAddToThisGroup, int current_frame);
 
-		void AddCylinderBetweenPoints(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
+		void evaluate_children_graph_created(Node* node, MocapHeader& header,
+				int current_frame);
+
+		void create_cylinder(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
 				float radius, osg::Vec4 CylinderColor,
 				osg::Group *pAddToThisGroup);
 
@@ -105,6 +113,7 @@ class RenderSkeletonization {
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 
 		bool display_merged;
+		bool skel_created;
 
 		osg::Vec4 joint_color;
 		osg::Vec4 bone_color;

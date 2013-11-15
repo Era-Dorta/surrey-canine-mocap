@@ -192,6 +192,18 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				update_dynamics(current_frame);
 			}
 			break;
+			//Load skeleton from a file:
+		case osgGA::GUIEventAdapter::KEY_L:
+			load_skeleton_from_file(
+					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling2.bvh");
+			break;
+
+			//Save skeleton to file:
+		case osgGA::GUIEventAdapter::KEY_K:
+			save_skeleton_to_file(
+					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			break;
 		default:
 			break;
 		}
@@ -203,6 +215,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 }
 
 void SkeletonController::load_skeleton_from_file(std::string file_name) {
+	skel_renderer.clean_evaluate_children();
 
 	skeleton.load_from_file(file_name);
 
@@ -233,7 +246,9 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	reset_state();
 	skeleton.set_current_frame(current_frame);
 
-	skel_renderer.clean_scene();
+	skel_renderer.clean_3d_skeleon_cloud();
+	skel_renderer.clean_3d_merged_skeleon_cloud();
+
 	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
 			skeletonized3D);

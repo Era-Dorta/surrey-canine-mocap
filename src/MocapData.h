@@ -70,7 +70,8 @@ class MocapData {
 		int xpos, ypos, zpos;
 
 		char error[255];          // Used to store any errors that occured
-	private:
+
+		void reset_state();
 		void free_node_memory(struct Node* to_delete);
 		void delete_recursive(struct Node* to_delete);
 };
