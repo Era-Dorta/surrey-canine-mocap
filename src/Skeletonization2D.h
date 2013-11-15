@@ -2,7 +2,6 @@
 #define SKELETONIZATION2D_H
 
 #include "RGBDCamera.h"
-#include "MiscUtils.h"
 
 #include "opencv2/opencv.hpp"
 

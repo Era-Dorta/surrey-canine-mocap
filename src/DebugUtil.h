@@ -12,7 +12,6 @@
 using std::cout;
 using std::endl;
 
-//TODO Clean up all the miscutil includes that were becouse of this method
 inline std::ostream& operator<<(std::ostream &out, const osg::Vec3 &vector) {
 	out << "[" << vector.x() << ", " << vector.y() << ", " << vector.z() << "]";
 	return out;
