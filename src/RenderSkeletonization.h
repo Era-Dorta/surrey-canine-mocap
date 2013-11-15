@@ -41,6 +41,7 @@ class RenderSkeletonization {
 		void clean_3d_skeleon_cloud();
 		void clean_3d_merged_skeleon_cloud();
 		void clean_skeleton();
+		void clean_text();
 
 		//TODO Should not give Skeletonization3D as argument, still much
 		//coupling in the code
@@ -112,8 +113,10 @@ class RenderSkeletonization {
 
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 
+		osg::ref_ptr<osgText::Text> skel_edit_text;
 		bool display_merged;
 		bool skel_created;
+		bool text_created;
 
 		osg::Vec4 joint_color;
 		osg::Vec4 bone_color;

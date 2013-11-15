@@ -6,6 +6,7 @@ RenderSkeletonization::RenderSkeletonization() :
 	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
 	selection_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 	skel_created = false;
+	text_created = false;
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
@@ -90,6 +91,12 @@ void RenderSkeletonization::clean_skeleton() {
 			skel_fitting_switch->getNumChildren());
 
 	skel_created = false;
+	text_created = false;
+}
+
+void RenderSkeletonization::clean_text() {
+	skel_fitting_switch->removeChildren(1, 1);
+	text_created = false;
 }
 
 void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
@@ -282,8 +289,8 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	node->osg_node = skel_transform.get();
 }
 
-void RenderSkeletonization::update_skeleton(Node* node,
-		MocapHeader& header, int current_frame) {
+void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
+		int current_frame) {
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
 
 	skel_transform->setMatrix(
@@ -309,8 +316,7 @@ void RenderSkeletonization::update_skeleton(Node* node,
 	}
 
 	for (int i = 0; i < node->noofchildren; i++)
-		update_skeleton(node->children[i], header,
-				current_frame);
+		update_skeleton(node->children[i], header, current_frame);
 }
 
 osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
@@ -372,15 +378,19 @@ osg::Camera* RenderSkeletonization::create_hud_camera(double left, double right,
 }
 
 void RenderSkeletonization::display_text(std::string text, osg::Vec3 pos) {
-	osg::ref_ptr<osg::Geode> text_geode = new osg::Geode;
-	osg::ref_ptr<osgText::Text> osg_text;
-	osg_text = create_text(pos, text, 18.0f);
-	//Very NB! This next line stops the program hanging when I change the text value:
-	osg_text->setDataVariance(osg::Object::DYNAMIC);
-	text_geode->addDrawable(osg_text);
-	osg::ref_ptr<osg::Camera> text_cam = create_hud_camera(0, 1280, 0, 720);
-	text_cam->addChild(text_geode.get());
-	merged_group->addChild(text_cam);
+	if (text_created) {
+		skel_edit_text->setText(text);
+		skel_edit_text->setPosition(pos);
+	} else {
+		osg::ref_ptr<osg::Geode> text_geode = new osg::Geode;
+		skel_edit_text = create_text(pos, text, 18.0f);
+		skel_edit_text->setDataVariance(osg::Object::DYNAMIC);
+		text_geode->addDrawable(skel_edit_text);
+		osg::ref_ptr<osg::Camera> text_cam = create_hud_camera(0, 1280, 0, 720);
+		text_cam->addChild(text_geode.get());
+		skel_fitting_switch->addChild(text_cam);
+		text_created = true;
+	}
 }
 
 void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,

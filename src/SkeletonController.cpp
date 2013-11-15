@@ -164,6 +164,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 				change_all_frames = false;
 				transforming_skeleton = false;
 				skeleton.change_color(selected_point_index, unselected_color);
+				skel_renderer.clean_text();
 				update_dynamics(current_frame);
 			}
 			break;
@@ -230,20 +231,18 @@ void SkeletonController::save_skeleton_to_file(std::string file_name) {
 
 void SkeletonController::reset_state() {
 	state = MOVE_POINTS;
-}
-
-void SkeletonController::draw_complete_skeleton() {
-	if (skeleton.isSkelLoaded()) {
-		skel_renderer.display_skeleton(skeleton.get_root(),
-				skeleton.get_header(), current_frame);
-	}
+	is_point_selected = false;
+	move_on_z = false;
+	translate_root = false;
+	change_all_frames = false;
+	transforming_skeleton = false;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
 	//TODO This recreates the scene over and over, should just be some updating
 	//not creating everything from scratch
+	//Skeleton and text are not recreated every frame anymore
 	current_frame = disp_frame_no;
-	reset_state();
 	skeleton.set_current_frame(current_frame);
 
 	skel_renderer.clean_3d_skeleon_cloud();
@@ -253,8 +252,11 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
 			skeletonized3D);
 
-	draw_edit_text();
-	draw_complete_skeleton();
+	if (skeleton.isSkelLoaded()) {
+		skel_renderer.display_skeleton(skeleton.get_root(),
+				skeleton.get_header(), current_frame);
+		draw_edit_text();
+	}
 }
 
 Fitting_State SkeletonController::getState() const {
@@ -267,7 +269,7 @@ void SkeletonController::setState(Fitting_State state) {
 
 void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
-		std::string edit_text;
+		std::string edit_text = "v(finish) b(rot) n(frames) m(inter)\n";
 		edit_text += "Editing ";
 		if (change_all_frames) {
 			edit_text += "all frames ";
@@ -284,8 +286,7 @@ void SkeletonController::draw_edit_text() {
 		std::stringstream out;
 		out << inter_number;
 		edit_text += out.str();
-		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 20.0f, 0.0f));
-		edit_text = "v(finish) b(rot) n(frames) m(inter)";
+
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
 }

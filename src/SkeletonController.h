@@ -46,7 +46,6 @@ class SkeletonController {
 	private:
 		void reset_state();
 		void update_state();
-		void draw_complete_skeleton();
 		void draw_edit_text();
 
 		void load_skeleton_from_file(std::string file_name);
