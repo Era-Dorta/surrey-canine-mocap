@@ -274,9 +274,9 @@ bool BVHFormat::export_data(const char* filename) {
 			out_file.precision(6);
 			out_file.setf(std::ios::fixed, std::ios::floatfield);
 
-			ExportHierarchy(out_file);
+			export_hierarchy(out_file);
 
-			ExportMotion(out_file);
+			export_motion(out_file);
 		} catch (...) {
 			cout << "Error when saving BVH file" << endl;
 			out_file.close();
@@ -290,7 +290,7 @@ bool BVHFormat::export_data(const char* filename) {
 	}
 }
 
-void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
+void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 		Node* joint, int tabs, bool print_parent) {
 	std::string tabs_str;
 	for (int i = 0; i < tabs; i++) {
@@ -318,19 +318,20 @@ void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
 
 	bool print_data = true;
 	for (unsigned int i = 0; i < joint->noofchildren(); i++) {
-		ExportDataJoint(out_file, joint, joint->children[i].get(), tabs,
+		export_data_joint(out_file, joint, joint->children[i].get(), tabs,
 				print_data);
 		print_data = false;
 	}
 
 	if (joint->noofchildren() == 0) {
-		ExportEndSite(out_file, joint, tabs);
+		export_end_site(out_file, joint, tabs);
 	}
 	tabs_str.erase(tabs_str.length() - 1);
 	out_file << tabs_str << "}" << endl;
 }
 
-void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
+void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
+		int tabs) {
 	std::string tabs_str;
 	for (int i = 0; i < tabs; i++) {
 		tabs_str += "\t";
@@ -355,23 +356,23 @@ void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
 	out_file << tabs_str << "}" << endl;
 }
 
-void BVHFormat::ExportHierarchy(std::ofstream& out_file) {
+void BVHFormat::export_hierarchy(std::ofstream& out_file) {
 	out_file << "HIERARCHY" << endl;
 	out_file << "ROOT " << root->name << endl;
 	out_file << "{" << endl;
 	bool print_data = true;
 	for (unsigned int i = 0; i < root->noofchildren(); i++) {
-		ExportDataJoint(out_file, root.get(), root->children[i].get(), 1,
+		export_data_joint(out_file, root.get(), root->children[i].get(), 1,
 				print_data);
 		print_data = false;
 	}
 	if (root->noofchildren() == 0) {
-		ExportEndSite(out_file, root.get(), 1);
+		export_end_site(out_file, root.get(), 1);
 	}
 	out_file << "}" << endl;
 }
 
-void BVHFormat::ExportMotion(std::ofstream& out_file) {
+void BVHFormat::export_motion(std::ofstream& out_file) {
 	out_file << "MOTION" << endl;
 	out_file << "Frames: " << header.noofframes << endl;
 	out_file << "Frame Time: " << header.frametime << endl;
