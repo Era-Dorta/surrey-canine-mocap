@@ -256,7 +256,6 @@ bool BVHFormat::import_data(const char *filename) {
 			i = 0;
 		}
 		fclose(file);
-		cout << "imported " << endl;
 		return true;
 	} else {
 		strcpy(error, "Cannot Open File");
@@ -291,13 +290,7 @@ bool BVHFormat::export_data(const char* filename) {
 }
 
 void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
-		Node* joint, int tabs, bool print_parent) {
-	std::string tabs_str;
-	for (int i = 0; i < tabs; i++) {
-		tabs_str += "\t";
-	}
-	tabs++;
-
+		Node* joint, std::string& tabs_str, bool print_parent) {
 	if (print_parent) {
 		out_file << tabs_str << "OFFSET "
 				<< parent->offset[0] * header.inv_callib << " "
@@ -318,24 +311,21 @@ void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 
 	bool print_data = true;
 	for (unsigned int i = 0; i < joint->noofchildren(); i++) {
-		export_data_joint(out_file, joint, joint->children[i].get(), tabs,
+		export_data_joint(out_file, joint, joint->children[i].get(), tabs_str,
 				print_data);
 		print_data = false;
 	}
 
 	if (joint->noofchildren() == 0) {
-		export_end_site(out_file, joint, tabs);
+		export_end_site(out_file, joint, tabs_str);
 	}
 	tabs_str.erase(tabs_str.length() - 1);
 	out_file << tabs_str << "}" << endl;
 }
 
 void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
-		int tabs) {
-	std::string tabs_str;
-	for (int i = 0; i < tabs; i++) {
-		tabs_str += "\t";
-	}
+		std::string& tabs_str) {
+
 	out_file << tabs_str << "OFFSET " << joint->offset[0] * header.inv_callib
 			<< " " << joint->offset[1] * header.inv_callib << " "
 			<< joint->offset[2] * header.inv_callib << endl;
@@ -361,13 +351,14 @@ void BVHFormat::export_hierarchy(std::ofstream& out_file) {
 	out_file << "ROOT " << root->name << endl;
 	out_file << "{" << endl;
 	bool print_data = true;
+	std::string tabs("\t");
 	for (unsigned int i = 0; i < root->noofchildren(); i++) {
-		export_data_joint(out_file, root.get(), root->children[i].get(), 1,
+		export_data_joint(out_file, root.get(), root->children[i].get(), tabs,
 				print_data);
 		print_data = false;
 	}
 	if (root->noofchildren() == 0) {
-		export_end_site(out_file, root.get(), 1);
+		export_end_site(out_file, root.get(), tabs);
 	}
 	out_file << "}" << endl;
 }
