@@ -148,6 +148,9 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
 		box->setCenter(vertices->at(i));
+		//This line tells OSG that we changed the data in the Geometry,
+		//however it should only be used when the data does not change on
+		//every frame
 		box_shape->dirtyDisplayList();
 	}
 
