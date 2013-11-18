@@ -216,6 +216,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 
 void SkeletonController::load_skeleton_from_file(std::string file_name) {
 	skel_renderer.clean_skeleton();
+	skel_renderer.clean_3d_merged_skeleon_cloud();
 
 	skeleton.load_from_file(file_name);
 
@@ -245,7 +246,6 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skeleton.set_current_frame(current_frame);
 
 	skel_renderer.clean_3d_skeleon_cloud();
-	skel_renderer.clean_3d_merged_skeleon_cloud();
 
 	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,

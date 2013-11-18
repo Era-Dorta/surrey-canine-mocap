@@ -126,24 +126,45 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 
 void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 		Skeletonization3D& skeleton) {
-	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	colors->push_back(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0)); //blue
-
-	//Draw a blue cloud of squares, where each square represents a small part of a bone
-	osg::ref_ptr<osg::Geode> skel_geode = new osg::Geode;
-	osg::ref_ptr<osg::Geometry> skel_geometry = new osg::Geometry;
 
 	osg::ref_ptr<osg::Vec3Array> vertices = skeleton.get_merged_3d_projection(
 			disp_frame_no);
 
-	for (unsigned int j = 0; j < vertices->size(); j++) {
-		osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
-		shape1->setShape(new osg::Box((*vertices)[j], 0.005f, 0.005f, 0.005f));
-		shape1->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //Red
-		skel_geode->addDrawable(shape1.get());
+	osg::ref_ptr<osg::Geode> skel2d_geode;
+	if (merged_group->getNumChildren()) {
+		skel2d_geode = static_cast<osg::Geode*>(merged_group->getChild(0));
+	} else {
+		skel2d_geode = new osg::Geode;
+		merged_group->addChild(skel2d_geode.get());
+	}
+	//Draw a blue cloud of squares, where each square represents a small part of a bone
+	unsigned int useful_nodes, i = 0;
+	unsigned int n_drawables = skel2d_geode->getNumDrawables();
+	unsigned int n_vertices = vertices->size();
+	useful_nodes = ((n_drawables > n_vertices) ? n_vertices : n_drawables);
+	//If the geometry is created, only change its position
+	for (; i < useful_nodes; i++) {
+		osg::ShapeDrawable* box_shape =
+				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
+		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
+		box->setCenter(vertices->at(i));
+		box_shape->dirtyDisplayList();
 	}
 
-	merged_group->addChild(skel_geode.get());
+	//If the geometry is not created, then create a new one
+	for (unsigned int j = i; j < n_vertices; j++) {
+		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
+		//box_shape->setDataVariance( osg::Object::DYNAMIC );
+		box_shape->setShape(
+				new osg::Box(vertices->at(j), 0.005f, 0.005f, 0.005f));
+		box_shape->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //Red
+		skel2d_geode->addDrawable(box_shape.get());
+	}
+
+	//If the points to draw in this frame are less than in the previous remove
+	//all the extra geometries.
+	skel2d_geode->removeDrawables(n_vertices,
+			skel2d_geode->getNumDrawables() - n_vertices);
 }
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
