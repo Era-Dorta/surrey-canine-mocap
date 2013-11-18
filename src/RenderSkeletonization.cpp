@@ -99,6 +99,7 @@ void RenderSkeletonization::clean_text() {
 	text_created = false;
 }
 
+//TODO Reuse the points like with 3d merged skeleton cloud
 void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 		Skeletonization3D& skeleton) {
 	osg::ref_ptr<osg::Geode> skel_geode;

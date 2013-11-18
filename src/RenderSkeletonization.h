@@ -59,6 +59,7 @@ class RenderSkeletonization {
 
 		//TODO Should not use Node, but it is much easier not to strictly follow
 		//the Model-View-Controller pattern
+		//TODO Use weakpointer instead of Node*
 		void display_skeleton(Node* node, MocapHeader& header,
 				int current_frame);
 

@@ -93,6 +93,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		last_mouse_pos_y = ea.getY();
 	}
 
+	//TODO Move skel related logic to here from Multicamviewer
 	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG
 			&& transforming_skeleton) {
 
@@ -241,7 +242,7 @@ void SkeletonController::reset_state() {
 void SkeletonController::update_dynamics(int disp_frame_no) {
 	//TODO This recreates the scene over and over, should just be some updating
 	//not creating everything from scratch
-	//Skeleton and text are not recreated every frame anymore
+	//Skeleton, text and 3dmerged cloud are not recreated every frame anymore
 	current_frame = disp_frame_no;
 	skeleton.set_current_frame(current_frame);
 
