@@ -4,7 +4,6 @@ Skeletonization3D::Skeletonization3D(float merge_treshold_, float row_treshold_,
 		float move_distance_) :
 			n_cameras(0), n_frames(0), merge_treshold(merge_treshold_),
 			row_treshold(row_treshold_), move_distance(move_distance_) {
-
 }
 
 Skeletonization3D::~Skeletonization3D() {
@@ -24,8 +23,7 @@ void Skeletonization3D::set_cameras(
 		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D(*i));
 		skel_arr.push_back(skel);
 	}
-
-	merge_2D_skeletons();
+	skeleton_frames.resize(n_frames);
 }
 
 const cv::Mat* const Skeletonization3D::get_2D_frame(int cam_num,
@@ -33,21 +31,18 @@ const cv::Mat* const Skeletonization3D::get_2D_frame(int cam_num,
 	return skel_arr[cam_num]->get_frame(frame_num);
 }
 
-void Skeletonization3D::merge_2D_skeletons() {
-	skeleton_frames.reserve(n_frames);
-	std::vector<const cv::Mat*> skeletonized_frames;
-	skeletonized_frames.resize(n_cameras);
+void Skeletonization3D::merge_2D_skeletons(int frame_num) {
 
-	for (int i = 0; i < n_frames; i++) {
-		//for( int i = 0; i < 10; i++){
-		//Get all the 2D views of a given frame
-		for (unsigned int j = 0; j < skel_arr.size(); j++) {
-			skeletonized_frames[j] = skel_arr[j]->get_frame(i);
-		}
-		//Save the 3D result
-		skeleton_frames.push_back(
-				merge_2D_skeletons_impl(skeletonized_frames, i));
+	std::vector<const cv::Mat*> skeletonized_frames;
+
+	//Get all the 2D views of a given frame
+	for (unsigned int j = 0; j < skel_arr.size(); j++) {
+		skeletonized_frames.push_back(skel_arr[j]->get_frame(frame_num));
 	}
+	//Save the 3D result
+	skeleton_frames[frame_num] = merge_2D_skeletons_impl(skeletonized_frames,
+			frame_num);
+
 }
 
 bool Skeletonization3D::get_white_pixel(cv::Mat& img, int &res_row,
@@ -88,7 +83,7 @@ bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
-		int cam_num, int frame_num) const {
+		int cam_num, int frame_num) {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
@@ -130,7 +125,10 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
-		int frame_num) const {
+		int frame_num) {
+	if (!skeleton_frames[frame_num].valid()) {
+		merge_2D_skeletons(frame_num);
+	}
 	return skeleton_frames[frame_num];
 }
 

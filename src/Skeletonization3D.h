@@ -24,19 +24,18 @@ class Skeletonization3D {
 		//Return an array of points, given a camera and a frame number
 		//Important: This coordinates are relative to the camera
 		osg::ref_ptr<osg::Vec3Array> get_simple_3d_projection(int cam_num,
-				int frame_num) const;
+				int frame_num);
 
 		//Return an array of points, after merging all the camera views
 		//Important: This coordinates are global
-		osg::ref_ptr<osg::Vec3Array> get_merged_3d_projection(
-				int frame_num) const;
+		osg::ref_ptr<osg::Vec3Array> get_merged_3d_projection(int frame_num);
 
 		//Get a 2D skeleton frame
 		const cv::Mat* const get_2D_frame(int cam_num, int frame_num) const;
 	protected:
 	private:
 		//Merges several 2D images to a 3D complete image of a skeleton
-		void merge_2D_skeletons();
+		void merge_2D_skeletons(int frame_num);
 
 		//Internal method that does the hard work
 		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(
