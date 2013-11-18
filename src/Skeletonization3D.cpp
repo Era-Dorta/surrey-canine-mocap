@@ -23,7 +23,24 @@ void Skeletonization3D::set_cameras(
 		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D(*i));
 		skel_arr.push_back(skel);
 	}
-	skeleton_frames.resize(n_frames);
+	skel3d_merged_array.resize(n_frames);
+	skel2d_cam_array.resize(n_frames * n_cameras);
+}
+
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
+		int cam_num, int frame_num) {
+	if (!skel2d_cam_array[frame_num * n_cameras + cam_num].valid()) {
+		do_3d_projection(cam_num, frame_num);
+	}
+	return skel2d_cam_array[frame_num * n_cameras + cam_num];
+}
+
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
+		int frame_num) {
+	if (!skel3d_merged_array[frame_num].valid()) {
+		merge_2D_skeletons(frame_num);
+	}
+	return skel3d_merged_array[frame_num];
 }
 
 const cv::Mat* const Skeletonization3D::get_2D_frame(int cam_num,
@@ -40,50 +57,11 @@ void Skeletonization3D::merge_2D_skeletons(int frame_num) {
 		skeletonized_frames.push_back(skel_arr[j]->get_frame(frame_num));
 	}
 	//Save the 3D result
-	skeleton_frames[frame_num] = merge_2D_skeletons_impl(skeletonized_frames,
-			frame_num);
-
+	skel3d_merged_array[frame_num] = merge_2D_skeletons_impl(
+			skeletonized_frames, frame_num);
 }
 
-bool Skeletonization3D::get_white_pixel(cv::Mat& img, int &res_row,
-		int &res_col, int i_row, int i_col) {
-	for (int row = i_row; row < img.rows; row++) {
-		for (int col = i_col; col < img.cols; col++) {
-			//If pixel is white
-			if ((int) img.at<uchar>(row, col) == 255) {
-				res_row = row;
-				res_col = col;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
-		int &res_col) {
-	return get_bottom_white_pixel(img, res_row, res_col, img.rows - 1, 0);
-}
-
-bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
-		int &res_col, int i_row, int i_col) {
-	//Since we want the bottom-left white pixel
-	//and 0,0 is top-left in openCV
-	for (int row = i_row; row > 0; row--) {
-		for (int col = i_col; col < img.cols; col++) {
-			//If pixel is white
-			if ((int) img.at<uchar>(row, col) == 255) {
-				res_row = row;
-				res_col = col;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
-		int cam_num, int frame_num) {
+void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
@@ -121,15 +99,44 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
 	}
 
 	translate_points_to_inside(skeleton_3d.get(), cam_num);
-	return skeleton_3d.get();
+	skel2d_cam_array[frame_num * n_cameras + cam_num] = skeleton_3d.get();
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
-		int frame_num) {
-	if (!skeleton_frames[frame_num].valid()) {
-		merge_2D_skeletons(frame_num);
+bool Skeletonization3D::get_white_pixel(cv::Mat& img, int &res_row,
+		int &res_col, int i_row, int i_col) {
+	for (int row = i_row; row < img.rows; row++) {
+		for (int col = i_col; col < img.cols; col++) {
+			//If pixel is white
+			if ((int) img.at<uchar>(row, col) == 255) {
+				res_row = row;
+				res_col = col;
+				return true;
+			}
+		}
 	}
-	return skeleton_frames[frame_num];
+	return false;
+}
+
+bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
+		int &res_col) {
+	return get_bottom_white_pixel(img, res_row, res_col, img.rows - 1, 0);
+}
+
+bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
+		int &res_col, int i_row, int i_col) {
+	//Since we want the bottom-left white pixel
+	//and 0,0 is top-left in openCV
+	for (int row = i_row; row > 0; row--) {
+		for (int col = i_col; col < img.cols; col++) {
+			//If pixel is white
+			if ((int) img.at<uchar>(row, col) == 255) {
+				res_row = row;
+				res_col = col;
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 void Skeletonization3D::translate_points_to_inside(

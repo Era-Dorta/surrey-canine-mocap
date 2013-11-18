@@ -37,6 +37,8 @@ class Skeletonization3D {
 		//Merges several 2D images to a 3D complete image of a skeleton
 		void merge_2D_skeletons(int frame_num);
 
+		void do_3d_projection(int cam_num, int frame_num);
+
 		//Internal method that does the hard work
 		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(
 				std::vector<const cv::Mat*>& skeletonized_frames,
@@ -84,8 +86,13 @@ class Skeletonization3D {
 		std::vector<boost::shared_ptr<Skeletonization2D> > skel_arr;
 
 		//Each Vec3Array is a cloud of points that represent a skeleton
-		//in a given frame
-		std::vector<osg::ref_ptr<osg::Vec3Array> > skeleton_frames;
+		//in a given frame, viewed from a different camera
+		std::vector<osg::ref_ptr<osg::Vec3Array> > skel2d_cam_array;
+
+		//Each Vec3Array is a cloud of points that represent a skeleton
+		//in a given frame, after merging the views from all the cameras
+		std::vector<osg::ref_ptr<osg::Vec3Array> > skel3d_merged_array;
+
 
 		//There will not be many cameras, so a copy of the camera vector is not
 		//that painful to do and lest assume the cameras are not going to change
