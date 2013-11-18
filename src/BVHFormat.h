@@ -52,10 +52,9 @@ using std::endl;
 class BVHFormat: public MocapData {
 	public:
 		BVHFormat();
-		BVHFormat(MocapHeader *header);
 
-		bool ImportData(const char* filename); // Starts the import of the BVH file
-		bool ExportData(const char* filename); // Starts the export of the BVH file
+		bool import_data(const char* filename); // Starts the import of the BVH file
+		bool export_data(const char* filename); // Starts the export of the BVH file
 
 	private:
 		//Recursive method that writes a node information to a file BVH file
@@ -70,8 +69,6 @@ class BVHFormat: public MocapData {
 
 		//Method that writes the motion part to a BVH file
 		void ExportMotion(std::ofstream& out_file);
-
-		void EnlargeNodeList();
 };
 
 #endif

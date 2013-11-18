@@ -35,13 +35,12 @@ class Skeleton: public BVHFormat {
 		void save_to_file(std::string file_name);
 		void load_from_file(std::string file_name);
 		void set_current_frame(int frame_no);
-		Node* get_root();
 		MocapHeader& get_header();
-		int get_node(osg::MatrixTransform* node_transform);
+		int get_node_index(osg::MatrixTransform* node_transform);
 		bool isSkelLoaded() const;
+		void reset_state();
 
 	private:
-		MocapHeader mocap_header;
 		bool skel_loaded;
 		float rotate_scale_factor;
 		float translate_scale_factor;

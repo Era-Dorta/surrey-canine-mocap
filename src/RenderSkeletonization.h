@@ -57,6 +57,8 @@ class RenderSkeletonization {
 		void display_3d_merged_skeleon_cloud(int disp_frame_no,
 				Skeletonization3D& skeleton);
 
+		//TODO Should not use Node, but it is much easier not to strictly follow
+		//the Model-View-Controller pattern
 		void display_skeleton(Node* node, MocapHeader& header,
 				int current_frame);
 

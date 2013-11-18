@@ -72,7 +72,7 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 								osg::ref_ptr<osg::MatrixTransform> selected_point =
 										static_cast<osg::MatrixTransform*>(selected_point_color->getParent(
 												0));
-								selected_point_index = skeleton.get_node(
+								selected_point_index = skeleton.get_node_index(
 										selected_point);
 								skeleton.change_color(selected_point_index,
 										selected_color);

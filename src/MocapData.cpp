@@ -8,49 +8,47 @@
 #include "MocapData.h"
 
 MocapData::MocapData() :
-			root(0), nodelist(0), header(0), xpos(0), ypos(0), zpos(0) {
+			xpos(0), ypos(0), zpos(0) {
 }
 
-MocapData::MocapData(MocapHeader *header) :
-			root(0), nodelist(0), header(header), xpos(0), ypos(0), zpos(0) {
-}
-
-void MocapData::free_node_memory(struct Node* to_delete) {
-	free(to_delete);
-}
-
-const std::vector<Node*>& MocapData::getNodelist() const {
+const std::vector<Node*>& MocapData::get_node_list() const {
 	return nodelist;
 }
 
 void MocapData::reset_state() {
-	delete_recursive(root);
-	root = NULL;
 	nodelist.clear();
-}
+	root.reset();
 
-void MocapData::delete_recursive(struct Node* to_delete) {
-	if (to_delete == NULL) {
-		return;
-	}
-	for (int i = 0; i < to_delete->noofchildren; i++) {
-		delete_recursive(to_delete->children[i]);
-	}
-	free_node_memory(to_delete);
+	header.callib = 1.0f;
+	header.scalefactor = 1.0f;
+	header.noofsegments = 0;
+	header.noofframes = 0;
+	header.datarate = 0;
+
+	xpos = 1;
+	ypos = 2;
+	zpos = 0;
+
+	header.euler->at(0).set(0, 0, 1);
+	header.euler->at(1).set(1, 0, 0);
+	header.euler->at(2).set(0, 1, 0);
+
+	//This calibration to make every model smaller
+	header.callib = 0.3f;
+	header.inv_callib = 1.0 / header.callib;
+	//We convert all values to radians
+	header.degrees = false;
+	header.scalefactor = 1.0f;
 }
 
 MocapData::~MocapData() {
-	delete_recursive(root);
+
 }
 
-void MocapData::SetHeader(MocapHeader *header) {
-	this->header = header;
+Node* MocapData::get_root() {
+	return root.get();
 }
 
-Node* MocapData::GetRootNode() {
-	return root;
-}
-
-const char* MocapData::GetError() {
+const char* MocapData::get_error() {
 	return error;
 }

@@ -13,8 +13,13 @@
 #include <cstddef>
 #include <vector>
 #include <string>
+#include "boost/shared_ptr.hpp"
 
 typedef unsigned char BYTE;
+
+class Node;
+
+typedef boost::shared_ptr<Node> NodePtr;
 
 class Node {
 	public:
@@ -33,13 +38,16 @@ class Node {
 
 		void setup_frames(long frames);
 
+		unsigned int noofchildren();
+
+		Node* get_last_child();
+
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
 		osg::Vec3f euler;     // Rotation
 		osg::Vec4 color;
-		int noofchildren;
-		std::vector<Node *> children;    // Array of pointers to child nodes
+		std::vector<NodePtr> children;    // Array of pointers to child nodes
 		Node *parent;       // Back pointer to parent node
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame
@@ -51,5 +59,4 @@ class Node {
 		//model should not know about the viewer
 		osg::MatrixTransform* osg_node;
 };
-
 #endif /* NODE_H_ */

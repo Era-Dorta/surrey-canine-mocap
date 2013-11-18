@@ -49,44 +49,17 @@ BVHFormat::BVHFormat() :
 			MocapData() {
 }
 
-BVHFormat::BVHFormat(MocapHeader *header) :
-			MocapData(header) {
-}
-
-void BVHFormat::EnlargeNodeList() {
-	nodelist.push_back(NULL);
-}
-
-bool BVHFormat::ImportData(const char *filename) {
+bool BVHFormat::import_data(const char *filename) {
 	int read, i, j, where;
 	int pos[8];      // Used to determine the position of the next char to write
 	char line[8][40]; // Used to store the attribute and the corresponding value
 	char buffer[4097];
 	int section = 0;     // Indicates which section is currently being processed
 	Node *curnode = 0; // Used to indicate the current node that is being processed
-	int index, channels = 0;
+	int index = 0, channels = 0;
 	bool endsite = false;
 
-	header->callib = 1.0f;
-	header->scalefactor = 1.0f;
-	header->noofsegments = 0;
-	header->noofframes = 0;
-	header->datarate = 0;
-
-	xpos = 1;
-	ypos = 2;
-	zpos = 0;
-
-	header->euler->at(0).set(0, 0, 1);
-	header->euler->at(1).set(1, 0, 0);
-	header->euler->at(2).set(0, 1, 0);
-
-	//This calibration to make every model smaller
-	header->callib = 0.3f;
-	header->inv_callib = 1.0 / header->callib;
-	//We convert all values to radians
-	header->degrees = false;
-	header->scalefactor = 1.0f;
+	reset_state();
 
 	FILE *file = fopen(filename, "rb");
 	if (file) {
@@ -113,38 +86,32 @@ bool BVHFormat::ImportData(const char *filename) {
 					if (!section) {
 						// Process Hierarchy
 						if (strcompEx(line[0], "ROOT")) {
-							if (root) {
+							if (root.get()) {
 								strcpy(error,
 										"BVH file contains more than one skeleton which is currently unsupported");
 								fclose(file);
 								return false;
 							} else {
-								EnlargeNodeList();
-								root = nodelist[header->noofsegments++] =
-										new Node();
+								root = NodePtr(new Node);
+								nodelist.push_back(root.get());
+								header.noofsegments++;
 								root->name = std::string(line[1]);
-								curnode = root;
+								curnode = root.get();
 							}
 						} else if (strcompEx(line[0], "JOINT")) {
 							curnode->increase_no_children();
-							EnlargeNodeList();
-							curnode->children[curnode->noofchildren - 1] =
-									nodelist[header->noofsegments++] =
-											new Node();
-							curnode->children[curnode->noofchildren - 1]->parent =
-									curnode;
-							curnode = curnode->children[curnode->noofchildren
-									- 1];
-
+							curnode = curnode->get_last_child();
+							nodelist.push_back(curnode);
+							header.noofsegments++;
 							curnode->name = std::string(line[1]);
 						} else if (strcompEx(line[0], "OFFSET")) {
 							float x, y, z;
-							x = (float) atof(line[1]) * header->callib;
-							y = (float) atof(line[2]) * header->callib;
-							z = (float) atof(line[3]) * header->callib;
+							x = (float) atof(line[1]) * header.callib;
+							y = (float) atof(line[2]) * header.callib;
+							z = (float) atof(line[3]) * header.callib;
 							if (!endsite) {
 								curnode->setup_offset(x, y, z);
-								if (curnode != root
+								if (curnode != root.get()
 										&& (curnode->parent->length[0] == 0.0f
 												&& curnode->parent->length[1]
 														== 0.0f
@@ -192,64 +159,63 @@ bool BVHFormat::ImportData(const char *filename) {
 					} else if (section == 1) {
 						// Process Motion
 						if (strcompEx(line[0], "FRAMES:")) {
-							header->noofframes = atoi(line[1]);
-							for (int i = 0; i < header->noofsegments; ++i)
-								nodelist[i]->setup_frames(header->noofframes);
-							header->currentframe = 0;
+							header.noofframes = atoi(line[1]);
+							for (int i = 0; i < header.noofsegments; ++i)
+								nodelist[i]->setup_frames(header.noofframes);
+							header.currentframe = 0;
 						} else if (strcompEx(line[0], "FRAME")
 								&& strcompEx(line[1], "TIME:")) {
-							header->frametime = atof(line[2]);
-							header->datarate = (int) (1 / (atof(line[2])));
+							header.frametime = atof(line[2]);
+							header.datarate = (int) (1 / (atof(line[2])));
 							if ((int) (0.49 + (1 / atof(line[2])))
-									> header->datarate)
-								++header->datarate;
+									> header.datarate)
+								++header.datarate;
 						}
-						if (header->datarate && header->noofframes) {
+						if (header.datarate && header.noofframes) {
 							++section;
-							curnode = root;
+							curnode = root.get();
 							index = 0;
 							endsite = false;
 						}
 					} else {
 						//Process DOFs
-						if (header->currentframe < header->noofframes) {
+						if (header.currentframe < header.noofframes) {
 							float v0, v1, v2;
 							v0 = (float) atof(line[0]);
 							v1 = (float) atof(line[1]);
 							v2 = (float) atof(line[2]);
 							if (curnode->DOFs == 231) {
 								if (!endsite) {
-									curnode->froset->at(header->currentframe).set(
-											v0 * header->callib,
-											v1 * header->callib,
-											v2 * header->callib);
+									curnode->froset->at(header.currentframe).set(
+											v0 * header.callib,
+											v1 * header.callib,
+											v2 * header.callib);
 									endsite = true;
 								} else {
-									curnode->freuler->at(header->currentframe).set(
+									curnode->freuler->at(header.currentframe).set(
 											osg::DegreesToRadians(v0),
 											osg::DegreesToRadians(v1),
 											osg::DegreesToRadians(v2));
-									curnode->scale[header->currentframe] = 1.0f;
+									curnode->scale[header.currentframe] = 1.0f;
 									curnode = nodelist[++index];
 									endsite = false;
 								}
 							} else {
-								curnode->froset->at(header->currentframe)[0] =
-										curnode->froset->at(
-												header->currentframe)[1] =
+								curnode->froset->at(header.currentframe)[0] =
+										curnode->froset->at(header.currentframe)[1] =
 												curnode->froset->at(
-														header->currentframe)[2] =
+														header.currentframe)[2] =
 														0.0f;
-								curnode->freuler->at(header->currentframe).set(
+								curnode->freuler->at(header.currentframe).set(
 										osg::DegreesToRadians(v0),
 										osg::DegreesToRadians(v1),
 										osg::DegreesToRadians(v2));
-								curnode->scale[header->currentframe] = 1.0f;
+								curnode->scale[header.currentframe] = 1.0f;
 
-								if (index + 1 < header->noofsegments)
+								if (index + 1 < header.noofsegments)
 									curnode = nodelist[++index];
 								else {
-									++header->currentframe;
+									++header.currentframe;
 									curnode = nodelist[index = 0];
 								}
 							}
@@ -290,6 +256,7 @@ bool BVHFormat::ImportData(const char *filename) {
 			i = 0;
 		}
 		fclose(file);
+		cout << "imported " << endl;
 		return true;
 	} else {
 		strcpy(error, "Cannot Open File");
@@ -297,7 +264,7 @@ bool BVHFormat::ImportData(const char *filename) {
 	}
 }
 
-bool BVHFormat::ExportData(const char* filename) {
+bool BVHFormat::export_data(const char* filename) {
 	std::ofstream out_file;
 	out_file.open(filename);
 
@@ -333,9 +300,9 @@ void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
 
 	if (print_parent) {
 		out_file << tabs_str << "OFFSET "
-				<< parent->offset[0] * header->inv_callib << " "
-				<< parent->offset[1] * header->inv_callib << " "
-				<< parent->offset[2] * header->inv_callib << endl;
+				<< parent->offset[0] * header.inv_callib << " "
+				<< parent->offset[1] * header.inv_callib << " "
+				<< parent->offset[2] * header.inv_callib << endl;
 		out_file << tabs_str << "CHANNELS " << parent->noofchannels;
 		if (parent->noofchannels == 3) {
 			out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -350,12 +317,13 @@ void BVHFormat::ExportDataJoint(std::ofstream& out_file, Node* parent,
 	tabs_str += "\t";
 
 	bool print_data = true;
-	for (int i = 0; i < joint->noofchildren; i++) {
-		ExportDataJoint(out_file, joint, joint->children[i], tabs, print_data);
+	for (unsigned int i = 0; i < joint->noofchildren(); i++) {
+		ExportDataJoint(out_file, joint, joint->children[i].get(), tabs,
+				print_data);
 		print_data = false;
 	}
 
-	if (joint->noofchildren == 0) {
+	if (joint->noofchildren() == 0) {
 		ExportEndSite(out_file, joint, tabs);
 	}
 	tabs_str.erase(tabs_str.length() - 1);
@@ -367,9 +335,9 @@ void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
 	for (int i = 0; i < tabs; i++) {
 		tabs_str += "\t";
 	}
-	out_file << tabs_str << "OFFSET " << joint->offset[0] * header->inv_callib
-			<< " " << joint->offset[1] * header->inv_callib << " "
-			<< joint->offset[2] * header->inv_callib << endl;
+	out_file << tabs_str << "OFFSET " << joint->offset[0] * header.inv_callib
+			<< " " << joint->offset[1] * header.inv_callib << " "
+			<< joint->offset[2] * header.inv_callib << endl;
 	out_file << tabs_str << "CHANNELS " << joint->noofchannels;
 	if (joint->noofchannels == 3) {
 		out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -381,9 +349,9 @@ void BVHFormat::ExportEndSite(std::ofstream& out_file, Node* joint, int tabs) {
 	out_file << tabs_str << "End Site" << endl;
 	out_file << tabs_str << "{" << endl;
 	out_file << tabs_str + "\t" << "OFFSET "
-			<< joint->length[0] * header->inv_callib << " "
-			<< joint->length[1] * header->inv_callib << " "
-			<< joint->length[2] * header->inv_callib << endl;
+			<< joint->length[0] * header.inv_callib << " "
+			<< joint->length[1] * header.inv_callib << " "
+			<< joint->length[2] * header.inv_callib << endl;
 	out_file << tabs_str << "}" << endl;
 }
 
@@ -392,30 +360,31 @@ void BVHFormat::ExportHierarchy(std::ofstream& out_file) {
 	out_file << "ROOT " << root->name << endl;
 	out_file << "{" << endl;
 	bool print_data = true;
-	for (int i = 0; i < root->noofchildren; i++) {
-		ExportDataJoint(out_file, root, root->children[i], 1, print_data);
+	for (unsigned int i = 0; i < root->noofchildren(); i++) {
+		ExportDataJoint(out_file, root.get(), root->children[i].get(), 1,
+				print_data);
 		print_data = false;
 	}
-	if (root->noofchildren == 0) {
-		ExportEndSite(out_file, root, 1);
+	if (root->noofchildren() == 0) {
+		ExportEndSite(out_file, root.get(), 1);
 	}
 	out_file << "}" << endl;
 }
 
 void BVHFormat::ExportMotion(std::ofstream& out_file) {
 	out_file << "MOTION" << endl;
-	out_file << "Frames: " << header->noofframes << endl;
-	out_file << "Frame Time: " << header->frametime << endl;
+	out_file << "Frames: " << header.noofframes << endl;
+	out_file << "Frame Time: " << header.frametime << endl;
 
-	for (int i = 0; i < header->noofframes; i++) {
+	for (int i = 0; i < header.noofframes; i++) {
 		int j;
 		//Root node is the only one with per frame offset and 6 channels
-		out_file << nodelist[0]->froset->at(i)[0] * header->inv_callib << " "
-				<< nodelist[0]->froset->at(i)[1] * header->inv_callib << " "
-				<< nodelist[0]->froset->at(i)[2] * header->inv_callib << " ";
+		out_file << nodelist[0]->froset->at(i)[0] * header.inv_callib << " "
+				<< nodelist[0]->froset->at(i)[1] * header.inv_callib << " "
+				<< nodelist[0]->froset->at(i)[2] * header.inv_callib << " ";
 
 		//All the other nodes is just angles
-		for (j = 0; j < header->noofsegments - 1; j++) {
+		for (j = 0; j < header.noofsegments - 1; j++) {
 			out_file << osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[0])
 					<< " "
 					<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[1])

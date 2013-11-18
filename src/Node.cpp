@@ -5,21 +5,21 @@
  *      Author: m04701
  */
 #include "Node.h"
+
 Node::Node() {
-	noofchildren = 0;
 	parent = NULL;
 	froset = new osg::Vec3Array;
 	freuler = new osg::Vec3Array;
 	DOFs = 0;
 	noofchannels = 0;
 	color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0);
+	osg_node = NULL;
 }
 
 Node::~Node() {
 }
 
 void Node::setup_children(int new_no_children) {
-	noofchildren = new_no_children;
 	children.resize(new_no_children);
 }
 
@@ -42,12 +42,20 @@ void Node::setup_color(float r, float g, float b) {
 }
 
 void Node::increase_no_children() {
-	noofchildren++;
-	children.push_back(NULL);
+	children.push_back(NodePtr(new Node));
+	children.back()->parent = this;
 }
 
 void Node::setup_frames(long frames) {
 	scale.resize(frames);
 	froset->resize(frames);
 	freuler->resize(frames);
+}
+
+unsigned int Node::noofchildren() {
+	return children.size();
+}
+
+Node* Node::get_last_child() {
+	return children.back().get();
 }

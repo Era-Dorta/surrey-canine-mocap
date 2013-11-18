@@ -295,7 +295,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	selectionBox->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
 
 	skel_transform->addChild(selectionBox.get());
-	if (node->noofchildren == 0) {
+	if (node->noofchildren() == 0) {
 		selectionBox = create_sphere(node->color);
 		selectionBox->setMatrix(
 				osg::Matrix::scale(0.02, 0.02, 0.02)
@@ -306,8 +306,8 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
-	for (int i = 0; i < node->noofchildren; i++)
-		create_skeleton(node->children[i], header, skel_transform.get(),
+	for (unsigned int i = 0; i < node->noofchildren(); i++)
+		create_skeleton(node->children[i].get(), header, skel_transform.get(),
 				current_frame);
 
 	node->osg_node = skel_transform.get();
@@ -332,15 +332,15 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 			0))->getDrawable(0))->setColor(node->color);
 
 	skel_transform->addChild(selectionBox.get());
-	if (node->noofchildren == 0) {
+	if (node->noofchildren() == 0) {
 		selectionBox =
 				static_cast<osg::MatrixTransform*>(skel_transform->getChild(2));
 		static_cast<osg::ShapeDrawable*>(static_cast<osg::Geode*>(selectionBox->getChild(
 				0))->getDrawable(0))->setColor(node->color);
 	}
 
-	for (int i = 0; i < node->noofchildren; i++)
-		update_skeleton(node->children[i], header, current_frame);
+	for (unsigned int i = 0; i < node->noofchildren(); i++)
+		update_skeleton(node->children[i].get(), header, current_frame);
 }
 
 osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(

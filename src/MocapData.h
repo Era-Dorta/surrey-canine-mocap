@@ -53,27 +53,23 @@ typedef std::vector<Node*>::iterator NodeIte;
 class MocapData {
 	public:
 		MocapData();
-		MocapData(MocapHeader *header);
 		virtual ~MocapData();
 
-		void SetHeader(MocapHeader *header); // Sets up a pointer to the header structure
-		virtual bool ImportData(const char* filename) = 0; // Starts the import of the BVH file
-		virtual bool ExportData(const char* filename) = 0; // Starts the import of the BVH file
-		Node* GetRootNode();                      // Returns the root node
-		const std::vector<Node*>& getNodelist() const; // Returns an array that holds all the nodes
-		const char* GetError();
+		virtual bool import_data(const char* filename) = 0; // Starts the import of the BVH file
+		virtual bool export_data(const char* filename) = 0; // Starts the import of the BVH file
+		Node* get_root();                      // Returns the root node
+		const std::vector<Node*>& get_node_list() const; // Returns an array that holds all the nodes
+		const char* get_error();
 
 	protected:
-		Node *root;
+		NodePtr root;
 		std::vector<Node*> nodelist;
-		MocapHeader* header;
+		MocapHeader header;
 		int xpos, ypos, zpos;
 
 		char error[255];          // Used to store any errors that occured
 
 		void reset_state();
-		void free_node_memory(struct Node* to_delete);
-		void delete_recursive(struct Node* to_delete);
 };
 
 #endif

@@ -93,7 +93,6 @@ class Skeletonization3D {
 		//in a given frame, after merging the views from all the cameras
 		std::vector<osg::ref_ptr<osg::Vec3Array> > skel3d_merged_array;
 
-
 		//There will not be many cameras, so a copy of the camera vector is not
 		//that painful to do and lest assume the cameras are not going to change
 		//in run time
