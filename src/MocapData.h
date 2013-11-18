@@ -63,6 +63,7 @@ class MocapData {
 
 	protected:
 		NodePtr root;
+		//TODO Instead of Node* use weak pointers
 		std::vector<Node*> nodelist;
 		MocapHeader header;
 		int xpos, ypos, zpos;
