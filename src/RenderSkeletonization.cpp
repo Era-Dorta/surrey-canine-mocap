@@ -148,10 +148,6 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
 		box->setCenter(vertices->at(i));
-		//This line tells OSG that we changed the data in the Geometry,
-		//however it should only be used when the data does not change on
-		//every frame
-		box_shape->dirtyDisplayList();
 	}
 
 	//If the geometry is not created, then create a new one
@@ -161,6 +157,10 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 		box_shape->setShape(
 				new osg::Box(vertices->at(j), 0.005f, 0.005f, 0.005f));
 		box_shape->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //Red
+		//This lines are used to tell OSG that the data in the Geometry is
+		//changing every frame, so it has to update it
+		box_shape->setUseDisplayList(false);
+		box_shape->setUseVertexBufferObjects(true);
 		skel2d_geode->addDrawable(box_shape.get());
 	}
 
