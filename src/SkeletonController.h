@@ -31,9 +31,8 @@ class SkeletonController {
 		virtual ~SkeletonController();
 
 		//Set root node for this class, it should be call after creation
-		void set_data(osg::ref_ptr<osg::Switch> skel_fitting_switch,
-				std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
-				osg::ref_ptr<osg::Switch> skel_vis_switch);
+		void set_data(std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
+				osg::ref_ptr<osg::Group> render_skel_group);
 
 		Fitting_State getState() const;
 		void setState(Fitting_State state);
@@ -50,6 +49,14 @@ class SkeletonController {
 
 		void load_skeleton_from_file(std::string file_name);
 		void save_skeleton_to_file(std::string file_name);
+
+		//Handle mouse events, to set up fitting points
+		bool handle_mouse_events(const osgGA::GUIEventAdapter& ea,
+				osgGA::GUIActionAdapter& aa);
+
+		//Handle mouse events, to set up fitting points
+		bool handle_keyboard_events(const osgGA::GUIEventAdapter& ea,
+				osgGA::GUIActionAdapter& aa);
 
 		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeletonized3D;

@@ -7,6 +7,8 @@ RenderSkeletonization::RenderSkeletonization() :
 	selection_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 	skel_created = false;
 	text_created = false;
+	skel_vis_switch = new osg::Switch;
+	skel_fitting_switch = new osg::Switch;
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
@@ -15,12 +17,11 @@ RenderSkeletonization::~RenderSkeletonization() {
 
 void RenderSkeletonization::set_data(
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
-		osg::ref_ptr<osg::Switch> skel_vis_switch_,
-		osg::ref_ptr<osg::Switch> skel_fitting_switch_) {
+		osg::ref_ptr<osg::Group> render_skel_group) {
 	//Save arguments
 	camera_arr = camera_arr_;
-	skel_vis_switch = skel_vis_switch_;
-	skel_fitting_switch = skel_fitting_switch_;
+	render_skel_group->addChild(skel_vis_switch);
+	render_skel_group->addChild(skel_fitting_switch);
 	skel_fitting_switch->setNewChildDefaultValue(true);
 
 	//In case this is not first call, do a clean up
@@ -463,4 +464,18 @@ void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,
 
 	//   Add the cylinder between the two points to an existing group
 	pAddToThisGroup->addChild(geode);
+}
+
+void RenderSkeletonization::toggle_3d_cloud(int cam_num) {
+	skel_vis_switch->setValue(cam_num, !skel_vis_switch->getValue(cam_num));
+}
+
+void RenderSkeletonization::toggle_3d_cloud() {
+	for (unsigned int i = 0; i < camera_arr.size(); i++) {
+		skel_vis_switch->setValue(i, !skel_vis_switch->getValue(i));
+	}
+}
+
+void RenderSkeletonization::toggle_3d_merged_cloud() {
+	skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
 }

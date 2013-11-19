@@ -20,16 +20,105 @@ SkeletonController::SkeletonController() :
 SkeletonController::~SkeletonController() {
 }
 
-void SkeletonController::set_data(osg::ref_ptr<osg::Switch> skel_fitting_switch,
+void SkeletonController::set_data(
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
-		osg::ref_ptr<osg::Switch> skel_vis_switch) {
-	skel_renderer.set_data(camera_arr, skel_vis_switch, skel_fitting_switch);
+		osg::ref_ptr<osg::Group> render_skel_group) {
+
+	skel_renderer.set_data(camera_arr, render_skel_group);
 	skeletonized3D.set_cameras(camera_arr);
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 
+	//If true, then we handled the event and do not want further interaction
+	if (handle_mouse_events(ea, aa)) {
+		return true;
+	}
+
+	handle_keyboard_events(ea, aa);
+
+	return false;
+}
+
+void SkeletonController::load_skeleton_from_file(std::string file_name) {
+	skel_renderer.clean_skeleton();
+	skel_renderer.clean_3d_merged_skeleon_cloud();
+
+	skeleton.load_from_file(file_name);
+
+	reset_state();
+
+	update_dynamics(current_frame);
+}
+
+void SkeletonController::save_skeleton_to_file(std::string file_name) {
+	skeleton.save_to_file(file_name);
+}
+
+void SkeletonController::reset_state() {
+	state = MOVE_POINTS;
+	is_point_selected = false;
+	move_on_z = false;
+	translate_root = false;
+	change_all_frames = false;
+	transforming_skeleton = false;
+}
+
+void SkeletonController::update_dynamics(int disp_frame_no) {
+	//TODO This recreates the scene over and over, should just be some updating
+	//not creating everything from scratch
+	//Skeleton, text and 3dmerged cloud are not recreated every frame anymore
+	current_frame = disp_frame_no;
+	skeleton.set_current_frame(current_frame);
+
+	skel_renderer.clean_3d_skeleon_cloud();
+
+	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
+	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
+			skeletonized3D);
+
+	if (skeleton.isSkelLoaded()) {
+		skel_renderer.display_skeleton(skeleton.get_root(),
+				skeleton.get_header(), current_frame);
+		draw_edit_text();
+	}
+}
+
+Fitting_State SkeletonController::getState() const {
+	return state;
+}
+
+void SkeletonController::setState(Fitting_State state) {
+	this->state = state;
+}
+
+void SkeletonController::draw_edit_text() {
+	if (is_point_selected) {
+		std::string edit_text = "v(finish) b(rot) n(frames) m(inter)\n";
+		edit_text += "Editing ";
+		if (change_all_frames) {
+			edit_text += "all frames ";
+		} else {
+			edit_text += "current frames ";
+		}
+		if (translate_root) {
+			edit_text += "translating ";
+		} else {
+			edit_text += "rotating ";
+		}
+		edit_text += "intersect num ";
+
+		std::stringstream out;
+		out << inter_number;
+		edit_text += out.str();
+
+		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
+	}
+}
+
+bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
+		osgGA::GUIActionAdapter& aa) {
 	//If the user release the left mouse button while pressing control
 	//then use the line intersector to mark a point of the skeleton
 	if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE
@@ -152,10 +241,43 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 			last_mouse_pos_y = ea.getY();
 		}
 	}
+	return false;
+}
 
+bool SkeletonController::handle_keyboard_events(
+		const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa) {
 	switch (ea.getEventType()) {
 	case osgGA::GUIEventAdapter::KEYDOWN:
 		switch (ea.getKey()) {
+		//Toggle skel cam 1 visibility:
+		case osgGA::GUIEventAdapter::KEY_Q:
+			skel_renderer.toggle_3d_cloud(0);
+			update_dynamics(current_frame);
+			break;
+
+			//Toggle skel cam 2 visibility:
+		case osgGA::GUIEventAdapter::KEY_W:
+			skel_renderer.toggle_3d_cloud(1);
+			update_dynamics(current_frame);
+			break;
+
+			//Toggle skel cam 3 visibility:
+		case osgGA::GUIEventAdapter::KEY_E:
+			skel_renderer.toggle_3d_cloud(2);
+			update_dynamics(current_frame);
+			break;
+
+			//Toggle all skel cam visibility:
+		case osgGA::GUIEventAdapter::KEY_R:
+			skel_renderer.toggle_3d_cloud();
+			update_dynamics(current_frame);
+			break;
+
+			//Toggle merged skeleton visibility:
+		case osgGA::GUIEventAdapter::KEY_T:
+			skel_renderer.toggle_3d_merged_cloud();
+			update_dynamics(current_frame);
+			break;
 		case osgGA::GUIEventAdapter::KEY_V:
 			if (is_point_selected) {
 				is_point_selected = false;
@@ -213,80 +335,4 @@ bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
 		break;
 	}
 	return false;
-}
-
-void SkeletonController::load_skeleton_from_file(std::string file_name) {
-	skel_renderer.clean_skeleton();
-	skel_renderer.clean_3d_merged_skeleon_cloud();
-
-	skeleton.load_from_file(file_name);
-
-	reset_state();
-
-	update_dynamics(current_frame);
-}
-
-void SkeletonController::save_skeleton_to_file(std::string file_name) {
-	skeleton.save_to_file(file_name);
-}
-
-void SkeletonController::reset_state() {
-	state = MOVE_POINTS;
-	is_point_selected = false;
-	move_on_z = false;
-	translate_root = false;
-	change_all_frames = false;
-	transforming_skeleton = false;
-}
-
-void SkeletonController::update_dynamics(int disp_frame_no) {
-	//TODO This recreates the scene over and over, should just be some updating
-	//not creating everything from scratch
-	//Skeleton, text and 3dmerged cloud are not recreated every frame anymore
-	current_frame = disp_frame_no;
-	skeleton.set_current_frame(current_frame);
-
-	skel_renderer.clean_3d_skeleon_cloud();
-
-	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
-	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
-			skeletonized3D);
-
-	if (skeleton.isSkelLoaded()) {
-		skel_renderer.display_skeleton(skeleton.get_root(),
-				skeleton.get_header(), current_frame);
-		draw_edit_text();
-	}
-}
-
-Fitting_State SkeletonController::getState() const {
-	return state;
-}
-
-void SkeletonController::setState(Fitting_State state) {
-	this->state = state;
-}
-
-void SkeletonController::draw_edit_text() {
-	if (is_point_selected) {
-		std::string edit_text = "v(finish) b(rot) n(frames) m(inter)\n";
-		edit_text += "Editing ";
-		if (change_all_frames) {
-			edit_text += "all frames ";
-		} else {
-			edit_text += "current frames ";
-		}
-		if (translate_root) {
-			edit_text += "translating ";
-		} else {
-			edit_text += "rotating ";
-		}
-		edit_text += "intersect num ";
-
-		std::stringstream out;
-		out << inter_number;
-		edit_text += out.str();
-
-		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
-	}
 }

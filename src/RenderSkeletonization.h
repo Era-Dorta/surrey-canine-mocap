@@ -32,8 +32,7 @@ class RenderSkeletonization {
 		virtual ~RenderSkeletonization();
 
 		void set_data(std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
-				osg::ref_ptr<osg::Switch> skel_vis_switch_,
-				osg::ref_ptr<osg::Switch> skel_fitting_switch_);
+				osg::ref_ptr<osg::Group> render_skel_group);
 		//Delete skeleton nodes from previous frame
 		void clean_scene();
 
@@ -67,6 +66,14 @@ class RenderSkeletonization {
 
 		osg::MatrixTransform* obj_belong_skel(
 				osg::MatrixTransform* selected_obj);
+
+		//Toggle cam_num cloud point
+		void toggle_3d_cloud(int cam_num);
+
+		//Toggle all cams cloud points
+		void toggle_3d_cloud();
+
+		void toggle_3d_merged_cloud();
 	protected:
 	private:
 		osg::ref_ptr<osg::MatrixTransform> create_sphere(osg::Vec4 color);

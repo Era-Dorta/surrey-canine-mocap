@@ -21,8 +21,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			scene_root(new osg::Group),
 			rgb_render_interactive_view(new osg::Image),
 			cam_vis_switch(new osg::Switch),
-			skel_vis_switch(new osg::Switch),
-			skel_fitting_switch(new osg::Switch),
+			render_skel_group(new osg::Group),
 			frame_num_text(
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
@@ -56,8 +55,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	//Set currently displayed frame to beginning:
 	disp_frame_no = begin_frame_no;
 
-	//skel_renderer.set_data();
-	skel_controller.set_data(skel_fitting_switch, camera_arr, skel_vis_switch);
+	skel_controller.set_data(camera_arr, render_skel_group);
 }
 
 MultiCamViewer::~MultiCamViewer() {
@@ -133,10 +131,8 @@ void MultiCamViewer::setup_scene(void) {
 	scene_root->addChild(cam_vis_switch);
 	//---------------------------
 
-	//Switch for each view of the skeleton
 
-	scene_root->addChild(skel_vis_switch.get());
-	scene_root->addChild(skel_fitting_switch.get());
+	scene_root->addChild(render_skel_group.get());
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer,
@@ -225,39 +221,6 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
 			update_dynamics();
 			break;
-
-			//Toggle skel cam 1 visibility:
-		case osgGA::GUIEventAdapter::KEY_Q:
-			skel_vis_switch->setValue(0, !skel_vis_switch->getValue(0));
-			update_dynamics();
-			break;
-
-			//Toggle skel cam 2 visibility:
-		case osgGA::GUIEventAdapter::KEY_W:
-			skel_vis_switch->setValue(1, !skel_vis_switch->getValue(1));
-			update_dynamics();
-			break;
-
-			//Toggle skel cam 3 visibility:
-		case osgGA::GUIEventAdapter::KEY_E:
-			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
-			update_dynamics();
-			break;
-
-			//Toggle all skel cam visibility:
-		case osgGA::GUIEventAdapter::KEY_R:
-			skel_vis_switch->setValue(0, !skel_vis_switch->getValue(0));
-			skel_vis_switch->setValue(1, !skel_vis_switch->getValue(1));
-			skel_vis_switch->setValue(2, !skel_vis_switch->getValue(2));
-			update_dynamics();
-			break;
-
-			//Toggle merged skeleton visibility:
-		case osgGA::GUIEventAdapter::KEY_T:
-			skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
-			update_dynamics();
-			break;
-
 			//Write out the entire rendered sequence:
 		case osgGA::GUIEventAdapter::KEY_Y:
 			//DEBUG:
