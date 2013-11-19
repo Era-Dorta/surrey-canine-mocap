@@ -182,7 +182,6 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		last_mouse_pos_y = ea.getY();
 	}
 
-	//TODO Move skel related logic to here from Multicamviewer
 	if (is_point_selected && ea.getEventType() == osgGA::GUIEventAdapter::DRAG
 			&& transforming_skeleton) {
 

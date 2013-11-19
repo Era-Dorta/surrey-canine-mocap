@@ -101,11 +101,6 @@ class RenderSkeletonization {
 		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
 
-		//TODO Since Render Skeleton now is better design, some of the
-		//osg::Switch should not longer be necessary, or at least be created
-		//inside, think about creating methods to abstract them, and just
-		//be like, show_skeleton()
-
 		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;
 
