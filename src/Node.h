@@ -14,12 +14,14 @@
 #include <vector>
 #include <string>
 #include "boost/shared_ptr.hpp"
+#include "boost/weak_ptr.hpp"
 
 typedef unsigned char BYTE;
 
 class Node;
 
 typedef boost::shared_ptr<Node> NodePtr;
+typedef boost::weak_ptr<Node> wNodePtr;
 
 class Node {
 	public:
