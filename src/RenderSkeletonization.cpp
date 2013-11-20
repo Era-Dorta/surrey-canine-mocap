@@ -311,6 +311,13 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 		skel_transform->addChild(sphere.get());
 	}
 
+	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
+	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
+	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7);
+	half_size->setMatrix(half_sz);
+	half_size->addChild(cam_axes);
+	skel_transform->addChild(half_size.get());
+
 	pAddToThisGroup->addChild(skel_transform.get());
 
 	//Continue recursively for the other nodes
@@ -368,20 +375,6 @@ osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
 		}
 	}
 	return NULL;
-}
-
-osgText::Text* RenderSkeletonization::create_text(const osg::Vec3& pos,
-		const std::string& content, float size) {
-	osg::ref_ptr<osgText::Font> g_font = osgText::readFontFile("FreeSans.ttf");
-
-	osg::ref_ptr<osgText::Text> text = new osgText::Text;
-	text->setFont(g_font.get());
-	text->setCharacterSize(size);
-	text->setAxisAlignment(osgText::TextBase::XY_PLANE);
-	text->setPosition(pos);
-	text->setColor(osg::Vec4(1.0, 0.0, 0.0, 1));
-	text->setText(content);
-	return text.release();
 }
 
 osg::Camera* RenderSkeletonization::create_hud_camera(double left, double right,

@@ -191,13 +191,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
 		if (viewer) {
-			osg::Vec3 move_axis;
-			if (move_on_z) {
-				move_axis.set(0.0, 0.0, ea.getY() - last_mouse_pos_y);
-			} else {
-				move_axis.set(ea.getX() - last_mouse_pos_x,
-						last_mouse_pos_y - ea.getY(), 0.0);
-			}
+			osg::Vec3 move_axis = get_mouse_vec(ea.getX(), ea.getY());
 
 			if (!translate_root) {
 				if (!change_all_frames) {
@@ -335,4 +329,25 @@ bool SkeletonController::handle_keyboard_events(
 		break;
 	}
 	return false;
+}
+
+osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
+	osg::Vec3 mouse_vec;
+
+	if (translate_root && !change_all_frames) {
+		if (move_on_z) {
+			mouse_vec.set(0.0, 0.0, y - last_mouse_pos_y);
+		} else {
+			mouse_vec.set(x - last_mouse_pos_x, last_mouse_pos_y - y, 0.0);
+		}
+		return mouse_vec;
+	}
+
+	if (move_on_z) {
+		mouse_vec.set(0.0, last_mouse_pos_y - y, 0.0);
+	} else {
+		mouse_vec.set(y - last_mouse_pos_y, 0.0, x - last_mouse_pos_x);
+	}
+
+	return mouse_vec;
 }

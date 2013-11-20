@@ -44,6 +44,8 @@ class Node {
 
 		Node* get_last_child();
 
+		//TODO Add a precomputed matrix from all the rotations and translations
+		//and update it when there is a change in skelcontroler
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link

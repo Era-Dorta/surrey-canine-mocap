@@ -108,3 +108,26 @@ void Skeleton::reset_state() {
 	BVHFormat::reset_state();
 	skel_loaded = false;
 }
+
+osg::Matrixd Skeleton::get_joint_transformation(int index) {
+	osg::Matrixd result, aux;
+	result.makeIdentity();
+	Node* current;
+	current = nodelist[index];
+
+	while (current != NULL) {
+		aux = osg::Matrix::rotate(current->freuler->at(header.currentframe)[0],
+				header.euler->at(0),
+				current->freuler->at(header.currentframe)[1],
+				header.euler->at(1),
+				current->freuler->at(header.currentframe)[2],
+				header.euler->at(2))
+
+				* osg::Matrix::translate(
+						current->offset
+								+ current->froset->at(header.currentframe));
+		result = aux * result;
+		current = current->parent;
+	}
+	return result;
+}

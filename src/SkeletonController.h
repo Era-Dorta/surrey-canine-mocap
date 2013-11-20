@@ -58,6 +58,8 @@ class SkeletonController {
 		bool handle_keyboard_events(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
 
+		osg::Vec3 get_mouse_vec(int x, int y);
+
 		//Class that creates a skeleton from a given set of frames
 		Skeletonization3D skeletonized3D;
 

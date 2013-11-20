@@ -128,6 +128,20 @@ inline osg::Matrix3 cvmat3x3_2_osgmat(cv::Mat input) {
 	return result;
 }
 
+inline osgText::Text* create_text(const osg::Vec3& pos,
+		const std::string& content, float size) {
+	osg::ref_ptr<osgText::Font> g_font = osgText::readFontFile("FreeSans.ttf");
+
+	osg::ref_ptr<osgText::Text> text = new osgText::Text;
+	text->setFont(g_font.get());
+	text->setCharacterSize(size);
+	text->setAxisAlignment(osgText::TextBase::XY_PLANE);
+	text->setPosition(pos);
+	text->setColor(osg::Vec4(1.0, 0.0, 0.0, 1));
+	text->setText(content);
+	return text.release();
+}
+
 inline osg::Geode* create_axes(void) {
 	osg::ref_ptr<osg::ShapeDrawable> a_x = new osg::ShapeDrawable;
 	a_x->setShape(new osg::Box(osg::Vec3(0.05, 0, 0), 0.1, 0.005, 0.005));

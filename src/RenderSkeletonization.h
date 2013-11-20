@@ -5,6 +5,7 @@
 #include "RGBDCamera.h"
 #include "Node.h"
 #include "MocapHeader.h"
+#include "MiscUtils.h"
 
 #include <vector>
 
@@ -77,9 +78,6 @@ class RenderSkeletonization {
 	protected:
 	private:
 		osg::ref_ptr<osg::MatrixTransform> create_sphere(osg::Vec4 color);
-
-		osgText::Text* create_text(const osg::Vec3& pos,
-				const std::string& content, float size);
 
 		osg::Camera* create_hud_camera(double left, double right, double bottom,
 				double top);
