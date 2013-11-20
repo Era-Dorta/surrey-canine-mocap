@@ -45,6 +45,11 @@
 #include <math.h>
 #include "BVHFormat.h"
 
+inline std::ostream& operator<<(std::ostream &out, const osg::Vec3 &vector) {
+	out << vector.x() << " " << vector.y() << " " << vector.z();
+	return out;
+}
+
 BVHFormat::BVHFormat() :
 			MocapData() {
 }
@@ -180,36 +185,27 @@ bool BVHFormat::import_data(const char *filename) {
 					} else {
 						//Process DOFs
 						if (header.currentframe < header.noofframes) {
-							float v0, v1, v2;
-							v0 = (float) atof(line[0]);
-							v1 = (float) atof(line[1]);
-							v2 = (float) atof(line[2]);
+							osg::Vec3 v;
+							//float v0, v1, v2;
+							v.set((float) atof(line[0]), (float) atof(line[1]),
+									(float) atof(line[2]));
 							if (curnode->DOFs == 231) {
 								if (!endsite) {
 									curnode->froset->at(header.currentframe).set(
-											v0 * header.callib,
-											v1 * header.callib,
-											v2 * header.callib);
+											v * header.callib);
 									endsite = true;
 								} else {
 									curnode->freuler->at(header.currentframe).set(
-											osg::DegreesToRadians(v0),
-											osg::DegreesToRadians(v1),
-											osg::DegreesToRadians(v2));
+											degrees_to_radians(v));
 									curnode->scale[header.currentframe] = 1.0f;
 									curnode = nodelist[++index];
 									endsite = false;
 								}
 							} else {
-								curnode->froset->at(header.currentframe)[0] =
-										curnode->froset->at(header.currentframe)[1] =
-												curnode->froset->at(
-														header.currentframe)[2] =
-														0.0f;
+								curnode->froset->at(header.currentframe).set(
+										0.0f, 0.0f, 0.0f);
 								curnode->freuler->at(header.currentframe).set(
-										osg::DegreesToRadians(v0),
-										osg::DegreesToRadians(v1),
-										osg::DegreesToRadians(v2));
+										degrees_to_radians(v));
 								curnode->scale[header.currentframe] = 1.0f;
 
 								if (index + 1 < header.noofsegments)
@@ -292,10 +288,8 @@ bool BVHFormat::export_data(const char* filename) {
 void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 		Node* joint, std::string& tabs_str, bool print_parent) {
 	if (print_parent) {
-		out_file << tabs_str << "OFFSET "
-				<< parent->offset[0] * header.inv_callib << " "
-				<< parent->offset[1] * header.inv_callib << " "
-				<< parent->offset[2] * header.inv_callib << endl;
+		out_file << tabs_str << "OFFSET " << parent->offset * header.inv_callib
+				<< endl;
 		out_file << tabs_str << "CHANNELS " << parent->noofchannels;
 		if (parent->noofchannels == 3) {
 			out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -326,9 +320,8 @@ void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 		std::string& tabs_str) {
 
-	out_file << tabs_str << "OFFSET " << joint->offset[0] * header.inv_callib
-			<< " " << joint->offset[1] * header.inv_callib << " "
-			<< joint->offset[2] * header.inv_callib << endl;
+	out_file << tabs_str << "OFFSET " << joint->offset * header.inv_callib
+			<< endl;
 	out_file << tabs_str << "CHANNELS " << joint->noofchannels;
 	if (joint->noofchannels == 3) {
 		out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -340,9 +333,7 @@ void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 	out_file << tabs_str << "End Site" << endl;
 	out_file << tabs_str << "{" << endl;
 	out_file << tabs_str + "\t" << "OFFSET "
-			<< joint->length[0] * header.inv_callib << " "
-			<< joint->length[1] * header.inv_callib << " "
-			<< joint->length[2] * header.inv_callib << endl;
+			<< joint->length * header.inv_callib << endl;
 	out_file << tabs_str << "}" << endl;
 }
 
@@ -371,23 +362,29 @@ void BVHFormat::export_motion(std::ofstream& out_file) {
 	for (int i = 0; i < header.noofframes; i++) {
 		int j;
 		//Root node is the only one with per frame offset and 6 channels
-		out_file << nodelist[0]->froset->at(i)[0] * header.inv_callib << " "
-				<< nodelist[0]->froset->at(i)[1] * header.inv_callib << " "
-				<< nodelist[0]->froset->at(i)[2] * header.inv_callib << " ";
+		out_file << nodelist[0]->froset->at(i) * header.inv_callib << " ";
 
 		//All the other nodes is just angles
 		for (j = 0; j < header.noofsegments - 1; j++) {
-			out_file << osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[0])
-					<< " "
-					<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[1])
-					<< " "
-					<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[2])
-					<< " ";
+			out_file << radians_to_degrees(nodelist[j]->freuler->at(i)) << " ";
 		}
 		//Last line substitute space for with line feed
-		out_file << osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[0]) << " "
-				<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[1]) << " "
-				<< osg::RadiansToDegrees(nodelist[j]->freuler->at(i)[2])
-				<< endl;
+		out_file << radians_to_degrees(nodelist[j]->freuler->at(i)) << endl;
 	}
+}
+
+osg::Vec3 BVHFormat::radians_to_degrees(osg::Vec3& v) {
+	osg::Vec3 res;
+	res[0] = osg::RadiansToDegrees(v[0]);
+	res[1] = osg::RadiansToDegrees(v[1]);
+	res[2] = osg::RadiansToDegrees(v[2]);
+	return res;
+}
+
+osg::Vec3 BVHFormat::degrees_to_radians(osg::Vec3& v) {
+	osg::Vec3 res;
+	res[0] = osg::DegreesToRadians(v[0]);
+	res[1] = osg::DegreesToRadians(v[1]);
+	res[2] = osg::DegreesToRadians(v[2]);
+	return res;
 }

@@ -70,6 +70,10 @@ class BVHFormat: public MocapData {
 
 		//Method that writes the motion part to a BVH file
 		void export_motion(std::ofstream& out_file);
+
+		//Auxiliary methods to transforms angle vectors to radians or degrees
+		osg::Vec3 radians_to_degrees(osg::Vec3& v);
+		osg::Vec3 degrees_to_radians(osg::Vec3& v);
 };
 
 #endif
