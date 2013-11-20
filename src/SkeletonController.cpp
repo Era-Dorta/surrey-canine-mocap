@@ -62,7 +62,6 @@ void SkeletonController::reset_state() {
 	translate_root = false;
 	change_all_frames = false;
 	transforming_skeleton = false;
-	inter_number = 0;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -74,8 +73,8 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 
 	skel_renderer.clean_3d_skeleon_cloud();
 
-	skel_renderer.display_3d_skeleon_cloud(disp_frame_no, skeletonized3D);
-	skel_renderer.display_3d_merged_skeleon_cloud(disp_frame_no,
+	skel_renderer.display_3d_skeleon_cloud(current_frame, skeletonized3D);
+	skel_renderer.display_3d_merged_skeleon_cloud(current_frame,
 			skeletonized3D);
 
 	if (skeleton.isSkelLoaded()) {
@@ -312,8 +311,9 @@ bool SkeletonController::handle_keyboard_events(
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
-					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling2.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+					//"/home/cvssp/misc/m04701/workspace/data/bvh/vogue.bvh");
 			break;
 
 			//Save skeleton to file:

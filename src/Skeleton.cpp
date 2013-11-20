@@ -36,6 +36,7 @@ void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 
 void Skeleton::translate_joint(unsigned int index, osg::Vec3& translation) {
 	translation *= translate_scale_factor;
+	//osg::Matrix = get_joint_transformation(index);
 	nodelist[index]->froset->at(header.currentframe) += translation;
 }
 
