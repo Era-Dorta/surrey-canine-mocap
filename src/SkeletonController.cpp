@@ -200,13 +200,13 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				if (!change_all_frames) {
 					skeleton.rotate_joint(selected_point_index, move_axis);
 				} else {
-					skeleton.rotate_every_frame(move_axis);
+					skeleton.rotate_root_every_frame(move_axis);
 				}
 			} else {
 				if (!change_all_frames) {
-					skeleton.translate_root(move_axis);
+					skeleton.translate_joint(selected_point_index, move_axis);
 				} else {
-					skeleton.translate_every_frame(move_axis);
+					skeleton.translate_every_frame(selected_point_index, move_axis);
 				}
 			}
 

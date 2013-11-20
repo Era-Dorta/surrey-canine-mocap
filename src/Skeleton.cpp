@@ -21,7 +21,7 @@ void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 	nodelist[index]->freuler->at(header.currentframe) += angle;
 }
 
-void Skeleton::rotate_every_frame(osg::Vec3& angle) {
+void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
 	osg::Vec3Array::iterator i;
 	for (i = root->freuler->begin(); i != root->freuler->end(); ++i) {
@@ -29,14 +29,24 @@ void Skeleton::rotate_every_frame(osg::Vec3& angle) {
 	}
 }
 
-void Skeleton::translate_root(osg::Vec3& translation) {
+void Skeleton::translate_joint(unsigned int index, osg::Vec3& translation) {
 	translation *= translate_scale_factor;
-	root->froset->at(header.currentframe) += translation;
+	nodelist[index]->froset->at(header.currentframe) += translation;
 }
 
-void Skeleton::translate_every_frame(osg::Vec3& translation) {
+void Skeleton::translate_every_frame(unsigned int index,
+		osg::Vec3& translation) {
 	translation *= translate_scale_factor;
-	root->offset += translation;
+	nodelist[index]->parent->length += translation;
+	//Node is not root
+	if (nodelist[index]->parent) {
+		Node* parent = nodelist[index]->parent;
+		for (unsigned int i = 0; i < parent->noofchildren(); i++) {
+			parent->children[i]->offset += translation;
+		}
+	} else {
+		nodelist[index]->offset += translation;
+	}
 }
 
 void Skeleton::save_to_file(std::string file_name) {
