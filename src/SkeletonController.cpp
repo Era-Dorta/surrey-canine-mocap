@@ -12,7 +12,7 @@ SkeletonController::SkeletonController() :
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
 			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
 			change_all_frames(false), transforming_skeleton(false),
-			inter_number(0) {
+			delete_skel(false), inter_number(0) {
 	unselected_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
 	selected_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
@@ -79,6 +79,10 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 			skeletonized3D);
 
 	if (skeleton.isSkelLoaded()) {
+		if (delete_skel) {
+			skel_renderer.clean_skeleton();
+			delete_skel = false;
+		}
 		skel_renderer.display_skeleton(skeleton.get_root(),
 				skeleton.get_header(), current_frame);
 		draw_edit_text();
@@ -206,7 +210,12 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				if (!change_all_frames) {
 					skeleton.translate_joint(selected_point_index, move_axis);
 				} else {
-					skeleton.translate_every_frame(selected_point_index, move_axis);
+					skeleton.translate_every_frame(selected_point_index,
+							move_axis);
+					//When changing bone length is easier to recreate the skeleton
+					//than to update it, also makes update more efficient since it
+					//only has to take care of rotations
+					delete_skel = true;
 				}
 			}
 
