@@ -12,7 +12,8 @@ Node::Node() {
 	freuler = new osg::Vec3Array;
 	DOFs = 0;
 	noofchannels = 0;
-	color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0);
+	joint_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0);
+	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0);
 	osg_node = NULL;
 }
 
@@ -36,9 +37,9 @@ void Node::setup_euler(float r1, float r2, float r3) {
 }
 
 void Node::setup_color(float r, float g, float b) {
-	color[0] = r;
-	color[1] = g;
-	color[2] = b;
+	joint_color[0] = r;
+	joint_color[1] = g;
+	joint_color[2] = b;
 }
 
 void Node::increase_no_children() {

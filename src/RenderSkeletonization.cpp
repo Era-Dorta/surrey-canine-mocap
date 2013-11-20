@@ -1,10 +1,8 @@
 #include "RenderSkeletonization.h"
+#include "DebugUtil.h"
 
 RenderSkeletonization::RenderSkeletonization() :
 			display_merged(true) {
-	joint_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
-	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
-	selection_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 	skel_created = false;
 	text_created = false;
 	skel_vis_switch = new osg::Switch;
@@ -271,7 +269,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 		osg::Group *pAddToThisGroup, int current_frame) {
 
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
-
+	//Set translatation and rotation for this frame
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
 					header.euler->at(0), node->freuler->at(current_frame)[1],
@@ -283,31 +281,39 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(
-			osg::Vec4(node->color[0], node->color[1], node->color[2], 1.0));
+			osg::Vec4(node->joint_color[0], node->joint_color[1],
+					node->joint_color[2], 1.0));
 
+	//Calculate bone final position
 	osg::Vec3 bone_pos = osg::Vec3(node->length[0] * node->scale[current_frame],
 			node->length[1] * node->scale[current_frame],
 			node->length[2] * node->scale[current_frame]);
 
-	create_cylinder(osg::Vec3(), bone_pos, 0.01f, bone_color,
+	//Create cylinder from 0,0,0 to bone final position
+	create_cylinder(osg::Vec3(), bone_pos, 0.01f, node->bone_color,
 			static_cast<osg::Group*>(skel_transform.get()));
 
-	osg::ref_ptr<osg::MatrixTransform> selectionBox = create_sphere(
-			node->color);
-	selectionBox->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
+	//Create sphere at the beggining of the bone
+	osg::ref_ptr<osg::MatrixTransform> sphere = create_sphere(
+			node->joint_color);
+	sphere->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
 
-	skel_transform->addChild(selectionBox.get());
+	skel_transform->addChild(sphere.get());
+
+	//If the node does not have another one attached to it, then also draw a
+	//sphere at the end
 	if (node->noofchildren() == 0) {
-		selectionBox = create_sphere(node->color);
-		selectionBox->setMatrix(
+		sphere = create_sphere(node->joint_color);
+		sphere->setMatrix(
 				osg::Matrix::scale(0.02, 0.02, 0.02)
 						* osg::Matrix::translate(bone_pos));
 
-		skel_transform->addChild(selectionBox.get());
+		skel_transform->addChild(sphere.get());
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
+	//Continue recursively for the other nodes
 	for (unsigned int i = 0; i < node->noofchildren(); i++)
 		create_skeleton(node->children[i].get(), header, skel_transform.get(),
 				current_frame);
@@ -318,7 +324,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 		int current_frame) {
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
-
+	//Update the position of the bone for this frame
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
 					header.euler->at(0), node->freuler->at(current_frame)[1],
@@ -328,19 +334,7 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));
 
-	osg::ref_ptr<osg::MatrixTransform> selectionBox =
-			static_cast<osg::MatrixTransform*>(skel_transform->getChild(1));
-	static_cast<osg::ShapeDrawable*>(static_cast<osg::Geode*>(selectionBox->getChild(
-			0))->getDrawable(0))->setColor(node->color);
-
-	skel_transform->addChild(selectionBox.get());
-	if (node->noofchildren() == 0) {
-		selectionBox =
-				static_cast<osg::MatrixTransform*>(skel_transform->getChild(2));
-		static_cast<osg::ShapeDrawable*>(static_cast<osg::Geode*>(selectionBox->getChild(
-				0))->getDrawable(0))->setColor(node->color);
-	}
-
+	//Continue for all the other nodes in the list
 	for (unsigned int i = 0; i < node->noofchildren(); i++)
 		update_skeleton(node->children[i].get(), header, current_frame);
 }

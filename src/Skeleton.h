@@ -29,7 +29,7 @@ class Skeleton: public BVHFormat {
 		void rotate_root_every_frame(osg::Vec3& angle);
 		void translate_joint(unsigned int index, osg::Vec3& translation);
 		void translate_every_frame(unsigned int index, osg::Vec3& translation);
-		void change_color(int index, osg::Vec4 color);
+		void toggle_color(int index);
 
 		unsigned int get_num_bones();
 		void save_to_file(std::string file_name);
@@ -44,6 +44,10 @@ class Skeleton: public BVHFormat {
 		bool skel_loaded;
 		float rotate_scale_factor;
 		float translate_scale_factor;
+		osg::Vec4 joint_color;
+		osg::Vec4 joint_second_color;
+		osg::Vec4 bone_color;
+		osg::Vec4 bone_second_color;
 };
 
 #endif /* SKELETON_H_ */

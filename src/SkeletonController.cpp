@@ -13,8 +13,6 @@ SkeletonController::SkeletonController() :
 			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
 			change_all_frames(false), transforming_skeleton(false),
 			delete_skel(false), inter_number(0) {
-	unselected_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
-	selected_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
 }
 
 SkeletonController::~SkeletonController() {
@@ -59,10 +57,12 @@ void SkeletonController::save_skeleton_to_file(std::string file_name) {
 void SkeletonController::reset_state() {
 	state = MOVE_POINTS;
 	is_point_selected = false;
+	selected_point_index = 0;
 	move_on_z = false;
 	translate_root = false;
 	change_all_frames = false;
 	transforming_skeleton = false;
+	inter_number = 0;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -81,7 +81,6 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	if (skeleton.isSkelLoaded()) {
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
-			delete_skel = false;
 		}
 		skel_renderer.display_skeleton(skeleton.get_root(),
 				skeleton.get_header(), current_frame);
@@ -167,8 +166,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 												0));
 								selected_point_index = skeleton.get_node_index(
 										selected_point);
-								skeleton.change_color(selected_point_index,
-										selected_color);
+								skeleton.toggle_color(selected_point_index);
+								delete_skel = true;
 								update_dynamics(current_frame);
 							}
 						}
@@ -212,10 +211,6 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				} else {
 					skeleton.translate_every_frame(selected_point_index,
 							move_axis);
-					//When changing bone length is easier to recreate the skeleton
-					//than to update it, also makes update more efficient since it
-					//only has to take care of rotations
-					delete_skel = true;
 				}
 			}
 
@@ -288,14 +283,11 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_V:
 			if (is_point_selected) {
-				is_point_selected = false;
-				move_on_z = false;
-				translate_root = false;
-				change_all_frames = false;
-				transforming_skeleton = false;
-				skeleton.change_color(selected_point_index, unselected_color);
+				skeleton.toggle_color(selected_point_index);
+				reset_state();
 				skel_renderer.clean_text();
 				update_dynamics(current_frame);
+				delete_skel = false;
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:

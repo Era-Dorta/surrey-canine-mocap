@@ -122,10 +122,6 @@ class RenderSkeletonization {
 		bool display_merged;
 		bool skel_created;
 		bool text_created;
-
-		osg::Vec4 joint_color;
-		osg::Vec4 bone_color;
-		osg::Vec4 selection_color;
 };
 
 #endif // RENDERSKELETONIZATION_H

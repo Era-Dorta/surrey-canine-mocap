@@ -6,11 +6,16 @@
  */
 
 #include "Skeleton.h"
-
+#include "DebugUtil.h"
 Skeleton::Skeleton() :
 			skel_loaded(false) {
 	rotate_scale_factor = 0.02;
 	translate_scale_factor = 0.002;
+	//TODO This colors are defined here and in Node, should only be in one place
+	joint_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0); //Grey
+	joint_second_color = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0); //White
+	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0); //Blue
+	bone_second_color = osg::Vec4(1.0f, 0.0f, 0.0f, 1.0); //Red
 }
 
 Skeleton::~Skeleton() {
@@ -76,8 +81,14 @@ MocapHeader& Skeleton::get_header() {
 	return header;
 }
 
-void Skeleton::change_color(int index, osg::Vec4 color) {
-	nodelist[index]->color = color;
+void Skeleton::toggle_color(int index) {
+	if (nodelist[index]->joint_color != joint_color) {
+		nodelist[index]->joint_color = joint_color;
+		nodelist[index]->bone_color = bone_color;
+	} else {
+		nodelist[index]->joint_color = joint_second_color;
+		nodelist[index]->bone_color = bone_second_color;
+	}
 }
 
 int Skeleton::get_node_index(osg::MatrixTransform* node_transform) {

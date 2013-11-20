@@ -17,4 +17,10 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Vec3 &vector) {
 	return out;
 }
 
+inline std::ostream& operator<<(std::ostream &out, const osg::Vec4 &vector) {
+	out << "[" << vector.x() << ", " << vector.y() << ", " << vector.z() << ", "
+			<< vector.w() << "]";
+	return out;
+}
+
 #endif /* DEBUGUTIL_HPP_ */

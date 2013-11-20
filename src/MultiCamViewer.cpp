@@ -131,7 +131,6 @@ void MultiCamViewer::setup_scene(void) {
 	scene_root->addChild(cam_vis_switch);
 	//---------------------------
 
-
 	scene_root->addChild(render_skel_group.get());
 }
 

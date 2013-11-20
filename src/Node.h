@@ -48,7 +48,8 @@ class Node {
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
 		osg::Vec3f euler;     // Rotation
-		osg::Vec4 color;
+		osg::Vec4 joint_color;
+		osg::Vec4 bone_color;
 		std::vector<NodePtr> children;    // Array of pointers to child nodes
 		//TODO Instead of Node* use weak pointers
 		Node *parent;       // Back pointer to parent node

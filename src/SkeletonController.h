@@ -81,8 +81,6 @@ class SkeletonController {
 		bool change_all_frames;
 		bool transforming_skeleton;
 		bool delete_skel;
-		osg::Vec4 unselected_color;
-		osg::Vec4 selected_color;
 		unsigned int inter_number;
 };
 
