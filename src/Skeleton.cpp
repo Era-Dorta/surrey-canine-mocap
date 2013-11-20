@@ -37,15 +37,9 @@ void Skeleton::translate_joint(unsigned int index, osg::Vec3& translation) {
 void Skeleton::translate_every_frame(unsigned int index,
 		osg::Vec3& translation) {
 	translation *= translate_scale_factor;
-	nodelist[index]->parent->length += translation;
-	//Node is not root
-	if (nodelist[index]->parent) {
-		Node* parent = nodelist[index]->parent;
-		for (unsigned int i = 0; i < parent->noofchildren(); i++) {
-			parent->children[i]->offset += translation;
-		}
-	} else {
-		nodelist[index]->offset += translation;
+	nodelist[index]->length += translation;
+	for (unsigned int i = 0; i < nodelist[index]->noofchildren(); i++) {
+		nodelist[index]->children[i]->offset += translation;
 	}
 }
 
