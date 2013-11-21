@@ -132,7 +132,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 
 	osg::ref_ptr<osg::Geode> skel2d_geode;
 	if (merged_group->getNumChildren()) {
-		skel2d_geode = static_cast<osg::Geode*>(merged_group->getChild(0));
+		skel2d_geode = merged_group->getChild(0)->asGeode();
 	} else {
 		skel2d_geode = new osg::Geode;
 		merged_group->addChild(skel2d_geode.get());
@@ -282,7 +282,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 	//Create cylinder from 0,0,0 to bone final position
 	create_cylinder(osg::Vec3(), node->length, 0.01f, node->bone_color,
-			static_cast<osg::Group*>(skel_transform.get()));
+			skel_transform.get()->asGroup());
 
 	//Create sphere at the beggining of the bone
 	osg::ref_ptr<osg::MatrixTransform> sphere = create_sphere(
@@ -342,31 +342,33 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 		update_skeleton(node->children[i].get(), header, current_frame);
 }
 
-osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
-		osg::MatrixTransform* selected_obj) {
+osg::MatrixTransform* RenderSkeletonization::is_obj_bone(
+		osg::Drawable* selected_obj) {
 	if (skel_fitting_switch->getNumChildren() > 0) {
-		return obj_belong_skel(selected_obj,
-				static_cast<osg::MatrixTransform*>(skel_fitting_switch->getChild(
-						0)));
+		return is_obj_bone(selected_obj,
+				skel_fitting_switch->getChild(0)->asTransform()->asMatrixTransform());
 	} else {
 		return NULL;
 	}
 }
 
-osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
-		osg::MatrixTransform* selected_obj,
-		osg::MatrixTransform* current_node) {
-	if (selected_obj == current_node) {
+osg::MatrixTransform* RenderSkeletonization::is_obj_bone(
+		osg::Drawable* selected_obj, osg::MatrixTransform* current_node) {
+	osg::Drawable* current_bone =
+			current_node->getChild(0)->asGeode()->getDrawable(0);
+
+	if (selected_obj == current_bone
+			&& current_bone->getShape()->getName().compare("bone") == 0) {
 		return current_node;
 	}
 
 	for (unsigned int i = 0; i < current_node->getNumChildren(); i++) {
-		osg::MatrixTransform* aux =
-				dynamic_cast<osg::MatrixTransform*>(current_node->getChild(i));
+		osg::Transform* aux = current_node->getChild(i)->asTransform();
 		if (aux) {
-			aux = obj_belong_skel(selected_obj, aux);
-			if (aux) {
-				return aux;
+			osg::MatrixTransform* res = is_obj_bone(selected_obj,
+					aux->asMatrixTransform());
+			if (res) {
+				return res;
 			}
 		}
 	}
@@ -433,6 +435,7 @@ void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,
 	//   Create a cylinder between the two points with the given radius
 	cylinder = new osg::Cylinder(center, radius, height);
 	cylinder->setRotation(osg::Quat(angle, osg::Vec3(t.x(), t.y(), t.z())));
+	cylinder->setName("bone");
 
 	//   A geode to hold our cylinder
 	geode = new osg::Geode;

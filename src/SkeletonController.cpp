@@ -153,6 +153,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				switch (state) {
 				case MOVE_POINTS: {
 					if (!is_point_selected) {
+						//Advance intersector to select articulations that are
+						//in the same place
 						if (inter_number
 								>= intersector->getIntersections().size()) {
 							inter_number = 0;
@@ -162,24 +164,19 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 						for (unsigned int i = 0; i < inter_number; i++) {
 							result++;
 						}
-						osg::MatrixTransform* selected_obj =
-								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
-										0)->getParent(0));
-						if (selected_obj) {
-							selected_point_color =
-									skel_renderer.obj_belong_skel(selected_obj);
-							if (selected_point_color) {
-								is_point_selected = true;
-								transforming_skeleton = true;
-								osg::ref_ptr<osg::MatrixTransform> selected_point =
-										static_cast<osg::MatrixTransform*>(selected_point_color->getParent(
-												0));
-								selected_point_index = skeleton.get_node_index(
-										selected_point);
-								skeleton.toggle_color(selected_point_index);
-								delete_skel = true;
-								update_dynamics(current_frame);
-							}
+
+						osg::Drawable* selected_obj = result->drawable;
+						selected_point = skel_renderer.is_obj_bone(
+								selected_obj);
+						if (selected_point) {
+							is_point_selected = true;
+							transforming_skeleton = true;
+							cout << "get node index" << endl;
+							selected_point_index = skeleton.get_node_index(
+									selected_point);
+							skeleton.toggle_color(selected_point_index);
+							delete_skel = true;
+							update_dynamics(current_frame);
 						}
 					}
 					break;
@@ -234,20 +231,6 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		last_mouse_pos_y = ea.getY();
 	}
 
-	if (is_point_selected
-			&& ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
-			&& transforming_skeleton) {
-		if (ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
-			move_on_z = true;
-			last_mouse_pos_x = ea.getX();
-			last_mouse_pos_y = ea.getY();
-		}
-		if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE) {
-			move_on_z = false;
-			last_mouse_pos_x = ea.getX();
-			last_mouse_pos_y = ea.getY();
-		}
-	}
 	return false;
 }
 
@@ -364,7 +347,7 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 
 	switch (rotate_axis) {
 	case 0:
-		mouse_vec.set(x - last_mouse_pos_x, 0.0, 0.0);
+		mouse_vec.set(last_mouse_pos_y - y, 0.0, 0.0);
 		break;
 	case 1:
 		mouse_vec.set(0.0, last_mouse_pos_y - y, 0.0);
