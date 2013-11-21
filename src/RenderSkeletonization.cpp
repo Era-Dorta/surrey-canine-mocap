@@ -271,13 +271,9 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 	//Set translatation and rotation for this frame
 	skel_transform->setMatrix(
-	/*osg::Matrix::rotate(node->freuler->at(current_frame)[0],
-	 header.euler->at(0), node->freuler->at(current_frame)[1],
-	 header.euler->at(1), node->freuler->at(current_frame)[2],
-	 header.euler->at(2))*/
-	node->freuler_m.at(current_frame)
-
-	* osg::Matrix::translate(node->offset + node->froset->at(current_frame)));
+			osg::Matrix::rotate(node->quat_arr.at(current_frame))
+					* osg::Matrix::translate(
+							node->offset + node->froset->at(current_frame)));
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(
@@ -342,11 +338,7 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
 	//Update the position of the bone for this frame
 	skel_transform->setMatrix(
-			/*osg::Matrix::rotate(node->freuler->at(current_frame)[0],
-			 header.euler->at(0), node->freuler->at(current_frame)[1],
-			 header.euler->at(1), node->freuler->at(current_frame)[2],
-			 header.euler->at(2))*/
-			node->freuler_m.at(current_frame)
+			osg::Matrix::rotate(node->quat_arr.at(current_frame))
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));
 

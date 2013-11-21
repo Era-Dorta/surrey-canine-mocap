@@ -13,6 +13,7 @@
 #include <cstddef>
 #include <vector>
 #include <string>
+#include <cmath>
 #include "boost/shared_ptr.hpp"
 #include "boost/weak_ptr.hpp"
 
@@ -46,11 +47,13 @@ class Node {
 
 		void calculate_matrices(osg::ref_ptr<osg::Vec3Array> axis);
 
+		void update_euler_angles();
+
 		//TODO Add a precomputed matrix from all the rotations and translations
 		//and update it when there is a change in skelcontroler
 		std::string name;
 		osg::Vec3f length;    // length of segment
-		osg::Vec3f offset; // Transitional offset with respect to the end of the partent link
+		osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
 		osg::Vec3f euler;     // Rotation
 		osg::Vec4 joint_color;
 		osg::Vec4 bone_color;
@@ -68,5 +71,8 @@ class Node {
 		//TODO Better to have a list or some other kind of struture in controller
 		//model should not know about the viewer
 		osg::MatrixTransform* osg_node;
+
+	private:
+		void quat_to_euler(osg::Quat& q, osg::Vec3& euler);
 };
 #endif /* NODE_H_ */

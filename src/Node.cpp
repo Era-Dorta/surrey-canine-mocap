@@ -72,3 +72,17 @@ void Node::calculate_matrices(osg::ref_ptr<osg::Vec3Array> axis) {
 						axis->at(2)));
 	}
 }
+
+void Node::update_euler_angles() {
+	for (unsigned int i = 0; i < freuler->size(); i++) {
+		quat_to_euler(quat_arr.at(i), freuler->at(i));
+	}
+}
+
+void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
+	euler[0] = std::atan2(2.0 * (q.y() * q.z() + q.w() * q.x()),
+			q.w() * q.w() - q.x() * q.x() - q.y() * q.y() + q.z() * q.z());
+	euler[1] = std::asin(-2.0 * (q.x() * q.z() - q.w() * q.y()));
+	euler[2] = std::atan2(2.0 * (q.x() * q.y() + q.w() * q.z()),
+			q.w() * q.w() + q.x() * q.x() - q.y() * q.y() - q.z() * q.z());
+}

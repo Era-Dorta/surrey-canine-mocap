@@ -23,14 +23,10 @@ Skeleton::~Skeleton() {
 
 void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
-	/*cout << "angle before " << angle << endl;
-	 translate_coord_to_global(index, angle);
-	 cout << "angle after " << angle << endl << endl;
-	 nodelist[index]->freuler->at(header.currentframe) += angle;*/
-	osg::Matrix new_rot = osg::Matrix::rotate(angle[0], header.euler->at(0),
+	osg::Quat new_rot(angle[0], header.euler->at(0),
 			angle[1], header.euler->at(1), angle[2], header.euler->at(2));
-	nodelist[index]->freuler_m.at(header.currentframe) =
-			nodelist[index]->freuler_m.at(header.currentframe) * new_rot;
+	nodelist[index]->quat_arr.at(header.currentframe) =
+			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
 }
 
 void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
@@ -59,6 +55,10 @@ void Skeleton::translate_every_frame(unsigned int index,
 }
 
 void Skeleton::save_to_file(std::string file_name) {
+	NodeIte i;
+	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
+		(*i)->update_euler_angles();
+	}
 	export_data(file_name.c_str());
 }
 
