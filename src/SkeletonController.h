@@ -83,7 +83,6 @@ class SkeletonController {
 		bool change_all_frames;
 		bool transforming_skeleton;
 		bool delete_skel;
-		unsigned int inter_number;
 		unsigned int rotate_axis;
 };
 

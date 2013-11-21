@@ -21,6 +21,7 @@
 using std::cout;
 using std::endl;
 
+//TODO Add methods to move root all frames
 class Skeleton: public BVHFormat {
 	public:
 		Skeleton();

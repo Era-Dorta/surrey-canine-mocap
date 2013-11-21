@@ -12,7 +12,7 @@ SkeletonController::SkeletonController() :
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
 			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
 			change_all_frames(false), transforming_skeleton(false),
-			delete_skel(false), inter_number(0), rotate_axis(0) {
+			delete_skel(false), rotate_axis(0) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -97,7 +97,7 @@ void SkeletonController::setState(Fitting_State state) {
 
 void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
-		std::string edit_text = "v(finish) b(rot) n(axis) m(frames) <(inter)\n";
+		std::string edit_text = "v(finish) b(rot) n(axis) m(frames)\n";
 		edit_text += "Editing ";
 		if (change_all_frames) {
 			edit_text += "all frames ";
@@ -120,12 +120,6 @@ void SkeletonController::draw_edit_text() {
 			edit_text += "z ";
 			break;
 		}
-		edit_text += "intersect num ";
-
-		std::stringstream out;
-		out << inter_number;
-		edit_text += out.str();
-
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
 }
@@ -153,17 +147,9 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				switch (state) {
 				case MOVE_POINTS: {
 					if (!is_point_selected) {
-						//Advance intersector to select articulations that are
-						//in the same place
-						if (inter_number
-								>= intersector->getIntersections().size()) {
-							inter_number = 0;
-						}
+
 						intersecIte result =
 								intersector->getIntersections().begin();
-						for (unsigned int i = 0; i < inter_number; i++) {
-							result++;
-						}
 
 						osg::Drawable* selected_obj = result->drawable;
 						selected_point = skel_renderer.is_obj_bone(
@@ -171,7 +157,6 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 						if (selected_point) {
 							is_point_selected = true;
 							transforming_skeleton = true;
-							cout << "get node index" << endl;
 							selected_point_index = skeleton.get_node_index(
 									selected_point);
 							skeleton.toggle_color(selected_point_index);
@@ -299,19 +284,7 @@ bool SkeletonController::handle_keyboard_events(
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_Comma:
-			inter_number++;
-			if (inter_number == 3) {
-				inter_number = 0;
-			}
-			update_dynamics(current_frame);
-			break;
-		case osgGA::GUIEventAdapter::KEY_Period:
-			if (is_point_selected) {
-				osg::Vec3 aux(20.0, 0.0, 0.0);
-				skeleton.rotate_joint(selected_point_index, aux);
-				update_dynamics(current_frame);
-			}
-			update_dynamics(current_frame);
+			//TODO Toggle joint axes visibility
 			break;
 		case osgGA::GUIEventAdapter::KEY_Control_L:
 			if (is_point_selected) {
