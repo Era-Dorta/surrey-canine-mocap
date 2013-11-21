@@ -271,13 +271,13 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 	//Set translatation and rotation for this frame
 	skel_transform->setMatrix(
-			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
-					header.euler->at(0), node->freuler->at(current_frame)[1],
-					header.euler->at(1), node->freuler->at(current_frame)[2],
-					header.euler->at(2))
+	/*osg::Matrix::rotate(node->freuler->at(current_frame)[0],
+	 header.euler->at(0), node->freuler->at(current_frame)[1],
+	 header.euler->at(1), node->freuler->at(current_frame)[2],
+	 header.euler->at(2))*/
+	node->freuler_m.at(current_frame)
 
-					* osg::Matrix::translate(
-							node->offset + node->froset->at(current_frame)));
+	* osg::Matrix::translate(node->offset + node->froset->at(current_frame)));
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(
@@ -300,6 +300,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 	skel_transform->addChild(sphere.get());
 
+	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
 	//If the node does not have another one attached to it, then also draw a
 	//sphere at the end
 	if (node->noofchildren() == 0) {
@@ -309,16 +310,24 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 						* osg::Matrix::translate(bone_pos));
 
 		skel_transform->addChild(sphere.get());
+
+		osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
+		osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
+				* osg::Matrix::translate(bone_pos);
+		half_size->setMatrix(half_sz);
+		half_size->addChild(cam_axes);
+		skel_transform->addChild(half_size.get());
 	}
 
-	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
+	pAddToThisGroup->addChild(skel_transform.get());
+
 	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
-	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7);
+	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
+			* osg::Matrix::translate(
+					node->offset + node->froset->at(current_frame));
 	half_size->setMatrix(half_sz);
 	half_size->addChild(cam_axes);
-	skel_transform->addChild(half_size.get());
-
-	pAddToThisGroup->addChild(skel_transform.get());
+	pAddToThisGroup->addChild(half_size.get());
 
 	//Continue recursively for the other nodes
 	for (unsigned int i = 0; i < node->noofchildren(); i++)
@@ -333,11 +342,11 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
 	//Update the position of the bone for this frame
 	skel_transform->setMatrix(
-			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
-					header.euler->at(0), node->freuler->at(current_frame)[1],
-					header.euler->at(1), node->freuler->at(current_frame)[2],
-					header.euler->at(2))
-
+			/*osg::Matrix::rotate(node->freuler->at(current_frame)[0],
+			 header.euler->at(0), node->freuler->at(current_frame)[1],
+			 header.euler->at(1), node->freuler->at(current_frame)[2],
+			 header.euler->at(2))*/
+			node->freuler_m.at(current_frame)
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));
 

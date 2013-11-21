@@ -23,11 +23,19 @@ Skeleton::~Skeleton() {
 
 void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
-	nodelist[index]->freuler->at(header.currentframe) += angle;
+	/*cout << "angle before " << angle << endl;
+	 translate_coord_to_global(index, angle);
+	 cout << "angle after " << angle << endl << endl;
+	 nodelist[index]->freuler->at(header.currentframe) += angle;*/
+	osg::Matrix new_rot = osg::Matrix::rotate(angle[0], header.euler->at(0),
+			angle[1], header.euler->at(1), angle[2], header.euler->at(2));
+	nodelist[index]->freuler_m.at(header.currentframe) =
+			nodelist[index]->freuler_m.at(header.currentframe) * new_rot;
 }
 
 void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
+	translate_coord_to_global(0, angle);
 	osg::Vec3Array::iterator i;
 	for (i = root->freuler->begin(); i != root->freuler->end(); ++i) {
 		(*i) += angle;
@@ -36,13 +44,14 @@ void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 
 void Skeleton::translate_joint(unsigned int index, osg::Vec3& translation) {
 	translation *= translate_scale_factor;
-	//osg::Matrix = get_joint_transformation(index);
+	translate_coord_to_global(index, translation);
 	nodelist[index]->froset->at(header.currentframe) += translation;
 }
 
 void Skeleton::translate_every_frame(unsigned int index,
 		osg::Vec3& translation) {
 	translation *= translate_scale_factor;
+	translate_coord_to_global(index, translation);
 	nodelist[index]->length += translation;
 	for (unsigned int i = 0; i < nodelist[index]->noofchildren(); i++) {
 		nodelist[index]->children[i]->offset += translation;
@@ -56,6 +65,10 @@ void Skeleton::save_to_file(std::string file_name) {
 void Skeleton::load_from_file(std::string file_name) {
 	reset_state();
 	import_data(file_name.c_str());
+	NodeIte i;
+	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
+		(*i)->calculate_matrices(header.euler);
+	}
 	skel_loaded = true;
 }
 
@@ -131,4 +144,40 @@ osg::Matrixd Skeleton::get_joint_transformation(int index) {
 		current = current->parent;
 	}
 	return result;
+}
+
+void Skeleton::translate_coord_to_global(int index, osg::Vec3& v) {
+	/*const osg::Matrix joint_matrix = get_joint_transformation(index);
+	 cout << "joint_matix is " << joint_matrix << endl;
+	 osg::Matrix joint_matrix_inv;
+	 osg::Matrix joint_matrix_inv2;
+
+
+	 joint_matrix_inv = osg::Matrix::inverse(joint_matrix);
+	 cout << "joint_matix inv is " << joint_matrix_inv << endl;
+	 cout << "joint_matix after" << joint_matrix << endl;*/
+
+	osg::Matrix rot_y, inv_rot_y, rot_z, inv_rot_z;
+
+	rot_y = osg::Matrix::rotate(
+			nodelist[index]->freuler->at(header.currentframe)[1],
+			header.euler->at(1));
+	inv_rot_y = osg::Matrix::inverse(rot_y);
+
+	rot_z = osg::Matrix::rotate(
+			nodelist[index]->freuler->at(header.currentframe)[2],
+			header.euler->at(2));
+	inv_rot_z = osg::Matrix::inverse(rot_z);
+
+	if (v[0] != 0.0) {
+		v = inv_rot_y * inv_rot_z * v;
+		cout << "x rotation" << endl;
+		return;
+	}
+
+	if (v[1] != 0.0) {
+		v = inv_rot_z * v;
+		cout << "y rotation" << endl;
+		return;
+	}
 }

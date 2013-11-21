@@ -44,6 +44,8 @@ class Node {
 
 		Node* get_last_child();
 
+		void calculate_matrices(osg::ref_ptr<osg::Vec3Array> axis);
+
 		//TODO Add a precomputed matrix from all the rotations and translations
 		//and update it when there is a change in skelcontroler
 		std::string name;
@@ -57,6 +59,8 @@ class Node {
 		Node *parent;       // Back pointer to parent node
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame
+		std::vector<osg::Matrix> freuler_m;
+		std::vector<osg::Quat> quat_arr;
 		std::vector<float> scale;       // Array of scalefactors for each frame
 		BYTE DOFs;          // Used to determine what DOFs the segment has
 		int noofchannels;

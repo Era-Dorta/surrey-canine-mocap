@@ -23,4 +23,17 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Vec4 &vector) {
 	return out;
 }
 
+inline std::ostream& operator<<(std::ostream &out, const osg::Matrix &m) {
+	out << endl;
+	for (int i = 0; i < 4; i++) {
+		out << "[";
+		int j;
+		for (j = 0; j < 3; j++) {
+			out << m(i, j) << ",";
+		}
+		out << m(i, j) << "]" << endl;
+	}
+	return out;
+}
+
 #endif /* DEBUGUTIL_HPP_ */

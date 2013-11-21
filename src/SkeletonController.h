@@ -84,6 +84,7 @@ class SkeletonController {
 		bool transforming_skeleton;
 		bool delete_skel;
 		unsigned int inter_number;
+		unsigned int rotate_axis;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

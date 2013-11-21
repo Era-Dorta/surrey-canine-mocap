@@ -77,6 +77,9 @@ class RenderSkeletonization {
 		void toggle_3d_merged_cloud();
 	protected:
 	private:
+		//TODO Create_sphere, cylinder and so on, are the same objects drawn
+		//at different positions, just create it once and added to different
+		//trans matrices
 		osg::ref_ptr<osg::MatrixTransform> create_sphere(osg::Vec4 color);
 
 		osg::Camera* create_hud_camera(double left, double right, double bottom,

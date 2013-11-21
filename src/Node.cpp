@@ -60,3 +60,15 @@ unsigned int Node::noofchildren() {
 Node* Node::get_last_child() {
 	return children.back().get();
 }
+
+void Node::calculate_matrices(osg::ref_ptr<osg::Vec3Array> axis) {
+	osg::Vec3Array::iterator i;
+	for (i = freuler->begin(); i != freuler->end(); ++i) {
+		freuler_m.push_back(
+				osg::Matrix::rotate((*i)[0], axis->at(0), (*i)[1], axis->at(1),
+						(*i)[2], axis->at(2)));
+		quat_arr.push_back(
+				osg::Quat((*i)[0], axis->at(0), (*i)[1], axis->at(1), (*i)[2],
+						axis->at(2)));
+	}
+}
