@@ -31,9 +31,11 @@ void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 
 void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
-	osg::Vec3Array::iterator i;
-	for (i = root->freuler->begin(); i != root->freuler->end(); ++i) {
-		(*i) += angle;
+	osg::Quat new_rot(angle[0], header.euler->at(0),
+			angle[1], header.euler->at(1), angle[2], header.euler->at(2));
+	std::vector<osg::Quat>::iterator i;
+	for (i = root->quat_arr.begin(); i != root->quat_arr.end(); ++i) {
+		(*i) = (*i) * new_rot;
 	}
 }
 
@@ -64,7 +66,7 @@ void Skeleton::load_from_file(std::string file_name) {
 	import_data(file_name.c_str());
 	NodeIte i;
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
-		(*i)->calculate_matrices(header.euler);
+		(*i)->calculate_quats(header.euler);
 	}
 	skel_loaded = true;
 }
@@ -78,11 +80,8 @@ void Skeleton::set_current_frame(int frame_no) {
 
 	//Frame beyond vector
 	if (frame_no >= (long) header.noofframes) {
-		for (int i = header.noofframes; i <= frame_no; i++) {
-			for (NodeIte j = nodelist.begin(); j != nodelist.end(); ++j) {
-				(*j)->freuler->push_back((*j)->freuler->back());
-				(*j)->froset->push_back((*j)->freuler->back());
-			}
+		for (NodeIte j = nodelist.begin(); j != nodelist.end(); ++j) {
+			(*j)->setup_frames(header.currentframe);
 		}
 		header.noofframes = frame_no + 1;
 	}

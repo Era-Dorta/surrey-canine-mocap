@@ -45,12 +45,13 @@ class Node {
 
 		Node* get_last_child();
 
-		void calculate_matrices(osg::ref_ptr<osg::Vec3Array> axis);
+		void calculate_quats(osg::ref_ptr<osg::Vec3Array> axis);
 
 		void update_euler_angles();
 
-		//TODO Add a precomputed matrix from all the rotations and translations
-		//and update it when there is a change in skelcontroler
+		//TODO Right now we use quaternions but it might be a good optimisation
+		//to have all the matrices precomputed once there are not going to be
+		//more changes
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
@@ -62,7 +63,6 @@ class Node {
 		Node *parent;       // Back pointer to parent node
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame
-		std::vector<osg::Matrix> freuler_m;
 		std::vector<osg::Quat> quat_arr;
 		std::vector<float> scale;       // Array of scalefactors for each frame
 		BYTE DOFs;          // Used to determine what DOFs the segment has

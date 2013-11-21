@@ -48,9 +48,19 @@ void Node::increase_no_children() {
 }
 
 void Node::setup_frames(long frames) {
-	scale.resize(frames);
-	froset->resize(frames);
-	freuler->resize(frames);
+	//If the vectors are not empty then resize but fill with the value of the
+	//last element
+	if (scale.size() > 0) {
+		scale.resize(frames, scale.back());
+		froset->resize(frames, froset->back());
+		freuler->resize(frames, freuler->back());
+		quat_arr.resize(frames, quat_arr.back());
+	} else {
+		scale.resize(frames);
+		froset->resize(frames);
+		freuler->resize(frames);
+		quat_arr.resize(frames);
+	}
 }
 
 unsigned int Node::noofchildren() {
@@ -61,15 +71,10 @@ Node* Node::get_last_child() {
 	return children.back().get();
 }
 
-void Node::calculate_matrices(osg::ref_ptr<osg::Vec3Array> axis) {
-	osg::Vec3Array::iterator i;
-	for (i = freuler->begin(); i != freuler->end(); ++i) {
-		freuler_m.push_back(
-				osg::Matrix::rotate((*i)[0], axis->at(0), (*i)[1], axis->at(1),
-						(*i)[2], axis->at(2)));
-		quat_arr.push_back(
-				osg::Quat((*i)[0], axis->at(0), (*i)[1], axis->at(1), (*i)[2],
-						axis->at(2)));
+void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
+	for (unsigned int i = 0; i < freuler->size(); i++) {
+		quat_arr.at(i) = osg::Quat(freuler->at(i)[0], axis->at(0),
+				freuler->at(i)[1], axis->at(1), freuler->at(i)[2], axis->at(2));
 	}
 }
 
@@ -80,6 +85,7 @@ void Node::update_euler_angles() {
 }
 
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
+	//Quat formula to euler from http://glm.g-truc.net
 	euler[0] = std::atan2(2.0 * (q.y() * q.z() + q.w() * q.x()),
 			q.w() * q.w() - q.x() * q.x() - q.y() * q.y() + q.z() * q.z());
 	euler[1] = std::asin(-2.0 * (q.x() * q.z() - q.w() * q.y()));
