@@ -41,9 +41,6 @@ class Skeleton: public BVHFormat {
 		void reset_state();
 
 	private:
-		osg::Matrixd get_joint_transformation(int index);
-		void translate_coord_to_global(int index, osg::Vec3& v);
-
 		bool skel_loaded;
 		float rotate_scale_factor;
 		float translate_scale_factor;
