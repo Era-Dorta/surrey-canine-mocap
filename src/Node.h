@@ -31,17 +31,11 @@ class Node {
 
 		void increase_no_children();
 
-		void setup_children(int new_no_children);
-
 		void setup_offset(float x = 0.0f, float y = 0.0f, float z = 0.0f);
 
-		void setup_euler(float r1 = 0.0f, float r2 = 0.0f, float r3 = 0.0f);
+		void resize_frame_no(long frames);
 
-		void setup_color(float r = 0.5f, float g = 0.5f, float b = 0.5f);
-
-		void setup_frames(long frames);
-
-		unsigned int noofchildren();
+		unsigned int get_num_children();
 
 		Node* get_last_child();
 
@@ -55,7 +49,6 @@ class Node {
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
-		osg::Vec3f euler;     // Rotation
 		osg::Vec4 joint_color;
 		osg::Vec4 bone_color;
 		std::vector<NodePtr> children;    // Array of pointers to child nodes
@@ -64,7 +57,6 @@ class Node {
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame
 		std::vector<osg::Quat> quat_arr;
-		std::vector<float> scale;       // Array of scalefactors for each frame
 		BYTE DOFs;          // Used to determine what DOFs the segment has
 		int noofchannels;
 

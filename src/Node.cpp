@@ -20,26 +20,10 @@ Node::Node() {
 Node::~Node() {
 }
 
-void Node::setup_children(int new_no_children) {
-	children.resize(new_no_children);
-}
-
 void Node::setup_offset(float x, float y, float z) {
 	offset[0] = x;
 	offset[1] = y;
 	offset[2] = z;
-}
-
-void Node::setup_euler(float r1, float r2, float r3) {
-	euler[0] = r1;
-	euler[1] = r2;
-	euler[2] = r3;
-}
-
-void Node::setup_color(float r, float g, float b) {
-	joint_color[0] = r;
-	joint_color[1] = g;
-	joint_color[2] = b;
 }
 
 void Node::increase_no_children() {
@@ -47,23 +31,21 @@ void Node::increase_no_children() {
 	children.back()->parent = this;
 }
 
-void Node::setup_frames(long frames) {
+void Node::resize_frame_no(long frames) {
 	//If the vectors are not empty then resize but fill with the value of the
 	//last element
-	if (scale.size() > 0) {
-		scale.resize(frames, scale.back());
-		froset->resize(frames, froset->back());
+	if (freuler->size() > 0) {
 		freuler->resize(frames, freuler->back());
+		froset->resize(frames, froset->back());
 		quat_arr.resize(frames, quat_arr.back());
 	} else {
-		scale.resize(frames);
-		froset->resize(frames);
 		freuler->resize(frames);
+		froset->resize(frames);
 		quat_arr.resize(frames);
 	}
 }
 
-unsigned int Node::noofchildren() {
+unsigned int Node::get_num_children() {
 	return children.size();
 }
 

@@ -23,16 +23,16 @@ Skeleton::~Skeleton() {
 
 void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
-	osg::Quat new_rot(angle[0], header.euler->at(0),
-			angle[1], header.euler->at(1), angle[2], header.euler->at(2));
+	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
+			header.euler->at(1), angle[2], header.euler->at(2));
 	nodelist[index]->quat_arr.at(header.currentframe) =
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
 }
 
 void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
-	osg::Quat new_rot(angle[0], header.euler->at(0),
-			angle[1], header.euler->at(1), angle[2], header.euler->at(2));
+	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
+			header.euler->at(1), angle[2], header.euler->at(2));
 	std::vector<osg::Quat>::iterator i;
 	for (i = root->quat_arr.begin(); i != root->quat_arr.end(); ++i) {
 		(*i) = (*i) * new_rot;
@@ -48,7 +48,7 @@ void Skeleton::translate_every_frame(unsigned int index,
 		osg::Vec3& translation) {
 	translation *= translate_scale_factor;
 	nodelist[index]->length += translation;
-	for (unsigned int i = 0; i < nodelist[index]->noofchildren(); i++) {
+	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
 		nodelist[index]->children[i]->offset += translation;
 	}
 }
@@ -81,7 +81,7 @@ void Skeleton::set_current_frame(int frame_no) {
 	//Frame beyond vector
 	if (frame_no >= (long) header.noofframes) {
 		for (NodeIte j = nodelist.begin(); j != nodelist.end(); ++j) {
-			(*j)->setup_frames(header.currentframe);
+			(*j)->resize_frame_no(header.currentframe);
 		}
 		header.noofframes = frame_no + 1;
 	}

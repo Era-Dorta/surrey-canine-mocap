@@ -166,7 +166,7 @@ bool BVHFormat::import_data(const char *filename) {
 						if (strcompEx(line[0], "FRAMES:")) {
 							header.noofframes = atoi(line[1]);
 							for (int i = 0; i < header.noofsegments; ++i)
-								nodelist[i]->setup_frames(header.noofframes);
+								nodelist[i]->resize_frame_no(header.noofframes);
 							header.currentframe = 0;
 						} else if (strcompEx(line[0], "FRAME")
 								&& strcompEx(line[1], "TIME:")) {
@@ -197,7 +197,6 @@ bool BVHFormat::import_data(const char *filename) {
 								} else {
 									curnode->freuler->at(header.currentframe).set(
 											degrees_to_radians(v));
-									curnode->scale[header.currentframe] = 1.0f;
 									curnode = nodelist[++index];
 									endsite = false;
 								}
@@ -206,7 +205,6 @@ bool BVHFormat::import_data(const char *filename) {
 										0.0f, 0.0f, 0.0f);
 								curnode->freuler->at(header.currentframe).set(
 										degrees_to_radians(v));
-								curnode->scale[header.currentframe] = 1.0f;
 
 								if (index + 1 < header.noofsegments)
 									curnode = nodelist[++index];
@@ -304,13 +302,13 @@ void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 	tabs_str += "\t";
 
 	bool print_data = true;
-	for (unsigned int i = 0; i < joint->noofchildren(); i++) {
+	for (unsigned int i = 0; i < joint->get_num_children(); i++) {
 		export_data_joint(out_file, joint, joint->children[i].get(), tabs_str,
 				print_data);
 		print_data = false;
 	}
 
-	if (joint->noofchildren() == 0) {
+	if (joint->get_num_children() == 0) {
 		export_end_site(out_file, joint, tabs_str);
 	}
 	tabs_str.erase(tabs_str.length() - 1);
@@ -343,12 +341,12 @@ void BVHFormat::export_hierarchy(std::ofstream& out_file) {
 	out_file << "{" << endl;
 	bool print_data = true;
 	std::string tabs("\t");
-	for (unsigned int i = 0; i < root->noofchildren(); i++) {
+	for (unsigned int i = 0; i < root->get_num_children(); i++) {
 		export_data_joint(out_file, root.get(), root->children[i].get(), tabs,
 				print_data);
 		print_data = false;
 	}
-	if (root->noofchildren() == 0) {
+	if (root->get_num_children() == 0) {
 		export_end_site(out_file, root.get(), tabs);
 	}
 	out_file << "}" << endl;

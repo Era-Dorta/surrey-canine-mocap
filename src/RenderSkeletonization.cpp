@@ -280,13 +280,8 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 			osg::Vec4(node->joint_color[0], node->joint_color[1],
 					node->joint_color[2], 1.0));
 
-	//Calculate bone final position
-	osg::Vec3 bone_pos = osg::Vec3(node->length[0] * node->scale[current_frame],
-			node->length[1] * node->scale[current_frame],
-			node->length[2] * node->scale[current_frame]);
-
 	//Create cylinder from 0,0,0 to bone final position
-	create_cylinder(osg::Vec3(), bone_pos, 0.01f, node->bone_color,
+	create_cylinder(osg::Vec3(), node->length, 0.01f, node->bone_color,
 			static_cast<osg::Group*>(skel_transform.get()));
 
 	//Create sphere at the beggining of the bone
@@ -299,17 +294,17 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
 	//If the node does not have another one attached to it, then also draw a
 	//sphere at the end
-	if (node->noofchildren() == 0) {
+	if (node->get_num_children() == 0) {
 		sphere = create_sphere(node->joint_color);
 		sphere->setMatrix(
 				osg::Matrix::scale(0.02, 0.02, 0.02)
-						* osg::Matrix::translate(bone_pos));
+						* osg::Matrix::translate(node->length));
 
 		skel_transform->addChild(sphere.get());
 
 		osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
 		osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
-				* osg::Matrix::translate(bone_pos);
+				* osg::Matrix::translate(node->length);
 		half_size->setMatrix(half_sz);
 		half_size->addChild(cam_axes);
 		skel_transform->addChild(half_size.get());
@@ -326,7 +321,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	pAddToThisGroup->addChild(half_size.get());
 
 	//Continue recursively for the other nodes
-	for (unsigned int i = 0; i < node->noofchildren(); i++)
+	for (unsigned int i = 0; i < node->get_num_children(); i++)
 		create_skeleton(node->children[i].get(), header, skel_transform.get(),
 				current_frame);
 
@@ -343,7 +338,7 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 							node->offset + node->froset->at(current_frame)));
 
 	//Continue for all the other nodes in the list
-	for (unsigned int i = 0; i < node->noofchildren(); i++)
+	for (unsigned int i = 0; i < node->get_num_children(); i++)
 		update_skeleton(node->children[i].get(), header, current_frame);
 }
 
