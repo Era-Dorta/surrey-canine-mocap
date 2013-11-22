@@ -65,8 +65,7 @@ class RenderSkeletonization {
 
 		void display_text(std::string text, osg::Vec3 pos);
 
-		osg::MatrixTransform* is_obj_bone(
-				osg::Drawable* selected_obj);
+		osg::MatrixTransform* is_obj_bone(osg::Drawable* selected_obj);
 
 		//Toggle cam_num cloud point
 		void toggle_3d_cloud(int cam_num);
@@ -85,8 +84,7 @@ class RenderSkeletonization {
 		osg::Camera* create_hud_camera(double left, double right, double bottom,
 				double top);
 
-		osg::MatrixTransform* is_obj_bone(
-				osg::Drawable* selected_obj,
+		osg::MatrixTransform* is_obj_bone(osg::Drawable* selected_obj,
 				osg::MatrixTransform* current_node);
 
 		void create_skeleton(Node* node, MocapHeader& header,

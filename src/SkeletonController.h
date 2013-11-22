@@ -24,6 +24,10 @@ enum Fitting_State {
 	EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET
 };
 
+enum Axis {
+	X, Y, Z
+};
+
 class SkeletonController {
 	public:
 		SkeletonController();
@@ -79,11 +83,12 @@ class SkeletonController {
 		int last_mouse_pos_x;
 		int last_mouse_pos_y;
 		bool move_on_z;
-		bool translate_root;
+		bool rotate;
 		bool change_all_frames;
+		bool only_root;
 		bool transforming_skeleton;
 		bool delete_skel;
-		unsigned int rotate_axis;
+		Axis rotate_axis;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

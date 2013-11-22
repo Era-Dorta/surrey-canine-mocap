@@ -29,7 +29,7 @@ void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
 }
 
-void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
+void Skeleton::rotate_root_all_frames(osg::Vec3& angle) {
 	angle *= rotate_scale_factor;
 	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
 			header.euler->at(1), angle[2], header.euler->at(2));
@@ -39,13 +39,17 @@ void Skeleton::rotate_root_every_frame(osg::Vec3& angle) {
 	}
 }
 
-void Skeleton::translate_joint(unsigned int index, osg::Vec3& translation) {
+void Skeleton::translate_root_all_frames(osg::Vec3& translation) {
 	translation *= translate_scale_factor;
-	nodelist[index]->froset->at(header.currentframe) += translation;
+	root->offset += translation;
 }
 
-void Skeleton::translate_every_frame(unsigned int index,
-		osg::Vec3& translation) {
+void Skeleton::translate_root(osg::Vec3& translation) {
+	translation *= translate_scale_factor;
+	root->froset->at(header.currentframe) += translation;
+}
+
+void Skeleton::change_bone_length(unsigned int index, osg::Vec3& translation) {
 	translation *= translate_scale_factor;
 	nodelist[index]->length += translation;
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {

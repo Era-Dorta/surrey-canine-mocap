@@ -10,9 +10,9 @@
 SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), is_point_selected(false),
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
-			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
-			change_all_frames(false), transforming_skeleton(false),
-			delete_skel(false), rotate_axis(0) {
+			last_mouse_pos_y(0), move_on_z(false), rotate(true),
+			change_all_frames(false), only_root(false),
+			transforming_skeleton(false), delete_skel(false), rotate_axis(X) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -59,7 +59,7 @@ void SkeletonController::reset_state() {
 	is_point_selected = false;
 	selected_point_index = 0;
 	move_on_z = false;
-	translate_root = false;
+	rotate = true;
 	change_all_frames = false;
 	transforming_skeleton = false;
 }
@@ -97,28 +97,37 @@ void SkeletonController::setState(Fitting_State state) {
 
 void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
-		std::string edit_text = "v(finish) b(rot) n(axis) m(frames)\n";
+		std::string edit_text = "v(finish) b(rot) n(axis) m(frames) ,(root)\n";
 		edit_text += "Editing ";
+		if (rotate) {
+			edit_text += "rotating ";
+		} else {
+			if (change_all_frames && !only_root) {
+				edit_text += "resizing ";
+			} else {
+				edit_text += "translating ";
+			}
+		}
+		switch (rotate_axis) {
+		case X:
+			edit_text += "x ";
+			break;
+		case Y:
+			edit_text += "y ";
+			break;
+		case Z:
+			edit_text += "z ";
+			break;
+		}
 		if (change_all_frames) {
 			edit_text += "all frames ";
 		} else {
 			edit_text += "current frames ";
 		}
-		if (translate_root) {
-			edit_text += "translating ";
+		if (only_root) {
+			edit_text += "root ";
 		} else {
-			edit_text += "rotating ";
-		}
-		switch (rotate_axis) {
-		case 0:
-			edit_text += "x ";
-			break;
-		case 1:
-			edit_text += "y ";
-			break;
-		default:
-			edit_text += "z ";
-			break;
+			edit_text += "bone ";
 		}
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
@@ -185,19 +194,30 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		if (viewer) {
 			osg::Vec3 move_axis = get_mouse_vec(ea.getX(), ea.getY());
 
-			if (!translate_root) {
+			if (rotate) {
 				if (!change_all_frames) {
-					skeleton.rotate_joint(selected_point_index, move_axis);
+					if (!only_root) {
+						skeleton.rotate_joint(selected_point_index, move_axis);
+					}
 				} else {
-					skeleton.rotate_root_every_frame(move_axis);
+					if (only_root) {
+						skeleton.rotate_root_all_frames(move_axis);
+					}
 				}
 			} else {
-				if (!change_all_frames) {
-					skeleton.translate_joint(selected_point_index, move_axis);
+				if (only_root) {
+					if (!change_all_frames) {
+						skeleton.translate_root(move_axis);
+					} else {
+						skeleton.translate_root_all_frames(move_axis);
+					}
 				} else {
-					skeleton.translate_every_frame(selected_point_index,
-							move_axis);
+					if (change_all_frames) {
+						skeleton.change_bone_length(selected_point_index,
+								move_axis);
+					}
 				}
+
 			}
 
 			update_dynamics(current_frame);
@@ -264,15 +284,22 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (is_point_selected) {
-				translate_root = !translate_root;
+				rotate = !rotate;
 				update_dynamics(current_frame);
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_N:
 			if (is_point_selected) {
-				rotate_axis++;
-				if (rotate_axis == 3) {
-					rotate_axis = 0;
+				switch (rotate_axis) {
+				case X:
+					rotate_axis = Y;
+					break;
+				case Y:
+					rotate_axis = Z;
+					break;
+				case Z:
+					rotate_axis = X;
+					break;
 				}
 				update_dynamics(current_frame);
 			}
@@ -284,6 +311,10 @@ bool SkeletonController::handle_keyboard_events(
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_Comma:
+			if (is_point_selected) {
+				only_root = !only_root;
+				update_dynamics(current_frame);
+			}
 			//TODO Toggle joint axes visibility
 			break;
 		case osgGA::GUIEventAdapter::KEY_Control_L:
@@ -319,13 +350,13 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 	osg::Vec3 mouse_vec;
 
 	switch (rotate_axis) {
-	case 0:
+	case X:
 		mouse_vec.set(last_mouse_pos_y - y, 0.0, 0.0);
 		break;
-	case 1:
+	case Y:
 		mouse_vec.set(0.0, last_mouse_pos_y - y, 0.0);
 		break;
-	default:
+	case Z:
 		mouse_vec.set(0.0, 0.0, y - last_mouse_pos_y);
 		break;
 	}

@@ -27,9 +27,10 @@ class Skeleton: public BVHFormat {
 		Skeleton();
 		virtual ~Skeleton();
 		void rotate_joint(unsigned int index, osg::Vec3& angle);
-		void rotate_root_every_frame(osg::Vec3& angle);
-		void translate_joint(unsigned int index, osg::Vec3& translation);
-		void translate_every_frame(unsigned int index, osg::Vec3& translation);
+		void rotate_root_all_frames(osg::Vec3& angle);
+		void translate_root_all_frames(osg::Vec3& translation);
+		void translate_root(osg::Vec3& translation);
+		void change_bone_length(unsigned int index, osg::Vec3& translation);
 		void toggle_color(int index);
 
 		unsigned int get_num_bones();
