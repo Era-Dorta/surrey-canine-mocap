@@ -47,10 +47,6 @@ class Skeleton: public BVHFormat {
 		bool skel_loaded;
 		float rotate_scale_factor;
 		float translate_scale_factor;
-		osg::Vec4 joint_color;
-		osg::Vec4 joint_second_color;
-		osg::Vec4 bone_color;
-		osg::Vec4 bone_second_color;
 };
 
 #endif /* SKELETON_H_ */

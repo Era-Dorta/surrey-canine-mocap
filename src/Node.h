@@ -43,14 +43,14 @@ class Node {
 
 		void update_euler_angles();
 
+		void toggle_color();
+
 		//TODO Right now we use quaternions but it might be a good optimisation
 		//to have all the matrices precomputed once there are not going to be
 		//more changes
 		std::string name;
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
-		osg::Vec4 joint_color;
-		osg::Vec4 bone_color;
 		std::vector<NodePtr> children;    // Array of pointers to child nodes
 		//TODO Instead of Node* use weak pointers
 		Node *parent;       // Back pointer to parent node
@@ -64,7 +64,14 @@ class Node {
 		//model should not know about the viewer
 		osg::MatrixTransform* osg_node;
 
+		osg::Vec4 n_joint_color;
+		osg::Vec4 n_bone_color;
 	private:
+		const static osg::Vec4 joint_color;
+		const static osg::Vec4 joint_second_color;
+		const static osg::Vec4 bone_color;
+		const static osg::Vec4 bone_second_color;
+
 		void quat_to_euler(osg::Quat& q, osg::Vec3& euler);
 };
 #endif /* NODE_H_ */

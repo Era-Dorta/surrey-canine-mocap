@@ -6,15 +6,20 @@
  */
 #include "Node.h"
 
+const osg::Vec4 Node::joint_color(0.5f, 0.5f, 0.5f, 1.0); //Grey
+const osg::Vec4 Node::joint_second_color(1.0f, 1.0f, 1.0f, 1.0); //White
+const osg::Vec4 Node::bone_color(0.0f, 0.0f, 1.0f, 1.0); //Blue
+const osg::Vec4 Node::bone_second_color(1.0f, 0.0f, 0.0f, 1.0); //Red
+
 Node::Node() {
 	parent = NULL;
 	froset = new osg::Vec3Array;
 	freuler = new osg::Vec3Array;
 	DOFs = 0;
 	noofchannels = 0;
-	joint_color = osg::Vec4(0.5f, 0.5f, 0.5f, 1.0);
-	bone_color = osg::Vec4(0.0f, 0.0f, 1.0f, 1.0);
 	osg_node = NULL;
+	n_joint_color = joint_color;
+	n_bone_color = bone_color;
 }
 
 Node::~Node() {
@@ -73,4 +78,14 @@ void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
 	euler[1] = std::asin(-2.0 * (q.x() * q.z() - q.w() * q.y()));
 	euler[2] = std::atan2(2.0 * (q.x() * q.y() + q.w() * q.z()),
 			q.w() * q.w() + q.x() * q.x() - q.y() * q.y() - q.z() * q.z());
+}
+
+void Node::toggle_color() {
+	if (n_joint_color != joint_color) {
+		n_joint_color = joint_color;
+		n_bone_color = bone_color;
+	} else {
+		n_joint_color = joint_second_color;
+		n_bone_color = bone_second_color;
+	}
 }
