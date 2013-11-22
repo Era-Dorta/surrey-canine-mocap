@@ -13,7 +13,7 @@ SkeletonController::SkeletonController() :
 			last_mouse_pos_y(0), move_on_z(false), rotate(true),
 			change_all_frames(false), only_root(false),
 			transforming_skeleton(false), delete_skel(false), rotate_axis(X),
-			show_joint_axis(true) {
+			show_joint_axis(true), manual_mark_up(false) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -339,8 +339,18 @@ bool SkeletonController::handle_keyboard_events(
 
 			//Save skeleton to file:
 		case osgGA::GUIEventAdapter::KEY_K:
-			save_skeleton_to_file(
-					"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+			if (!manual_mark_up) {
+				save_skeleton_to_file(
+						"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+			} else {
+				std::string file_name =
+						"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
+				std::stringstream out;
+				out << current_frame;
+				file_name += out.str();
+				file_name += ".bvh";
+				save_skeleton_to_file(file_name);
+			}
 			break;
 		default:
 			break;
