@@ -215,8 +215,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 					}
 				} else {
 					if (change_all_frames) {
-						skeleton.change_bone_length(selected_point_index,
-								move_axis);
+						skeleton.change_bone_length_all_frames(
+								selected_point_index, move_axis);
 					}
 				}
 

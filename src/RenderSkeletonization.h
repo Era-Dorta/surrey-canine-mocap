@@ -118,6 +118,9 @@ class RenderSkeletonization {
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 
 		osg::ref_ptr<osgText::Text> skel_edit_text;
+
+		osg::ref_ptr<osg::Geode> sphere_geode;
+
 		bool display_merged;
 		bool skel_created;
 		bool text_created;

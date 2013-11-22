@@ -239,18 +239,22 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 
 osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 		osg::Vec4 color) {
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
-	sphere_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
-	sphere_shape->setColor(color);
 
-	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
-			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+	if (!sphere_geode.valid()) {
+		sphere_geode = new osg::Geode;
+		osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+		sphere_shape = new osg::ShapeDrawable(
+				new osg::Sphere(osg::Vec3(), 1.1f));
+		sphere_shape->setColor(color);
 
-	geode->addDrawable(sphere_shape);
+		sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+				osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+		sphere_geode->addDrawable(sphere_shape);
+
+	}
 	osg::ref_ptr<osg::MatrixTransform> sphere_trans = new osg::MatrixTransform;
-
-	sphere_trans->addChild(geode.get());
+	sphere_trans->addChild(sphere_geode.get());
 
 	return sphere_trans;
 }

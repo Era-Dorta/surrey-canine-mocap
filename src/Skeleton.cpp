@@ -39,17 +39,27 @@ void Skeleton::rotate_root_all_frames(osg::Vec3& angle) {
 	}
 }
 
-void Skeleton::translate_root_all_frames(osg::Vec3& translation) {
-	translation *= translate_scale_factor;
-	root->offset += translation;
-}
-
 void Skeleton::translate_root(osg::Vec3& translation) {
 	translation *= translate_scale_factor;
 	root->froset->at(header.currentframe) += translation;
 }
 
+void Skeleton::translate_root_all_frames(osg::Vec3& translation) {
+	translation *= translate_scale_factor;
+	root->offset += translation;
+}
+
 void Skeleton::change_bone_length(unsigned int index, osg::Vec3& translation) {
+	translation *= translate_scale_factor;
+	nodelist[index]->length += translation;
+	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
+		nodelist[index]->children[i]->froset->at(header.currentframe) +=
+				translation;
+	}
+}
+
+void Skeleton::change_bone_length_all_frames(unsigned int index,
+		osg::Vec3& translation) {
 	translation *= translate_scale_factor;
 	nodelist[index]->length += translation;
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
