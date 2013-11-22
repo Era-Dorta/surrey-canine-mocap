@@ -312,8 +312,8 @@ bool SkeletonController::handle_keyboard_events(
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
-			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-					//"/home/cvssp/misc/m04701/workspace/data/bvh/vogue.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/vogue.bvh");
 			break;
 
 			//Save skeleton to file:
