@@ -59,6 +59,12 @@ class BVHFormat: public MocapData {
 		bool export_data(const char* filename); // Starts the export of the BVH file
 
 	private:
+		//Method that writes the hierarchy part to a BVH file
+		void export_hierarchy(std::ofstream& out_file);
+
+		//Method that writes the motion part to a BVH file
+		void export_motion(std::ofstream& out_file);
+
 		//Recursive method that writes a node information to a file BVH file
 		void export_data_joint(std::ofstream& out_file, Node* parent,
 				Node* joint, std::string& tabs_str, bool print_parent);
@@ -66,12 +72,6 @@ class BVHFormat: public MocapData {
 		//Method that writes a node information to a BVH file
 		void export_end_site(std::ofstream& out_file, Node* joint,
 				std::string& tabs_str);
-
-		//Method that writes the hierarchy part to a BVH file
-		void export_hierarchy(std::ofstream& out_file);
-
-		//Method that writes the motion part to a BVH file
-		void export_motion(std::ofstream& out_file);
 
 		//Auxiliary methods to transforms angle vectors to radians or degrees
 		osg::Vec3 radians_to_degrees(osg::Vec3& v);

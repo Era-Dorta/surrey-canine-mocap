@@ -283,6 +283,42 @@ bool BVHFormat::export_data(const char* filename) {
 	}
 }
 
+void BVHFormat::export_hierarchy(std::ofstream& out_file) {
+	out_file << "HIERARCHY" << endl;
+	out_file << "ROOT " << root->name << endl;
+	out_file << "{" << endl;
+	bool print_data = true;
+	std::string tabs("\t");
+	for (unsigned int i = 0; i < root->get_num_children(); i++) {
+		export_data_joint(out_file, root.get(), root->children[i].get(), tabs,
+				print_data);
+		print_data = false;
+	}
+	if (root->get_num_children() == 0) {
+		export_end_site(out_file, root.get(), tabs);
+	}
+	out_file << "}" << endl;
+}
+
+void BVHFormat::export_motion(std::ofstream& out_file) {
+	out_file << "MOTION" << endl;
+	out_file << "Frames: " << header.noofframes << endl;
+	out_file << "Frame Time: " << header.frametime << endl;
+
+	for (int i = 0; i < header.noofframes; i++) {
+		int j;
+		//Root node is the only one with per frame offset and 6 channels
+		out_file << nodelist[0]->froset->at(i) * header.inv_callib << " ";
+
+		//All the other nodes is just angles
+		for (j = 0; j < header.noofsegments - 1; j++) {
+			out_file << radians_to_degrees(nodelist[j]->freuler->at(i)) << " ";
+		}
+		//Last line substitute space for with line feed
+		out_file << radians_to_degrees(nodelist[j]->freuler->at(i)) << endl;
+	}
+}
+
 void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 		Node* joint, std::string& tabs_str, bool print_parent) {
 	if (print_parent) {
@@ -333,42 +369,6 @@ void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 	out_file << tabs_str + "\t" << "OFFSET "
 			<< joint->length * header.inv_callib << endl;
 	out_file << tabs_str << "}" << endl;
-}
-
-void BVHFormat::export_hierarchy(std::ofstream& out_file) {
-	out_file << "HIERARCHY" << endl;
-	out_file << "ROOT " << root->name << endl;
-	out_file << "{" << endl;
-	bool print_data = true;
-	std::string tabs("\t");
-	for (unsigned int i = 0; i < root->get_num_children(); i++) {
-		export_data_joint(out_file, root.get(), root->children[i].get(), tabs,
-				print_data);
-		print_data = false;
-	}
-	if (root->get_num_children() == 0) {
-		export_end_site(out_file, root.get(), tabs);
-	}
-	out_file << "}" << endl;
-}
-
-void BVHFormat::export_motion(std::ofstream& out_file) {
-	out_file << "MOTION" << endl;
-	out_file << "Frames: " << header.noofframes << endl;
-	out_file << "Frame Time: " << header.frametime << endl;
-
-	for (int i = 0; i < header.noofframes; i++) {
-		int j;
-		//Root node is the only one with per frame offset and 6 channels
-		out_file << nodelist[0]->froset->at(i) * header.inv_callib << " ";
-
-		//All the other nodes is just angles
-		for (j = 0; j < header.noofsegments - 1; j++) {
-			out_file << radians_to_degrees(nodelist[j]->freuler->at(i)) << " ";
-		}
-		//Last line substitute space for with line feed
-		out_file << radians_to_degrees(nodelist[j]->freuler->at(i)) << endl;
-	}
 }
 
 osg::Vec3 BVHFormat::radians_to_degrees(osg::Vec3& v) {

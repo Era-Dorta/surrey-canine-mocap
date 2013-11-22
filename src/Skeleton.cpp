@@ -94,10 +94,10 @@ void Skeleton::set_current_frame(int frame_no) {
 
 	//Frame beyond vector
 	if (frame_no >= (long) header.noofframes) {
-		for (NodeIte j = nodelist.begin(); j != nodelist.end(); ++j) {
-			(*j)->resize_frame_no(header.currentframe);
-		}
 		header.noofframes = frame_no + 1;
+		for (NodeIte j = nodelist.begin(); j != nodelist.end(); ++j) {
+			(*j)->resize_frame_no(header.noofframes);
+		}
 	}
 }
 
