@@ -284,47 +284,27 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 			skel_transform.get()->asGroup());
 
 	//Create sphere at the beggining of the bone
-	osg::ref_ptr<osg::MatrixTransform> sphere = create_sphere(
-			node->n_joint_color);
-	sphere->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
+	add_sphere_to_node(skel_transform, node->n_joint_color,
+			osg::Matrix::identity());
 
-	skel_transform->addChild(sphere.get());
-
-	osg::ref_ptr<osg::Geode> cam_axes;
-	if (with_axis) {
-		cam_axes = create_axes();
-	}
 	//If the node does not have another one attached to it, then also draw a
 	//sphere at the end
 	if (node->get_num_children() == 0) {
-		sphere = create_sphere(node->n_joint_color);
-		sphere->setMatrix(
-				osg::Matrix::scale(0.02, 0.02, 0.02)
-						* osg::Matrix::translate(node->length));
-
-		skel_transform->addChild(sphere.get());
+		add_sphere_to_node(skel_transform, node->n_joint_color,
+				osg::Matrix::translate(node->length));
 
 		if (with_axis) {
-			osg::ref_ptr<osg::MatrixTransform> half_size(
-					new osg::MatrixTransform);
-			osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
-					* osg::Matrix::translate(node->length);
-			half_size->setMatrix(half_sz);
-			half_size->addChild(cam_axes);
-			skel_transform->addChild(half_size.get());
+			add_axis_to_node(skel_transform,
+					osg::Matrix::translate(node->length));
 		}
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
 	if (with_axis) {
-		osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
-		osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
-				* osg::Matrix::translate(
-						node->offset + node->froset->at(current_frame));
-		half_size->setMatrix(half_sz);
-		half_size->addChild(cam_axes);
-		pAddToThisGroup->addChild(half_size.get());
+		add_axis_to_node(pAddToThisGroup,
+				osg::Matrix::translate(
+						node->offset + node->froset->at(current_frame)));
 	}
 
 	//Continue recursively for the other nodes
@@ -471,4 +451,24 @@ void RenderSkeletonization::toggle_3d_cloud() {
 
 void RenderSkeletonization::toggle_3d_merged_cloud() {
 	skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
+}
+
+void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
+		const osg::Matrix& trans) {
+	if (!axes.valid()) {
+		axes = create_axes();
+	}
+	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
+	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7) * trans;
+	half_size->setMatrix(half_sz);
+	half_size->addChild(axes);
+	to_add->addChild(half_size.get());
+}
+
+void RenderSkeletonization::add_sphere_to_node(osg::Group* to_add,
+		osg::Vec4 color, const osg::Matrix& trans) {
+	osg::ref_ptr<osg::MatrixTransform> sphere_trans = create_sphere(color);
+	sphere_trans->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02) * trans);
+
+	to_add->addChild(sphere_trans.get());
 }

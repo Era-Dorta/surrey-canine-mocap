@@ -94,6 +94,11 @@ class RenderSkeletonization {
 				float radius, osg::Vec4 CylinderColor,
 				osg::Group *pAddToThisGroup);
 
+		void add_axis_to_node(osg::Group* to_add, const osg::Matrix& trans);
+
+		void add_sphere_to_node(osg::Group* to_add, osg::Vec4 color,
+				const osg::Matrix& trans);
+
 		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
 
@@ -115,6 +120,8 @@ class RenderSkeletonization {
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 
 		osg::ref_ptr<osgText::Text> skel_edit_text;
+
+		osg::ref_ptr<osg::Geode> axes;
 
 		bool display_merged;
 		bool skel_created;
