@@ -256,17 +256,18 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 }
 
 void RenderSkeletonization::display_skeleton(Node* node, MocapHeader& header,
-		int current_frame) {
+		int current_frame, bool with_axis) {
 	if (skel_created) {
 		update_skeleton(node, header, current_frame);
 	} else {
-		create_skeleton(node, header, skel_fitting_switch, current_frame);
+		create_skeleton(node, header, skel_fitting_switch, current_frame,
+				with_axis);
 		skel_created = true;
 	}
 }
 
 void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
-		osg::Group *pAddToThisGroup, int current_frame) {
+		osg::Group *pAddToThisGroup, int current_frame, bool with_axis) {
 
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 	//Set translatation and rotation for this frame
@@ -291,7 +292,10 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 	skel_transform->addChild(sphere.get());
 
-	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
+	osg::ref_ptr<osg::Geode> cam_axes;
+	if (with_axis) {
+		cam_axes = create_axes();
+	}
 	//If the node does not have another one attached to it, then also draw a
 	//sphere at the end
 	if (node->get_num_children() == 0) {
@@ -302,28 +306,33 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 		skel_transform->addChild(sphere.get());
 
-		osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
-		osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
-				* osg::Matrix::translate(node->length);
-		half_size->setMatrix(half_sz);
-		half_size->addChild(cam_axes);
-		skel_transform->addChild(half_size.get());
+		if (with_axis) {
+			osg::ref_ptr<osg::MatrixTransform> half_size(
+					new osg::MatrixTransform);
+			osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
+					* osg::Matrix::translate(node->length);
+			half_size->setMatrix(half_sz);
+			half_size->addChild(cam_axes);
+			skel_transform->addChild(half_size.get());
+		}
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
-	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
-	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
-			* osg::Matrix::translate(
-					node->offset + node->froset->at(current_frame));
-	half_size->setMatrix(half_sz);
-	half_size->addChild(cam_axes);
-	pAddToThisGroup->addChild(half_size.get());
+	if (with_axis) {
+		osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
+		osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7)
+				* osg::Matrix::translate(
+						node->offset + node->froset->at(current_frame));
+		half_size->setMatrix(half_sz);
+		half_size->addChild(cam_axes);
+		pAddToThisGroup->addChild(half_size.get());
+	}
 
 	//Continue recursively for the other nodes
 	for (unsigned int i = 0; i < node->get_num_children(); i++)
 		create_skeleton(node->children[i].get(), header, skel_transform.get(),
-				current_frame);
+				current_frame, with_axis);
 
 	node->osg_node = skel_transform.get();
 }

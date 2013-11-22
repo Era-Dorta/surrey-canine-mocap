@@ -89,6 +89,7 @@ class SkeletonController {
 		bool transforming_skeleton;
 		bool delete_skel;
 		Axis rotate_axis;
+		bool show_joint_axis;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

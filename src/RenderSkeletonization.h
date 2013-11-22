@@ -61,7 +61,7 @@ class RenderSkeletonization {
 		//the Model-View-Controller pattern
 		//TODO Use weakpointer instead of Node*
 		void display_skeleton(Node* node, MocapHeader& header,
-				int current_frame);
+				int current_frame, bool with_axis);
 
 		void display_text(std::string text, osg::Vec3 pos);
 
@@ -88,7 +88,7 @@ class RenderSkeletonization {
 				osg::MatrixTransform* current_node);
 
 		void create_skeleton(Node* node, MocapHeader& header,
-				osg::Group *pAddToThisGroup, int current_frame);
+				osg::Group *pAddToThisGroup, int current_frame, bool with_axis);
 
 		void update_skeleton(Node* node, MocapHeader& header,
 				int current_frame);

@@ -12,7 +12,8 @@ SkeletonController::SkeletonController() :
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
 			last_mouse_pos_y(0), move_on_z(false), rotate(true),
 			change_all_frames(false), only_root(false),
-			transforming_skeleton(false), delete_skel(false), rotate_axis(X) {
+			transforming_skeleton(false), delete_skel(false), rotate_axis(X),
+			show_joint_axis(true) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -62,6 +63,7 @@ void SkeletonController::reset_state() {
 	rotate = true;
 	change_all_frames = false;
 	transforming_skeleton = false;
+	only_root = false;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -82,7 +84,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 			skel_renderer.clean_skeleton();
 		}
 		skel_renderer.display_skeleton(skeleton.get_root(),
-				skeleton.get_header(), current_frame);
+				skeleton.get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
 }
@@ -315,7 +317,11 @@ bool SkeletonController::handle_keyboard_events(
 				only_root = !only_root;
 				update_dynamics(current_frame);
 			}
-			//TODO Toggle joint axes visibility
+			break;
+		case osgGA::GUIEventAdapter::KEY_G:
+			skel_renderer.clean_skeleton();
+			show_joint_axis = !show_joint_axis;
+			update_dynamics(current_frame);
 			break;
 		case osgGA::GUIEventAdapter::KEY_Control_L:
 			if (is_point_selected) {
