@@ -10,9 +10,10 @@
 SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), is_point_selected(false),
 			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
-			last_mouse_pos_y(0), move_on_z(false), translate_root(false),
-			change_all_frames(false), transforming_skeleton(false),
-			delete_skel(false), inter_number(0) {
+			last_mouse_pos_y(0), move_on_z(false), rotate(true),
+			change_all_frames(false), only_root(false),
+			transforming_skeleton(false), delete_skel(false), rotate_axis(X),
+			show_joint_axis(true), manual_mark_up(false) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -59,9 +60,10 @@ void SkeletonController::reset_state() {
 	is_point_selected = false;
 	selected_point_index = 0;
 	move_on_z = false;
-	translate_root = false;
+	rotate = true;
 	change_all_frames = false;
 	transforming_skeleton = false;
+	only_root = false;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -82,7 +84,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 			skel_renderer.clean_skeleton();
 		}
 		skel_renderer.display_skeleton(skeleton.get_root(),
-				skeleton.get_header(), current_frame);
+				skeleton.get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
 }
@@ -97,24 +99,38 @@ void SkeletonController::setState(Fitting_State state) {
 
 void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
-		std::string edit_text = "v(finish) b(rot) n(frames) m(inter)\n";
+		std::string edit_text = "v(finish) b(rot) n(axis) m(frames) ,(root)\n";
 		edit_text += "Editing ";
+		if (rotate) {
+			edit_text += "rotating ";
+		} else {
+			if (change_all_frames && !only_root) {
+				edit_text += "resizing ";
+			} else {
+				edit_text += "translating ";
+			}
+		}
+		switch (rotate_axis) {
+		case X:
+			edit_text += "x ";
+			break;
+		case Y:
+			edit_text += "y ";
+			break;
+		case Z:
+			edit_text += "z ";
+			break;
+		}
 		if (change_all_frames) {
 			edit_text += "all frames ";
 		} else {
 			edit_text += "current frames ";
 		}
-		if (translate_root) {
-			edit_text += "translating ";
+		if (only_root) {
+			edit_text += "root ";
 		} else {
-			edit_text += "rotating ";
+			edit_text += "bone ";
 		}
-		edit_text += "intersect num ";
-
-		std::stringstream out;
-		out << inter_number;
-		edit_text += out.str();
-
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
 }
@@ -142,33 +158,21 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				switch (state) {
 				case MOVE_POINTS: {
 					if (!is_point_selected) {
-						if (inter_number
-								>= intersector->getIntersections().size()) {
-							inter_number = 0;
-						}
+
 						intersecIte result =
 								intersector->getIntersections().begin();
-						for (unsigned int i = 0; i < inter_number; i++) {
-							result++;
-						}
-						osg::MatrixTransform* selected_obj =
-								dynamic_cast<osg::MatrixTransform*>(result->drawable->getParent(
-										0)->getParent(0));
-						if (selected_obj) {
-							selected_point_color =
-									skel_renderer.obj_belong_skel(selected_obj);
-							if (selected_point_color) {
-								is_point_selected = true;
-								transforming_skeleton = true;
-								osg::ref_ptr<osg::MatrixTransform> selected_point =
-										static_cast<osg::MatrixTransform*>(selected_point_color->getParent(
-												0));
-								selected_point_index = skeleton.get_node_index(
-										selected_point);
-								skeleton.toggle_color(selected_point_index);
-								delete_skel = true;
-								update_dynamics(current_frame);
-							}
+
+						osg::Drawable* selected_obj = result->drawable;
+						selected_point = skel_renderer.is_obj_bone(
+								selected_obj);
+						if (selected_point) {
+							is_point_selected = true;
+							transforming_skeleton = true;
+							selected_point_index = skeleton.get_node_index(
+									selected_point);
+							skeleton.toggle_color(selected_point_index);
+							delete_skel = true;
+							update_dynamics(current_frame);
 						}
 					}
 					break;
@@ -192,19 +196,30 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		if (viewer) {
 			osg::Vec3 move_axis = get_mouse_vec(ea.getX(), ea.getY());
 
-			if (!translate_root) {
+			if (rotate) {
 				if (!change_all_frames) {
-					skeleton.rotate_joint(selected_point_index, move_axis);
+					if (!only_root) {
+						skeleton.rotate_joint(selected_point_index, move_axis);
+					}
 				} else {
-					skeleton.rotate_root_every_frame(move_axis);
+					if (only_root) {
+						skeleton.rotate_root_all_frames(move_axis);
+					}
 				}
 			} else {
-				if (!change_all_frames) {
-					skeleton.translate_joint(selected_point_index, move_axis);
+				if (only_root) {
+					if (!change_all_frames) {
+						skeleton.translate_root(move_axis);
+					} else {
+						skeleton.translate_root_all_frames(move_axis);
+					}
 				} else {
-					skeleton.translate_every_frame(selected_point_index,
-							move_axis);
+					if (change_all_frames) {
+						skeleton.change_bone_length_all_frames(
+								selected_point_index, move_axis);
+					}
 				}
+
 			}
 
 			update_dynamics(current_frame);
@@ -223,20 +238,6 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		last_mouse_pos_y = ea.getY();
 	}
 
-	if (is_point_selected
-			&& ea.getButton() == osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON
-			&& transforming_skeleton) {
-		if (ea.getEventType() == osgGA::GUIEventAdapter::PUSH) {
-			move_on_z = true;
-			last_mouse_pos_x = ea.getX();
-			last_mouse_pos_y = ea.getY();
-		}
-		if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE) {
-			move_on_z = false;
-			last_mouse_pos_x = ea.getX();
-			last_mouse_pos_y = ea.getY();
-		}
-	}
 	return false;
 }
 
@@ -285,21 +286,41 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (is_point_selected) {
-				translate_root = !translate_root;
+				rotate = !rotate;
 				update_dynamics(current_frame);
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_N:
 			if (is_point_selected) {
-				change_all_frames = !change_all_frames;
+				switch (rotate_axis) {
+				case X:
+					rotate_axis = Y;
+					break;
+				case Y:
+					rotate_axis = Z;
+					break;
+				case Z:
+					rotate_axis = X;
+					break;
+				}
 				update_dynamics(current_frame);
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_M:
-			inter_number++;
-			if (inter_number == 3) {
-				inter_number = 0;
+			if (is_point_selected) {
+				change_all_frames = !change_all_frames;
+				update_dynamics(current_frame);
 			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_Comma:
+			if (is_point_selected) {
+				only_root = !only_root;
+				update_dynamics(current_frame);
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_G:
+			skel_renderer.clean_skeleton();
+			show_joint_axis = !show_joint_axis;
 			update_dynamics(current_frame);
 			break;
 		case osgGA::GUIEventAdapter::KEY_Control_L:
@@ -311,6 +332,7 @@ bool SkeletonController::handle_keyboard_events(
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
+
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
 					"/home/cvssp/misc/m04701/workspace/data/bvh/vogue.bvh");
@@ -318,8 +340,18 @@ bool SkeletonController::handle_keyboard_events(
 
 			//Save skeleton to file:
 		case osgGA::GUIEventAdapter::KEY_K:
-			save_skeleton_to_file(
-					"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
+			if (!manual_mark_up) {
+				save_skeleton_to_file(
+						"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+			} else {
+				std::string file_name =
+						"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
+				std::stringstream out;
+				out << current_frame;
+				file_name += out.str();
+				file_name += ".bvh";
+				save_skeleton_to_file(file_name);
+			}
 			break;
 		default:
 			break;
@@ -334,20 +366,16 @@ bool SkeletonController::handle_keyboard_events(
 osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 	osg::Vec3 mouse_vec;
 
-	if (translate_root && !change_all_frames) {
-		if (move_on_z) {
-			mouse_vec.set(0.0, 0.0, y - last_mouse_pos_y);
-		} else {
-			mouse_vec.set(x - last_mouse_pos_x, last_mouse_pos_y - y, 0.0);
-		}
-		return mouse_vec;
-	}
-
-	if (move_on_z) {
+	switch (rotate_axis) {
+	case X:
+		mouse_vec.set(last_mouse_pos_y - y, 0.0, 0.0);
+		break;
+	case Y:
 		mouse_vec.set(0.0, last_mouse_pos_y - y, 0.0);
-	} else {
-		mouse_vec.set(y - last_mouse_pos_y, 0.0, x - last_mouse_pos_x);
+		break;
+	case Z:
+		mouse_vec.set(0.0, 0.0, y - last_mouse_pos_y);
+		break;
 	}
-
 	return mouse_vec;
 }

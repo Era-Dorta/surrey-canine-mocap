@@ -98,7 +98,6 @@ void RenderSkeletonization::clean_text() {
 	text_created = false;
 }
 
-//TODO Reuse the points like with 3d merged skeleton cloud
 void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 		Skeletonization3D& skeleton) {
 	osg::ref_ptr<osg::Geode> skel_geode;
@@ -132,7 +131,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 
 	osg::ref_ptr<osg::Geode> skel2d_geode;
 	if (merged_group->getNumChildren()) {
-		skel2d_geode = static_cast<osg::Geode*>(merged_group->getChild(0));
+		skel2d_geode = merged_group->getChild(0)->asGeode();
 	} else {
 		skel2d_geode = new osg::Geode;
 		merged_group->addChild(skel2d_geode.get());
@@ -239,91 +238,79 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 
 osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 		osg::Vec4 color) {
-	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+
+	osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
 	osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
 	sphere_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
 	sphere_shape->setColor(color);
 
-	geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+	sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
 			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-	geode->addDrawable(sphere_shape);
-	osg::ref_ptr<osg::MatrixTransform> sphere_trans = new osg::MatrixTransform;
+	sphere_geode->addDrawable(sphere_shape);
 
-	sphere_trans->addChild(geode.get());
+	osg::ref_ptr<osg::MatrixTransform> sphere_trans = new osg::MatrixTransform;
+	sphere_trans->addChild(sphere_geode.get());
 
 	return sphere_trans;
 }
 
 void RenderSkeletonization::display_skeleton(Node* node, MocapHeader& header,
-		int current_frame) {
+		int current_frame, bool with_axis) {
 	if (skel_created) {
 		update_skeleton(node, header, current_frame);
 	} else {
-		create_skeleton(node, header, skel_fitting_switch, current_frame);
+		create_skeleton(node, header, skel_fitting_switch, current_frame,
+				with_axis);
 		skel_created = true;
 	}
 }
 
 void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
-		osg::Group *pAddToThisGroup, int current_frame) {
+		osg::Group *pAddToThisGroup, int current_frame, bool with_axis) {
 
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 	//Set translatation and rotation for this frame
 	skel_transform->setMatrix(
-			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
-					header.euler->at(0), node->freuler->at(current_frame)[1],
-					header.euler->at(1), node->freuler->at(current_frame)[2],
-					header.euler->at(2))
-
+			osg::Matrix::rotate(node->quat_arr.at(current_frame))
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
-	colors->push_back(
-			osg::Vec4(node->joint_color[0], node->joint_color[1],
-					node->joint_color[2], 1.0));
-
-	//Calculate bone final position
-	osg::Vec3 bone_pos = osg::Vec3(node->length[0] * node->scale[current_frame],
-			node->length[1] * node->scale[current_frame],
-			node->length[2] * node->scale[current_frame]);
+	colors->push_back(node->n_joint_color);
 
 	//Create cylinder from 0,0,0 to bone final position
-	create_cylinder(osg::Vec3(), bone_pos, 0.01f, node->bone_color,
-			static_cast<osg::Group*>(skel_transform.get()));
+	create_cylinder(osg::Vec3(), node->length, 0.01f, node->n_bone_color,
+			skel_transform.get()->asGroup());
 
 	//Create sphere at the beggining of the bone
-	osg::ref_ptr<osg::MatrixTransform> sphere = create_sphere(
-			node->joint_color);
-	sphere->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02));
-
-	skel_transform->addChild(sphere.get());
+	add_sphere_to_node(skel_transform, node->n_joint_color,
+			osg::Matrix::identity());
 
 	//If the node does not have another one attached to it, then also draw a
 	//sphere at the end
-	if (node->noofchildren() == 0) {
-		sphere = create_sphere(node->joint_color);
-		sphere->setMatrix(
-				osg::Matrix::scale(0.02, 0.02, 0.02)
-						* osg::Matrix::translate(bone_pos));
+	if (node->get_num_children() == 0) {
+		add_sphere_to_node(skel_transform, node->n_joint_color,
+				osg::Matrix::translate(node->length));
 
-		skel_transform->addChild(sphere.get());
+		if (with_axis) {
+			add_axis_to_node(skel_transform,
+					osg::Matrix::translate(node->length));
+		}
 	}
-
-	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
-	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
-	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7);
-	half_size->setMatrix(half_sz);
-	half_size->addChild(cam_axes);
-	skel_transform->addChild(half_size.get());
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
+	if (with_axis) {
+		add_axis_to_node(pAddToThisGroup,
+				osg::Matrix::translate(
+						node->offset + node->froset->at(current_frame)));
+	}
+
 	//Continue recursively for the other nodes
-	for (unsigned int i = 0; i < node->noofchildren(); i++)
+	for (unsigned int i = 0; i < node->get_num_children(); i++)
 		create_skeleton(node->children[i].get(), header, skel_transform.get(),
-				current_frame);
+				current_frame, with_axis);
 
 	node->osg_node = skel_transform.get();
 }
@@ -333,44 +320,42 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
 	//Update the position of the bone for this frame
 	skel_transform->setMatrix(
-			osg::Matrix::rotate(node->freuler->at(current_frame)[0],
-					header.euler->at(0), node->freuler->at(current_frame)[1],
-					header.euler->at(1), node->freuler->at(current_frame)[2],
-					header.euler->at(2))
-
+			osg::Matrix::rotate(node->quat_arr.at(current_frame))
 					* osg::Matrix::translate(
 							node->offset + node->froset->at(current_frame)));
 
 	//Continue for all the other nodes in the list
-	for (unsigned int i = 0; i < node->noofchildren(); i++)
+	for (unsigned int i = 0; i < node->get_num_children(); i++)
 		update_skeleton(node->children[i].get(), header, current_frame);
 }
 
-osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
-		osg::MatrixTransform* selected_obj) {
+osg::MatrixTransform* RenderSkeletonization::is_obj_bone(
+		osg::Drawable* selected_obj) {
 	if (skel_fitting_switch->getNumChildren() > 0) {
-		return obj_belong_skel(selected_obj,
-				static_cast<osg::MatrixTransform*>(skel_fitting_switch->getChild(
-						0)));
+		return is_obj_bone(selected_obj,
+				skel_fitting_switch->getChild(0)->asTransform()->asMatrixTransform());
 	} else {
 		return NULL;
 	}
 }
 
-osg::MatrixTransform* RenderSkeletonization::obj_belong_skel(
-		osg::MatrixTransform* selected_obj,
-		osg::MatrixTransform* current_node) {
-	if (selected_obj == current_node) {
+osg::MatrixTransform* RenderSkeletonization::is_obj_bone(
+		osg::Drawable* selected_obj, osg::MatrixTransform* current_node) {
+	osg::Drawable* current_bone =
+			current_node->getChild(0)->asGeode()->getDrawable(0);
+
+	if (selected_obj == current_bone
+			&& current_bone->getShape()->getName().compare("bone") == 0) {
 		return current_node;
 	}
 
 	for (unsigned int i = 0; i < current_node->getNumChildren(); i++) {
-		osg::MatrixTransform* aux =
-				dynamic_cast<osg::MatrixTransform*>(current_node->getChild(i));
+		osg::Transform* aux = current_node->getChild(i)->asTransform();
 		if (aux) {
-			aux = obj_belong_skel(selected_obj, aux);
-			if (aux) {
-				return aux;
+			osg::MatrixTransform* res = is_obj_bone(selected_obj,
+					aux->asMatrixTransform());
+			if (res) {
+				return res;
 			}
 		}
 	}
@@ -437,6 +422,7 @@ void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,
 	//   Create a cylinder between the two points with the given radius
 	cylinder = new osg::Cylinder(center, radius, height);
 	cylinder->setRotation(osg::Quat(angle, osg::Vec3(t.x(), t.y(), t.z())));
+	cylinder->setName("bone");
 
 	//   A geode to hold our cylinder
 	geode = new osg::Geode;
@@ -465,4 +451,24 @@ void RenderSkeletonization::toggle_3d_cloud() {
 
 void RenderSkeletonization::toggle_3d_merged_cloud() {
 	skel_vis_switch->setValue(3, !skel_vis_switch->getValue(3));
+}
+
+void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
+		const osg::Matrix& trans) {
+	if (!axes.valid()) {
+		axes = create_axes();
+	}
+	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
+	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7) * trans;
+	half_size->setMatrix(half_sz);
+	half_size->addChild(axes);
+	to_add->addChild(half_size.get());
+}
+
+void RenderSkeletonization::add_sphere_to_node(osg::Group* to_add,
+		osg::Vec4 color, const osg::Matrix& trans) {
+	osg::ref_ptr<osg::MatrixTransform> sphere_trans = create_sphere(color);
+	sphere_trans->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02) * trans);
+
+	to_add->addChild(sphere_trans.get());
 }

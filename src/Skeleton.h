@@ -26,9 +26,12 @@ class Skeleton: public BVHFormat {
 		Skeleton();
 		virtual ~Skeleton();
 		void rotate_joint(unsigned int index, osg::Vec3& angle);
-		void rotate_root_every_frame(osg::Vec3& angle);
-		void translate_joint(unsigned int index, osg::Vec3& translation);
-		void translate_every_frame(unsigned int index, osg::Vec3& translation);
+		void rotate_root_all_frames(osg::Vec3& angle);
+		void translate_root(osg::Vec3& translation);
+		void translate_root_all_frames(osg::Vec3& translation);
+		void change_bone_length(unsigned int index, osg::Vec3& translation);
+		void change_bone_length_all_frames(unsigned int index,
+				osg::Vec3& translation);
 		void toggle_color(int index);
 
 		unsigned int get_num_bones();
@@ -41,15 +44,9 @@ class Skeleton: public BVHFormat {
 		void reset_state();
 
 	private:
-		osg::Matrixd get_joint_transformation(int index);
-
 		bool skel_loaded;
 		float rotate_scale_factor;
 		float translate_scale_factor;
-		osg::Vec4 joint_color;
-		osg::Vec4 joint_second_color;
-		osg::Vec4 bone_color;
-		osg::Vec4 bone_second_color;
 };
 
 #endif /* SKELETON_H_ */

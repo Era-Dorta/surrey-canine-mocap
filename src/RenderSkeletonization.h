@@ -61,12 +61,11 @@ class RenderSkeletonization {
 		//the Model-View-Controller pattern
 		//TODO Use weakpointer instead of Node*
 		void display_skeleton(Node* node, MocapHeader& header,
-				int current_frame);
+				int current_frame, bool with_axis);
 
 		void display_text(std::string text, osg::Vec3 pos);
 
-		osg::MatrixTransform* obj_belong_skel(
-				osg::MatrixTransform* selected_obj);
+		osg::MatrixTransform* is_obj_bone(osg::Drawable* selected_obj);
 
 		//Toggle cam_num cloud point
 		void toggle_3d_cloud(int cam_num);
@@ -82,12 +81,11 @@ class RenderSkeletonization {
 		osg::Camera* create_hud_camera(double left, double right, double bottom,
 				double top);
 
-		osg::MatrixTransform* obj_belong_skel(
-				osg::MatrixTransform* selected_obj,
+		osg::MatrixTransform* is_obj_bone(osg::Drawable* selected_obj,
 				osg::MatrixTransform* current_node);
 
 		void create_skeleton(Node* node, MocapHeader& header,
-				osg::Group *pAddToThisGroup, int current_frame);
+				osg::Group *pAddToThisGroup, int current_frame, bool with_axis);
 
 		void update_skeleton(Node* node, MocapHeader& header,
 				int current_frame);
@@ -95,6 +93,11 @@ class RenderSkeletonization {
 		void create_cylinder(osg::Vec3 StartPoint, osg::Vec3 EndPoint,
 				float radius, osg::Vec4 CylinderColor,
 				osg::Group *pAddToThisGroup);
+
+		void add_axis_to_node(osg::Group* to_add, const osg::Matrix& trans);
+
+		void add_sphere_to_node(osg::Group* to_add, osg::Vec4 color,
+				const osg::Matrix& trans);
 
 		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
@@ -117,6 +120,9 @@ class RenderSkeletonization {
 		osg::ref_ptr<osg::Switch> skel_fitting_switch;
 
 		osg::ref_ptr<osgText::Text> skel_edit_text;
+
+		osg::ref_ptr<osg::Geode> axes;
+
 		bool display_merged;
 		bool skel_created;
 		bool text_created;
