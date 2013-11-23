@@ -73,10 +73,10 @@ void Node::update_euler_angles() {
 
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
 	//Quat formula to euler from http://glm.g-truc.net
-	euler[2] = std::atan2(2.0 * (q.y() * q.z() + q.w() * q.x()),
+	euler[0] = std::atan2(2.0 * (q.y() * q.z() + q.w() * q.x()),
 			q.w() * q.w() - q.x() * q.x() - q.y() * q.y() + q.z() * q.z());
 	euler[1] = std::asin(-2.0 * (q.x() * q.z() - q.w() * q.y()));
-	euler[0] = std::atan2(2.0 * (q.x() * q.y() + q.w() * q.z()),
+	euler[2] = std::atan2(2.0 * (q.x() * q.y() + q.w() * q.z()),
 			q.w() * q.w() + q.x() * q.x() - q.y() * q.y() - q.z() * q.z());
 }
 
