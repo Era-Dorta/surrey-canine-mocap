@@ -60,8 +60,8 @@ Node* Node::get_last_child() {
 
 void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 	for (unsigned int i = 0; i < freuler->size(); i++) {
-		quat_arr.at(i) = osg::Quat(freuler->at(i)[0], axis->at(0),
-				freuler->at(i)[1], axis->at(1), freuler->at(i)[2], axis->at(2));
+		quat_arr.at(i) = osg::Quat(freuler->at(i)[2], axis->at(2),
+				freuler->at(i)[1], axis->at(1), freuler->at(i)[0], axis->at(0));
 	}
 }
 
@@ -73,11 +73,14 @@ void Node::update_euler_angles() {
 
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
 	//Quat formula to euler from http://glm.g-truc.net
-	euler[0] = std::atan2(2.0 * (q.y() * q.z() + q.w() * q.x()),
-			q.w() * q.w() - q.x() * q.x() - q.y() * q.y() + q.z() * q.z());
-	euler[1] = std::asin(-2.0 * (q.x() * q.z() - q.w() * q.y()));
-	euler[2] = std::atan2(2.0 * (q.x() * q.y() + q.w() * q.z()),
-			q.w() * q.w() + q.x() * q.x() - q.y() * q.y() - q.z() * q.z());
+	osg::Quat q_c = q.conj();
+	euler[0] = - std::atan2(2.0 * (q_c.y() * q_c.z() + q_c.w() * q_c.x()),
+			q_c.w() * q_c.w() - q_c.x() * q_c.x() - q_c.y() * q_c.y()
+					+ q_c.z() * q_c.z());
+	euler[1] = - std::asin(-2.0 * (q_c.x() * q_c.z() - q_c.w() * q_c.y()));
+	euler[2] = - std::atan2(2.0 * (q_c.x() * q_c.y() + q_c.w() * q_c.z()),
+			q_c.w() * q_c.w() + q_c.x() * q_c.x() - q_c.y() * q_c.y()
+					- q_c.z() * q_c.z());
 }
 
 void Node::toggle_color() {
