@@ -334,8 +334,8 @@ bool SkeletonController::handle_keyboard_events(
 			load_skeleton_from_file(
 
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-					"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
+			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+					//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			break;
 
 			//Save skeleton to file:

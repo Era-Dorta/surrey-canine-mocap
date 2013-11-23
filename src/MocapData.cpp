@@ -35,12 +35,9 @@ void MocapData::reset_state() {
 	header.euler->at(0).set(1, 0, 0);
 	header.euler->at(1).set(0, 1, 0);
 	header.euler->at(2).set(0, 0, 1);
-	//header.euler->at(0).set(0, 0, 1);
-	//header.euler->at(1).set(1, 0, 0);
-	//header.euler->at(2).set(0, -1, 0);
 
 	//This calibration to make every model smaller
-	header.callib = 0.03f;
+	header.callib = 0.3f;
 	header.inv_callib = 1.0 / header.callib;
 	//We convert all values to radians
 	header.degrees = false;
