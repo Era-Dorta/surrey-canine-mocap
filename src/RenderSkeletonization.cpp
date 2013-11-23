@@ -19,7 +19,11 @@ void RenderSkeletonization::set_data(
 	//Save arguments
 	camera_arr = camera_arr_;
 	render_skel_group->addChild(skel_vis_switch);
-	render_skel_group->addChild(skel_fitting_switch);
+	osg::ref_ptr<osg::MatrixTransform> fitting_trans = new osg::MatrixTransform;
+	fitting_trans->setMatrix(osg::Matrix::scale(1.0, -1.0, 1.0));
+	fitting_trans->addChild(skel_fitting_switch.get());
+	render_skel_group ->addChild(fitting_trans.get());
+	//render_skel_group ->addChild(skel_fitting_switch.get());
 	skel_fitting_switch->setNewChildDefaultValue(true);
 
 	//In case this is not first call, do a clean up

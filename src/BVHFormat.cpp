@@ -326,12 +326,10 @@ void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 				<< endl;
 		out_file << tabs_str << "CHANNELS " << parent->noofchannels;
 		if (parent->noofchannels == 3) {
-			//out_file << " Xrotation Yrotation Zrotation" << endl;
-			out_file << " Zrotation Xrotation Yrotation" << endl;
+			out_file << " Xrotation Yrotation Zrotation" << endl;
 		} else {
 			out_file
-					//<< " Xposition Yposition Zposition Xrotation Yrotation Zrotation"
-					<< " Xposition Yposition Zposition Zrotation Xrotation Yrotation"
+					<< " Xposition Yposition Zposition Xrotation Yrotation Zrotation"
 					<< endl;
 		}
 	}
@@ -360,12 +358,10 @@ void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 			<< endl;
 	out_file << tabs_str << "CHANNELS " << joint->noofchannels;
 	if (joint->noofchannels == 3) {
-		//out_file << " Xrotation Yrotation Zrotation" << endl;
-		out_file << " Zrotation Xrotation Yrotation" << endl;
+		out_file << " Xrotation Yrotation Zrotation" << endl;
 	} else {
 		out_file
-				//<< " Xposition Yposition Zposition Xrotation Yrotation Zrotation"
-				<< " Xposition Yposition Zposition Zrotation Xrotation Yrotation"
+				<< " Xposition Yposition Zposition Xrotation Yrotation Zrotation"
 				<< endl;
 	}
 	out_file << tabs_str << "End Site" << endl;

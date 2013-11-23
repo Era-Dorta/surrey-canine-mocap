@@ -29,7 +29,7 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Matrix &m) {
 		out << "[";
 		int j;
 		for (j = 0; j < 3; j++) {
-			out << m(i, j) << ",";
+			out << m(i, j) << ", ";
 		}
 		out << m(i, j) << "]" << endl;
 	}
