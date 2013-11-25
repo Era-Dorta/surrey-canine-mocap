@@ -59,6 +59,7 @@ class MocapData {
 		virtual bool export_data(const char* filename) = 0; // Starts the import of the BVH file
 		Node* get_root();                      // Returns the root node
 		const std::vector<Node*>& get_node_list() const; // Returns an array that holds all the nodes
+		Node* get_node(unsigned int index);
 		const char* get_error();
 
 	protected:
@@ -66,7 +67,6 @@ class MocapData {
 		//TODO Instead of Node* use weak pointers
 		std::vector<Node*> nodelist;
 		MocapHeader header;
-		int xpos, ypos, zpos;
 
 		char error[255];          // Used to store any errors that occured
 

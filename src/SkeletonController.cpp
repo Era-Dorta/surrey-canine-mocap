@@ -8,12 +8,11 @@
 #include "SkeletonController.h"
 
 SkeletonController::SkeletonController() :
-			state(MOVE_POINTS), is_point_selected(false),
-			selected_point_index(0), current_frame(0), last_mouse_pos_x(0),
-			last_mouse_pos_y(0), move_on_z(false), rotate(true),
-			change_all_frames(false), only_root(false),
-			transforming_skeleton(false), delete_skel(false), rotate_axis(X),
-			show_joint_axis(true), manual_mark_up(false) {
+			state(MOVE_POINTS), current_frame(0), is_point_selected(false),
+			selected_point_index(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
+			move_on_z(false), rotate(true), change_all_frames(false),
+			only_root(false), transforming_skeleton(false), delete_skel(false),
+			rotate_axis(X), show_joint_axis(true), manual_mark_up(true) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -25,6 +24,24 @@ void SkeletonController::set_data(
 
 	skel_renderer.set_data(camera_arr, render_skel_group);
 	skeletonized3D.set_cameras(camera_arr);
+
+	int start_frame = 20, end_frame = 21;
+	std::vector<std::string> file_names;
+	for (int i = start_frame; i <= end_frame; i++) {
+		std::string file_name =
+				"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
+		std::stringstream out;
+		out << i;
+		file_name += out.str();
+		file_name += ".bvh";
+		file_names.push_back(file_name);
+	}
+
+	skel_mixer.set_data(file_names, start_frame);
+	skel_mixer.mix();
+	std::string file_name =
+			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";
+	skel_mixer.save_file(file_name);
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,

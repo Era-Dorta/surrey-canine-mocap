@@ -7,12 +7,15 @@
 
 #include "MocapData.h"
 
-MocapData::MocapData() :
-			xpos(0), ypos(0), zpos(0) {
+MocapData::MocapData() {
 }
 
 const std::vector<Node*>& MocapData::get_node_list() const {
 	return nodelist;
+}
+
+Node* MocapData::get_node(unsigned int index) {
+	return nodelist.at(index);
 }
 
 void MocapData::reset_state() {
@@ -24,10 +27,6 @@ void MocapData::reset_state() {
 	header.noofsegments = 0;
 	header.noofframes = 0;
 	header.datarate = 0;
-
-	xpos = 1;
-	ypos = 2;
-	zpos = 0;
 
 	//This matrix indicates the axes in which the rotations take place
 	//files are going to be read and written as x, y, z rotations

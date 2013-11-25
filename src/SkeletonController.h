@@ -12,6 +12,7 @@
 #include "RenderSkeletonization.h"
 #include "Skeletonization3D.h"
 #include "SkeletonFitting.h"
+#include "SkeletonMixer.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -74,12 +75,17 @@ class SkeletonController {
 		//cloud of points that represent a skeleton.
 		SkeletonFitting skel_fitter;
 
+		Skeleton skeleton;
+
+		SkeletonMixer skel_mixer;
+
 		Fitting_State state;
+
+		int current_frame;
+
 		bool is_point_selected;
 		int selected_point_index;
 		osg::ref_ptr<osg::MatrixTransform> selected_point;
-		Skeleton skeleton;
-		int current_frame;
 		int last_mouse_pos_x;
 		int last_mouse_pos_y;
 		bool move_on_z;
