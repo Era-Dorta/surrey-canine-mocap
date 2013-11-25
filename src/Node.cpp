@@ -59,6 +59,9 @@ Node* Node::get_last_child() {
 }
 
 void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
+	//To build the quaternion we use an axis and a rotation around that axis
+	//from the bvh file. Since OSG uses premultiplication the order of the
+	//rotations is build backwards
 	for (unsigned int i = 0; i < freuler->size(); i++) {
 		quat_arr.at(i) = osg::Quat(freuler->at(i)[2], axis->at(2),
 				freuler->at(i)[1], axis->at(1), freuler->at(i)[0], axis->at(0));
@@ -72,13 +75,16 @@ void Node::update_euler_angles() {
 }
 
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
-	//Quat formula to euler from http://glm.g-truc.net
+	//To calculate back the euler angles from a quaternion we use this formulas
+	//but since we want the postmultiplication order we use the conjugate of the
+	//quaternion, also there has to be a change in the sign of the angles
+	//http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 	osg::Quat q_c = q.conj();
-	euler[0] = - std::atan2(2.0 * (q_c.y() * q_c.z() + q_c.w() * q_c.x()),
+	euler[0] = -std::atan2(2.0 * (q_c.y() * q_c.z() + q_c.w() * q_c.x()),
 			q_c.w() * q_c.w() - q_c.x() * q_c.x() - q_c.y() * q_c.y()
 					+ q_c.z() * q_c.z());
-	euler[1] = - std::asin(-2.0 * (q_c.x() * q_c.z() - q_c.w() * q_c.y()));
-	euler[2] = - std::atan2(2.0 * (q_c.x() * q_c.y() + q_c.w() * q_c.z()),
+	euler[1] = -std::asin(-2.0 * (q_c.x() * q_c.z() - q_c.w() * q_c.y()));
+	euler[2] = -std::atan2(2.0 * (q_c.x() * q_c.y() + q_c.w() * q_c.z()),
 			q_c.w() * q_c.w() + q_c.x() * q_c.x() - q_c.y() * q_c.y()
 					- q_c.z() * q_c.z());
 }

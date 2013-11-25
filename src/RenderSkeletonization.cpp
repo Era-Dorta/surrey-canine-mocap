@@ -19,7 +19,7 @@ void RenderSkeletonization::set_data(
 	//Save arguments
 	camera_arr = camera_arr_;
 	render_skel_group->addChild(skel_vis_switch);
-	render_skel_group ->addChild(skel_fitting_switch.get());
+	render_skel_group->addChild(skel_fitting_switch.get());
 	skel_fitting_switch->setNewChildDefaultValue(true);
 
 	//In case this is not first call, do a clean up

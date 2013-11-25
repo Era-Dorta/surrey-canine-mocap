@@ -30,8 +30,7 @@ void MocapData::reset_state() {
 	zpos = 0;
 
 	//This matrix indicates the axes in which the rotations take place
-	//first files are going to be read and written as x,y,z rotations
-	//but since in OSG y goes down then we have to change y direction also
+	//files are going to be read and written as x, y, z rotations
 	header.euler->at(0).set(1, 0, 0);
 	header.euler->at(1).set(0, 1, 0);
 	header.euler->at(2).set(0, 0, 1);
