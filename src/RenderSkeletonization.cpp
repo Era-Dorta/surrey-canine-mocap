@@ -270,7 +270,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 		osg::Group *pAddToThisGroup, int current_frame, bool with_axis) {
 
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
-	//Set translatation and rotation for this frame
+	//Set translation and rotation for this frame
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(node->quat_arr.at(current_frame))
 					* osg::Matrix::translate(
@@ -283,7 +283,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	create_cylinder(osg::Vec3(), node->length, 0.01f, node->n_bone_color,
 			skel_transform.get()->asGroup());
 
-	//Create sphere at the beggining of the bone
+	//Create sphere at the beginning of the bone
 	add_sphere_to_node(skel_transform, node->n_joint_color,
 			osg::Matrix::identity());
 
@@ -292,15 +292,13 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	if (node->get_num_children() == 0) {
 		add_sphere_to_node(skel_transform, node->n_joint_color,
 				osg::Matrix::translate(node->length));
-
-		if (with_axis) {
-			add_axis_to_node(skel_transform,
-					osg::Matrix::translate(node->length));
-		}
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
 
+	//Create axis at the beginning of the bone, only apply translation
+	//since this are axis that mark rotation, so we do not want them to rotate
+	//as the bones rotates but to be fixed
 	if (with_axis) {
 		add_axis_to_node(pAddToThisGroup,
 				osg::Matrix::translate(
