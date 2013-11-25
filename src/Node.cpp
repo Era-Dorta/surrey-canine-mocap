@@ -74,6 +74,21 @@ void Node::update_euler_angles() {
 	}
 }
 
+osg::Quat Node::get_global_rot(int frame_num) {
+	osg::Quat res;
+	Node * next_frame = parent;
+	res = quat_arr.at(frame_num);
+	while (next_frame != NULL) {
+		res = next_frame->quat_arr.at(frame_num) * res;
+		next_frame = next_frame->parent;
+	}
+	return res;
+}
+
+osg::Quat Node::get_inv_global_rot(int frame_num) {
+	return get_global_rot(frame_num).inverse();
+}
+
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
 	//To calculate back the euler angles from a quaternion we use this formulas
 	//but since we want the postmultiplication order we use the conjugate of the

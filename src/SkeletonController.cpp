@@ -112,13 +112,13 @@ void SkeletonController::draw_edit_text() {
 		}
 		switch (rotate_axis) {
 		case X:
-			edit_text += "x ";
+			edit_text += "red ";
 			break;
 		case Y:
-			edit_text += "y ";
+			edit_text += "green ";
 			break;
 		case Z:
-			edit_text += "z ";
+			edit_text += "blue ";
 			break;
 		}
 		if (change_all_frames) {
@@ -333,9 +333,10 @@ bool SkeletonController::handle_keyboard_events(
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
 
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/out.bvh");
-			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-					//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
+			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			break;
 
 			//Save skeleton to file:

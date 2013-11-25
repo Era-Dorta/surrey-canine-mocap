@@ -45,6 +45,10 @@ class Node {
 
 		void toggle_color();
 
+		osg::Quat get_global_rot(int frame_num);
+
+		osg::Quat get_inv_global_rot(int frame_num);
+
 		//TODO Right now we use quaternions but it might be a good optimisation
 		//to have all the matrices precomputed once there are not going to be
 		//more changes
