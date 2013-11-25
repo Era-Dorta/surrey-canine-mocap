@@ -49,8 +49,6 @@
 using std::cout;
 using std::endl;
 
-//TODO If froset is permited then skeleton hierarqui should be changed
-//to add the froset in the motion part
 class BVHFormat: public MocapData {
 	public:
 		BVHFormat();

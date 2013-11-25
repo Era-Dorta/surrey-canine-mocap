@@ -64,8 +64,8 @@ class Node {
 		BYTE DOFs;          // Used to determine what DOFs the segment has
 		int noofchannels;
 
-		//TODO Better to have a list or some other kind of struture in controller
-		//model should not know about the viewer
+		//MatrixTransform that is drawing this node, this is high coupling
+		//but it simplifies the code
 		osg::MatrixTransform* osg_node;
 
 		osg::Vec4 n_joint_color;

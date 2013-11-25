@@ -69,7 +69,7 @@ void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 }
 
 void Node::update_euler_angles() {
-	for (unsigned int i = 0; i < freuler->size(); i++) {
+	for (unsigned int i = 0; i < quat_arr.size(); i++) {
 		quat_to_euler(quat_arr.at(i), freuler->at(i));
 	}
 }
