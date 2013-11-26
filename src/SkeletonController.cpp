@@ -10,7 +10,7 @@
 SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), current_frame(0), is_point_selected(false),
 			selected_point_index(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
-			move_on_z(false), rotate(true), change_all_frames(false),
+			move_on_z(false), rotate(false), change_all_frames(true),
 			only_root(false), transforming_skeleton(false), delete_skel(false),
 			rotate_axis(X), show_joint_axis(false), manual_mark_up(true) {
 }
@@ -59,8 +59,8 @@ void SkeletonController::reset_state() {
 	is_point_selected = false;
 	selected_point_index = 0;
 	move_on_z = false;
-	rotate = true;
-	change_all_frames = false;
+	rotate = false;
+	change_all_frames = true;
 	transforming_skeleton = false;
 	only_root = false;
 }
