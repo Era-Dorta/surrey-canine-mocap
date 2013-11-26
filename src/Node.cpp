@@ -11,6 +11,9 @@ const osg::Vec4 Node::joint_second_color(1.0f, 1.0f, 1.0f, 1.0); //White
 const osg::Vec4 Node::bone_color(0.0f, 0.0f, 1.0f, 1.0); //Blue
 const osg::Vec4 Node::bone_second_color(1.0f, 0.0f, 0.0f, 1.0); //Red
 
+const float Node::bone_radius = 0.005;
+const float Node::joint_radius = 0.01;
+
 Node::Node() {
 	parent = NULL;
 	froset = new osg::Vec3Array;

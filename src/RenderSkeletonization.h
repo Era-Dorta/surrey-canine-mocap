@@ -76,7 +76,8 @@ class RenderSkeletonization {
 		void toggle_3d_merged_cloud();
 	protected:
 	private:
-		osg::ref_ptr<osg::MatrixTransform> create_sphere(osg::Vec4 color);
+		osg::ref_ptr<osg::MatrixTransform> create_sphere(float radius,
+				osg::Vec4 color);
 
 		osg::Camera* create_hud_camera(double left, double right, double bottom,
 				double top);
@@ -96,8 +97,8 @@ class RenderSkeletonization {
 
 		void add_axis_to_node(osg::Group* to_add, const osg::Matrix& trans);
 
-		void add_sphere_to_node(osg::Group* to_add, osg::Vec4 color,
-				const osg::Matrix& trans);
+		void add_sphere_to_node(float radius, osg::Vec4 color,
+				osg::Group* to_add, const osg::Matrix& trans);
 
 		//Pointer to the camera array
 		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;

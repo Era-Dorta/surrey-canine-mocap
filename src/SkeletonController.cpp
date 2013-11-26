@@ -12,7 +12,7 @@ SkeletonController::SkeletonController() :
 			selected_point_index(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
 			move_on_z(false), rotate(true), change_all_frames(false),
 			only_root(false), transforming_skeleton(false), delete_skel(false),
-			rotate_axis(X), show_joint_axis(true), manual_mark_up(true) {
+			rotate_axis(X), show_joint_axis(false), manual_mark_up(true) {
 }
 
 SkeletonController::~SkeletonController() {

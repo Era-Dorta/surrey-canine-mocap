@@ -10,7 +10,7 @@ RenderSkeletonization::RenderSkeletonization() :
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
-	//dtor
+
 }
 
 void RenderSkeletonization::set_data(
@@ -237,11 +237,11 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 }
 
 osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
-		osg::Vec4 color) {
+		float radius, osg::Vec4 color) {
 
 	osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
 	osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
-	sphere_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), 1.1f));
+	sphere_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), radius));
 	sphere_shape->setColor(color);
 
 	sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
@@ -280,18 +280,18 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	colors->push_back(node->n_joint_color);
 
 	//Create cylinder from 0,0,0 to bone final position
-	create_cylinder(osg::Vec3(), node->length, 0.01f, node->n_bone_color,
-			skel_transform.get()->asGroup());
+	create_cylinder(osg::Vec3(), node->length, Node::bone_radius,
+			node->n_bone_color, skel_transform.get()->asGroup());
 
 	//Create sphere at the beginning of the bone
-	add_sphere_to_node(skel_transform, node->n_joint_color,
+	add_sphere_to_node(Node::joint_radius, node->n_joint_color, skel_transform,
 			osg::Matrix::identity());
 
 	//If the node does not have another one attached to it, then also draw a
 	//sphere at the end
 	if (node->get_num_children() == 0) {
-		add_sphere_to_node(skel_transform, node->n_joint_color,
-				osg::Matrix::translate(node->length));
+		add_sphere_to_node(Node::joint_radius, node->n_joint_color,
+				skel_transform, osg::Matrix::translate(node->length));
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
@@ -463,10 +463,11 @@ void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
 	to_add->addChild(half_size.get());
 }
 
-void RenderSkeletonization::add_sphere_to_node(osg::Group* to_add,
-		osg::Vec4 color, const osg::Matrix& trans) {
-	osg::ref_ptr<osg::MatrixTransform> sphere_trans = create_sphere(color);
-	sphere_trans->setMatrix(osg::Matrix::scale(0.02, 0.02, 0.02) * trans);
+void RenderSkeletonization::add_sphere_to_node(float radius, osg::Vec4 color,
+		osg::Group* to_add, const osg::Matrix& trans) {
+	osg::ref_ptr<osg::MatrixTransform> sphere_trans = create_sphere(radius,
+			color);
+	sphere_trans->setMatrix(trans);
 
 	to_add->addChild(sphere_trans.get());
 }

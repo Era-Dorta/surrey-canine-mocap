@@ -70,6 +70,9 @@ class Node {
 
 		osg::Vec4 n_joint_color;
 		osg::Vec4 n_bone_color;
+
+		const static float bone_radius;
+		const static float joint_radius;
 	private:
 		const static osg::Vec4 joint_color;
 		const static osg::Vec4 joint_second_color;
