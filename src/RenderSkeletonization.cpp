@@ -261,13 +261,14 @@ void RenderSkeletonization::display_skeleton(Node* node, MocapHeader& header,
 		update_skeleton(node, header, current_frame);
 	} else {
 		create_skeleton(node, header, skel_fitting_switch, current_frame,
-				with_axis);
+				with_axis, osg::Quat());
 		skel_created = true;
 	}
 }
 
 void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
-		osg::Group *pAddToThisGroup, int current_frame, bool with_axis) {
+		osg::Group *pAddToThisGroup, int current_frame, bool with_axis,
+		osg::Quat current_rot) {
 
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = new osg::MatrixTransform;
 	//Set translation and rotation for this frame
@@ -301,14 +302,17 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	//as the bones rotates but to be fixed
 	if (with_axis) {
 		add_axis_to_node(pAddToThisGroup,
-				osg::Matrix::translate(
-						node->offset + node->froset->at(current_frame)));
+				osg::Matrix::rotate(current_rot.inverse())
+						* osg::Matrix::translate(
+								node->offset
+										+ node->froset->at(current_frame)));
 	}
 
 	//Continue recursively for the other nodes
 	for (unsigned int i = 0; i < node->get_num_children(); i++)
 		create_skeleton(node->children[i].get(), header, skel_transform.get(),
-				current_frame, with_axis);
+				current_frame, with_axis,
+				current_rot * node->quat_arr.at(current_frame));
 
 	node->osg_node = skel_transform.get();
 }

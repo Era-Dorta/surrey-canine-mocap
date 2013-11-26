@@ -86,7 +86,8 @@ class RenderSkeletonization {
 				osg::MatrixTransform* current_node);
 
 		void create_skeleton(Node* node, MocapHeader& header,
-				osg::Group *pAddToThisGroup, int current_frame, bool with_axis);
+				osg::Group *pAddToThisGroup, int current_frame, bool with_axis,
+				osg::Quat current_rot);
 
 		void update_skeleton(Node* node, MocapHeader& header,
 				int current_frame);
