@@ -14,10 +14,12 @@
 class SkeletonMixer {
 	public:
 		SkeletonMixer();
-		SkeletonMixer(std::vector<std::string>& file_names, int start_frame);
+		SkeletonMixer(std::string& model, std::vector<std::string>& to_mix,
+				int start_frame);
 		virtual ~SkeletonMixer();
 
-		void set_data(std::vector<std::string>& file_names, int start_frame);
+		void set_data(std::string& model, std::vector<std::string>& to_mix,
+				int start_frame);
 		void mix();
 		void save_file(std::string& file_name);
 

@@ -24,24 +24,6 @@ void SkeletonController::set_data(
 
 	skel_renderer.set_data(camera_arr, render_skel_group);
 	skeletonized3D.set_cameras(camera_arr);
-
-	int start_frame = 20, end_frame = 21;
-	std::vector<std::string> file_names;
-	for (int i = start_frame; i <= end_frame; i++) {
-		std::string file_name =
-				"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
-		std::stringstream out;
-		out << i;
-		file_name += out.str();
-		file_name += ".bvh";
-		file_names.push_back(file_name);
-	}
-
-	skel_mixer.set_data(file_names, start_frame);
-	skel_mixer.mix();
-	std::string file_name =
-			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";
-	skel_mixer.save_file(file_name);
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
@@ -396,4 +378,26 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		break;
 	}
 	return mouse_vec;
+}
+
+void SkeletonController::mix_skeleton_sizes() {
+	int start_frame = 20, end_frame = 21;
+	std::vector<std::string> file_names;
+	for (int i = start_frame; i <= end_frame; i++) {
+		std::string file_name =
+				"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
+		std::stringstream out;
+		out << i;
+		file_name += out.str();
+		file_name += ".bvh";
+		file_names.push_back(file_name);
+	}
+
+	std::string file_name =
+			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh";
+	skel_mixer.set_data(file_name, file_names, start_frame);
+	skel_mixer.mix();
+	file_name =
+			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";
+	skel_mixer.save_file(file_name);
 }

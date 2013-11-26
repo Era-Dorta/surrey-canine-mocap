@@ -6,29 +6,28 @@
  */
 
 #include "SkeletonMixer.h"
-#include "DebugUtil.h"
 
 SkeletonMixer::SkeletonMixer() {
 
 }
 
-SkeletonMixer::SkeletonMixer(std::vector<std::string>& file_names,
-		int start_frame) {
-	set_data(file_names, start_frame);
+SkeletonMixer::SkeletonMixer(std::string& model,
+		std::vector<std::string>& to_mix, int start_frame) {
+	set_data(model, to_mix, start_frame);
 }
 
 SkeletonMixer::~SkeletonMixer() {
 
 }
 
-void SkeletonMixer::set_data(std::vector<std::string>& file_names,
-		int start_frame) {
+void SkeletonMixer::set_data(std::string& model,
+		std::vector<std::string>& to_mix, int start_frame) {
 	skel_arr.clear();
-	skel_arr.resize(file_names.size());
-	for (unsigned int i = 0; i < file_names.size(); i++) {
-		skel_arr.at(i).load_from_file(file_names.at(i));
+	skel_arr.resize(to_mix.size());
+	for (unsigned int i = 0; i < to_mix.size(); i++) {
+		skel_arr.at(i).load_from_file(to_mix.at(i));
 	}
-	skel_result.load_from_file(file_names.front());
+	skel_result.load_from_file(model);
 }
 
 void SkeletonMixer::mix() {
