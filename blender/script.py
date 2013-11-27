@@ -1,12 +1,15 @@
 import bpy
+import io_anim_bvh
+from bpy_extras.io_utils import (axis_conversion)
 
-#filepath = '/home/cvssp/misc/m04701/Downloads/Dog_Modelling_Blender/Dog_modelling_head_root.blend'
-#lib = bpy.data.libraries.load(filepath)
-
-#scn = bpy.data.scenes[0]                       # get current scene
-
-#for attr in dir(lib):
-#    setattr(scn, attr, getattr(lib, attr))
+new_file_name = '/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh'
+global_scale=0.3
+global_matrix = axis_conversion('-Z',
+                               '-Y',
+                                ).to_4x4()
+                                         
+import_bvh = io_anim_bvh.import_bvh.load(None, bpy.context, new_file_name,
+	'ARMATURE', 'NATIVE', global_scale, False, 1, global_matrix )
 
 current_skel = bpy.context.scene.objects["Armature"]
 #current_skel_arm = bpy.data.armatures["Armature"]
