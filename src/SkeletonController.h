@@ -13,6 +13,7 @@
 #include "Skeletonization3D.h"
 #include "SkeletonFitting.h"
 #include "SkeletonMixer.h"
+#include "MessageHandler.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -49,7 +50,6 @@ class SkeletonController {
 		void update_dynamics(int disp_frame_no);
 	private:
 		void reset_state();
-		void update_state();
 		void draw_edit_text();
 
 		void load_skeleton_from_file(std::string file_name);
@@ -99,6 +99,8 @@ class SkeletonController {
 		Axis rotate_axis;
 		bool show_joint_axis;
 		bool manual_mark_up;
+
+		MessageHandler msg_handler;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */
