@@ -39,3 +39,6 @@ for bone in list(current_skel.pose.bones):
 	constraint = bone.constraints[0]
 	constraint.target = new_skel
 	constraint.subtarget = bone.name
+	
+#Go back to default mode to view the result 	
+bpy.context.window.screen = bpy.data.screens['Default']	
