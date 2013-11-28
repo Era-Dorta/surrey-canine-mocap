@@ -14,7 +14,7 @@ if file_name in scene.objects:
 	bpy.ops.object.delete(None)
 
 full_file_path = file_path + file_name + file_end
-global_scale=0.3
+global_scale=1.0
 global_matrix = axis_conversion('-Z',
                                'Y',
                                 ).to_4x4()
