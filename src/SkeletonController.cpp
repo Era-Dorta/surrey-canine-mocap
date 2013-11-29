@@ -90,11 +90,11 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 		draw_edit_text();
 	}
 
-	std::vector<Skel_Leg> v;
-	skel_fitter.divide_four_sections(
-			skeletonized3D.get_merged_3d_projection(current_frame), v);
-	skel_renderer.display_cloud(
-			skeletonized3D.get_merged_3d_projection(current_frame), v);
+	osg::ref_ptr<osg::Vec3Array> cloud =
+			skeletonized3D.get_merged_3d_projection(current_frame);
+	int front_paw_index = skel_fitter.find_front_right_paw(cloud);
+	skel_renderer.display_cloud(cloud, skel_fitter.getLabels());
+	skel_renderer.display_paw(cloud->at(front_paw_index));
 }
 
 Fitting_State SkeletonController::getState() const {

@@ -60,6 +60,8 @@ class RenderSkeletonization {
 
 		void display_cloud(osg::Vec3Array* points, std::vector<Skel_Leg> group);
 
+		void display_paw(const osg::Vec3& position);
+
 		//TODO Should not use Node, but it is much easier not to strictly follow
 		//the Model-View-Controller pattern
 		//TODO Use weakpointer instead of Node*

@@ -6,6 +6,7 @@
  */
 
 #include "SkeletonFitting.h"
+#include "DebugUtil.h"
 
 SkeletonFitting::SkeletonFitting() :
 			move_joint_max_dist(0) {
@@ -50,22 +51,43 @@ SkeletonFitting::~SkeletonFitting() {
 //Iterative??? How much to move???
 //}
 
+int SkeletonFitting::find_front_right_paw(osg::ref_ptr<osg::Vec3Array> cloud) {
+	divide_four_sections(cloud);
+	std::vector<int> front_right;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == Front_Right) {
+			front_right.push_back(i);
+		}
+	}
+
+	float max_y = cloud->at(front_right.front()).y();
+	int index = front_right.front();
+	for (unsigned int i = 0; i < front_right.size(); i++) {
+		if (max_y < cloud->at(front_right[i]).y()) {
+			max_y = cloud->at(front_right[i]).y();
+			index = front_right[i];
+		}
+	}
+	return index;
+}
+
 void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
-		std::vector<Skel_Leg>& result, bool use_median) {
-	result.clear();
-	result.resize(cloud->size(), Front_Left);
+		bool use_median) {
+	labels.clear();
+	labels.resize(cloud->size(), Front_Left);
 
 	float mean_y;
 	if (use_median) {
-		mean_y = get_median(cloud, result, Front_Left, Y);
+		mean_y = get_median(cloud, Front_Left, Y);
 	} else {
-		mean_y = get_mean(cloud, result, Front_Left, Y);
+		mean_y = get_mean(cloud, Front_Left, Y);
 	}
 	int num_invalid = 0;
 	//Divide in half vertically, discard all values above
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (cloud->at(i).y() < mean_y) {
-			result[i] = Not_Use;
+			labels[i] = Not_Use;
 			num_invalid++;
 		}
 	}
@@ -73,13 +95,13 @@ void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
 	//Divide the remaining values in front/back part along x
 	float mean_x;
 	if (use_median) {
-		mean_x = get_median(cloud, result, Front_Left, X);
+		mean_x = get_median(cloud, Front_Left, X);
 	} else {
-		mean_x = get_mean(cloud, result, Front_Left, X);
+		mean_x = get_mean(cloud, Front_Left, X);
 	}
 	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (result[i] == Front_Left && cloud->at(i).x() <= mean_x) {
-			result[i] = Back_Left;
+		if (labels[i] == Front_Left && cloud->at(i).x() <= mean_x) {
+			labels[i] = Back_Left;
 		}
 	}
 
@@ -87,17 +109,17 @@ void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
 	float mean_z_front;
 	float mean_z_back;
 	if (use_median) {
-		mean_z_front = get_median(cloud, result, Front_Left, Z);
-		mean_z_back = get_median(cloud, result, Back_Left, Z);
+		mean_z_front = get_median(cloud, Front_Left, Z);
+		mean_z_back = get_median(cloud, Back_Left, Z);
 	} else {
-		mean_z_front = get_mean(cloud, result, Front_Left, Z);
-		mean_z_back = get_mean(cloud, result, Back_Left, Z);
+		mean_z_front = get_mean(cloud, Front_Left, Z);
+		mean_z_back = get_mean(cloud, Back_Left, Z);
 	}
 	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (result[i] == Front_Left && cloud->at(i).z() >= mean_z_front) {
-			result[i] = Front_Right;
-		} else if (result[i] == Back_Left && cloud->at(i).z() >= mean_z_back) {
-			result[i] = Back_Right;
+		if (labels[i] == Front_Left && cloud->at(i).z() < mean_z_front) {
+			labels[i] = Front_Right;
+		} else if (labels[i] == Back_Left && cloud->at(i).z() < mean_z_back) {
+			labels[i] = Back_Right;
 		}
 	}
 	/*//Kmeans does not gives good results, but leave code here in case it would
@@ -141,7 +163,7 @@ bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
 }
 
 float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
-		std::vector<Skel_Leg>& labels, Skel_Leg use_label, Axis axis) {
+		Skel_Leg use_label, Axis axis) {
 	osg::ref_ptr<osg::Vec3Array> aux_vec = new osg::Vec3Array();
 
 	for (unsigned int i = 0; i < points->size(); i++) {
@@ -169,7 +191,7 @@ float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 }
 
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
-		std::vector<Skel_Leg>& labels, Skel_Leg use_label, Axis axis) {
+		Skel_Leg use_label, Axis axis) {
 
 	float mean = 0.0;
 	int num_valid = 0;
@@ -181,4 +203,8 @@ float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 	}
 
 	return mean / num_valid;
+}
+
+const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
+	return labels;
 }

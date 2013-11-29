@@ -543,6 +543,16 @@ void RenderSkeletonization::toggle_group_div() {
 	skel_group_div->setValue(0, !skel_group_div->getValue(0));
 }
 
+void RenderSkeletonization::display_paw(const osg::Vec3& position) {
+	if (skel_group_div->getNumChildren() == 1) {
+		add_sphere_to_node(Node::joint_radius, osg::Vec4(0.0, 0.0, 0.0, 0.0),
+				skel_group_div, osg::Matrix::translate(position));
+	} else {
+		skel_group_div->getChild(1)->asTransform()->asMatrixTransform()->setMatrix(
+				osg::Matrix::translate(position));
+	}
+}
+
 void RenderSkeletonization::add_sphere_to_node(float radius, osg::Vec4 color,
 		osg::Group* to_add, const osg::Matrix& trans) {
 	osg::ref_ptr<osg::MatrixTransform> sphere_trans = create_sphere(radius,
