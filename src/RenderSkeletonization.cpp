@@ -7,6 +7,7 @@ RenderSkeletonization::RenderSkeletonization() :
 	text_created = false;
 	skel_vis_switch = new osg::Switch;
 	skel_fitting_switch = new osg::Switch;
+	skel_group_div = new osg::Switch;
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
@@ -20,6 +21,7 @@ void RenderSkeletonization::set_data(
 	camera_arr = camera_arr_;
 	render_skel_group->addChild(skel_vis_switch);
 	render_skel_group->addChild(skel_fitting_switch.get());
+	render_skel_group->addChild(skel_group_div);
 	skel_fitting_switch->setNewChildDefaultValue(true);
 
 	//In case this is not first call, do a clean up
@@ -461,6 +463,84 @@ void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
 	half_size->setMatrix(half_sz);
 	half_size->addChild(axes);
 	to_add->addChild(half_size.get());
+}
+
+void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
+		std::vector<Skel_Leg> group) {
+
+	osg::ref_ptr<osg::Geode> skel2d_geode;
+	if (skel_group_div->getNumChildren()) {
+		skel2d_geode = skel_group_div->getChild(0)->asGeode();
+	} else {
+		skel2d_geode = new osg::Geode;
+		skel_group_div->addChild(skel2d_geode.get());
+	}
+	//Draw a blue cloud of squares, where each square represents a small part of a bone
+	unsigned int useful_nodes, i = 0;
+	unsigned int n_drawables = skel2d_geode->getNumDrawables();
+	unsigned int n_vertices = points->size();
+	useful_nodes = ((n_drawables > n_vertices) ? n_vertices : n_drawables);
+	//If the geometry is created, only change its position
+	for (; i < useful_nodes; i++) {
+		osg::ShapeDrawable* box_shape =
+				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
+		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
+		box->setCenter(points->at(i));
+		switch (group.at(i))
+		case Front_Left: {
+			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0)); //Yellow
+			break;
+			case Front_Right:
+			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0)); //Pink
+			break;
+			case Back_Left:
+			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0)); //Light Green
+			break;
+			case Back_Right:
+			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0)); // Blue/Green
+			break;
+			case Not_Use:
+			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
+		}
+		}
+
+		//If the geometry is not created, then create a new one
+	for (unsigned int j = i; j < n_vertices; j++) {
+		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
+		box_shape->setShape(
+				new osg::Box(points->at(j), 0.005f, 0.005f, 0.005f));
+		switch (group.at(j))
+		case Front_Left: {
+			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0));
+			break;
+			case Front_Right:
+			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0));
+			break;
+			case Back_Left:
+			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0));
+			break;
+			case Back_Right:
+			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0));
+			break;
+			case Not_Use:
+			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
+		}
+
+			//This lines are used to tell OSG that the data in the Geometry is
+			//changing every frame, so it has to update it
+		box_shape->setUseDisplayList(false);
+		box_shape->setUseVertexBufferObjects(true);
+		skel2d_geode->addDrawable(box_shape.get());
+	}
+
+	//If the points to draw in this frame are less than in the previous remove
+	//all the extra geometries.
+	skel2d_geode->removeDrawables(n_vertices,
+			skel2d_geode->getNumDrawables() - n_vertices);
+}
+
+void RenderSkeletonization::toggle_group_div() {
+	skel_group_div->setValue(0, !skel_group_div->getValue(0));
 }
 
 void RenderSkeletonization::add_sphere_to_node(float radius, osg::Vec4 color,

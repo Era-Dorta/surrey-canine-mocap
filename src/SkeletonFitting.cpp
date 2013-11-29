@@ -51,30 +51,48 @@ SkeletonFitting::~SkeletonFitting() {
 //}
 
 void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
-		std::vector<Skel_Leg>& result) {
+		std::vector<Skel_Leg>& result, bool use_median) {
 	result.clear();
 	result.resize(cloud->size(), Front_Left);
 
-	float mean_y = get_median(cloud, result, Front_Left, Y).y();
-
+	float mean_y;
+	if (use_median) {
+		mean_y = get_median(cloud, result, Front_Left, Y);
+	} else {
+		mean_y = get_mean(cloud, result, Front_Left, Y);
+	}
+	int num_invalid = 0;
 	//Divide in half vertically, discard all values above
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (cloud->at(i).y() < mean_y) {
 			result[i] = Not_Use;
+			num_invalid++;
 		}
 	}
 
 	//Divide the remaining values in front/back part along x
-	float mean_x = get_median(cloud, result, Front_Left, X).x();
+	float mean_x;
+	if (use_median) {
+		mean_x = get_median(cloud, result, Front_Left, X);
+	} else {
+		mean_x = get_mean(cloud, result, Front_Left, X);
+	}
 	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (result[i] != Not_Use && cloud->at(i).x() <= mean_x) {
+		if (result[i] == Front_Left && cloud->at(i).x() <= mean_x) {
 			result[i] = Back_Left;
 		}
 	}
 
 	//Divide the two groups into left and right
-	float mean_z_front = get_median(cloud, result, Front_Left, Z).z();
-	float mean_z_back = get_median(cloud, result, Back_Left, Z).z();
+	float mean_z_front;
+	float mean_z_back;
+	if (use_median) {
+		mean_z_front = get_median(cloud, result, Front_Left, Z);
+		mean_z_back = get_median(cloud, result, Back_Left, Z);
+	} else {
+		mean_z_front = get_mean(cloud, result, Front_Left, Z);
+		mean_z_back = get_mean(cloud, result, Back_Left, Z);
+	}
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (result[i] == Front_Left && cloud->at(i).z() >= mean_z_front) {
 			result[i] = Front_Right;
@@ -82,6 +100,32 @@ void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
 			result[i] = Back_Right;
 		}
 	}
+	/*//Kmeans does not gives good results, but leave code here in case it would
+	 // be used later
+	 int num_valid = cloud->size() - num_invalid;
+	 int max_clusters = 4;
+	 cv::Mat labels;
+
+	 cv::Mat data2(num_valid, 1, CV_32FC3);
+	 for(int i = 0; i < num_valid; i++) {
+	 if(result[i] != Not_Use){
+	 cv::Point3f ipt(cloud->at(i).x(),
+	 cloud->at(i).y(), cloud->at(i).z() );
+	 data2.at<cv::Point3f>(i) =ipt;
+	 }
+	 }
+
+	 cv::kmeans(data2, max_clusters, labels,
+	 cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0), 3,
+	 cv::KMEANS_PP_CENTERS);
+
+	 int j = 0;
+	 for(int i = 0; i < num_valid; i++) {
+	 if(result[i] != Not_Use){
+	 result[i] = (Skel_Leg)labels.at<int>(j);
+	 j++;
+	 }
+	 }*/
 }
 
 bool comp_x(const osg::Vec3& i, const osg::Vec3& j) {
@@ -96,12 +140,12 @@ bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
 	return (i.z() < j.z());
 }
 
-osg::Vec3 SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
-		std::vector<Skel_Leg>& result, Skel_Leg use_type, Axis axis) {
+float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
+		std::vector<Skel_Leg>& labels, Skel_Leg use_label, Axis axis) {
 	osg::ref_ptr<osg::Vec3Array> aux_vec = new osg::Vec3Array();
 
 	for (unsigned int i = 0; i < points->size(); i++) {
-		if (result[i] == use_type) {
+		if (labels[i] == use_label) {
 			aux_vec->push_back(points->at(i));
 		}
 	}
@@ -113,15 +157,28 @@ osg::Vec3 SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 	switch (axis) {
 	case X:
 		std::nth_element(first, middle, last, comp_x);
-		break;
+		return middle->x();
 	case Y:
 		std::nth_element(first, middle, last, comp_y);
-		break;
+		return middle->y();
 	case Z:
 		std::nth_element(first, middle, last, comp_z);
-		break;
+		return middle->z();
+	}
+	return 0.0;
+}
+
+float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
+		std::vector<Skel_Leg>& labels, Skel_Leg use_label, Axis axis) {
+
+	float mean = 0.0;
+	int num_valid = 0;
+	for (unsigned int i = 0; i < points->size(); i++) {
+		if (labels[i] == use_label) {
+			mean += points->at(i)[axis];
+			num_valid++;
+		}
 	}
 
-	osg::Vec3 res = *middle;
-	return res;
+	return mean / num_valid;
 }

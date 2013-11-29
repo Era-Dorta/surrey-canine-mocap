@@ -6,6 +6,7 @@
 #include "Node.h"
 #include "MocapHeader.h"
 #include "MiscUtils.h"
+#include "SkeletonFitting.h"
 
 #include <vector>
 
@@ -57,6 +58,8 @@ class RenderSkeletonization {
 		void display_3d_merged_skeleon_cloud(int disp_frame_no,
 				Skeletonization3D& skeleton);
 
+		void display_cloud(osg::Vec3Array* points, std::vector<Skel_Leg> group);
+
 		//TODO Should not use Node, but it is much easier not to strictly follow
 		//the Model-View-Controller pattern
 		//TODO Use weakpointer instead of Node*
@@ -74,6 +77,8 @@ class RenderSkeletonization {
 		void toggle_3d_cloud();
 
 		void toggle_3d_merged_cloud();
+
+		void toggle_group_div();
 	protected:
 	private:
 		osg::ref_ptr<osg::MatrixTransform> create_sphere(float radius,
@@ -127,6 +132,8 @@ class RenderSkeletonization {
 		bool display_merged;
 		bool skel_created;
 		bool text_created;
+
+		osg::ref_ptr<osg::Switch> skel_group_div;
 };
 
 #endif // RENDERSKELETONIZATION_H

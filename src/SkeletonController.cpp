@@ -72,9 +72,12 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	current_frame = disp_frame_no;
 	skeleton.set_current_frame(current_frame);
 
-	skel_renderer.clean_3d_skeleon_cloud();
+	//skel_renderer.clean_2d_skeletons();
+	//skel_renderer.display_2d_skeletons(current_frame, skeletonized3D);
 
-	skel_renderer.display_3d_skeleon_cloud(current_frame, skeletonized3D);
+	//skel_renderer.clean_3d_skeleon_cloud();
+
+	//skel_renderer.display_3d_skeleon_cloud(current_frame, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(current_frame,
 			skeletonized3D);
 
@@ -86,6 +89,12 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 				skeleton.get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
+
+	std::vector<Skel_Leg> v;
+	skel_fitter.divide_four_sections(
+			skeletonized3D.get_merged_3d_projection(current_frame), v);
+	skel_renderer.display_cloud(
+			skeletonized3D.get_merged_3d_projection(current_frame), v);
 }
 
 Fitting_State SkeletonController::getState() const {
@@ -265,7 +274,8 @@ bool SkeletonController::handle_keyboard_events(
 
 			//Toggle all skel cam visibility:
 		case osgGA::GUIEventAdapter::KEY_R:
-			skel_renderer.toggle_3d_cloud();
+			//skel_renderer.toggle_3d_cloud();
+			skel_renderer.toggle_group_div();
 			update_dynamics(current_frame);
 			break;
 
@@ -332,9 +342,9 @@ bool SkeletonController::handle_keyboard_events(
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
 
-			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			break;
 

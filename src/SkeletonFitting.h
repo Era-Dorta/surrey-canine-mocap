@@ -12,6 +12,7 @@
 #include "osg/Array"
 #include <vector>
 #include <algorithm>
+#include "opencv2/opencv.hpp"
 
 enum Skel_Leg {
 	Front_Left, Front_Right, Back_Left, Back_Right, Not_Use
@@ -28,16 +29,21 @@ class SkeletonFitting {
 		//void fit_skeleton_into_cloud(Skeleton& skeleton,
 		//		osg::ref_ptr<osg::Vec3Array> cloud);
 		//void fit_skeleton_with_prev_nex_frame(Skeleton& skeleton, int frame);
+
+		//Median gives better results that mean, but it is not as fast
 		void divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
-				std::vector<Skel_Leg>& result);
+				std::vector<Skel_Leg>& result, bool use_median = true);
 	private:
 		//Divide all the skeleton points in left and right using z distance
 		//Divide right along x
 		//from that group take the lowest one
 		void find_front_right_paw();
 
-		osg::Vec3 get_median(osg::ref_ptr<osg::Vec3Array> points,
-				std::vector<Skel_Leg>& result, Skel_Leg use_type, Axis axis);
+		float get_median(osg::ref_ptr<osg::Vec3Array> points,
+				std::vector<Skel_Leg>& labels, Skel_Leg use_label, Axis axis);
+
+		float get_mean(osg::ref_ptr<osg::Vec3Array> points,
+				std::vector<Skel_Leg>& labels, Skel_Leg use_label, Axis axis);
 
 		float move_joint_max_dist;
 };

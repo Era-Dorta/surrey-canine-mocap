@@ -26,10 +26,6 @@ enum Fitting_State {
 	EMPTY, ADD_POINTS, MOVE_POINTS, POINTS_SET
 };
 
-enum Axis {
-	X, Y, Z
-};
-
 class SkeletonController {
 	public:
 		SkeletonController();
