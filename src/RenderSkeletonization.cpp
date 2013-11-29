@@ -149,6 +149,8 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
 		box->setCenter(vertices->at(i));
+		//This line makes sure that OSG knows that the geometry has been modified
+		box_shape->dirtyBound();
 	}
 
 	//If the geometry is not created, then create a new one
@@ -502,9 +504,11 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 			case Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
 		}
-		}
+		//This line makes sure that OSG knows that the geometry has been modified
+		box_shape->dirtyBound();
+	}
 
-		//If the geometry is not created, then create a new one
+	//If the geometry is not created, then create a new one
 	for (unsigned int j = i; j < n_vertices; j++) {
 		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
 		box_shape->setShape(
