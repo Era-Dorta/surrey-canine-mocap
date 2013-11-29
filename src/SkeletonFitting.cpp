@@ -51,8 +51,21 @@ SkeletonFitting::~SkeletonFitting() {
 //Iterative??? How much to move???
 //}
 
-int SkeletonFitting::find_front_right_paw(osg::ref_ptr<osg::Vec3Array> cloud) {
+int SkeletonFitting::find_head(osg::ref_ptr<osg::Vec3Array> cloud) {
 	divide_four_sections(cloud);
+
+	float max_x = cloud->front().x();
+	int index = 0;
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == Not_Limbs && max_x < cloud->at(i).x()) {
+			max_x = cloud->at(i).x();
+			index = i;
+		}
+	}
+	return index;
+}
+
+int SkeletonFitting::find_front_right_paw(osg::ref_ptr<osg::Vec3Array> cloud) {
 	std::vector<int> front_right;
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
@@ -87,7 +100,7 @@ void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
 	//Divide in half vertically, discard all values above
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (cloud->at(i).y() < mean_y) {
-			labels[i] = Not_Use;
+			labels[i] = Not_Limbs;
 			num_invalid++;
 		}
 	}
@@ -143,7 +156,7 @@ void SkeletonFitting::divide_four_sections(osg::ref_ptr<osg::Vec3Array> cloud,
 
 	 int j = 0;
 	 for(int i = 0; i < num_valid; i++) {
-	 if(result[i] != Not_Use){
+	 if(result[i] != Not_Limbs){
 	 result[i] = (Skel_Leg)labels.at<int>(j);
 	 j++;
 	 }

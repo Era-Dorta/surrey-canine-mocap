@@ -6,13 +6,15 @@
  */
 
 #include "SkeletonController.h"
+#include "DebugUtil.h"
 
 SkeletonController::SkeletonController() :
 			state(MOVE_POINTS), current_frame(0), is_point_selected(false),
 			selected_point_index(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
 			move_on_z(false), rotate(true), change_all_frames(false),
 			only_root(false), transforming_skeleton(false), delete_skel(false),
-			rotate_axis(X), show_joint_axis(false), manual_mark_up(false) {
+			rotate_axis(X), show_joint_axis(false), manual_mark_up(false),
+			rotate_scale_factor(0.02), translate_scale_factor(0.002) {
 }
 
 SkeletonController::~SkeletonController() {
@@ -81,7 +83,20 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_3d_merged_skeleon_cloud(current_frame,
 			skeletonized3D);
 
+	osg::ref_ptr<osg::Vec3Array> cloud =
+			skeletonized3D.get_merged_3d_projection(current_frame);
+	int index = skel_fitter.find_head(cloud);
+	skel_renderer.display_cloud(cloud, skel_fitter.getLabels());
+	index = skel_fitter.find_front_right_paw(cloud);
+	skel_renderer.display_sphere(cloud->at(index), 1);
+
 	if (skeleton.isSkelLoaded()) {
+		index = skel_fitter.find_head(cloud);
+		//Translation is equal to new_pos - old_pos
+		osg::Vec3 translation = cloud->at(index) - skeleton.get_root()->offset
+				- skeleton.get_root()->froset->at(current_frame);
+		skeleton.translate_root(translation);
+
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
 		}
@@ -89,12 +104,6 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 				skeleton.get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
-
-	osg::ref_ptr<osg::Vec3Array> cloud =
-			skeletonized3D.get_merged_3d_projection(current_frame);
-	int front_paw_index = skel_fitter.find_front_right_paw(cloud);
-	skel_renderer.display_cloud(cloud, skel_fitter.getLabels());
-	skel_renderer.display_paw(cloud->at(front_paw_index));
 }
 
 Fitting_State SkeletonController::getState() const {
@@ -386,6 +395,12 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 	case Z:
 		mouse_vec.set(0.0, 0.0, y - last_mouse_pos_y);
 		break;
+	}
+
+	if (rotate) {
+		mouse_vec = mouse_vec * rotate_scale_factor;
+	} else {
+		mouse_vec = mouse_vec * translate_scale_factor;
 	}
 	return mouse_vec;
 }

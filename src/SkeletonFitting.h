@@ -15,7 +15,7 @@
 #include "opencv2/opencv.hpp"
 
 enum Skel_Leg {
-	Front_Left, Front_Right, Back_Left, Back_Right, Not_Use
+	Front_Left, Front_Right, Back_Left, Back_Right, Not_Limbs
 };
 
 enum Axis {
@@ -29,6 +29,8 @@ class SkeletonFitting {
 		//void fit_skeleton_into_cloud(Skeleton& skeleton,
 		//		osg::ref_ptr<osg::Vec3Array> cloud);
 		//void fit_skeleton_with_prev_nex_frame(Skeleton& skeleton, int frame);
+
+		int find_head(osg::ref_ptr<osg::Vec3Array> cloud);
 
 		int find_front_right_paw(osg::ref_ptr<osg::Vec3Array> cloud);
 

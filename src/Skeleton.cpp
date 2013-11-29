@@ -9,15 +9,12 @@
 #include "DebugUtil.h"
 Skeleton::Skeleton() :
 			skel_loaded(false) {
-	rotate_scale_factor = 0.02;
-	translate_scale_factor = 0.002;
 }
 
 Skeleton::~Skeleton() {
 }
 
 void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
-	angle *= rotate_scale_factor;
 	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
 			header.euler->at(1), angle[2], header.euler->at(2));
 	nodelist[index]->quat_arr.at(header.currentframe) =
@@ -25,7 +22,6 @@ void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
 }
 
 void Skeleton::rotate_root_all_frames(osg::Vec3& angle) {
-	angle *= rotate_scale_factor;
 	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
 			header.euler->at(1), angle[2], header.euler->at(2));
 	std::vector<osg::Quat>::iterator i;
@@ -35,17 +31,14 @@ void Skeleton::rotate_root_all_frames(osg::Vec3& angle) {
 }
 
 void Skeleton::translate_root(osg::Vec3& translation) {
-	translation *= translate_scale_factor;
 	root->froset->at(header.currentframe) += translation;
 }
 
 void Skeleton::translate_root_all_frames(osg::Vec3& translation) {
-	translation *= translate_scale_factor;
 	root->offset += translation;
 }
 
 void Skeleton::change_bone_length(unsigned int index, osg::Vec3& translation) {
-	translation *= translate_scale_factor;
 	nodelist[index]->length += translation;
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
 		nodelist[index]->children[i]->froset->at(header.currentframe) +=
@@ -55,7 +48,6 @@ void Skeleton::change_bone_length(unsigned int index, osg::Vec3& translation) {
 
 void Skeleton::change_bone_length_all_frames(unsigned int index,
 		osg::Vec3& translation) {
-	translation *= translate_scale_factor;
 
 	//Bone length is easier along global axes
 	osg::Quat inv_glob_rot = nodelist[index]->get_inv_global_rot(

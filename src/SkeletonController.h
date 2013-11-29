@@ -95,6 +95,8 @@ class SkeletonController {
 		Axis rotate_axis;
 		bool show_joint_axis;
 		bool manual_mark_up;
+		float rotate_scale_factor;
+		float translate_scale_factor;
 
 		MessageHandler msg_handler;
 };

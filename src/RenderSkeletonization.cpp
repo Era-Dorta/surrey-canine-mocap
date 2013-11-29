@@ -499,7 +499,7 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 			case Back_Right:
 			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0)); // Blue/Green
 			break;
-			case Not_Use:
+			case Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
 		}
 		}
@@ -522,7 +522,7 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 			case Back_Right:
 			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0));
 			break;
-			case Not_Use:
+			case Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
 		}
 
@@ -543,12 +543,13 @@ void RenderSkeletonization::toggle_group_div() {
 	skel_group_div->setValue(0, !skel_group_div->getValue(0));
 }
 
-void RenderSkeletonization::display_paw(const osg::Vec3& position) {
-	if (skel_group_div->getNumChildren() == 1) {
+void RenderSkeletonization::display_sphere(const osg::Vec3& position,
+		unsigned index) {
+	if (index + 1 >= skel_group_div->getNumChildren()) {
 		add_sphere_to_node(Node::joint_radius, osg::Vec4(0.0, 0.0, 0.0, 0.0),
 				skel_group_div, osg::Matrix::translate(position));
 	} else {
-		skel_group_div->getChild(1)->asTransform()->asMatrixTransform()->setMatrix(
+		skel_group_div->getChild(index + 1)->asTransform()->asMatrixTransform()->setMatrix(
 				osg::Matrix::translate(position));
 	}
 }
