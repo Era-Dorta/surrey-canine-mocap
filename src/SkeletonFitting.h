@@ -42,7 +42,7 @@ class SkeletonFitting {
 		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
 		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 
-		void solve_2_bones(Skeleton& skeleton, const osg::Vec3& position,
+		bool solve_2_bones(Skeleton& skeleton, const osg::Vec3& position,
 				int frame_num);
 	private:
 
@@ -57,7 +57,10 @@ class SkeletonFitting {
 		float get_mean(osg::ref_ptr<osg::Vec3Array> points, Skel_Leg use_label,
 				Axis axis);
 
+		bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
+
 		float move_joint_max_dist;
+		float error_threshold;
 		std::vector<Skel_Leg> labels;
 };
 

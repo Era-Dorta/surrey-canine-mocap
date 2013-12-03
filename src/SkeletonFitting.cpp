@@ -9,7 +9,7 @@
 #include "DebugUtil.h"
 
 SkeletonFitting::SkeletonFitting() :
-			move_joint_max_dist(0) {
+			move_joint_max_dist(0), error_threshold(0.001) {
 }
 
 SkeletonFitting::~SkeletonFitting() {
@@ -203,7 +203,7 @@ float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 	return 0.0;
 }
 
-void SkeletonFitting::solve_2_bones(Skeleton& skeleton,
+bool SkeletonFitting::solve_2_bones(Skeleton& skeleton,
 		const osg::Vec3& position, int frame_num) {
 	const float Xaxis[] = { 1, 0, 0 };
 	const float Yaxis[] = { 0, 1, 0 };
@@ -233,6 +233,14 @@ void SkeletonFitting::solve_2_bones(Skeleton& skeleton,
 		skeleton.get_node(1)->quat_arr.at(frame_num) = q;
 	} else {
 		cout << "Can not put joint on coordinates " << position << endl;
+	}
+
+	if (!are_equal(skeleton.get_node(2)->get_global_pos(frame_num), position)) {
+		cout << "-------- given and final position are not the same" << endl;
+		//TODO Should not change bone positions if the fitting failed
+		return false;
+	} else {
+		return true;
 	}
 }
 
@@ -269,4 +277,16 @@ float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
 	return labels;
+}
+
+bool SkeletonFitting::are_equal(const osg::Vec3& v0, const osg::Vec3& v1) {
+	if (v0.x() + error_threshold >= v1.x() && v0.x() - error_threshold <= v1.x()
+			&& v0.y() + error_threshold >= v1.y()
+			&& v0.y() - error_threshold <= v1.y()
+			&& v0.z() + error_threshold >= v1.z()
+			&& v0.z() - error_threshold <= v1.z()) {
+		return true;
+	} else {
+		return false;
+	}
 }
