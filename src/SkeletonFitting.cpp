@@ -203,6 +203,55 @@ float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 	return 0.0;
 }
 
+void SkeletonFitting::solve_2_bones(Skeleton& skeleton,
+		const osg::Vec3& position, int frame_num) {
+	const float Xaxis[] = { 1, 0, 0 };
+	const float Yaxis[] = { 0, 1, 0 };
+
+	Matrix T, S;
+	osg_to_matrix(T, osg::Matrix::translate(skeleton.get_root()->length));
+	osg_to_matrix(S, osg::Matrix::translate(skeleton.get_node(1)->length));
+
+	SRS s(T, S, Yaxis, Xaxis);
+
+	Matrix R1, G;
+	osg_to_matrix(G, osg::Matrix::translate(position));
+
+	float eangle = 0.0, swivel_angle = 0.0;
+	if (s.SetGoal(G, eangle)) {
+		s.SolveR1(swivel_angle, R1);
+
+		osg::Matrix osg_mat;
+		osg::Quat q;
+
+		matrix_to_osg(osg_mat, R1);
+		q.set(osg_mat);
+
+		skeleton.get_root()->quat_arr.at(frame_num) = q;
+
+		q = osg::Quat(eangle, osg::Vec3(0.0, 1.0, 0.0));
+		skeleton.get_node(1)->quat_arr.at(frame_num) = q;
+	} else {
+		cout << "Can not put joint on coordinates " << position << endl;
+	}
+}
+
+void SkeletonFitting::osg_to_matrix(Matrix& dest, const osg::Matrix& orig) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			dest[i][j] = orig(i, j);
+		}
+	}
+}
+
+void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			dest(i, j) = orig[i][j];
+		}
+	}
+}
+
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 		Skel_Leg use_label, Axis axis) {
 

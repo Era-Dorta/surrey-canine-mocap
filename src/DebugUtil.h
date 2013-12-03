@@ -23,6 +23,12 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Vec4 &vector) {
 	return out;
 }
 
+inline std::ostream& operator<<(std::ostream &out, const osg::Quat &quat) {
+	out << "[" << quat.x() << ", " << quat.y() << ", " << quat.z() << ", "
+			<< quat.w() << "]";
+	return out;
+}
+
 inline std::ostream& operator<<(std::ostream &out, const osg::Matrix &m) {
 	out << endl;
 	for (int i = 0; i < 4; i++) {

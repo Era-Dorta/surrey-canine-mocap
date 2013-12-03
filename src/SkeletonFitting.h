@@ -8,11 +8,14 @@
 #ifndef SKELETONFITTING_H_
 #define SKELETONFITTING_H_
 
-//#include "Skeleton.h"
+#include "Skeleton.h"
+#include "IKAN/srs.h"
+
 #include "osg/Array"
+#include "opencv2/opencv.hpp"
+
 #include <vector>
 #include <algorithm>
-#include "opencv2/opencv.hpp"
 
 enum Skel_Leg {
 	Front_Left, Front_Right, Back_Left, Back_Right, Not_Limbs
@@ -35,6 +38,12 @@ class SkeletonFitting {
 		int find_front_right_paw(osg::ref_ptr<osg::Vec3Array> cloud);
 
 		const std::vector<Skel_Leg>& getLabels() const;
+
+		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
+		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
+
+		void solve_2_bones(Skeleton& skeleton, const osg::Vec3& position,
+				int frame_num);
 	private:
 
 		//From a cloud of points, fill result vector with a label for each point
