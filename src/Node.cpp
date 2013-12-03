@@ -79,17 +79,31 @@ void Node::update_euler_angles() {
 
 osg::Quat Node::get_global_rot(int frame_num) {
 	osg::Quat res;
-	Node * next_frame = parent;
-	res = quat_arr.at(frame_num);
-	while (next_frame != NULL) {
-		res = next_frame->quat_arr.at(frame_num) * res;
-		next_frame = next_frame->parent;
-	}
+	Node * prev_node = this;
+
+	do {
+		res = prev_node->quat_arr.at(frame_num) * res;
+		prev_node = prev_node->parent;
+	} while (prev_node != NULL);
+
 	return res;
 }
 
 osg::Quat Node::get_inv_global_rot(int frame_num) {
 	return get_global_rot(frame_num).inverse();
+}
+
+osg::Vec3 Node::get_global_pos(int frame_num) {
+	Node * prev_node = this;
+	osg::Matrix aux;
+	do {
+		aux = aux * osg::Matrix::rotate(prev_node->quat_arr.at(frame_num))
+				* osg::Matrix::translate(
+						prev_node->offset + prev_node->froset->at(frame_num));
+		prev_node = prev_node->parent;
+	} while (prev_node != NULL);
+
+	return osg::Vec3() * aux;
 }
 
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {

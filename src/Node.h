@@ -49,6 +49,8 @@ class Node {
 
 		osg::Quat get_inv_global_rot(int frame_num);
 
+		osg::Vec3 get_global_pos(int frame_num);
+
 		//TODO Right now we use quaternions but it might be a good optimisation
 		//to have all the matrices precomputed once there are not going to be
 		//more changes
