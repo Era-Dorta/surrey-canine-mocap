@@ -106,6 +106,20 @@ osg::Vec3 Node::get_global_pos(int frame_num) {
 	return osg::Vec3() * aux;
 }
 
+osg::Vec3 Node::get_end_bone_global_pos(int frame_num) {
+	Node * prev_node = this;
+	osg::Matrix aux;
+	do {
+		aux = aux * osg::Matrix::rotate(prev_node->quat_arr.at(frame_num))
+				* osg::Matrix::translate(
+						prev_node->offset + prev_node->froset->at(frame_num));
+		prev_node = prev_node->parent;
+	} while (prev_node != NULL);
+	aux = osg::Matrix::translate(length) * aux;
+
+	return osg::Vec3() * aux;
+}
+
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
 	//To calculate back the euler angles from a quaternion we use this formulas
 	//but since we want the postmultiplication order we use the conjugate of the

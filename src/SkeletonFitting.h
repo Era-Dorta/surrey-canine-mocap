@@ -42,8 +42,8 @@ class SkeletonFitting {
 		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
 		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 
-		bool solve_2_bones(Skeleton& skeleton, const osg::Vec3& position,
-				int frame_num);
+		bool solve_2_bones(Skeleton& skeleton, int bone0, int bone1,
+				const osg::Vec3& position, int frame_num);
 	private:
 
 		//From a cloud of points, fill result vector with a label for each point

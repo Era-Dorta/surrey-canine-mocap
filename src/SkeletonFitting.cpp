@@ -203,18 +203,18 @@ float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 	return 0.0;
 }
 
-bool SkeletonFitting::solve_2_bones(Skeleton& skeleton,
+bool SkeletonFitting::solve_2_bones(Skeleton& skeleton, int bone0, int bone1,
 		const osg::Vec3& position, int frame_num) {
 	const float Xaxis[] = { 1, 0, 0 };
 	const float Yaxis[] = { 0, 1, 0 };
 
 	osg::Quat prev_rot_0, prev_rot_1;
-	prev_rot_0 = skeleton.get_root()->quat_arr.at(frame_num);
-	prev_rot_1 = skeleton.get_node(1)->quat_arr.at(frame_num);
+	prev_rot_0 = skeleton.get_node(bone0)->quat_arr.at(frame_num);
+	prev_rot_1 = skeleton.get_node(bone1)->quat_arr.at(frame_num);
 
 	Matrix T, S;
-	osg_to_matrix(T, osg::Matrix::translate(skeleton.get_root()->length));
-	osg_to_matrix(S, osg::Matrix::translate(skeleton.get_node(1)->length));
+	osg_to_matrix(T, osg::Matrix::translate(skeleton.get_node(bone0)->length));
+	osg_to_matrix(S, osg::Matrix::translate(skeleton.get_node(bone1)->length));
 
 	SRS s(T, S, Yaxis, Xaxis);
 
@@ -231,20 +231,21 @@ bool SkeletonFitting::solve_2_bones(Skeleton& skeleton,
 		matrix_to_osg(osg_mat, R1);
 		q.set(osg_mat);
 
-		skeleton.get_root()->quat_arr.at(frame_num) = q;
+		skeleton.get_node(bone0)->quat_arr.at(frame_num) = q;
 
 		q = osg::Quat(eangle, osg::Vec3(0.0, 1.0, 0.0));
-		skeleton.get_node(1)->quat_arr.at(frame_num) = q;
+		skeleton.get_node(bone1)->quat_arr.at(frame_num) = q;
 	} else {
 		cout << "Can not put joint on coordinates " << position << endl;
 		return false;
 	}
 
-	if (!are_equal(skeleton.get_node(2)->get_global_pos(frame_num), position)) {
+	if (!are_equal(skeleton.get_node(bone1)->get_end_bone_global_pos(frame_num),
+			position)) {
 		//TODO Better check if position is within range and do not calculate
 		//anything if is not
-		skeleton.get_root()->quat_arr.at(frame_num) = prev_rot_0;
-		skeleton.get_node(1)->quat_arr.at(frame_num) = prev_rot_1;
+		skeleton.get_node(bone0)->quat_arr.at(frame_num) = prev_rot_0;
+		skeleton.get_node(bone1)->quat_arr.at(frame_num) = prev_rot_1;
 		cout << "Can not put joint on coordinates " << position << endl;
 		return false;
 	} else {
