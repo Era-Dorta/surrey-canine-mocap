@@ -208,6 +208,10 @@ bool SkeletonFitting::solve_2_bones(Skeleton& skeleton,
 	const float Xaxis[] = { 1, 0, 0 };
 	const float Yaxis[] = { 0, 1, 0 };
 
+	osg::Quat prev_rot_0, prev_rot_1;
+	prev_rot_0 = skeleton.get_root()->quat_arr.at(frame_num);
+	prev_rot_1 = skeleton.get_node(1)->quat_arr.at(frame_num);
+
 	Matrix T, S;
 	osg_to_matrix(T, osg::Matrix::translate(skeleton.get_root()->length));
 	osg_to_matrix(S, osg::Matrix::translate(skeleton.get_node(1)->length));
@@ -233,11 +237,15 @@ bool SkeletonFitting::solve_2_bones(Skeleton& skeleton,
 		skeleton.get_node(1)->quat_arr.at(frame_num) = q;
 	} else {
 		cout << "Can not put joint on coordinates " << position << endl;
+		return false;
 	}
 
 	if (!are_equal(skeleton.get_node(2)->get_global_pos(frame_num), position)) {
-		cout << "-------- given and final position are not the same" << endl;
-		//TODO Should not change bone positions if the fitting failed
+		//TODO Better check if position is within range and do not calculate
+		//anything if is not
+		skeleton.get_root()->quat_arr.at(frame_num) = prev_rot_0;
+		skeleton.get_node(1)->quat_arr.at(frame_num) = prev_rot_1;
+		cout << "Can not put joint on coordinates " << position << endl;
 		return false;
 	} else {
 		return true;
