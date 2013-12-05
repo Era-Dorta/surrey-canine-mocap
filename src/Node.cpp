@@ -94,30 +94,32 @@ osg::Quat Node::get_inv_global_rot(int frame_num) {
 }
 
 osg::Vec3 Node::get_global_pos(int frame_num) {
-	Node * prev_node = this;
 	osg::Matrix aux;
-	do {
-		aux = aux * osg::Matrix::rotate(prev_node->quat_arr.at(frame_num))
-				* osg::Matrix::translate(
-						prev_node->offset + prev_node->froset->at(frame_num));
-		prev_node = prev_node->parent;
-	} while (prev_node != NULL);
+	calculate_world_matrix(this, aux, frame_num);
 
 	return osg::Vec3() * aux;
 }
 
 osg::Vec3 Node::get_end_bone_global_pos(int frame_num) {
-	Node * prev_node = this;
 	osg::Matrix aux;
-	do {
-		aux = aux * osg::Matrix::rotate(prev_node->quat_arr.at(frame_num))
-				* osg::Matrix::translate(
-						prev_node->offset + prev_node->froset->at(frame_num));
-		prev_node = prev_node->parent;
-	} while (prev_node != NULL);
+	calculate_world_matrix(this, aux, frame_num);
 	aux = osg::Matrix::translate(length) * aux;
 
 	return osg::Vec3() * aux;
+}
+
+void Node::get_global_matrix(int frame_num, osg::Matrix& trans ){
+	calculate_world_matrix(this, trans, frame_num);
+}
+
+void Node::calculate_world_matrix(Node* node, osg::Matrix& trans, int frame_num) {
+	trans.makeIdentity();
+	while (node != NULL) {
+		trans = trans * osg::Matrix::rotate(node->quat_arr.at(frame_num))
+				* osg::Matrix::translate(
+						node->offset + node->froset->at(frame_num));
+		node = node->parent;
+	}
 }
 
 void Node::quat_to_euler(osg::Quat& q, osg::Vec3& euler) {
