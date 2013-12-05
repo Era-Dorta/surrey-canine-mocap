@@ -8,6 +8,18 @@
 #include "SkeletonFitting.h"
 #include "DebugUtil.h"
 
+bool comp_x(const osg::Vec3& i, const osg::Vec3& j) {
+	return (i.x() < j.x());
+}
+
+bool comp_y(const osg::Vec3& i, const osg::Vec3& j) {
+	return (i.y() < j.y());
+}
+
+bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
+	return (i.z() < j.z());
+}
+
 SkeletonFitting::SkeletonFitting() :
 			move_joint_max_dist(0), error_threshold(0.005), current_frame(-1) {
 }
@@ -332,16 +344,4 @@ void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
 			dest(i, j) = orig[i][j];
 		}
 	}
-}
-
-bool comp_x(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.x() < j.x());
-}
-
-bool comp_y(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.y() < j.y());
-}
-
-bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.z() < j.z());
 }
