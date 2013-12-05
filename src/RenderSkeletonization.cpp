@@ -504,7 +504,7 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 			case Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
 		}
-		//This line makes sure that OSG knows that the geometry has been modified
+			//This line makes sure that OSG knows that the geometry has been modified
 		box_shape->dirtyBound();
 	}
 

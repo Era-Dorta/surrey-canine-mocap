@@ -15,6 +15,9 @@ SkeletonController::SkeletonController() :
 			only_root(false), transforming_skeleton(false), delete_skel(false),
 			rotate_axis(X), show_joint_axis(false), manual_mark_up(false),
 			rotate_scale_factor(0.02), translate_scale_factor(0.002) {
+	skeletonized3D = boost::shared_ptr<Skeletonization3D>(
+			new Skeletonization3D);
+	skeleton = boost::shared_ptr<Skeleton>(new Skeleton);
 }
 
 SkeletonController::~SkeletonController() {
@@ -25,7 +28,8 @@ void SkeletonController::set_data(
 		osg::ref_ptr<osg::Group> render_skel_group) {
 
 	skel_renderer.set_data(camera_arr, render_skel_group);
-	skeletonized3D.set_cameras(camera_arr);
+	skeletonized3D->set_cameras(camera_arr);
+	skel_fitter.init(skeleton, skeletonized3D);
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
@@ -45,7 +49,7 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 	skel_renderer.clean_skeleton();
 	skel_renderer.clean_3d_merged_skeleon_cloud();
 
-	skeleton.load_from_file(file_name);
+	skeleton->load_from_file(file_name);
 
 	reset_state();
 
@@ -53,7 +57,7 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 }
 
 void SkeletonController::save_skeleton_to_file(std::string file_name) {
-	skeleton.save_to_file(file_name);
+	skeleton->save_to_file(file_name);
 }
 
 void SkeletonController::reset_state() {
@@ -72,7 +76,8 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	//not creating everything from scratch
 	//Skeleton, text and 3dmerged cloud are not recreated every frame anymore
 	current_frame = disp_frame_no;
-	skeleton.set_current_frame(current_frame);
+	skeleton->set_current_frame(current_frame);
+	skel_fitter.calculate_for_frame(current_frame);
 
 	//skel_renderer.clean_2d_skeletons();
 	//skel_renderer.display_2d_skeletons(current_frame, skeletonized3D);
@@ -81,27 +86,22 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 
 	//skel_renderer.display_3d_skeleon_cloud(current_frame, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(current_frame,
-			skeletonized3D);
+			(*skeletonized3D));
 
-	osg::ref_ptr<osg::Vec3Array> cloud =
-			skeletonized3D.get_merged_3d_projection(current_frame);
-	int index = skel_fitter.find_head(cloud);
-	skel_renderer.display_cloud(cloud, skel_fitter.getLabels());
-	index = skel_fitter.find_front_right_paw(cloud);
-	skel_renderer.display_sphere(cloud->at(index), 1);
+	skel_renderer.display_cloud(
+			skeletonized3D->get_merged_3d_projection(current_frame),
+			skel_fitter.getLabels());
 
-	if (skeleton.isSkelLoaded()) {
-		index = skel_fitter.find_head(cloud);
-		//Translation is equal to new_pos - old_pos
-		osg::Vec3 translation = cloud->at(index) - skeleton.get_root()->offset
-				- skeleton.get_root()->froset->at(current_frame);
-		skeleton.translate_root(translation);
+	skel_renderer.display_sphere(skel_fitter.get_front_right_paw(), 0);
+
+	if (skeleton->isSkelLoaded()) {
+		skel_fitter.fit_root_position();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
 		}
-		skel_renderer.display_skeleton(skeleton.get_root(),
-				skeleton.get_header(), current_frame, show_joint_axis);
+		skel_renderer.display_skeleton(skeleton->get_root(),
+				skeleton->get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
 }
@@ -185,9 +185,9 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 						if (selected_point) {
 							is_point_selected = true;
 							transforming_skeleton = true;
-							selected_point_index = skeleton.get_node_index(
+							selected_point_index = skeleton->get_node_index(
 									selected_point);
-							skeleton.toggle_color(selected_point_index);
+							skeleton->toggle_color(selected_point_index);
 							delete_skel = true;
 							update_dynamics(current_frame);
 						}
@@ -216,23 +216,23 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 			if (rotate) {
 				if (!change_all_frames) {
 					if (!only_root) {
-						skeleton.rotate_joint(selected_point_index, move_axis);
+						skeleton->rotate_joint(selected_point_index, move_axis);
 					}
 				} else {
 					if (only_root) {
-						skeleton.rotate_root_all_frames(move_axis);
+						skeleton->rotate_root_all_frames(move_axis);
 					}
 				}
 			} else {
 				if (only_root) {
 					if (!change_all_frames) {
-						skeleton.translate_root(move_axis);
+						skeleton->translate_root(move_axis);
 					} else {
-						skeleton.translate_root_all_frames(move_axis);
+						skeleton->translate_root_all_frames(move_axis);
 					}
 				} else {
 					if (change_all_frames) {
-						skeleton.change_bone_length_all_frames(
+						skeleton->change_bone_length_all_frames(
 								selected_point_index, move_axis);
 					}
 				}
@@ -295,7 +295,7 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_V:
 			if (is_point_selected) {
-				skeleton.toggle_color(selected_point_index);
+				skeleton->toggle_color(selected_point_index);
 				reset_state();
 				skel_renderer.clean_text();
 				update_dynamics(current_frame);

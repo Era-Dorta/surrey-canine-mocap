@@ -108,11 +108,12 @@ osg::Vec3 Node::get_end_bone_global_pos(int frame_num) {
 	return osg::Vec3() * aux;
 }
 
-void Node::get_global_matrix(int frame_num, osg::Matrix& trans ){
+void Node::get_global_matrix(int frame_num, osg::Matrix& trans) {
 	calculate_world_matrix(this, trans, frame_num);
 }
 
-void Node::calculate_world_matrix(Node* node, osg::Matrix& trans, int frame_num) {
+void Node::calculate_world_matrix(Node* node, osg::Matrix& trans,
+		int frame_num) {
 	trans.makeIdentity();
 	while (node != NULL) {
 		trans = trans * osg::Matrix::rotate(node->quat_arr.at(frame_num))

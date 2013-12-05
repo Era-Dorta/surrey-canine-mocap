@@ -64,7 +64,7 @@ class SkeletonController {
 		void mix_skeleton_sizes();
 
 		//Class that creates a skeleton from a given set of frames
-		Skeletonization3D skeletonized3D;
+		boost::shared_ptr<Skeletonization3D> skeletonized3D;
 
 		//Class that renders all skeleton related objects
 		RenderSkeletonization skel_renderer;
@@ -73,7 +73,7 @@ class SkeletonController {
 		//cloud of points that represent a skeleton.
 		SkeletonFitting skel_fitter;
 
-		Skeleton skeleton;
+		boost::shared_ptr<Skeleton> skeleton;
 
 		SkeletonMixer skel_mixer;
 
