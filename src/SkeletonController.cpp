@@ -92,7 +92,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 			skeletonized3D->get_merged_3d_projection(current_frame),
 			skel_fitter.getLabels());
 
-	skel_renderer.display_sphere(skel_fitter.get_front_right_paw(), 0);
+	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
 
 	if (skeleton->isSkelLoaded()) {
 		skel_fitter.fit_root_position();

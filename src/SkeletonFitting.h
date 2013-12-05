@@ -46,11 +46,11 @@ class SkeletonFitting {
 
 		const std::vector<Skel_Leg>& getLabels() const;
 
-		osg::Vec3 get_front_right_paw();
+		osg::Vec3 get_paw(Skel_Leg leg);
 	private:
 		int find_head();
 
-		int find_front_right_paw();
+		int find_paw(Skel_Leg leg);
 
 		//From a cloud of points, fill result vector with a label for each point
 		//Median gives better results that mean, but it is not as fast

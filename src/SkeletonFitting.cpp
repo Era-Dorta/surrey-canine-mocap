@@ -91,8 +91,8 @@ const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
 	return labels;
 }
 
-osg::Vec3 SkeletonFitting::get_front_right_paw() {
-	return cloud->at(find_front_right_paw());
+osg::Vec3 SkeletonFitting::get_paw(Skel_Leg leg) {
+	return cloud->at(find_paw(leg));
 }
 
 int SkeletonFitting::find_head() {
@@ -109,21 +109,21 @@ int SkeletonFitting::find_head() {
 	return index;
 }
 
-int SkeletonFitting::find_front_right_paw() {
-	std::vector<int> front_right;
+int SkeletonFitting::find_paw(Skel_Leg leg) {
+	std::vector<int> leg_points;
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == Front_Right) {
-			front_right.push_back(i);
+		if (labels[i] == leg) {
+			leg_points.push_back(i);
 		}
 	}
 
-	float max_y = cloud->at(front_right.front()).y();
-	int index = front_right.front();
-	for (unsigned int i = 0; i < front_right.size(); i++) {
-		if (max_y < cloud->at(front_right[i]).y()) {
-			max_y = cloud->at(front_right[i]).y();
-			index = front_right[i];
+	float max_y = cloud->at(leg_points.front()).y();
+	int index = leg_points.front();
+	for (unsigned int i = 0; i < leg_points.size(); i++) {
+		if (max_y < cloud->at(leg_points[i]).y()) {
+			max_y = cloud->at(leg_points[i]).y();
+			index = leg_points[i];
 		}
 	}
 	return index;
