@@ -42,12 +42,9 @@ class SkeletonFitting {
 
 		void fit_root_position();
 
+		void fit_leg_position(Skel_Leg leg);
+
 		const std::vector<Skel_Leg>& getLabels() const;
-
-		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
-		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
-
-		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position);
 
 		osg::Vec3 get_front_right_paw();
 	private:
@@ -59,6 +56,8 @@ class SkeletonFitting {
 		//Median gives better results that mean, but it is not as fast
 		void divide_four_sections(bool use_median = true);
 
+		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position);
+
 		float get_median(osg::ref_ptr<osg::Vec3Array> points,
 				Skel_Leg use_label, Axis axis);
 
@@ -66,6 +65,10 @@ class SkeletonFitting {
 				Axis axis);
 
 		bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
+
+		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
+
+		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 
 		float move_joint_max_dist;
 		float error_threshold;

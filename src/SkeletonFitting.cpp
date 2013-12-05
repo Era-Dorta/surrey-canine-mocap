@@ -57,6 +57,32 @@ void SkeletonFitting::init(boost::shared_ptr<Skeleton> skeleton_,
 //Iterative??? How much to move???
 //}
 
+void SkeletonFitting::calculate_for_frame(int frame_num) {
+	if (current_frame != frame_num) {
+		current_frame = frame_num;
+		cloud = skeletonizator->get_merged_3d_projection(current_frame);
+		divide_four_sections(cloud);
+	}
+}
+
+void SkeletonFitting::fit_root_position() {
+	osg::Vec3 translation = cloud->at(find_head())
+			- skeleton->get_root()->offset
+			- skeleton->get_root()->froset->at(current_frame);
+	skeleton->translate_root(translation);
+}
+
+void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
+}
+
+const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
+	return labels;
+}
+
+osg::Vec3 SkeletonFitting::get_front_right_paw() {
+	return cloud->at(find_front_right_paw());
+}
+
 int SkeletonFitting::find_head() {
 	divide_four_sections(cloud);
 
@@ -168,46 +194,6 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 	 }*/
 }
 
-bool comp_x(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.x() < j.x());
-}
-
-bool comp_y(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.y() < j.y());
-}
-
-bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.z() < j.z());
-}
-
-float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
-		Skel_Leg use_label, Axis axis) {
-	osg::ref_ptr<osg::Vec3Array> aux_vec = new osg::Vec3Array();
-
-	for (unsigned int i = 0; i < points->size(); i++) {
-		if (labels[i] == use_label) {
-			aux_vec->push_back(points->at(i));
-		}
-	}
-
-	osg::Vec3Array::iterator first = aux_vec->begin();
-	osg::Vec3Array::iterator last = aux_vec->end();
-	osg::Vec3Array::iterator middle = first + (last - first) / 2;
-
-	switch (axis) {
-	case X:
-		std::nth_element(first, middle, last, comp_x);
-		return middle->x();
-	case Y:
-		std::nth_element(first, middle, last, comp_y);
-		return middle->y();
-	case Z:
-		std::nth_element(first, middle, last, comp_z);
-		return middle->z();
-	}
-	return 0.0;
-}
-
 bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 		const osg::Vec3& position) {
 	//Positive direction axis, axis pointing out of the body
@@ -277,20 +263,32 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	}
 }
 
-void SkeletonFitting::osg_to_matrix(Matrix& dest, const osg::Matrix& orig) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			dest[i][j] = orig(i, j);
-		}
-	}
-}
+float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
+		Skel_Leg use_label, Axis axis) {
+	osg::ref_ptr<osg::Vec3Array> aux_vec = new osg::Vec3Array();
 
-void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			dest(i, j) = orig[i][j];
+	for (unsigned int i = 0; i < points->size(); i++) {
+		if (labels[i] == use_label) {
+			aux_vec->push_back(points->at(i));
 		}
 	}
+
+	osg::Vec3Array::iterator first = aux_vec->begin();
+	osg::Vec3Array::iterator last = aux_vec->end();
+	osg::Vec3Array::iterator middle = first + (last - first) / 2;
+
+	switch (axis) {
+	case X:
+		std::nth_element(first, middle, last, comp_x);
+		return middle->x();
+	case Y:
+		std::nth_element(first, middle, last, comp_y);
+		return middle->y();
+	case Z:
+		std::nth_element(first, middle, last, comp_z);
+		return middle->z();
+	}
+	return 0.0;
 }
 
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
@@ -308,29 +306,6 @@ float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 	return mean / num_valid;
 }
 
-const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
-	return labels;
-}
-
-void SkeletonFitting::fit_root_position() {
-	osg::Vec3 translation = cloud->at(find_head())
-			- skeleton->get_root()->offset
-			- skeleton->get_root()->froset->at(current_frame);
-	skeleton->translate_root(translation);
-}
-
-osg::Vec3 SkeletonFitting::get_front_right_paw() {
-	return cloud->at(find_front_right_paw());
-}
-
-void SkeletonFitting::calculate_for_frame(int frame_num) {
-	if (current_frame != frame_num) {
-		current_frame = frame_num;
-		cloud = skeletonizator->get_merged_3d_projection(current_frame);
-		divide_four_sections(cloud);
-	}
-}
-
 bool SkeletonFitting::are_equal(const osg::Vec3& v0, const osg::Vec3& v1) {
 	if (v0.x() + error_threshold >= v1.x() && v0.x() - error_threshold <= v1.x()
 			&& v0.y() + error_threshold >= v1.y()
@@ -341,4 +316,32 @@ bool SkeletonFitting::are_equal(const osg::Vec3& v0, const osg::Vec3& v1) {
 	} else {
 		return false;
 	}
+}
+
+void SkeletonFitting::osg_to_matrix(Matrix& dest, const osg::Matrix& orig) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			dest[i][j] = orig(i, j);
+		}
+	}
+}
+
+void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			dest(i, j) = orig[i][j];
+		}
+	}
+}
+
+bool comp_x(const osg::Vec3& i, const osg::Vec3& j) {
+	return (i.x() < j.x());
+}
+
+bool comp_y(const osg::Vec3& i, const osg::Vec3& j) {
+	return (i.y() < j.y());
+}
+
+bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
+	return (i.z() < j.z());
 }
