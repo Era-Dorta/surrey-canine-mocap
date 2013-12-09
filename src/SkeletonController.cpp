@@ -420,7 +420,7 @@ void SkeletonController::mix_skeleton_sizes() {
 
 	std::string file_name =
 			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh";
-	skel_mixer.set_data(file_name, file_names, start_frame);
+	skel_mixer.set_data(file_name, file_names);
 	skel_mixer.mix();
 	file_name =
 			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";

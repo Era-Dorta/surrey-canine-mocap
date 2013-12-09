@@ -12,8 +12,8 @@ SkeletonMixer::SkeletonMixer() {
 }
 
 SkeletonMixer::SkeletonMixer(std::string& model,
-		std::vector<std::string>& to_mix, int start_frame) {
-	set_data(model, to_mix, start_frame);
+		std::vector<std::string>& to_mix) {
+	set_data(model, to_mix);
 }
 
 SkeletonMixer::~SkeletonMixer() {
@@ -21,7 +21,7 @@ SkeletonMixer::~SkeletonMixer() {
 }
 
 void SkeletonMixer::set_data(std::string& model,
-		std::vector<std::string>& to_mix, int start_frame) {
+		std::vector<std::string>& to_mix) {
 	skel_arr.clear();
 	skel_arr.resize(to_mix.size());
 	for (unsigned int i = 0; i < to_mix.size(); i++) {
