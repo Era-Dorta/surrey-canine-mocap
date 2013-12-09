@@ -30,6 +30,7 @@ void SkeletonController::set_data(
 	skel_renderer.set_data(camera_arr, render_skel_group);
 	skeletonized3D->set_cameras(camera_arr);
 	skel_fitter.init(skeleton, skeletonized3D);
+	//mix_skeleton_sizes();
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
@@ -95,7 +96,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
 
 	if (skeleton->isSkelLoaded()) {
-		skel_fitter.fit_root_position();
+		//skel_fitter.fit_root_position();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
@@ -350,11 +351,11 @@ bool SkeletonController::handle_keyboard_events(
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
-
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-					"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh");
 			break;
 
 			//Save skeleton to file:
@@ -406,7 +407,7 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 }
 
 void SkeletonController::mix_skeleton_sizes() {
-	int start_frame = 20, end_frame = 21;
+	int start_frame = 29, end_frame = 29;
 	std::vector<std::string> file_names;
 	for (int i = start_frame; i <= end_frame; i++) {
 		std::string file_name =
@@ -419,7 +420,7 @@ void SkeletonController::mix_skeleton_sizes() {
 	}
 
 	std::string file_name =
-			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh";
+			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh";
 	skel_mixer.set_data(file_name, file_names);
 	skel_mixer.mix();
 	file_name =
