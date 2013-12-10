@@ -54,6 +54,8 @@ class SkeletonFitting {
 		const std::vector<Skel_Leg>& getLabels() const;
 
 		osg::Vec3 get_paw(Skel_Leg leg);
+
+		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position);
 	private:
 		int find_head();
 
@@ -62,8 +64,6 @@ class SkeletonFitting {
 		//From a cloud of points, fill result vector with a label for each point
 		//Median gives better results that mean, but it is not as fast
 		void divide_four_sections(bool use_median = true);
-
-		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position);
 
 		float get_median(osg::ref_ptr<osg::Vec3Array> points,
 				Skel_Leg use_label, Axis axis);

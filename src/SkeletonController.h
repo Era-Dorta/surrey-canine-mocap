@@ -101,6 +101,7 @@ class SkeletonController {
 		bool manual_mark_up;
 		float rotate_scale_factor;
 		float translate_scale_factor;
+		float inv_kin_scale_factor;
 
 		MessageHandler msg_handler;
 };

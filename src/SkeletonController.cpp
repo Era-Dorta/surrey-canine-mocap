@@ -12,7 +12,7 @@ SkeletonController::SkeletonController() :
 			current_frame(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
 			delete_skel(false), rotate_axis(X), show_joint_axis(false),
 			manual_mark_up(false), rotate_scale_factor(0.02),
-			translate_scale_factor(0.002) {
+			translate_scale_factor(0.002), inv_kin_scale_factor(0.0005) {
 	reset_state();
 	skeletonized3D = boost::shared_ptr<Skeletonization3D>(
 			new Skeletonization3D);
@@ -247,7 +247,11 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				}
 				break;
 			case INV_KIN:
-
+				if (selected_point_index > 0 && !only_root
+						&& !change_all_frames) {
+					skel_fitter.solve_2_bones(selected_point_index - 1,
+							selected_point_index, move_axis);
+				}
 				break;
 			}
 
@@ -377,6 +381,7 @@ bool SkeletonController::handle_keyboard_events(
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
 			break;
 
 			//Save skeleton to file:
@@ -424,8 +429,13 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		mouse_vec = mouse_vec * rotate_scale_factor;
 		break;
 	case TRANSLATE:
-	case INV_KIN:
 		mouse_vec = mouse_vec * translate_scale_factor;
+		break;
+	case INV_KIN:
+		mouse_vec =
+				mouse_vec * inv_kin_scale_factor
+						+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
+								current_frame);
 		break;
 	}
 
