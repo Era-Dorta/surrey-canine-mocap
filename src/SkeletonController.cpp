@@ -65,11 +65,10 @@ void SkeletonController::reset_state() {
 	is_point_selected = false;
 	selected_point_index = 0;
 	move_on_z = false;
-	rotate = false;
+	mod_state = INV_KIN;
 	change_all_frames = false;
 	transforming_skeleton = false;
 	only_root = false;
-	inverse_kin_manual = true;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -119,15 +118,22 @@ void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
 		std::string edit_text = "v(finish) b(rot) n(axis) m(frames) ,(root)\n";
 		edit_text += "Editing ";
-		if (rotate) {
+		switch (mod_state) {
+		case ROTATE:
 			edit_text += "rotating ";
-		} else {
+			break;
+		case TRANSLATE:
 			if (change_all_frames && !only_root) {
 				edit_text += "resizing ";
 			} else {
 				edit_text += "translating ";
 			}
+			break;
+		case INV_KIN:
+			edit_text += "inv kin ";
+			break;
 		}
+
 		switch (rotate_axis) {
 		case X:
 			edit_text += "red ";
@@ -214,7 +220,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		if (viewer) {
 			osg::Vec3 move_axis = get_mouse_vec(ea.getX(), ea.getY());
 
-			if (rotate) {
+			switch (mod_state) {
+			case ROTATE:
 				if (!change_all_frames) {
 					if (!only_root) {
 						skeleton->rotate_joint(selected_point_index, move_axis);
@@ -224,7 +231,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 						skeleton->rotate_root_all_frames(move_axis);
 					}
 				}
-			} else {
+				break;
+			case TRANSLATE:
 				if (only_root) {
 					if (!change_all_frames) {
 						skeleton->translate_root(move_axis);
@@ -237,7 +245,10 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 								selected_point_index, move_axis);
 					}
 				}
+				break;
+			case INV_KIN:
 
+				break;
 			}
 
 			update_dynamics(current_frame);
@@ -305,7 +316,17 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (is_point_selected) {
-				rotate = !rotate;
+				switch (mod_state) {
+				case ROTATE:
+					mod_state = TRANSLATE;
+					break;
+				case TRANSLATE:
+					mod_state = INV_KIN;
+					break;
+				case INV_KIN:
+					mod_state = ROTATE;
+					break;
+				}
 				update_dynamics(current_frame);
 			}
 			break;
@@ -398,11 +419,16 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		break;
 	}
 
-	if (rotate) {
+	switch (mod_state) {
+	case ROTATE:
 		mouse_vec = mouse_vec * rotate_scale_factor;
-	} else {
+		break;
+	case TRANSLATE:
+	case INV_KIN:
 		mouse_vec = mouse_vec * translate_scale_factor;
+		break;
 	}
+
 	return mouse_vec;
 }
 

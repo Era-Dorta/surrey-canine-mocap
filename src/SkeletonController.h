@@ -45,6 +45,10 @@ class SkeletonController {
 
 		void update_dynamics(int disp_frame_no);
 	private:
+		enum Mod_State {
+			ROTATE, TRANSLATE, INV_KIN
+		};
+
 		void reset_state();
 		void draw_edit_text();
 
@@ -87,7 +91,7 @@ class SkeletonController {
 		int last_mouse_pos_x;
 		int last_mouse_pos_y;
 		bool move_on_z;
-		bool rotate;
+		Mod_State mod_state;
 		bool change_all_frames;
 		bool only_root;
 		bool transforming_skeleton;
@@ -97,7 +101,6 @@ class SkeletonController {
 		bool manual_mark_up;
 		float rotate_scale_factor;
 		float translate_scale_factor;
-		bool inverse_kin_manual;
 
 		MessageHandler msg_handler;
 };
