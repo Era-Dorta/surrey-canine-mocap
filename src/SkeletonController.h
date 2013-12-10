@@ -102,6 +102,7 @@ class SkeletonController {
 		float rotate_scale_factor;
 		float translate_scale_factor;
 		float inv_kin_scale_factor;
+		float swivel_angle;
 
 		MessageHandler msg_handler;
 };

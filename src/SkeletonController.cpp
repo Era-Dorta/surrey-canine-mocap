@@ -69,6 +69,7 @@ void SkeletonController::reset_state() {
 	change_all_frames = false;
 	transforming_skeleton = false;
 	only_root = false;
+	swivel_angle = 0.0;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -247,10 +248,9 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				}
 				break;
 			case INV_KIN:
-				if (selected_point_index > 0 && !only_root
-						&& !change_all_frames) {
+				if (selected_point_index > 0 && !change_all_frames) {
 					skel_fitter.solve_2_bones(selected_point_index - 1,
-							selected_point_index, move_axis);
+							selected_point_index, move_axis, swivel_angle);
 				}
 				break;
 			}
@@ -432,10 +432,21 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		mouse_vec = mouse_vec * translate_scale_factor;
 		break;
 	case INV_KIN:
-		mouse_vec =
-				mouse_vec * inv_kin_scale_factor
-						+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
-								current_frame);
+		if (!only_root) {
+			mouse_vec =
+					mouse_vec * inv_kin_scale_factor
+							+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
+									current_frame);
+		} else {
+			mouse_vec =
+					skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
+							current_frame);
+			if (last_mouse_pos_y - y > 0) {
+				swivel_angle += 0.01;
+			} else {
+				swivel_angle -= 0.01;
+			}
+		}
 		break;
 	}
 

@@ -256,7 +256,7 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 }
 
 bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
-		const osg::Vec3& position) {
+		const osg::Vec3& position, float swivel_angle) {
 	//Positive direction axis, axis pointing out of the body
 	const float Xaxis[] = { 1, 0, 0 };
 	//Projection axis, used to determine one of the axis of the local
@@ -291,7 +291,7 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	Matrix R1, G;
 	osg_to_matrix(G, osg::Matrix::translate(position * bone_world_matrix_off));
 
-	float eangle = 0.0, swivel_angle = 0.0;
+	float eangle = 0.0;
 	if (s.SetGoal(G, eangle)) {
 		s.SolveR1(swivel_angle, R1);
 
