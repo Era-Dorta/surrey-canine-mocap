@@ -9,12 +9,11 @@
 #include "DebugUtil.h"
 
 SkeletonController::SkeletonController() :
-			state(MOVE_POINTS), current_frame(0), is_point_selected(false),
-			selected_point_index(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
-			move_on_z(false), rotate(true), change_all_frames(false),
-			only_root(false), transforming_skeleton(false), delete_skel(false),
-			rotate_axis(X), show_joint_axis(false), manual_mark_up(false),
-			rotate_scale_factor(0.02), translate_scale_factor(0.002) {
+			current_frame(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
+			delete_skel(false), rotate_axis(X), show_joint_axis(false),
+			manual_mark_up(false), rotate_scale_factor(0.02),
+			translate_scale_factor(0.002) {
+	reset_state();
 	skeletonized3D = boost::shared_ptr<Skeletonization3D>(
 			new Skeletonization3D);
 	skeleton = boost::shared_ptr<Skeleton>(new Skeleton);
@@ -66,10 +65,11 @@ void SkeletonController::reset_state() {
 	is_point_selected = false;
 	selected_point_index = 0;
 	move_on_z = false;
-	rotate = true;
+	rotate = false;
 	change_all_frames = false;
 	transforming_skeleton = false;
 	only_root = false;
+	inverse_kin_manual = true;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
