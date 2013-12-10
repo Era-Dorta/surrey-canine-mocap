@@ -85,6 +85,53 @@ void SkeletonFitting::fit_root_position() {
 }
 
 void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
+	std::vector<int> leg_points_index, joint_positions_index;
+
+	//TODO find_paw initialises leg_points_index, should have another method
+	//to do this
+
+	int paw_index = find_paw(leg, leg_points_index);
+
+	//TODO Not sure if this should be here or in some other place
+	//Since we are going to go up the leg better to have all the points ordered
+	//along the y axis
+	sortstruct s(this);
+	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
+
+	int bones_per_leg = 4;
+	joint_positions_index.resize(bones_per_leg);
+
+	joint_positions_index[0] = paw_index;
+	//TODO Much more efficient to have the iterate backwards
+
+	std::vector<int>::iterator j = leg_points_index.begin();
+	for (int i = 1; i < bones_per_leg; i++) {
+
+		float bone_length = skeleton->get_node(leg - i + 1)->length.length();
+		//Set bone length to paw_index
+		//Go up bone length
+		bool not_bone_length = true;
+
+		while (not_bone_length && j != leg_points_index.end()) {
+
+			float current_length = (cloud->at(joint_positions_index[i - 1])
+					- cloud->at(*j)).length();
+			if (current_length >= bone_length) {
+				not_bone_length = false;
+			} else {
+				j++;
+			}
+		}
+
+		joint_positions_index[i] = *j;
+	}
+
+	//Solve for "shoulder" two bones
+	solve_2_bones(leg - 3, leg - 2, cloud->at(joint_positions_index[2]));
+
+	//Solve for paw and parent bone
+	solve_2_bones(leg - 1, leg, cloud->at(joint_positions_index[0]));
+
 }
 
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
@@ -92,7 +139,8 @@ const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
 }
 
 osg::Vec3 SkeletonFitting::get_paw(Skel_Leg leg) {
-	return cloud->at(find_paw(leg));
+	std::vector<int> leg_points_index;
+	return cloud->at(find_paw(leg, leg_points_index));
 }
 
 int SkeletonFitting::find_head() {
@@ -109,21 +157,22 @@ int SkeletonFitting::find_head() {
 	return index;
 }
 
-int SkeletonFitting::find_paw(Skel_Leg leg) {
-	std::vector<int> leg_points;
+int SkeletonFitting::find_paw(Skel_Leg leg,
+		std::vector<int>& leg_points_index) {
+	leg_points_index.clear();
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (labels[i] == leg) {
-			leg_points.push_back(i);
+			leg_points_index.push_back(i);
 		}
 	}
 
-	float max_y = cloud->at(leg_points.front()).y();
-	int index = leg_points.front();
-	for (unsigned int i = 0; i < leg_points.size(); i++) {
-		if (max_y < cloud->at(leg_points[i]).y()) {
-			max_y = cloud->at(leg_points[i]).y();
-			index = leg_points[i];
+	float max_y = cloud->at(leg_points_index.front()).y();
+	int index = leg_points_index.front();
+	for (unsigned int i = 0; i < leg_points_index.size(); i++) {
+		if (max_y < cloud->at(leg_points_index[i]).y()) {
+			max_y = cloud->at(leg_points_index[i]).y();
+			index = leg_points_index[i];
 		}
 	}
 	return index;

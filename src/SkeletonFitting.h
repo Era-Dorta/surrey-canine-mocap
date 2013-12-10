@@ -20,13 +20,20 @@
 
 #include "boost/shared_ptr.hpp"
 
+//Values correspond to paw Node indices in skeleton
 enum Skel_Leg {
-	Front_Left, Front_Right, Back_Left, Back_Right, Not_Limbs
+	Front_Left = 5,
+	Front_Right = 9,
+	Back_Left = 14,
+	Back_Right = 18,
+	Not_Limbs = 0
 };
 
 enum Axis {
 	X, Y, Z
 };
+
+bool comp_y(const osg::Vec3& i, const osg::Vec3& j);
 
 class SkeletonFitting {
 	public:
@@ -50,7 +57,7 @@ class SkeletonFitting {
 	private:
 		int find_head();
 
-		int find_paw(Skel_Leg leg);
+		int find_paw(Skel_Leg leg, std::vector<int>& leg_points_index);
 
 		//From a cloud of points, fill result vector with a label for each point
 		//Median gives better results that mean, but it is not as fast
@@ -69,6 +76,19 @@ class SkeletonFitting {
 		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
 
 		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
+
+		struct sortstruct {
+				// sortstruct needs to know its containing object
+				SkeletonFitting* m;
+				sortstruct(SkeletonFitting* p) :
+							m(p) {
+				}
+				;
+
+				bool operator()(int i, int j) {
+					return (!comp_y(m->cloud->at(i), m->cloud->at(j)));
+				}
+		};
 
 		float move_joint_max_dist;
 		float error_threshold;
