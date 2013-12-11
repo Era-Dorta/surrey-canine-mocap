@@ -324,6 +324,58 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	}
 }
 
+float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
+	float swivel_angle = 0.0;
+	//Positive direction axis, axis pointing out of the body
+	const float Xaxis[] = { 1, 0, 0 };
+	//Projection axis, used to determine one of the axis of the local
+	//coordinate system
+	const float Yaxis[] = { 0, 1, 0 };
+
+	osg::Matrix bone_world_matrix_off;
+	Node* n_bone_0, *n_bone_1;
+	n_bone_0 = skeleton->get_node(bone0);
+	n_bone_1 = skeleton->get_node(bone1);
+	if (n_bone_0->parent) {
+		n_bone_0->parent->get_global_matrix(current_frame,
+				bone_world_matrix_off);
+	}
+
+	bone_world_matrix_off = osg::Matrix::translate(
+			n_bone_0->offset + n_bone_0->froset->at(current_frame))
+			* bone_world_matrix_off;
+	bone_world_matrix_off = osg::Matrix::inverse(bone_world_matrix_off);
+
+	osg::Vec3 position = n_bone_1->get_end_bone_global_pos(current_frame);
+
+	Matrix T, S;
+
+	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
+	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
+
+	SRS s(T, S, Yaxis, Xaxis);
+
+	Matrix G;
+	//TODO Final position calculus could be simplified, look through
+	//matrices
+	osg_to_matrix(G, osg::Matrix::translate(position * bone_world_matrix_off));
+
+	float eangle = 0.0;
+	if (s.SetGoal(G, eangle)) {
+		position = n_bone_0->get_end_bone_global_pos(current_frame);
+		position = position * bone_world_matrix_off;
+		float aux[3];
+		aux[0] = position.x();
+		aux[1] = position.y();
+		aux[2] = position.z();
+		swivel_angle = s.PosToAngle(aux);
+	} else {
+		cout << "get_swivel_angle() could not recreate bone position" << endl;
+	}
+
+	return swivel_angle;
+}
+
 float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 		Skel_Leg use_label, Axis axis) {
 	osg::ref_ptr<osg::Vec3Array> aux_vec = new osg::Vec3Array();

@@ -57,6 +57,8 @@ class SkeletonFitting {
 
 		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position,
 				float swivel_angle = 0.0);
+
+		float get_swivel_angle(int bone0, int bone1);
 	private:
 		int find_head();
 

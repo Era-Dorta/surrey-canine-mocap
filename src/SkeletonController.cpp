@@ -199,6 +199,13 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 							delete_skel = true;
 							skel_state.save_state(skeleton, current_frame,
 									selected_point_index);
+							//Get swivel angle to maintain the bone in a
+							//known position, this avoids big sudden moves
+							//in the bones when they are moves for the first
+							//time using inverse kinematics
+							swivel_angle = skel_fitter.get_swivel_angle(
+									selected_point_index - 1,
+									selected_point_index);
 							update_dynamics(current_frame);
 						}
 					}
