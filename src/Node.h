@@ -79,11 +79,11 @@ class Node {
 
 		const static float bone_radius;
 		const static float joint_radius;
+		const static osg::Vec4 joint_color;
 	private:
 		void calculate_world_matrix(Node* node, osg::Matrix& trans,
 				int frame_num);
 
-		const static osg::Vec4 joint_color;
 		const static osg::Vec4 joint_second_color;
 		const static osg::Vec4 bone_color;
 		const static osg::Vec4 bone_second_color;

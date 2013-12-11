@@ -288,7 +288,11 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 			node->n_bone_color, skel_transform.get()->asGroup());
 
 	//Create sphere at the beginning of the bone
-	add_sphere_to_node(Node::joint_radius, node->n_joint_color, skel_transform,
+	osg::Vec4 color = Node::joint_color;
+	if (node->parent) {
+		color = node->parent->n_joint_color;
+	}
+	add_sphere_to_node(Node::joint_radius, color, skel_transform,
 			osg::Matrix::identity());
 
 	//If the node does not have another one attached to it, then also draw a
