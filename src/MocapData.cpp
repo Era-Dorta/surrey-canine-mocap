@@ -14,7 +14,7 @@ const std::vector<Node*>& MocapData::get_node_list() const {
 	return nodelist;
 }
 
-Node* MocapData::get_node(unsigned int index) {
+Node* MocapData::get_node(unsigned int index) const {
 	return nodelist.at(index);
 }
 

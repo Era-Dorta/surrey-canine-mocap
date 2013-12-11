@@ -197,6 +197,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 									selected_point);
 							skeleton->toggle_color(selected_point_index);
 							delete_skel = true;
+							skel_state.save_state(skeleton, current_frame,
+									selected_point_index);
 							update_dynamics(current_frame);
 						}
 					}
@@ -311,11 +313,7 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_V:
 			if (is_point_selected) {
-				skeleton->toggle_color(selected_point_index);
-				reset_state();
-				skel_renderer.clean_text();
-				update_dynamics(current_frame);
-				delete_skel = false;
+				finish_bone_trans();
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
@@ -380,7 +378,7 @@ bool SkeletonController::handle_keyboard_events(
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
 			break;
 
@@ -397,6 +395,13 @@ bool SkeletonController::handle_keyboard_events(
 				file_name += out.str();
 				file_name += ".bvh";
 				save_skeleton_to_file(file_name);
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_BackSpace:
+			if (is_point_selected) {
+				skel_state.restore_state(skeleton, current_frame,
+						selected_point_index);
+				finish_bone_trans();
 			}
 			break;
 		default:
@@ -473,4 +478,12 @@ void SkeletonController::mix_skeleton_sizes() {
 	file_name =
 			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";
 	skel_mixer.save_file(file_name);
+}
+
+void SkeletonController::finish_bone_trans() {
+	skeleton->toggle_color(selected_point_index);
+	reset_state();
+	skel_renderer.clean_text();
+	update_dynamics(current_frame);
+	delete_skel = false;
 }

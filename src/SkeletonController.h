@@ -14,6 +14,7 @@
 #include "SkeletonFitting.h"
 #include "SkeletonMixer.h"
 #include "MessageHandler.h"
+#include "SkeletonState.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -67,6 +68,8 @@ class SkeletonController {
 
 		void mix_skeleton_sizes();
 
+		void finish_bone_trans();
+
 		//Class that creates a skeleton from a given set of frames
 		boost::shared_ptr<Skeletonization3D> skeletonized3D;
 
@@ -80,6 +83,8 @@ class SkeletonController {
 		boost::shared_ptr<Skeleton> skeleton;
 
 		SkeletonMixer skel_mixer;
+
+		SkeletonState skel_state;
 
 		Fitting_State state;
 

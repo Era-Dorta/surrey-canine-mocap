@@ -59,7 +59,7 @@ class MocapData {
 		virtual bool export_data(const char* filename) = 0; // Starts the import of the BVH file
 		Node* get_root();                      // Returns the root node
 		const std::vector<Node*>& get_node_list() const; // Returns an array that holds all the nodes
-		Node* get_node(unsigned int index);
+		Node* get_node(unsigned int index) const;
 		const char* get_error();
 
 	protected:
