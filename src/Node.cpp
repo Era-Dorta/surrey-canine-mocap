@@ -103,9 +103,7 @@ osg::Vec3 Node::get_global_pos(int frame_num) {
 osg::Vec3 Node::get_end_bone_global_pos(int frame_num) {
 	osg::Matrix aux;
 	calculate_world_matrix(this, aux, frame_num);
-	aux = osg::Matrix::translate(length) * aux;
-
-	return osg::Vec3() * aux;
+	return length * aux;
 }
 
 void Node::get_global_matrix(int frame_num, osg::Matrix& trans) {
