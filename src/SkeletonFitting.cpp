@@ -364,11 +364,7 @@ float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
 	if (s.SetGoal(G, eangle)) {
 		position = n_bone_0->get_end_bone_global_pos(current_frame);
 		position = position * bone_world_matrix_off;
-		float aux[3];
-		aux[0] = position.x();
-		aux[1] = position.y();
-		aux[2] = position.z();
-		swivel_angle = s.PosToAngle(aux);
+		swivel_angle = s.PosToAngle(position._v);
 	} else {
 		cout << "get_swivel_angle() could not recreate bone position" << endl;
 	}
