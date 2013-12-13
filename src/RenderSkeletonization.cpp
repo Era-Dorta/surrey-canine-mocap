@@ -285,7 +285,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 
 	//Create cylinder from 0,0,0 to bone final position
 	create_cylinder(osg::Vec3(), node->length, Node::bone_radius,
-			node->n_bone_color, skel_transform.get()->asGroup());
+			node->n_bone_color, skel_transform->asGroup());
 
 	//Create sphere at the beginning of the bone
 	osg::Vec4 color = Node::joint_color;
