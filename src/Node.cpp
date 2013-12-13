@@ -82,7 +82,7 @@ osg::Quat Node::get_global_rot(int frame_num) {
 	Node * prev_node = this;
 
 	do {
-		res = prev_node->quat_arr.at(frame_num) * res;
+		res = res * prev_node->quat_arr.at(frame_num);
 		prev_node = prev_node->parent;
 	} while (prev_node != NULL);
 

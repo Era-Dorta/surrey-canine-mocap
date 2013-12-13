@@ -50,18 +50,16 @@ void Skeleton::change_bone_length_all_frames(unsigned int index,
 		osg::Vec3& translation) {
 
 	//Bone length is easier along global axes
-	osg::Quat inv_glob_rot;
-	if (nodelist[index]->parent) {
-		nodelist[index]->get_inv_global_rot(header.currentframe);
-	}
+	osg::Quat inv_glob_rot = nodelist[index]->get_inv_global_rot(
+			header.currentframe);
 
+	osg::Vec3 trans_local_coor = inv_glob_rot * translation;
 	//Inverse bone rotation and translate in world coordinates
-	nodelist[index]->length += inv_glob_rot * translation;
+	nodelist[index]->length += trans_local_coor;
 
 	//Translate also all brothers to maintain skeleton conectivity
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
-		inv_glob_rot = nodelist[index]->get_inv_global_rot(header.currentframe);
-		nodelist[index]->children[i]->offset += inv_glob_rot * translation;
+		nodelist[index]->children[i]->offset += trans_local_coor;
 	}
 }
 
