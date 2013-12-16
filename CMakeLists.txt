@@ -38,38 +38,64 @@ MESSAGE(STATUS "Cuda lib dir found at ${CUDA_INCLUDE_DIRS}")
 
 #Source and header files: 
 SET(SOURCE 
+src/BVHFormat.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
+src/Extras.cpp
 src/main.cpp
+src/MessageHandler.cpp
+src/MocapData.cpp
+src/MocapHeader.cpp
 src/MultiCamViewer.cpp
+src/Node.cpp
 src/PointFusion.cpp
 src/RenderPOV.cpp
 src/RenderSkeletonization.cpp
 src/RGBDCamera.cpp
 src/RGBDFrame.cpp
 src/SimpleTimer.cpp
+src/SkeletonController.cpp
+src/Skeleton.cpp
 src/SkeletonFitting.cpp
 src/Skeletonization2D.cpp
 src/Skeletonization3D.cpp
+src/SkeletonMixer.cpp
 src/SurfelModel.cpp
+src/IKAN/myvec.cxx
+src/IKAN/myvec.cxx
+src/IKAN/srs.cxx
+src/IKAN/trig.cxx
 ) 
 
 SET(HEADERS 
+src/BVHFormat.h
 src/CudaVec.h
+src/DebugUtil.h
 src/DepthMapPoly.h
 src/DepthMapSurfel.h
+src/Extras.h
+src/MessageHandler.h
 src/MiscUtils.h
+src/MocapData.h
+src/MocapHeader.h
 src/MultiCamViewer.h
+src/Node.h
 src/PointFusion.h
 src/RenderPOV.h
 src/RenderSkeletonization.h
 src/RGBDCamera.h
 src/RGBDFrame.h
 src/SimpleTimer.h
+src/SkeletonController.h
 src/SkeletonFitting.h
+src/Skeleton.h
 src/Skeletonization2D.h
 src/Skeletonization3D.h
+src/SkeletonMixer.h
 src/SurfelModel.h
+src/IKAN/myvec.h
+src/IKAN/srs.h
+src/IKAN/trig.h
 ) 
 
 
