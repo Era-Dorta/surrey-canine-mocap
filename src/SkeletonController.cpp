@@ -9,12 +9,14 @@
 #include "DebugUtil.h"
 
 SkeletonController::SkeletonController() :
-			state(MOVE_POINTS), current_frame(0), is_point_selected(false),
-			selected_point_index(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
-			move_on_z(false), rotate(true), change_all_frames(false),
-			only_root(false), transforming_skeleton(false), delete_skel(false),
-			rotate_axis(X), show_joint_axis(false), manual_mark_up(false),
-			rotate_scale_factor(0.02), translate_scale_factor(0.002) {
+			current_frame(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
+			delete_skel(false), rotate_axis(X), show_joint_axis(false),
+			manual_mark_up(false), rotate_scale_factor(0.02),
+			translate_scale_factor(0.002), inv_kin_scale_factor(0.0005) {
+	reset_state();
+	skeletonized3D = boost::shared_ptr<Skeletonization3D>(
+			new Skeletonization3D);
+	skeleton = boost::shared_ptr<Skeleton>(new Skeleton);
 }
 
 SkeletonController::~SkeletonController() {
@@ -25,7 +27,9 @@ void SkeletonController::set_data(
 		osg::ref_ptr<osg::Group> render_skel_group) {
 
 	skel_renderer.set_data(camera_arr, render_skel_group);
-	skeletonized3D.set_cameras(camera_arr);
+	skeletonized3D->set_cameras(camera_arr);
+	skel_fitter.init(skeleton, skeletonized3D);
+	//mix_skeleton_sizes();
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
@@ -45,7 +49,7 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 	skel_renderer.clean_skeleton();
 	skel_renderer.clean_3d_merged_skeleon_cloud();
 
-	skeleton.load_from_file(file_name);
+	skeleton->load_from_file(file_name);
 
 	reset_state();
 
@@ -53,7 +57,7 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 }
 
 void SkeletonController::save_skeleton_to_file(std::string file_name) {
-	skeleton.save_to_file(file_name);
+	skeleton->save_to_file(file_name);
 }
 
 void SkeletonController::reset_state() {
@@ -61,10 +65,11 @@ void SkeletonController::reset_state() {
 	is_point_selected = false;
 	selected_point_index = 0;
 	move_on_z = false;
-	rotate = true;
+	mod_state = INV_KIN;
 	change_all_frames = false;
 	transforming_skeleton = false;
 	only_root = false;
+	swivel_angle = 0.0;
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -72,7 +77,8 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	//not creating everything from scratch
 	//Skeleton, text and 3dmerged cloud are not recreated every frame anymore
 	current_frame = disp_frame_no;
-	skeleton.set_current_frame(current_frame);
+	skeleton->set_current_frame(current_frame);
+	skel_fitter.calculate_for_frame(current_frame);
 
 	//skel_renderer.clean_2d_skeletons();
 	//skel_renderer.display_2d_skeletons(current_frame, skeletonized3D);
@@ -81,27 +87,22 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 
 	//skel_renderer.display_3d_skeleon_cloud(current_frame, skeletonized3D);
 	skel_renderer.display_3d_merged_skeleon_cloud(current_frame,
-			skeletonized3D);
+			(*skeletonized3D));
 
-	osg::ref_ptr<osg::Vec3Array> cloud =
-			skeletonized3D.get_merged_3d_projection(current_frame);
-	int index = skel_fitter.find_head(cloud);
-	skel_renderer.display_cloud(cloud, skel_fitter.getLabels());
-	index = skel_fitter.find_front_right_paw(cloud);
-	skel_renderer.display_sphere(cloud->at(index), 1);
+	skel_renderer.display_cloud(
+			skeletonized3D->get_merged_3d_projection(current_frame),
+			skel_fitter.getLabels());
 
-	if (skeleton.isSkelLoaded()) {
-		index = skel_fitter.find_head(cloud);
-		//Translation is equal to new_pos - old_pos
-		osg::Vec3 translation = cloud->at(index) - skeleton.get_root()->offset
-				- skeleton.get_root()->froset->at(current_frame);
-		skeleton.translate_root(translation);
+	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
+
+	if (skeleton->isSkelLoaded()) {
+		//skel_fitter.fit_root_position();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
 		}
-		skel_renderer.display_skeleton(skeleton.get_root(),
-				skeleton.get_header(), current_frame, show_joint_axis);
+		skel_renderer.display_skeleton(skeleton->get_root(),
+				skeleton->get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
 }
@@ -118,15 +119,22 @@ void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
 		std::string edit_text = "v(finish) b(rot) n(axis) m(frames) ,(root)\n";
 		edit_text += "Editing ";
-		if (rotate) {
+		switch (mod_state) {
+		case ROTATE:
 			edit_text += "rotating ";
-		} else {
+			break;
+		case TRANSLATE:
 			if (change_all_frames && !only_root) {
 				edit_text += "resizing ";
 			} else {
 				edit_text += "translating ";
 			}
+			break;
+		case INV_KIN:
+			edit_text += "inv kin ";
+			break;
 		}
+
 		switch (rotate_axis) {
 		case X:
 			edit_text += "red ";
@@ -185,10 +193,19 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 						if (selected_point) {
 							is_point_selected = true;
 							transforming_skeleton = true;
-							selected_point_index = skeleton.get_node_index(
+							selected_point_index = skeleton->get_node_index(
 									selected_point);
-							skeleton.toggle_color(selected_point_index);
+							skeleton->toggle_color(selected_point_index);
 							delete_skel = true;
+							skel_state.save_state(skeleton, current_frame,
+									selected_point_index);
+							//Get swivel angle to maintain the bone in a
+							//known position, this avoids big sudden moves
+							//in the bones when they are moves for the first
+							//time using inverse kinematics
+							swivel_angle = skel_fitter.get_swivel_angle(
+									selected_point_index - 1,
+									selected_point_index);
 							update_dynamics(current_frame);
 						}
 					}
@@ -213,30 +230,38 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 		if (viewer) {
 			osg::Vec3 move_axis = get_mouse_vec(ea.getX(), ea.getY());
 
-			if (rotate) {
+			switch (mod_state) {
+			case ROTATE:
 				if (!change_all_frames) {
 					if (!only_root) {
-						skeleton.rotate_joint(selected_point_index, move_axis);
+						skeleton->rotate_joint(selected_point_index, move_axis);
 					}
 				} else {
 					if (only_root) {
-						skeleton.rotate_root_all_frames(move_axis);
+						skeleton->rotate_root_all_frames(move_axis);
 					}
 				}
-			} else {
+				break;
+			case TRANSLATE:
 				if (only_root) {
 					if (!change_all_frames) {
-						skeleton.translate_root(move_axis);
+						skeleton->translate_root(move_axis);
 					} else {
-						skeleton.translate_root_all_frames(move_axis);
+						skeleton->translate_root_all_frames(move_axis);
 					}
 				} else {
 					if (change_all_frames) {
-						skeleton.change_bone_length_all_frames(
+						skeleton->change_bone_length_all_frames(
 								selected_point_index, move_axis);
 					}
 				}
-
+				break;
+			case INV_KIN:
+				if (selected_point_index > 0 && !change_all_frames) {
+					skel_fitter.solve_2_bones(selected_point_index - 1,
+							selected_point_index, move_axis, swivel_angle);
+				}
+				break;
 			}
 
 			update_dynamics(current_frame);
@@ -295,16 +320,22 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_V:
 			if (is_point_selected) {
-				skeleton.toggle_color(selected_point_index);
-				reset_state();
-				skel_renderer.clean_text();
-				update_dynamics(current_frame);
-				delete_skel = false;
+				finish_bone_trans();
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (is_point_selected) {
-				rotate = !rotate;
+				switch (mod_state) {
+				case ROTATE:
+					mod_state = TRANSLATE;
+					break;
+				case TRANSLATE:
+					mod_state = INV_KIN;
+					break;
+				case INV_KIN:
+					mod_state = ROTATE;
+					break;
+				}
 				update_dynamics(current_frame);
 			}
 			break;
@@ -350,11 +381,12 @@ bool SkeletonController::handle_keyboard_events(
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
-
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-					"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
 			break;
 
 			//Save skeleton to file:
@@ -370,6 +402,13 @@ bool SkeletonController::handle_keyboard_events(
 				file_name += out.str();
 				file_name += ".bvh";
 				save_skeleton_to_file(file_name);
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_BackSpace:
+			if (is_point_selected) {
+				skel_state.restore_state(skeleton, current_frame,
+						selected_point_index);
+				finish_bone_trans();
 			}
 			break;
 		default:
@@ -397,16 +436,37 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		break;
 	}
 
-	if (rotate) {
+	switch (mod_state) {
+	case ROTATE:
 		mouse_vec = mouse_vec * rotate_scale_factor;
-	} else {
+		break;
+	case TRANSLATE:
 		mouse_vec = mouse_vec * translate_scale_factor;
+		break;
+	case INV_KIN:
+		if (!only_root) {
+			mouse_vec =
+					mouse_vec * inv_kin_scale_factor
+							+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
+									current_frame);
+		} else {
+			mouse_vec =
+					skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
+							current_frame);
+			if (last_mouse_pos_y - y > 0) {
+				swivel_angle += 0.01;
+			} else {
+				swivel_angle -= 0.01;
+			}
+		}
+		break;
 	}
+
 	return mouse_vec;
 }
 
 void SkeletonController::mix_skeleton_sizes() {
-	int start_frame = 20, end_frame = 21;
+	int start_frame = 29, end_frame = 29;
 	std::vector<std::string> file_names;
 	for (int i = start_frame; i <= end_frame; i++) {
 		std::string file_name =
@@ -419,10 +479,18 @@ void SkeletonController::mix_skeleton_sizes() {
 	}
 
 	std::string file_name =
-			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh";
-	skel_mixer.set_data(file_name, file_names, start_frame);
+			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh";
+	skel_mixer.set_data(file_name, file_names);
 	skel_mixer.mix();
 	file_name =
 			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";
 	skel_mixer.save_file(file_name);
+}
+
+void SkeletonController::finish_bone_trans() {
+	skeleton->toggle_color(selected_point_index);
+	reset_state();
+	skel_renderer.clean_text();
+	update_dynamics(current_frame);
+	delete_skel = false;
 }

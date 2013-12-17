@@ -14,6 +14,7 @@
 #include "SkeletonFitting.h"
 #include "SkeletonMixer.h"
 #include "MessageHandler.h"
+#include "SkeletonState.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -45,6 +46,10 @@ class SkeletonController {
 
 		void update_dynamics(int disp_frame_no);
 	private:
+		enum Mod_State {
+			ROTATE, TRANSLATE, INV_KIN
+		};
+
 		void reset_state();
 		void draw_edit_text();
 
@@ -63,8 +68,10 @@ class SkeletonController {
 
 		void mix_skeleton_sizes();
 
+		void finish_bone_trans();
+
 		//Class that creates a skeleton from a given set of frames
-		Skeletonization3D skeletonized3D;
+		boost::shared_ptr<Skeletonization3D> skeletonized3D;
 
 		//Class that renders all skeleton related objects
 		RenderSkeletonization skel_renderer;
@@ -73,9 +80,11 @@ class SkeletonController {
 		//cloud of points that represent a skeleton.
 		SkeletonFitting skel_fitter;
 
-		Skeleton skeleton;
+		boost::shared_ptr<Skeleton> skeleton;
 
 		SkeletonMixer skel_mixer;
+
+		SkeletonState skel_state;
 
 		Fitting_State state;
 
@@ -87,7 +96,7 @@ class SkeletonController {
 		int last_mouse_pos_x;
 		int last_mouse_pos_y;
 		bool move_on_z;
-		bool rotate;
+		Mod_State mod_state;
 		bool change_all_frames;
 		bool only_root;
 		bool transforming_skeleton;
@@ -97,6 +106,8 @@ class SkeletonController {
 		bool manual_mark_up;
 		float rotate_scale_factor;
 		float translate_scale_factor;
+		float inv_kin_scale_factor;
+		float swivel_angle;
 
 		MessageHandler msg_handler;
 };

@@ -53,7 +53,7 @@ class Node {
 
 		osg::Vec3 get_end_bone_global_pos(int frame_num);
 
-		void get_global_matrix(int frame_num, osg::Matrix& trans );
+		void get_global_matrix(int frame_num, osg::Matrix& trans);
 
 		//TODO Right now we use quaternions but it might be a good optimisation
 		//to have all the matrices precomputed once there are not going to be
@@ -79,10 +79,11 @@ class Node {
 
 		const static float bone_radius;
 		const static float joint_radius;
-	private:
-		void calculate_world_matrix(Node* node, osg::Matrix& trans, int frame_num);
-
 		const static osg::Vec4 joint_color;
+	private:
+		void calculate_world_matrix(Node* node, osg::Matrix& trans,
+				int frame_num);
+
 		const static osg::Vec4 joint_second_color;
 		const static osg::Vec4 bone_color;
 		const static osg::Vec4 bone_second_color;
