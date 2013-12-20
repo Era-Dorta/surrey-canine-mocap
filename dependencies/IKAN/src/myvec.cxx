@@ -30,7 +30,7 @@
 
  */
 
-#include "myvec.h"
+#include "IKAN/myvec.h"
 #include <stdio.h>
 #include <stdlib.h>
 

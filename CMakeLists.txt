@@ -12,15 +12,6 @@ INCLUDE(FindFreetype)
 MESSAGE(STATUS "Freetype lib dir found at ${FREETYPE_LIBRARIES}")
 MESSAGE(STATUS "Freetype include dir found at ${FREETYPE_INCLUDE_DIRS}")
 
-#Custom path to compiled by hand libraries, thanks to not having permision to install software
-#If you have installation permisions remove this line
-SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
-
-#OpenCV
-FIND_PACKAGE( OpenCV REQUIRED ) 
-MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
-MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
-
 #OSG
 find_package(OpenThreads )
 find_package(osg)
@@ -32,9 +23,32 @@ find_package(osgText )
 find_package(osgAnimation )
 
 #CUDA
-FIND_PACKAGE( CUDA )
+SET( CUDA_INCLUDE_DIRS "dependencies/CUDA")
 INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
-MESSAGE(STATUS "Cuda lib dir found at ${CUDA_INCLUDE_DIRS}")
+
+#Custom path to compiled by hand libraries, thanks to not having permision to install software
+#If you have installation permisions remove this line
+#SET( CMAKE_PREFIX_PATH "/home/garoe/Descargas/opencv-2.4.7/build" )
+#SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
+
+#OpenCV
+FIND_PACKAGE( OpenCV REQUIRED HINTS "/home/garoe/Descargas/opencv-2.4.7/build" ) 
+MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
+MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
+
+#IKAN
+#For this library we are also going to compile the sources
+#TODO A better way would be to compile it and link it like all the other
+#normal libraries
+SET(DEP_SOURCE
+dependencies/IKAN/src/myvec.cxx
+dependencies/IKAN/src/myvec.cxx
+dependencies/IKAN/src/srs.cxx
+dependencies/IKAN/src/trig.cxx
+)
+
+SET( IKAN_INCLUDE_DIRS "dependencies/IKAN/include")
+INCLUDE_DIRECTORIES( ${IKAN_INCLUDE_DIRS} )
 
 #Source and header files: 
 SET(SOURCE 
@@ -62,10 +76,6 @@ src/Skeletonization3D.cpp
 src/SkeletonMixer.cpp
 src/SkeletonState.cpp
 src/SurfelModel.cpp
-src/IKAN/myvec.cxx
-src/IKAN/myvec.cxx
-src/IKAN/srs.cxx
-src/IKAN/trig.cxx
 ) 
 
 SET(HEADERS 
@@ -95,9 +105,6 @@ src/Skeletonization3D.h
 src/SkeletonMixer.h
 src/SkeletonState.h
 src/SurfelModel.h
-src/IKAN/myvec.h
-src/IKAN/srs.h
-src/IKAN/trig.h
 ) 
 
 
@@ -107,7 +114,7 @@ macro( config_project PROJNAME LIBNAME )
 endmacro()
 
 #Create the executable
-ADD_EXECUTABLE( ${PROJECT_EXE} ${SOURCE} ${HEADERS} ) 
+ADD_EXECUTABLE( ${PROJECT_EXE} ${DEP_SOURCE} ${SOURCE} ${HEADERS} ) 
 
 #OSG linking
 config_project( ${PROJECT_EXE} OPENTHREADS )

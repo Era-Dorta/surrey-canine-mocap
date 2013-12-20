@@ -30,8 +30,8 @@
 
  */
 
-#include "srs.h"
-#include "trig.h" 
+#include "IKAN/srs.h"
+#include "IKAN/trig.h" 
 #include <stdio.h>
 #include <stdlib.h>
 
