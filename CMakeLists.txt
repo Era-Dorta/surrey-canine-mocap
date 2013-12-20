@@ -60,6 +60,7 @@ src/SkeletonFitting.cpp
 src/Skeletonization2D.cpp
 src/Skeletonization3D.cpp
 src/SkeletonMixer.cpp
+src/SkeletonState.cpp
 src/SurfelModel.cpp
 src/IKAN/myvec.cxx
 src/IKAN/myvec.cxx
@@ -92,6 +93,7 @@ src/Skeleton.h
 src/Skeletonization2D.h
 src/Skeletonization3D.h
 src/SkeletonMixer.h
+src/SkeletonState.h
 src/SurfelModel.h
 src/IKAN/myvec.h
 src/IKAN/srs.h
