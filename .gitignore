@@ -10,3 +10,6 @@ FreeSans.ttf
 .cproject
 .project
 .settings
+src/myvec.cxx
+src/trig.cxx
+src/srs.cxx
