@@ -33,7 +33,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "trig.h"
+#include "IKAN/trig.h"
 
 //
 // Normalize an angle to the range -Pi..Pi
