@@ -263,6 +263,11 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	//coordinate system
 	const float Yaxis[] = { 0, 1, 0 };
 
+	if (!check_bone_index(bone0, bone1)) {
+		cout << "solve_2_bones invalid bone index" << endl;
+		return false;
+	}
+
 	osg::Matrix bone_world_matrix_off;
 	Node* n_bone_0, *n_bone_1;
 	n_bone_0 = skeleton->get_node(bone0);
@@ -331,6 +336,10 @@ float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
 	//Projection axis, used to determine one of the axis of the local
 	//coordinate system
 	const float Yaxis[] = { 0, 1, 0 };
+
+	if (!check_bone_index(bone0, bone1)) {
+		return swivel_angle;
+	}
 
 	osg::Matrix bone_world_matrix_off;
 	Node* n_bone_0, *n_bone_1;
@@ -440,5 +449,14 @@ void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
 		for (int j = 0; j < 4; j++) {
 			dest(i, j) = orig[i][j];
 		}
+	}
+}
+
+bool SkeletonFitting::check_bone_index(int bone0, int bone1) {
+	if (bone0 >= 0 && bone0 < skeleton->get_num_bones() && bone1 >= 0
+			&& bone1 < skeleton->get_num_bones()) {
+		return true;
+	} else {
+		return false;
 	}
 }

@@ -203,11 +203,9 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 							//known position, this avoids big sudden moves
 							//in the bones when they are moves for the first
 							//time using inverse kinematics
-							if(selected_point_index > 0){
-								swivel_angle = skel_fitter.get_swivel_angle(
-										selected_point_index - 1,
-										selected_point_index);
-							}
+							swivel_angle = skel_fitter.get_swivel_angle(
+									selected_point_index - 1,
+									selected_point_index);
 							update_dynamics(current_frame);
 						}
 					}
@@ -259,7 +257,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				}
 				break;
 			case INV_KIN:
-				if (selected_point_index > 0 && !change_all_frames) {
+				if (!change_all_frames) {
 					skel_fitter.solve_2_bones(selected_point_index - 1,
 							selected_point_index, move_axis, swivel_angle);
 				}

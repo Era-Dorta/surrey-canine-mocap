@@ -80,6 +80,8 @@ class SkeletonFitting {
 
 		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 
+		bool check_bone_index(int bone0, int bone1);
+
 		struct sortstruct {
 				// sortstruct needs to know its containing object
 				SkeletonFitting* m;
