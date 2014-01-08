@@ -330,14 +330,14 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in) {
 	//------------------
 	//Colour passthrough fragment shader:
 	//------------------
-	/*static const char* colour_frag = {
+	static const char* colour_frag = {
 	 "varying in vec3 normal_geom_out;\n"
 	 "varying in vec4 colour_geom_out;\n"
 	 "void main()\n"
 	 "{\n"
 	 "gl_FragColor = colour_geom_out;\n"
 	 "}\n"
-	 };*/
+	 };
 	//------------------
 	//Normal colouring fragment shader:
 	//------------------
@@ -376,6 +376,8 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in) {
 			new osg::Shader(osg::Shader::VERTEX, pass_through_vertex));
 	splat_prog->addShader(new osg::Shader(osg::Shader::GEOMETRY, splat_geom));
 	splat_prog->addShader(new osg::Shader(osg::Shader::FRAGMENT,
+			//TODO Comment or uncomment to use color or normals drawing
+			//better if it was in a variable
 	//colour_frag));
 			normal_colour_frag));
 	splat_prog->setParameter( GL_GEOMETRY_VERTICES_OUT_EXT,

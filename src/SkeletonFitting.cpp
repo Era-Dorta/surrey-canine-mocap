@@ -257,6 +257,9 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 
 bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 		const osg::Vec3& position, float swivel_angle) {
+	//TODO Calculate axis according to bones, this is arbitrary and
+	//it should not always work
+
 	//Positive direction axis, axis pointing out of the body
 	const float Xaxis[] = { 1, 0, 0 };
 	//Projection axis, used to determine one of the axis of the local
