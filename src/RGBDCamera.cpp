@@ -188,11 +188,16 @@ void RGBD_Camera::load_calibration() {
 	//Extrinsics:
 	//------------------------------------
 	std::ifstream T_file;
+	T_file.precision(20);
 	T_file.open(T_fn.c_str());
 	float T_val[16];
 	if (T_file.is_open()) {
-		for (int i = 0; i < 16; i++) {
-			T_file >> T_val[i];
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				T_file >> T_osg(j, i);
+				//The matrix file is transposed, for osg lets save not transposed
+				T_val[i * 4 + j] = T_osg(j, i);
+			}
 		}
 
 		T_file.close();
@@ -206,13 +211,6 @@ void RGBD_Camera::load_calibration() {
 
 	for (int i = 0; i < 16; i++) {
 		T_float4x4.val[i] = T_rgb.at<float>(i);
-	}
-
-	//The matrix file is transposed, for osg lets save not transposed
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			T_osg(j, i) = T_rgb.at<float>(i * 4 + j);
-		}
 	}
 
 	//DEBUG:
