@@ -14,8 +14,7 @@ RenderSkeletonization::~RenderSkeletonization() {
 
 }
 
-void RenderSkeletonization::set_data(
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
+void RenderSkeletonization::set_data(camVecT camera_arr_,
 		osg::ref_ptr<osg::Group> render_skel_group) {
 	//Save arguments
 	camera_arr = camera_arr_;

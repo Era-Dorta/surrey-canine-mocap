@@ -79,7 +79,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		double last_frame_tick_count;
 
 		std::string _dataset_path;
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
+		camVecT camera_arr;
 		osg::ref_ptr<osg::Group> scene_root;
 		osg::ref_ptr<osg::Image> rgb_render_interactive_view;
 		osgViewer::Viewer viewer;

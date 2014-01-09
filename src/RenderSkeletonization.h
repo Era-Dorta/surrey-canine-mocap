@@ -33,7 +33,7 @@ class RenderSkeletonization {
 
 		virtual ~RenderSkeletonization();
 
-		void set_data(std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_,
+		void set_data(camVecT camera_arr_,
 				osg::ref_ptr<osg::Group> render_skel_group);
 		//Delete skeleton nodes from previous frame
 		void clean_scene();
@@ -108,7 +108,7 @@ class RenderSkeletonization {
 				osg::Group* to_add, const osg::Matrix& trans);
 
 		//Pointer to the camera array
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
+		camVecT camera_arr;
 
 		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;

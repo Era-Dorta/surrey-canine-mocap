@@ -22,8 +22,7 @@ SkeletonController::SkeletonController() :
 SkeletonController::~SkeletonController() {
 }
 
-void SkeletonController::set_data(
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
+void SkeletonController::set_data(camVecT camera_arr,
 		osg::ref_ptr<osg::Group> render_skel_group) {
 
 	skel_renderer.set_data(camera_arr, render_skel_group);

@@ -10,8 +10,7 @@ Skeletonization3D::~Skeletonization3D() {
 	//dtor
 }
 
-void Skeletonization3D::set_cameras(
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_) {
+void Skeletonization3D::set_cameras(camVecT camera_arr_) {
 	camera_arr = camera_arr_;
 	skel_arr.clear();
 	//Save number of cameras and total number of frames

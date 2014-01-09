@@ -34,7 +34,7 @@ class SkeletonController {
 		virtual ~SkeletonController();
 
 		//Set root node for this class, it should be call after creation
-		void set_data(std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr,
+		void set_data(camVecT camera_arr,
 				osg::ref_ptr<osg::Group> render_skel_group);
 
 		Fitting_State getState() const;

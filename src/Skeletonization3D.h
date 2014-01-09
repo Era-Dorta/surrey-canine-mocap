@@ -18,8 +18,7 @@ class Skeletonization3D {
 
 		virtual ~Skeletonization3D();
 
-		void set_cameras(
-				std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr_);
+		void set_cameras(camVecT camera_arr_);
 
 		//Return an array of points, given a camera and a frame number
 		//Important: This coordinates are relative to the camera
@@ -97,7 +96,7 @@ class Skeletonization3D {
 		//that painful to do and lest assume the cameras are not going to change
 		//in run time
 		//TODO This could be solved by using a reference instead of a whole copy
-		std::vector<boost::shared_ptr<RGBD_Camera> > camera_arr;
+		camVecT camera_arr;
 
 		int n_cameras;
 		int n_frames;
