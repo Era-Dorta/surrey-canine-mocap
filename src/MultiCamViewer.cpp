@@ -17,6 +17,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			with_colour(false),
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
+			manual_origin_set(false),
 			_dataset_path(path),
 			scene_root(new osg::Group),
 			rgb_render_interactive_view(new osg::Image),
@@ -279,6 +280,64 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 		break;
 	default:
 		break;
+	}
+
+	if (manual_origin_set
+			&& ea.getEventType() == osgGA::GUIEventAdapter::RELEASE
+			&& ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
+			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+
+		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
+
+		if (viewer) {
+			double SELECTION_SENSITIVITY = 2;
+			osg::ref_ptr<osg::Viewport> viewport =
+					viewer->getCamera()->getViewport();
+			double mx = viewport->x()
+					+ (int) ((double) viewport->width()
+							* (ea.getXnormalized() * 0.5 + 0.5));
+			double my = viewport->y()
+					+ (int) ((double) viewport->height()
+							* (ea.getYnormalized() * 0.5 + 0.5));
+			double w = SELECTION_SENSITIVITY;
+			double h = SELECTION_SENSITIVITY;
+			//Since we want to select polygons we need the polytope intersector
+			osg::ref_ptr<osgUtil::PolytopeIntersector> intersector =
+					new osgUtil::PolytopeIntersector(
+							osgUtil::Intersector::WINDOW, mx - w, my - h,
+							mx + w, my + h);
+
+			osgUtil::IntersectionVisitor iv(intersector.get());
+			iv.setTraversalMask(~0x1);
+			viewer->getCamera()->accept(iv);
+
+			if (intersector->containsIntersections()) {
+				std::multiset<osgUtil::PolytopeIntersector::Intersection>::iterator result =
+						intersector->getIntersections().begin();
+
+				osg::MatrixList worldMatrices =
+						result->drawable->getWorldMatrices();
+
+				osg::MatrixList::iterator itr = worldMatrices.begin();
+				osg::Matrix& matrix = *itr;
+				//Get global coordinates of the picked point
+				osg::Vec3 pos = result->localIntersectionPoint * matrix;
+
+				//Draw a sphere to give user feedback
+				osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
+				osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+				sphere_shape = new osg::ShapeDrawable(
+						new osg::Sphere(pos, 0.01));
+				sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
+
+				sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+						osg::StateAttribute::OFF
+								| osg::StateAttribute::OVERRIDE);
+
+				sphere_geode->addDrawable(sphere_shape);
+				scene_root->addChild(sphere_geode.get());
+			}
+		}
 	}
 
 	//Play the sequence:

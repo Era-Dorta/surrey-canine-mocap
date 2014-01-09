@@ -13,7 +13,6 @@
 #include "DepthMapPoly.h"
 #include "SurfelModel.h"
 #include "SimpleTimer.h"
-#include "RenderSkeletonization.h"
 #include "SkeletonController.h"
 
 #include <string>
@@ -77,6 +76,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		bool with_colour;
 		float frame_period_s;
 		double last_frame_tick_count;
+		bool manual_origin_set;
 
 		std::string _dataset_path;
 		camVecT camera_arr;
@@ -93,7 +93,6 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		osg::ref_ptr<osgText::Text> frame_num_text;
 		float alpha;
 
-		//RenderSkeletonization skel_renderer;
 		SkeletonController skel_controller;
 
 };
