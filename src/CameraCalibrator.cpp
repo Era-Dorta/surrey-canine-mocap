@@ -47,12 +47,15 @@ void CameraCalibrator::save_camera_calibration(std::string path) {
 
 	//The matrix is to be saved transposed because when it is read
 	//it will be transposed again
+	osg::Matrix aux_matrix;
+
+	aux_matrix = calib_matrix * camera_arr.at(1)->get_T_osg();
 	if (T_file.is_open()) {
 		for (int i = 0; i < 4; i++) {
-			T_file << calib_matrix(0, i) << "\t";
-			T_file << calib_matrix(1, i) << "\t";
-			T_file << calib_matrix(2, i) << "\t";
-			T_file << calib_matrix(3, i) << endl;
+			T_file << aux_matrix(0, i) << "\t";
+			T_file << aux_matrix(1, i) << "\t";
+			T_file << aux_matrix(2, i) << "\t";
+			T_file << aux_matrix(3, i) << endl;
 		}
 		T_file.close();
 	} else {

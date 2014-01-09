@@ -57,7 +57,7 @@ class RGBD_Camera {
 		float3x3 get_inv_K_f3x3();
 		cv::Mat get_T_rgb();
 		float4x4 get_T_f4x4();
-		osg::Matrix get_T();
+		const osg::Matrix& get_T_osg();
 		const cv::Mat* get_depth_map(int frame_num);
 		cv::Mat* get_rgb_image(int frame_num);
 		std::string get_cam_name();

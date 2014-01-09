@@ -208,6 +208,13 @@ void RGBD_Camera::load_calibration() {
 		T_float4x4.val[i] = T_rgb.at<float>(i);
 	}
 
+	//The matrix file is transposed, for osg lets save not transposed
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			T_osg(j, i) = T_rgb.at<float>(i * 4 + j);
+		}
+	}
+
 	//DEBUG:
 	//cout << "Extrinsics read from file: " << T << endl;
 
@@ -239,8 +246,7 @@ void RGBD_Camera::create_cam_geom() {
 	//Camera pose matrix:
 	//-----------------
 	//osg::ref_ptr<osg::MatrixTransform> cam_pose_xform(new osg::MatrixTransform);
-	osg::Matrix cam_pose_mat = cvmat4x4_2_osgmat(T_rgb);
-	cam_pose_xform->setMatrix(cam_pose_mat);
+	cam_pose_xform->setMatrix(T_osg);
 	//-----------------
 
 	//Camera icon:
@@ -368,6 +374,10 @@ cv::Mat RGBD_Camera::get_T_rgb() {
 
 float4x4 RGBD_Camera::get_T_f4x4() {
 	return T_float4x4;
+}
+
+const osg::Matrix& RGBD_Camera::get_T_osg() {
+	return T_osg;
 }
 
 const cv::Mat* RGBD_Camera::get_depth_map(int frame_num) {
