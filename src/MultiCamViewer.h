@@ -53,14 +53,14 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 	public:
 		MultiCamViewer(std::string path);
 		virtual ~MultiCamViewer();
-		int run_viewer(void);
+		int run_viewer();
 	private:
-		void setup_scene(void);
+		void setup_scene();
 		void set_window_title(osgViewer::Viewer* viewer, std::string win_name,
 				int x, int y);
 		virtual bool handle(const osgGA::GUIEventAdapter& ea,
 				osgGA::GUIActionAdapter& aa);
-		void update_dynamics(void);
+		void update_dynamics();
 		osgText::Text* create_text(const osg::Vec3& pos,
 				const std::string& content, float size);
 		osg::Camera* create_hud_camera(double left, double right, double bottom,

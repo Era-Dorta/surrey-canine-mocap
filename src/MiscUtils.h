@@ -142,7 +142,7 @@ inline osgText::Text* create_text(const osg::Vec3& pos,
 	return text.release();
 }
 
-inline osg::Geode* create_axes(void) {
+inline osg::Geode* create_axes() {
 	osg::ref_ptr<osg::ShapeDrawable> a_x = new osg::ShapeDrawable;
 	a_x->setShape(new osg::Box(osg::Vec3(0.05, 0, 0), 0.1, 0.005, 0.005));
 	a_x->setColor(osg::Vec4(1, 0, 0, 1));
@@ -233,7 +233,7 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in) {
 			"varying out vec4 colour;\n"
 			"attribute vec3 vert_attribs;\n"
 			"varying out float pt_radius;\n"
-			"void main(void)\n"
+			"void main()\n"
 			"{\n"
 			"gl_Position = gl_Vertex;\n"
 			"normal = normalize(gl_Normal);\n"
@@ -376,7 +376,7 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in) {
 
 	//TODO Change to false to use cam colour, true for colouring using the
 	//normals, better if it was in a variable
-	if (true) {
+	if (false) {
 		splat_prog->addShader(
 				new osg::Shader(osg::Shader::FRAGMENT, normal_colour_frag));
 	} else {

@@ -149,7 +149,7 @@ void RGBD_Camera::load_frame(int frame_num) {
 
 }
 
-void RGBD_Camera::load_calibration(void) {
+void RGBD_Camera::load_calibration() {
 	std::string K_fn(
 			_dataset_path + "/" + _cam_name + "/Calibration/K_rgb.txt");
 	std::string T_fn(
@@ -215,19 +215,19 @@ void RGBD_Camera::load_calibration(void) {
 
 }
 
-int RGBD_Camera::get_first_frame_num(void) const {
+int RGBD_Camera::get_first_frame_num() const {
 	return frames.begin()->first;
 }
 
-int RGBD_Camera::get_last_frame_num(void) const {
+int RGBD_Camera::get_last_frame_num() const {
 	return frames.rbegin()->first;
 }
 
-int RGBD_Camera::get_total_frame_num(void) const {
+int RGBD_Camera::get_total_frame_num() const {
 	return frames.size();
 }
 
-void RGBD_Camera::create_cam_geom(void) {
+void RGBD_Camera::create_cam_geom() {
 
 	//Set camera visualization colour:
 	//-----------------
@@ -346,27 +346,27 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour) {
 	return cam_vis.release();
 }
 
-cv::Mat RGBD_Camera::get_K_rgb(void) {
+cv::Mat RGBD_Camera::get_K_rgb() {
 	return K_rgb;
 }
 
-float3x3 RGBD_Camera::get_K_f3x3(void) {
+float3x3 RGBD_Camera::get_K_f3x3() {
 	return K_d_f3x3;
 }
 
-cv::Mat RGBD_Camera::get_inv_K_rgb(void) {
+cv::Mat RGBD_Camera::get_inv_K_rgb() {
 	return inv_K_rgb;
 }
 
-float3x3 RGBD_Camera::get_inv_K_f3x3(void) {
+float3x3 RGBD_Camera::get_inv_K_f3x3() {
 	return inv_K_d_f3x3;
 }
 
-cv::Mat RGBD_Camera::get_T_rgb(void) {
+cv::Mat RGBD_Camera::get_T_rgb() {
 	return T_rgb;
 }
 
-float4x4 RGBD_Camera::get_T_f4x4(void) {
+float4x4 RGBD_Camera::get_T_f4x4() {
 	return T_float4x4;
 }
 
@@ -402,23 +402,23 @@ cv::Mat* RGBD_Camera::get_rgb_image(int frame_num) {
 	}
 }
 
-std::string RGBD_Camera::get_cam_name(void) {
+std::string RGBD_Camera::get_cam_name() {
 	return _cam_name;
 }
 
-int RGBD_Camera::get_d_rows(void) {
+int RGBD_Camera::get_d_rows() {
 	return d_rows;
 }
 
-int RGBD_Camera::get_d_cols(void) {
+int RGBD_Camera::get_d_cols() {
 	return d_cols;
 }
 
-osg::Vec3 RGBD_Camera::get_vis_colour(void) {
+osg::Vec3 RGBD_Camera::get_vis_colour() {
 	return vis_colour;
 }
 
-void RGBD_Camera::segment_frames(void) {
+void RGBD_Camera::segment_frames() {
 	//Get a slightly noise reduced and more complete background plate by averaging the first few 10s of frames:
 	//--------------------------------
 	cv::Mat background_plate_f(d_rows, d_cols, CV_32F, 0.f);
@@ -740,7 +740,7 @@ float3 RGBD_Camera::global_coord(int frame_num, int row, int col) {
 	return result;
 }
 
-void RGBD_Camera::bilateral_filter_frames(void) {
+void RGBD_Camera::bilateral_filter_frames() {
 	cout << "Bilateral filtering frames" << endl;
 
 	for (std::map<int, RGBD_Frame>::iterator i(frames.begin());

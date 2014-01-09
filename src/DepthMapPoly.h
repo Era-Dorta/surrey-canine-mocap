@@ -54,7 +54,7 @@ class DepthMapPoly {
 		osg::ref_ptr<osg::Geode> depth_poly_geode;
 
 	private:
-		osg::Geode* create_depth_map_geode(void);
+		osg::Geode* create_depth_map_geode();
 		//void polygonise_depth_map_cv(cv::Mat* depth_map, cv::Mat K, float discon_thresh);
 
 		int rows;

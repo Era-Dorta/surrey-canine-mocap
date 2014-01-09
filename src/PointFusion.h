@@ -13,11 +13,11 @@ class PointFusion {
 		PointFusion();
 		virtual ~PointFusion();
 
-		void render_model_pov(void);
-		void generate_index_map(void);
-		void do_registration(void);
-		void integrate_measurements(void);
-		void save_model(void);
+		void render_model_pov();
+		void generate_index_map();
+		void do_registration();
+		void integrate_measurements();
+		void save_model();
 
 	private:
 

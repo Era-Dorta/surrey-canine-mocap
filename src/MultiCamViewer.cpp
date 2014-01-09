@@ -63,7 +63,7 @@ MultiCamViewer::~MultiCamViewer() {
 	// TODO Auto-generated destructor stub
 }
 
-int MultiCamViewer::run_viewer(void) {
+int MultiCamViewer::run_viewer() {
 
 	setup_scene();
 
@@ -104,7 +104,7 @@ int MultiCamViewer::run_viewer(void) {
 	return viewer.run();
 }
 
-void MultiCamViewer::setup_scene(void) {
+void MultiCamViewer::setup_scene() {
 	//Global axes:
 	//---------------------------
 	osg::ref_ptr<osg::Geode> axes = create_axes();
@@ -316,7 +316,7 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 	return skel_controller.handle(ea, aa);
 }
 
-void MultiCamViewer::update_dynamics(void) {
+void MultiCamViewer::update_dynamics() {
 	//Update the text displaying the frame number:
 	//------------------------------------------
 	char text[1024];

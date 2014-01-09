@@ -26,7 +26,7 @@ DepthMapPoly::~DepthMapPoly() {
 	// TODO Auto-generated destructor stub
 }
 
-osg::Geode* DepthMapPoly::create_depth_map_geode(void) {
+osg::Geode* DepthMapPoly::create_depth_map_geode() {
 	osg::ref_ptr<osg::Geode> dm_geode = new osg::Geode;
 
 	//Allocate vertices and face indices:

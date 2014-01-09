@@ -21,7 +21,7 @@ void DepthMapSurfel::init(int _rows, int _cols, osg::Vec3 _vis_colour) {
 DepthMapSurfel::~DepthMapSurfel() {
 }
 
-osg::Geode* DepthMapSurfel::create_depth_map_surfel_geode(void) {
+osg::Geode* DepthMapSurfel::create_depth_map_surfel_geode() {
 	osg::ref_ptr<osg::Geode> dm_geode = new osg::Geode;
 
 	//Allocate vertices and face indices:

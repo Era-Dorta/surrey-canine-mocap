@@ -2151,7 +2151,7 @@ class float3x3 {
 		//CDM added
 		//-------------------------------------------------------------------
 
-		CUDA_VEC_HOSTDEVICE float3x3 inverse(void) {
+		CUDA_VEC_HOSTDEVICE float3x3 inverse() {
 			//(Assumes float3x3 is row-major, (r,c) = [4*r + c])
 
 			//(Manually entered based on result from MATLAB symbolic math toolbox)
@@ -2191,8 +2191,8 @@ class float3x3 {
 			return result;
 		}
 
-		CUDA_VEC_HOSTDEVICE void print_mat(void)
-		//__host__ void print_mat(void)
+		CUDA_VEC_HOSTDEVICE void print_mat()
+		//__host__ void print_mat()
 				{
 			printf("------------------------\n");
 			for (int r = 0; r < 3; r++) {
@@ -2262,7 +2262,7 @@ class float4x4 {
 					FLOAT(val[4]),FLOAT(val[5]),FLOAT(val[6]),FLOAT(val[7]),
 					FLOAT(val[8]),FLOAT(val[9]),FLOAT(val[10]),FLOAT(val[11]),
 					FLOAT(val[12]),FLOAT(val[13]),FLOAT(val[14]),FLOAT(val[15]));}
-		operator D3DXMATRIX(void) const {return toD3DXMAT();}
+		operator D3DXMATRIX() const {return toD3DXMAT();}
 #endif
 
 #endif
@@ -2730,7 +2730,7 @@ class float4x4 {
 		//CDM added
 		//-------------------------------------------------------------------
 
-		CUDA_VEC_HOSTDEVICE float4x4 invertRigidTransform(void) {
+		CUDA_VEC_HOSTDEVICE float4x4 invertRigidTransform() {
 			//NB! Only valid for 4x4 rigid body transforms, not general 4x4 matrices
 			//(Assumes float4x4 is row-major, (r,c) = [4*r + c])
 
@@ -2776,8 +2776,8 @@ class float4x4 {
 			return result;
 		}
 
-		CUDA_VEC_HOSTDEVICE void print_mat(void)
-		//__host__ void print_mat(void)
+		CUDA_VEC_HOSTDEVICE void print_mat()
+		//__host__ void print_mat()
 				{
 			printf("------------------------\n");
 			for (int r = 0; r < 4; r++) {
@@ -2820,7 +2820,7 @@ class float6x6 {
 			return res;
 		}
 		__host__
-		void print_mat(void) {
+		void print_mat() {
 			printf("\n------------------------\n");
 			for (int r = 0; r < 6; r++) {
 				for (int c = 0; c < 6; c++)
@@ -2849,7 +2849,7 @@ class float6x1 {
 				res.val[k] = val[k] + m.val[k];
 			return res;
 		}
-		CUDA_VEC_HOSTDEVICE float norm(void) {
+		CUDA_VEC_HOSTDEVICE float norm() {
 			float res = 0.f;
 			for (int i = 0; i < 6; i++) {
 				res += val[i] * val[i];
@@ -2857,7 +2857,7 @@ class float6x1 {
 			return sqrt(res);
 		}
 		__host__
-		void print_mat(void) {
+		void print_mat() {
 			printf("\n");
 			printf("[");
 			for (int r = 0; r < 6; r++) {

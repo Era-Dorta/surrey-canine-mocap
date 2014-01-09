@@ -16,6 +16,6 @@ PointFusion::~PointFusion() {
 	// TODO Auto-generated destructor stub
 }
 
-void PointFusion::render_model_pov(void) {
+void PointFusion::render_model_pov() {
 
 }

@@ -47,8 +47,8 @@ class SurfelModel {
 				osg::Vec4 colour, float radius, int time_stamp, int label);
 		void set_surfel(int index, osg::Vec3 vertex, osg::Vec3 normal,
 				osg::Vec4 colour, float radius, int time_stamp, int label);
-		void refresh_primative_set(void);
-		void remove_invalid_surfels(void);
+		void refresh_primative_set();
+		void remove_invalid_surfels();
 		void copy_surfel(int src_idx, int dst_idx);
 
 		//Geode:

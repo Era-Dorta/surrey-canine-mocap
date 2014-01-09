@@ -98,13 +98,13 @@ void SurfelModel::copy_surfel(int src_idx, int dst_idx) {
 	(*surfel_attributes)[dst_idx] = (*surfel_attributes)[src_idx];
 }
 
-void SurfelModel::refresh_primative_set(void) {
+void SurfelModel::refresh_primative_set() {
 	surfel_geometry->removePrimitiveSet(0, 1);
 	surfel_geometry->addPrimitiveSet(
 			new osg::DrawArrays(GL_POINTS, 0, surfel_vertices->size()));
 }
 
-void SurfelModel::remove_invalid_surfels(void) {
+void SurfelModel::remove_invalid_surfels() {
 
 	//cout << "Removing invalid surfels" << endl;
 

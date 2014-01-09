@@ -45,21 +45,22 @@ class RGBD_Camera {
 	public:
 		RGBD_Camera(std::string dataset_path, std::string cam_name);
 		virtual ~RGBD_Camera();
-		int get_first_frame_num(void) const;
-		int get_last_frame_num(void) const;
-		int get_total_frame_num(void) const;
-		int get_d_rows(void);
-		int get_d_cols(void);
-		osg::Vec3 get_vis_colour(void);
-		cv::Mat get_K_rgb(void);
-		float3x3 get_K_f3x3(void);
-		cv::Mat get_inv_K_rgb(void);
-		float3x3 get_inv_K_f3x3(void);
-		cv::Mat get_T_rgb(void);
-		float4x4 get_T_f4x4(void);
+		int get_first_frame_num() const;
+		int get_last_frame_num() const;
+		int get_total_frame_num() const;
+		int get_d_rows();
+		int get_d_cols();
+		osg::Vec3 get_vis_colour();
+		cv::Mat get_K_rgb();
+		float3x3 get_K_f3x3();
+		cv::Mat get_inv_K_rgb();
+		float3x3 get_inv_K_f3x3();
+		cv::Mat get_T_rgb();
+		float4x4 get_T_f4x4();
+		osg::Matrix get_T();
 		const cv::Mat* get_depth_map(int frame_num);
 		cv::Mat* get_rgb_image(int frame_num);
-		std::string get_cam_name(void);
+		std::string get_cam_name();
 		void get_surface_paths(int frame_num,
 				std::vector<std::vector<cv::Point> >& surface_paths);
 		void get_surface_paths_3d(int frame_num,
@@ -74,12 +75,12 @@ class RGBD_Camera {
 		std::map<int, std::vector<std::vector<float3> > > frame_surface_paths_3d;
 	private:
 		void load_timestamps(std::map<int, double>& ts, std::string fn);
-		void load_calibration(void);
+		void load_calibration();
 		void load_frame(int frame_num);
-		void segment_frames(void);
-		void bilateral_filter_frames(void);
+		void segment_frames();
+		void bilateral_filter_frames();
 		bool cont_path(cv::Mat& d_img, cv::Point last, cv::Point current);
-		void create_cam_geom(void);
+		void create_cam_geom();
 		osg::Geode* create_cam_icon(osg::Vec3 vis_colour);
 		float3 global_coord(int frame_num, int row, int col);
 		std::string _dataset_path;
@@ -99,6 +100,7 @@ class RGBD_Camera {
 		cv::Mat K_rgb;
 		cv::Mat inv_K_rgb;
 		cv::Mat T_rgb;
+		osg::Matrix T_osg;
 
 		float3x3 K_d_f3x3;
 		float3x3 inv_K_d_f3x3;

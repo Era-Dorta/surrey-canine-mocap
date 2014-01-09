@@ -42,7 +42,7 @@ class DepthMapSurfel {
 		osg::ref_ptr<osg::Geode> depth_surfel_geode;
 
 	private:
-		osg::Geode* create_depth_map_surfel_geode(void);
+		osg::Geode* create_depth_map_surfel_geode();
 
 		int rows;
 		int cols;
