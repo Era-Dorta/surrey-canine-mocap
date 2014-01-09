@@ -26,7 +26,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_num_text(
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
-							18.0f)), alpha(0.f) {
+							18.0f)), alpha(0.f), num_plate_points(0) {
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;
 	get_dir_names(path, &cam_names);
@@ -101,7 +101,6 @@ int MultiCamViewer::run_viewer(void) {
 	GL_RGBA, GL_UNSIGNED_BYTE);
 	viewer.getCamera()->attach(osg::Camera::COLOR_BUFFER,
 			rgb_render_interactive_view.get());
-
 	return viewer.run();
 }
 
@@ -286,58 +285,7 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			&& ea.getEventType() == osgGA::GUIEventAdapter::RELEASE
 			&& ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
 			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
-
-		osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
-
-		if (viewer) {
-			double SELECTION_SENSITIVITY = 2;
-			osg::ref_ptr<osg::Viewport> viewport =
-					viewer->getCamera()->getViewport();
-			double mx = viewport->x()
-					+ (int) ((double) viewport->width()
-							* (ea.getXnormalized() * 0.5 + 0.5));
-			double my = viewport->y()
-					+ (int) ((double) viewport->height()
-							* (ea.getYnormalized() * 0.5 + 0.5));
-			double w = SELECTION_SENSITIVITY;
-			double h = SELECTION_SENSITIVITY;
-			//Since we want to select polygons we need the polytope intersector
-			osg::ref_ptr<osgUtil::PolytopeIntersector> intersector =
-					new osgUtil::PolytopeIntersector(
-							osgUtil::Intersector::WINDOW, mx - w, my - h,
-							mx + w, my + h);
-
-			osgUtil::IntersectionVisitor iv(intersector.get());
-			iv.setTraversalMask(~0x1);
-			viewer->getCamera()->accept(iv);
-
-			if (intersector->containsIntersections()) {
-				std::multiset<osgUtil::PolytopeIntersector::Intersection>::iterator result =
-						intersector->getIntersections().begin();
-
-				osg::MatrixList worldMatrices =
-						result->drawable->getWorldMatrices();
-
-				osg::MatrixList::iterator itr = worldMatrices.begin();
-				osg::Matrix& matrix = *itr;
-				//Get global coordinates of the picked point
-				osg::Vec3 pos = result->localIntersectionPoint * matrix;
-
-				//Draw a sphere to give user feedback
-				osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
-				osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
-				sphere_shape = new osg::ShapeDrawable(
-						new osg::Sphere(pos, 0.01));
-				sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
-
-				sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
-						osg::StateAttribute::OFF
-								| osg::StateAttribute::OVERRIDE);
-
-				sphere_geode->addDrawable(sphere_shape);
-				scene_root->addChild(sphere_geode.get());
-			}
-		}
+		set_calibration_point(ea, aa);
 	}
 
 	//Play the sequence:
@@ -495,7 +443,7 @@ void MultiCamViewer::update_dynamics(void) {
 		//t_3d_vis.tock_print();
 
 	}
-	//skel_renderer.update_dynamics(disp_frame_no);
+
 	skel_controller.update_dynamics(disp_frame_no);
 	//------------------------------------------
 
@@ -572,4 +520,69 @@ void MultiCamViewer::save_image_freeview() {
 		exit(-1);
 	}
 
+}
+
+void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
+		osgGA::GUIActionAdapter& aa) {
+	osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
+
+	if (viewer) {
+		double SELECTION_SENSITIVITY = 2;
+		osg::ref_ptr<osg::Viewport> viewport =
+				viewer->getCamera()->getViewport();
+		double mx = viewport->x()
+				+ (int) ((double) viewport->width()
+						* (ea.getXnormalized() * 0.5 + 0.5));
+		double my = viewport->y()
+				+ (int) ((double) viewport->height()
+						* (ea.getYnormalized() * 0.5 + 0.5));
+		double w = SELECTION_SENSITIVITY;
+		double h = SELECTION_SENSITIVITY;
+		//Since we want to select polygons we need the polytope intersector
+		osg::ref_ptr<osgUtil::PolytopeIntersector> intersector =
+				new osgUtil::PolytopeIntersector(osgUtil::Intersector::WINDOW,
+						mx - w, my - h, mx + w, my + h);
+
+		osgUtil::IntersectionVisitor iv(intersector.get());
+		iv.setTraversalMask(~0x1);
+		viewer->getCamera()->accept(iv);
+
+		if (intersector->containsIntersections()) {
+			std::multiset<osgUtil::PolytopeIntersector::Intersection>::iterator result =
+					intersector->getIntersections().begin();
+
+			osg::MatrixList worldMatrices =
+					result->drawable->getWorldMatrices();
+
+			osg::MatrixList::iterator itr = worldMatrices.begin();
+			osg::Matrix& matrix = *itr;
+			//Get global coordinates of the picked point
+			osg::Vec3 pos = result->localIntersectionPoint * matrix;
+
+			if (num_plate_points < 4) {
+				plate_points[num_plate_points] = pos;
+				num_plate_points++;
+
+				//Draw a sphere to give user feedback
+				osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
+				osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+				sphere_shape = new osg::ShapeDrawable(
+						new osg::Sphere(pos, 0.01));
+				sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
+
+				sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+						osg::StateAttribute::OFF
+								| osg::StateAttribute::OVERRIDE);
+
+				sphere_geode->addDrawable(sphere_shape);
+				scene_root->addChild(sphere_geode.get());
+
+			} else {
+				CameraCalibrator cam_cal(camera_arr);
+				cam_cal.set_plate_points(plate_points[0], plate_points[1],
+						plate_points[2], plate_points[3]);
+				cam_cal.save_camera_calibration(_dataset_path);
+			}
+		}
+	}
 }

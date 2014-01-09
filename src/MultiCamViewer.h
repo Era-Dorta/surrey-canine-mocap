@@ -14,6 +14,7 @@
 #include "SurfelModel.h"
 #include "SimpleTimer.h"
 #include "SkeletonController.h"
+#include "CameraCalibrator.h"
 
 #include <string>
 #include <vector>
@@ -66,6 +67,9 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 				double top);
 		void save_image_freeview();
 
+		void set_calibration_point(const osgGA::GUIEventAdapter& ea,
+				osgGA::GUIActionAdapter& aa);
+
 		int win_width;
 		int win_height;
 
@@ -92,6 +96,9 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 
 		osg::ref_ptr<osgText::Text> frame_num_text;
 		float alpha;
+
+		osg::Vec3 plate_points[4];
+		int num_plate_points;
 
 		SkeletonController skel_controller;
 
