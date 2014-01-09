@@ -73,15 +73,19 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 	if (current_frame != frame_num) {
 		current_frame = frame_num;
 		cloud = skeletonizator->get_merged_3d_projection(current_frame);
-		divide_four_sections(cloud);
+		divide_four_sections();
 	}
 }
 
 void SkeletonFitting::fit_root_position() {
-	osg::Vec3 translation = cloud->at(find_head())
-			- skeleton->get_root()->offset
-			- skeleton->get_root()->froset->at(current_frame);
-	skeleton->translate_root(translation);
+	int head_index = find_head();
+
+	if (head_index != -1) {
+		osg::Vec3 translation = cloud->at(head_index)
+				- skeleton->get_root()->offset
+				- skeleton->get_root()->froset->at(current_frame);
+		skeleton->translate_root(translation);
+	}
 }
 
 void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
@@ -92,46 +96,48 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 
 	int paw_index = find_paw(leg, leg_points_index);
 
-	//TODO Not sure if this should be here or in some other place
-	//Since we are going to go up the leg better to have all the points ordered
-	//along the y axis
-	sortstruct s(this);
-	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
+	if (paw_index != -1) {
+		//TODO Not sure if this should be here or in some other place
+		//Since we are going to go up the leg better to have all the points ordered
+		//along the y axis
+		sortstruct s(this);
+		std::sort(leg_points_index.begin(), leg_points_index.end(), s);
 
-	int bones_per_leg = 4;
-	joint_positions_index.resize(bones_per_leg);
+		int bones_per_leg = 4;
+		joint_positions_index.resize(bones_per_leg);
 
-	joint_positions_index[0] = paw_index;
-	//TODO Much more efficient to have the iterate backwards
+		joint_positions_index[0] = paw_index;
+		//TODO Much more efficient to have the iterate backwards
 
-	std::vector<int>::iterator j = leg_points_index.begin();
-	for (int i = 1; i < bones_per_leg; i++) {
+		std::vector<int>::iterator j = leg_points_index.begin();
+		for (int i = 1; i < bones_per_leg; i++) {
 
-		float bone_length = skeleton->get_node(leg - i + 1)->length.length();
-		//Set bone length to paw_index
-		//Go up bone length
-		bool not_bone_length = true;
+			float bone_length =
+					skeleton->get_node(leg - i + 1)->length.length();
+			//Set bone length to paw_index
+			//Go up bone length
+			bool not_bone_length = true;
 
-		while (not_bone_length && j != leg_points_index.end()) {
+			while (not_bone_length && j != leg_points_index.end()) {
 
-			float current_length = (cloud->at(joint_positions_index[i - 1])
-					- cloud->at(*j)).length();
-			if (current_length >= bone_length) {
-				not_bone_length = false;
-			} else {
-				j++;
+				float current_length = (cloud->at(joint_positions_index[i - 1])
+						- cloud->at(*j)).length();
+				if (current_length >= bone_length) {
+					not_bone_length = false;
+				} else {
+					j++;
+				}
 			}
+
+			joint_positions_index[i] = *j;
 		}
 
-		joint_positions_index[i] = *j;
+		//Solve for "shoulder" two bones
+		solve_2_bones(leg - 3, leg - 2, cloud->at(joint_positions_index[2]));
+
+		//Solve for paw and parent bone
+		solve_2_bones(leg - 1, leg, cloud->at(joint_positions_index[0]));
 	}
-
-	//Solve for "shoulder" two bones
-	solve_2_bones(leg - 3, leg - 2, cloud->at(joint_positions_index[2]));
-
-	//Solve for paw and parent bone
-	solve_2_bones(leg - 1, leg, cloud->at(joint_positions_index[0]));
-
 }
 
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
@@ -140,14 +146,20 @@ const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
 
 osg::Vec3 SkeletonFitting::get_paw(Skel_Leg leg) {
 	std::vector<int> leg_points_index;
-	return cloud->at(find_paw(leg, leg_points_index));
+	int index = find_paw(leg, leg_points_index);
+
+	if (index != -1) {
+		return cloud->at(index);
+	} else {
+		return osg::Vec3();
+	}
 }
 
 int SkeletonFitting::find_head() {
 	divide_four_sections(cloud);
 
 	float max_x = cloud->front().x();
-	int index = 0;
+	int index = -1;
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (labels[i] == Not_Limbs && max_x < cloud->at(i).x()) {
 			max_x = cloud->at(i).x();
@@ -167,66 +179,75 @@ int SkeletonFitting::find_paw(Skel_Leg leg,
 		}
 	}
 
-	float max_y = cloud->at(leg_points_index.front()).y();
-	int index = leg_points_index.front();
-	for (unsigned int i = 0; i < leg_points_index.size(); i++) {
-		if (max_y < cloud->at(leg_points_index[i]).y()) {
-			max_y = cloud->at(leg_points_index[i]).y();
-			index = leg_points_index[i];
+	if (leg_points_index.size() > 0) {
+		float max_y = cloud->at(leg_points_index.front()).y();
+		int index = leg_points_index.front();
+		for (unsigned int i = 0; i < leg_points_index.size(); i++) {
+			if (max_y < cloud->at(leg_points_index[i]).y()) {
+				max_y = cloud->at(leg_points_index[i]).y();
+				index = leg_points_index[i];
+			}
 		}
+		return index;
+	} else {
+		return -1;
 	}
-	return index;
 }
 
 void SkeletonFitting::divide_four_sections(bool use_median) {
 	labels.clear();
 	labels.resize(cloud->size(), Front_Left);
 
-	float mean_y;
-	if (use_median) {
-		mean_y = get_median(cloud, Front_Left, Y);
-	} else {
-		mean_y = get_mean(cloud, Front_Left, Y);
-	}
-	int num_invalid = 0;
-	//Divide in half vertically, discard all values above
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (cloud->at(i).y() < mean_y) {
-			labels[i] = Not_Limbs;
-			num_invalid++;
+	if (cloud->size() >= 4) {
+		float mean_y;
+		if (use_median) {
+			mean_y = get_median(cloud, Front_Left, Y);
+		} else {
+			mean_y = get_mean(cloud, Front_Left, Y);
 		}
+		int num_invalid = 0;
+		//Divide in half vertically, discard all values above
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (cloud->at(i).y() < mean_y) {
+				labels[i] = Not_Limbs;
+				num_invalid++;
+			}
+		}
+
+		//Divide the remaining values in front/back part along x
+		float mean_x;
+		if (use_median) {
+			mean_x = get_median(cloud, Front_Left, X);
+		} else {
+			mean_x = get_mean(cloud, Front_Left, X);
+		}
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (labels[i] == Front_Left && cloud->at(i).x() <= mean_x) {
+				labels[i] = Back_Left;
+			}
+		}
+
+		//Divide the two groups into left and right
+		float mean_z_front;
+		float mean_z_back;
+		if (use_median) {
+			mean_z_front = get_median(cloud, Front_Left, Z);
+			mean_z_back = get_median(cloud, Back_Left, Z);
+		} else {
+			mean_z_front = get_mean(cloud, Front_Left, Z);
+			mean_z_back = get_mean(cloud, Back_Left, Z);
+		}
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (labels[i] == Front_Left && cloud->at(i).z() < mean_z_front) {
+				labels[i] = Front_Right;
+			} else if (labels[i] == Back_Left
+					&& cloud->at(i).z() < mean_z_back) {
+				labels[i] = Back_Right;
+			}
+		}
+
 	}
 
-	//Divide the remaining values in front/back part along x
-	float mean_x;
-	if (use_median) {
-		mean_x = get_median(cloud, Front_Left, X);
-	} else {
-		mean_x = get_mean(cloud, Front_Left, X);
-	}
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == Front_Left && cloud->at(i).x() <= mean_x) {
-			labels[i] = Back_Left;
-		}
-	}
-
-	//Divide the two groups into left and right
-	float mean_z_front;
-	float mean_z_back;
-	if (use_median) {
-		mean_z_front = get_median(cloud, Front_Left, Z);
-		mean_z_back = get_median(cloud, Back_Left, Z);
-	} else {
-		mean_z_front = get_mean(cloud, Front_Left, Z);
-		mean_z_back = get_mean(cloud, Back_Left, Z);
-	}
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == Front_Left && cloud->at(i).z() < mean_z_front) {
-			labels[i] = Front_Right;
-		} else if (labels[i] == Back_Left && cloud->at(i).z() < mean_z_back) {
-			labels[i] = Back_Right;
-		}
-	}
 	/*//Kmeans does not gives good results, but leave code here in case it would
 	 // be used later
 	 int num_valid = cloud->size() - num_invalid;
@@ -424,7 +445,11 @@ float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 		}
 	}
 
-	return mean / num_valid;
+	if (num_valid > 0) {
+		return mean / num_valid;
+	} else {
+		return 0.0;
+	}
 }
 
 bool SkeletonFitting::are_equal(const osg::Vec3& v0, const osg::Vec3& v1) {
