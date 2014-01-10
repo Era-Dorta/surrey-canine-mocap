@@ -17,7 +17,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			with_colour(false),
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
-			manual_origin_set(false),
+			manual_origin_set(true),
 			_dataset_path(path),
 			scene_root(new osg::Group),
 			rgb_render_interactive_view(new osg::Image),
@@ -26,7 +26,8 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_num_text(
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
-							18.0f)), alpha(0.f), num_plate_points(0) {
+							18.0f)), alpha(0.f), num_plate_points(0),
+			last_cam_index(0) {
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;
 	get_dir_names(path, &cam_names);
@@ -61,6 +62,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
 			camera_arr[i]->remove_background(30, bounding_box);
 		}
+		skel_controller.set_data(camera_arr, render_skel_group);
 	}
 
 	//DEBUG:
@@ -68,8 +70,6 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 
 	//Set currently displayed frame to beginning:
 	disp_frame_no = begin_frame_no;
-
-	skel_controller.set_data(camera_arr, render_skel_group);
 }
 
 MultiCamViewer::~MultiCamViewer() {
@@ -227,18 +227,21 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			//Toggle cam 1 visibility:
 		case osgGA::GUIEventAdapter::KEY_1:
 			cam_vis_switch->setValue(0, !cam_vis_switch->getValue(0));
+			last_cam_index = 0;
 			update_dynamics();
 			break;
 
 			//Toggle cam 2 visibility:
 		case osgGA::GUIEventAdapter::KEY_2:
 			cam_vis_switch->setValue(1, !cam_vis_switch->getValue(1));
+			last_cam_index = 1;
 			update_dynamics();
 			break;
 
 			//Toggle cam 3 visibility:
 		case osgGA::GUIEventAdapter::KEY_3:
 			cam_vis_switch->setValue(2, !cam_vis_switch->getValue(2));
+			last_cam_index = 3;
 			update_dynamics();
 			break;
 
@@ -473,7 +476,9 @@ void MultiCamViewer::update_dynamics() {
 
 	}
 
-	skel_controller.update_dynamics(disp_frame_no);
+	if (!manual_origin_set) {
+		skel_controller.update_dynamics(disp_frame_no);
+	}
 	//------------------------------------------
 
 //	//DEBUG TEST: Render POV
@@ -610,7 +615,7 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 				CameraCalibrator cam_cal(camera_arr);
 				cam_cal.set_plate_points(plate_points[0], plate_points[1],
 						plate_points[2], plate_points[3]);
-				cam_cal.save_camera_calibration(_dataset_path);
+				cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
 			}
 		}
 	}

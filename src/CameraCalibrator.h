@@ -16,6 +16,9 @@
 
 class CameraCalibrator {
 	public:
+		//TODO Should not give camera_arr as argument
+		//In save_camera_calibration, could give camera iterator or
+		//only path and matrix
 		CameraCalibrator();
 		CameraCalibrator(camVecT camera_arr_);
 		virtual ~CameraCalibrator();
@@ -23,7 +26,7 @@ class CameraCalibrator {
 		void set_plate_points(const osg::Vec3& p0, const osg::Vec3& p1,
 				const osg::Vec3& p2, const osg::Vec3& p3);
 
-		void save_camera_calibration(std::string path);
+		void save_camera_calibration(int cam_index, std::string path);
 
 	private:
 		osg::Matrix calib_matrix;

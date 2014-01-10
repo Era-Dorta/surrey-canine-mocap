@@ -81,6 +81,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		float frame_period_s;
 		double last_frame_tick_count;
 		bool manual_origin_set;
+		int last_cam_index;
 
 		std::string _dataset_path;
 		camVecT camera_arr;
