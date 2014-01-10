@@ -98,6 +98,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		float alpha;
 
 		osg::Vec3 plate_points[4];
+		osg::BoundingBox bounding_box;
 		int num_plate_points;
 
 		SkeletonController skel_controller;

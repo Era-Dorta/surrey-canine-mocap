@@ -376,7 +376,7 @@ inline void enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in) {
 
 	//TODO Change to false to use cam colour, true for colouring using the
 	//normals, better if it was in a variable
-	if (false) {
+	if (true) {
 		splat_prog->addShader(
 				new osg::Shader(osg::Shader::FRAGMENT, normal_colour_frag));
 	} else {

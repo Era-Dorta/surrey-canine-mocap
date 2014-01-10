@@ -50,6 +50,19 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		}
 
 	}
+
+	if (!manual_origin_set) {
+		//TODO This should be given by the user or somehow calculated from
+		//the images
+		//Set bounding box limits
+		bounding_box.set(-2, -0.53, -0.25, 2, -0.01, 0.25);
+
+		//Remove background using bounding box
+		for (unsigned int i = 0; i < camera_arr.size(); i++) {
+			camera_arr[i]->remove_background(30, bounding_box);
+		}
+	}
+
 	//DEBUG:
 	//cout << "begin_frame_no: " << begin_frame_no << " end_frame_no: " << end_frame_no << endl;
 
@@ -132,6 +145,22 @@ void MultiCamViewer::setup_scene() {
 	//---------------------------
 
 	scene_root->addChild(render_skel_group.get());
+
+	//Shows bounding box used to removed the background
+	/*osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	 osg::Vec3 lengths(bounding_box.xMax() - bounding_box.xMin(),
+	 bounding_box.yMax() - bounding_box.yMin(),
+	 bounding_box.zMax() - bounding_box.zMin());
+	 geode->addDrawable(
+	 new osg::ShapeDrawable(
+	 new osg::Box(bounding_box.center(), lengths.x(),
+	 lengths.y(), lengths.z())));
+	 osg::StateSet* ss = geode->getOrCreateStateSet();
+	 ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
+	 ss->setAttributeAndModes(
+	 new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK,
+	 osg::PolygonMode::LINE));
+	 scene_root->addChild(geode.get());*/
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer,

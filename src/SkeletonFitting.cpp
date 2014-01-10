@@ -481,8 +481,8 @@ void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
 }
 
 bool SkeletonFitting::check_bone_index(int bone0, int bone1) {
-	if (bone0 >= 0 && bone0 < skeleton->get_num_bones() && bone1 >= 0
-			&& bone1 < skeleton->get_num_bones()) {
+	if (bone0 >= 0 && (unsigned)bone0 < skeleton->get_num_bones() && bone1 >= 0
+			&& (unsigned)bone1 < skeleton->get_num_bones()) {
 		return true;
 	} else {
 		return false;

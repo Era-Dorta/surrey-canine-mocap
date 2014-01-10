@@ -65,23 +65,8 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name) :
 	d_rows = frames.begin()->second.depth_img.rows;
 	d_cols = frames.begin()->second.depth_img.cols;
 
-	//Segment the frames (remove the background):
-	segment_frames();
-
 	//TODO This produces much betters results but is quite slow
 	//bilateral_filter_frames();
-
-	//DEBUG TEST: Distance transform skeletonization
-	//if(cam_name == "Cam_02")
-	//{
-	//Skeletonization skeletonizator(frames);
-	//for(int i = 90; i < 120; i++)
-	//{
-	//skeletonizator.generate_skeletonization();
-	//skeletonizator.dist_transform_skeletonization(frames[i].depth_img);
-	//cv::waitKey(0);
-	//}
-	//}
 
 	//	//Pre-compute the surface paths for all frames:
 	//	cout << "Computing surface paths" << endl;
@@ -93,7 +78,6 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name) :
 	//	}
 
 	create_cam_geom();
-
 }
 
 RGBD_Camera::~RGBD_Camera() {
@@ -426,14 +410,16 @@ osg::Vec3 RGBD_Camera::get_vis_colour() {
 	return vis_colour;
 }
 
-void RGBD_Camera::segment_frames() {
-	//Get a slightly noise reduced and more complete background plate by averaging the first few 10s of frames:
+void RGBD_Camera::remove_background(int num_back_frames,
+		const osg::BoundingBox& bound_box, float tolerance_factor) {
+	//Get a slightly noise reduced and more complete background plate by
+	//averaging the first few 10s of frames:
 	//--------------------------------
 	cv::Mat background_plate_f(d_rows, d_cols, CV_32F, 0.f);
 	cv::Mat background_weight(cv::Mat::zeros(d_rows, d_cols, CV_16U));
 
 	for (std::map<int, RGBD_Frame>::iterator i(frames.begin());
-			i->first < frames.begin()->first + 60; ++i) {
+			i->first < frames.begin()->first + num_back_frames; ++i) {
 		//Incremental averaging valid pixels:
 		for (int row = 0; row < d_rows; row++) {
 			for (int col = 0; col < d_cols; col++) {
@@ -458,30 +444,29 @@ void RGBD_Camera::segment_frames() {
 	background_plate_f.convertTo(background_plate, CV_16U);
 	//--------------------------------
 
-	//Set all depth pixels that are consistent (within the noise) with the background plate to zero:
+	//Set all depth pixels that are consistent (within the noise) with the
+	//background plate to zero:
 	//--------------------------------
 
 	for (std::map<int, RGBD_Frame>::iterator i(frames.begin());
 			i != frames.end(); ++i) {
-		//Set pixels to zero if they are within the (depth dependent) noise floor of the background plate::
+		//Set pixels to zero if they are within the (depth dependent) noise
+		//floor of the background plate::
 		for (int row = 0; row < d_rows; row++) {
 			for (int col = 0; col < d_cols; col++) {
 
-				float3 global_pt = global_coord((*i).first, row, col);
-
-				//Noise floor is depth dependent quantization step times an extra tolerance factor of 4 to get more filtering:
-				float noise_floor = 4
+				osg::Vec3 glob_osg = global_coord_osg((*i).first, row, col);
+				//Noise floor is depth dependent quantization step times an
+				//extra tolerance factor of 4 to get more filtering:
+				float noise_floor = tolerance_factor
 						* (2.8e-6 * (background_plate.at<ushort>(row, col))
 								* (background_plate.at<ushort>(row, col)));
 				if (!((abs(
 						(int) background_plate.at<ushort>(row, col)
 								- (int) (*i).second.depth_img.at<ushort>(row,
 										col)) > noise_floor)
-						&& global_pt.x > -2.5 &&//And bounding box segmentation
-						global_pt.x < 2.5 &&
-						//global_pt.y < 2.5 &&
-						//global_pt.y < 2.5 &&
-						global_pt.z > 0.6 && global_pt.z < 1.4)) {
+						&& bound_box.contains(glob_osg)	//And bounding box segmentation
+				)) {
 					//Point is classifies as background, set it to invalid (zero):
 					(*i).second.depth_img.at<ushort>(row, col) = 0;
 				}
@@ -532,7 +517,8 @@ void RGBD_Camera::get_surface_paths(int frame_num,
 			}
 		}
 
-		//Append each detected midpoint from this row to a existing path (if present) otherwise begin a new one:
+		//Append each detected midpoint from this row to a existing path
+		//(if present) otherwise begin a new one:
 
 		for (unsigned int mc = 0; mc < mid_cols.size(); mc++) {
 			bool matched_to_existing = false;
@@ -721,29 +707,34 @@ void RGBD_Camera::get_surface_paths_3d(int frame_num,
 
 float3 RGBD_Camera::global_coord(int frame_num, int row, int col) {
 
-	float3x3 K_d_f3x3;
-	for (int i = 0; i < 9; i++)
-		K_d_f3x3.val[i] = K_rgb.at<float>(i);
+	//Reproject it:
+	float depth = ((float) frames[frame_num].depth_img.at<ushort>(row, col))
+			/ 1000.f;
+	float3 depth_pix_hom = make_float3(col, row, 1.f);
+	float3 local = depth * ((inv_K_d_f3x3) * depth_pix_hom);
+
+	float4 local_hom = make_float4(local, 1.f);
+
+	float4 result_hom = T_float4x4 * local_hom;
+
+	float3 result = make_float3(result_hom);
+
+	return result;
+}
+
+osg::Vec3 RGBD_Camera::global_coord_osg(int frame_num, int row, int col) {
 
 	//Reproject it:
 	float depth = ((float) frames[frame_num].depth_img.at<ushort>(row, col))
 			/ 1000.f;
 	float3 depth_pix_hom = make_float3(col, row, 1.f);
-	float3 local = depth * ((K_d_f3x3.inverse()) * depth_pix_hom);
+	float3 local = depth * ((inv_K_d_f3x3) * depth_pix_hom);
 
 	float4 local_hom = make_float4(local, 1.f);
 
-	//Convert cv mat to float4x4
-	float4x4 T_rgb_float4x4;
-	for (int r = 0; r < 4; r++) {
-		for (int c = 0; c < 4; c++) {
-			T_rgb_float4x4.val[r * 4 + c] = ((float*) T_rgb.data)[r * 4 + c];
-		}
-	}
+	float4 result_hom = T_float4x4 * local_hom;
 
-	float4 result_hom = T_rgb_float4x4 * local_hom;
-
-	float3 result = make_float3(result_hom);
+	osg::Vec3 result(result_hom.x, result_hom.y, result_hom.z);
 
 	return result;
 }

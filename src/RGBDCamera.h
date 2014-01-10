@@ -66,6 +66,8 @@ class RGBD_Camera {
 		void get_surface_paths_3d(int frame_num,
 				std::vector<std::vector<float3> >& surface_paths_3d);
 		const osg::Vec3& getVisColour() const;
+		void remove_background(int num_back_frames,
+				const osg::BoundingBox& bound_box, float tolerance_factor = 4);
 
 		osg::ref_ptr<osg::Group> cam_group;
 		osg::ref_ptr<osg::Group> skel_vis_group;
@@ -77,12 +79,12 @@ class RGBD_Camera {
 		void load_timestamps(std::map<int, double>& ts, std::string fn);
 		void load_calibration();
 		void load_frame(int frame_num);
-		void segment_frames();
 		void bilateral_filter_frames();
 		bool cont_path(cv::Mat& d_img, cv::Point last, cv::Point current);
 		void create_cam_geom();
 		osg::Geode* create_cam_icon(osg::Vec3 vis_colour);
 		float3 global_coord(int frame_num, int row, int col);
+		osg::Vec3 global_coord_osg(int frame_num, int row, int col);
 		std::string _dataset_path;
 		std::string _cam_name;
 		std::map<int, RGBD_Frame> frames;
