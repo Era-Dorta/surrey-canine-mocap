@@ -41,17 +41,17 @@ void CameraCalibrator::save_camera_calibration(std::string path) {
 
 	for (camVecIte cam = camera_arr.begin(); cam != camera_arr.end(); ++cam) {
 		std::string T_fn(
-				path + "/" + (*cam)->get_cam_name()
-						+ "/Calibration/T_rgb.txt");
+				path + "/" + (*cam)->get_cam_name() + "/Calibration/T_rgb.txt");
 
 		std::ofstream T_file;
 		T_file.precision(20);
 		T_file.open(T_fn.c_str());
 
+		//Translate camera using calib_matrix
+		osg::Matrix aux_matrix = (*cam)->get_T_osg() * calib_matrix;
+
 		//The matrix is to be saved transposed because when it is read
 		//it will be transposed again
-		osg::Matrix aux_matrix = calib_matrix * (*cam)->get_T_osg();
-
 		if (T_file.is_open()) {
 			for (int i = 0; i < 4; i++) {
 				T_file << aux_matrix(0, i) << "\t";
