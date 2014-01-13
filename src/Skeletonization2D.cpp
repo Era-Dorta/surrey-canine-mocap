@@ -13,8 +13,12 @@ Skeletonization2D::~Skeletonization2D() {
 
 }
 
-const cv::Mat* const Skeletonization2D::get_frame(const int frame_num) const {
-	return &(skeletonized_frames[frame_num]);
+const cv::Mat& Skeletonization2D::get_frame(int frame_num) const {
+	return skeletonized_frames[frame_num];
+}
+
+const cv::Mat& Skeletonization2D::get_bin_frame(int frame_num) const {
+	return bin_frames[frame_num];
 }
 
 void Skeletonization2D::generate_skeletonization() {
@@ -103,6 +107,7 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(
 			}
 		}
 	}
+	bin_frames.push_back(bin_img);
 
 	//Perform distance transform:
 	//---------------------

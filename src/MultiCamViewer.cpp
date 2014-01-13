@@ -27,7 +27,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_num_text(
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
-							18.0f)), alpha(0.f), num_plate_points(0){
+							18.0f)), alpha(0.f), num_plate_points(0) {
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;
 	get_dir_names(path, &cam_names);

@@ -1,4 +1,5 @@
 #include "Skeletonization3D.h"
+#include "DebugUtil.h"
 
 Skeletonization3D::Skeletonization3D(float merge_treshold_, float row_treshold_,
 		float move_distance_) :
@@ -42,9 +43,31 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
 	return skel3d_merged_array[frame_num];
 }
 
-const cv::Mat* const Skeletonization3D::get_2D_frame(int cam_num,
+const cv::Mat& Skeletonization3D::get_2D_frame(int cam_num,
 		int frame_num) const {
 	return skel_arr[cam_num]->get_frame(frame_num);
+}
+
+const cv::Mat& Skeletonization3D::get_2D_bin_frame(int cam_num,
+		int frame_num) const {
+	return skel_arr[cam_num]->get_bin_frame(frame_num);
+}
+
+float3 Skeletonization3D::get_2d_projection(osg::Vec3 point, int cam_index) {
+	float4 res4, point4 = make_float4(point.x(), point.y(), point.z(), 1.0);
+
+	//To 3D point to camera 2D point
+	//First put in point in camera axis
+	res4 = camera_arr.at(cam_index)->get_inv_T_f4x4() * point4;
+	float3 point3 = make_float3(res4.x, res4.y, res4.z);
+
+	//Then do projection to 2D using camera extrinsics
+	return camera_arr.at(cam_index)->get_K_f3x3() * point3;
+}
+
+float3 Skeletonization3D::get_3d_projection(int row, int col, int cam_index,
+		int frame) {
+	return camera_arr.at(cam_index)->global_coord(frame, row, col);
 }
 
 void Skeletonization3D::merge_2D_skeletons(int frame_num) {
@@ -53,7 +76,7 @@ void Skeletonization3D::merge_2D_skeletons(int frame_num) {
 
 	//Get all the 2D views of a given frame
 	for (unsigned int j = 0; j < skel_arr.size(); j++) {
-		skeletonized_frames.push_back(skel_arr[j]->get_frame(frame_num));
+		skeletonized_frames.push_back(&skel_arr[j]->get_frame(frame_num));
 	}
 	//Save the 3D result
 	skel3d_merged_array[frame_num] = merge_2D_skeletons_impl(
@@ -64,15 +87,11 @@ void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
-	const cv::Mat* depth_map;
-	const cv::Mat* skeleton_img;
-	float3x3 inv_K;
-
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
-	depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
-	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
-	inv_K = camera_arr[cam_num]->get_inv_K_f3x3();
+	const cv::Mat* depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
+	const cv::Mat& skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
+	float3x3 inv_K = camera_arr[cam_num]->get_inv_K_f3x3();
 	int rows = depth_map->rows;
 	int cols = depth_map->cols;
 
@@ -80,7 +99,7 @@ void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	for (int row = 0; row < rows; row++) {
 		for (int col = 0; col < cols; col++) {
 			//If the pixel belongs to the skeleton then calculate it's projection
-			if ((int) skeleton_img->at<uchar>(row, col) == 255) {
+			if ((int) skeleton_img.at<uchar>(row, col) == 255) {
 				//Read depth pixel (converted from mm to m):
 				float depth = (((ushort*) (depth_map->data))[row
 						* depth_map->step1() + col]) * 0.001f;
@@ -150,13 +169,11 @@ void Skeletonization3D::translate_points_to_inside(
 
 void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 		int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const {
-	const cv::Mat* depth_map;
-	const cv::Mat* skeleton_img;
 
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
-	depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
-	skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
+	const cv::Mat* depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
+	const cv::Mat& skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
 	float3x3 inv_K = camera_arr[cam_num]->get_inv_K_f3x3();
 	float4x4 T = camera_arr[cam_num]->get_T_f4x4();
 	int rows = depth_map->rows;
@@ -166,7 +183,7 @@ void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 	for (int row = 0; row < rows; row++) {
 		for (int col = 0; col < cols; col++) {
 			//If the pixel belongs to the skeleton then calculate it's projection
-			if ((int) skeleton_img->at<uchar>(row, col) == 255) {
+			if ((int) skeleton_img.at<uchar>(row, col) == 255) {
 				//Read depth pixel (converted from mm to m):
 				float depth = (((ushort*) (depth_map->data))[row
 						* depth_map->step1() + col]) * 0.001f;
@@ -203,7 +220,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		get_global_coord_3d_projection(i, frame_num, aux);
 		projection3d_array.push_back(aux);
 		//Initialise visited pixel matrices
-		visited_pixels.push_back(skel_arr[i]->get_frame(frame_num)->clone());
+		visited_pixels.push_back(skel_arr[i]->get_frame(frame_num).clone());
 	}
 
 	osg::ref_ptr<osg::Vec3Array> result;

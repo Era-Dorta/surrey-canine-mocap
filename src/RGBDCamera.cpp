@@ -192,9 +192,11 @@ void RGBD_Camera::load_calibration() {
 	//NB! Cloning because the array with the data will go out of scope when the function returns:
 	cv::Mat T = cv::Mat(4, 4, CV_32F, T_val, 4 * sizeof(float)).clone();
 	T_rgb = T;
+	inv_T_rgb = T_rgb.inv();
 
 	for (int i = 0; i < 16; i++) {
 		T_float4x4.val[i] = T_rgb.at<float>(i);
+		inv_T_float4x4.val[i] = inv_T_rgb.at<float>(i);
 	}
 
 	//DEBUG:
@@ -360,6 +362,10 @@ float4x4 RGBD_Camera::get_T_f4x4() {
 
 const osg::Matrix& RGBD_Camera::get_T_osg() {
 	return T_osg;
+}
+
+float4x4 RGBD_Camera::get_inv_T_f4x4() {
+	return inv_T_float4x4;
 }
 
 const cv::Mat* RGBD_Camera::get_depth_map(int frame_num) {

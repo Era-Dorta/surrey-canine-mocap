@@ -58,6 +58,7 @@ class RGBD_Camera {
 		cv::Mat get_T_rgb();
 		float4x4 get_T_f4x4();
 		const osg::Matrix& get_T_osg();
+		float4x4 get_inv_T_f4x4();
 		const cv::Mat* get_depth_map(int frame_num);
 		cv::Mat* get_rgb_image(int frame_num);
 		std::string get_cam_name();
@@ -68,6 +69,7 @@ class RGBD_Camera {
 		const osg::Vec3& getVisColour() const;
 		void remove_background(int num_back_frames,
 				const osg::BoundingBox& bound_box, float tolerance_factor = 4);
+		float3 global_coord(int frame_num, int row, int col);
 
 		osg::ref_ptr<osg::Group> cam_group;
 		osg::ref_ptr<osg::Group> skel_vis_group;
@@ -83,7 +85,6 @@ class RGBD_Camera {
 		bool cont_path(cv::Mat& d_img, cv::Point last, cv::Point current);
 		void create_cam_geom();
 		osg::Geode* create_cam_icon(osg::Vec3 vis_colour);
-		float3 global_coord(int frame_num, int row, int col);
 		osg::Vec3 global_coord_osg(int frame_num, int row, int col);
 		std::string _dataset_path;
 		std::string _cam_name;
@@ -102,11 +103,13 @@ class RGBD_Camera {
 		cv::Mat K_rgb;
 		cv::Mat inv_K_rgb;
 		cv::Mat T_rgb;
+		cv::Mat inv_T_rgb;
 		osg::Matrix T_osg;
 
 		float3x3 K_d_f3x3;
 		float3x3 inv_K_d_f3x3;
 		float4x4 T_float4x4;
+		float4x4 inv_T_float4x4;
 };
 
 typedef std::vector<boost::shared_ptr<RGBD_Camera> > camVecT;

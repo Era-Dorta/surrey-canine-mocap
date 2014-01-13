@@ -14,7 +14,8 @@ class Skeletonization2D {
 		Skeletonization2D(const boost::shared_ptr<RGBD_Camera> camera_,
 				int max_clusters_ = 6);
 		virtual ~Skeletonization2D();
-		const cv::Mat* const get_frame(const int frame_num) const;
+		const cv::Mat& get_frame(int frame_num) const;
+		const cv::Mat& get_bin_frame(int frame_num) const;
 	protected:
 	private:
 		void generate_skeletonization();
@@ -30,6 +31,7 @@ class Skeletonization2D {
 		void delete_arm(cv::Mat& img_in);
 
 		std::vector<cv::Mat> skeletonized_frames;
+		std::vector<cv::Mat> bin_frames;
 
 		boost::shared_ptr<RGBD_Camera> camera;
 

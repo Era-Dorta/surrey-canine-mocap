@@ -2193,7 +2193,7 @@ class float3x3 {
 
 		CUDA_VEC_HOSTDEVICE void print_mat()
 		//__host__ void print_mat()
-				{
+		{
 			printf("------------------------\n");
 			for (int r = 0; r < 3; r++) {
 				for (int c = 0; c < 3; c++)
@@ -2778,7 +2778,7 @@ class float4x4 {
 
 		CUDA_VEC_HOSTDEVICE void print_mat()
 		//__host__ void print_mat()
-				{
+		{
 			printf("------------------------\n");
 			for (int r = 0; r < 4; r++) {
 				for (int c = 0; c < 4; c++)
