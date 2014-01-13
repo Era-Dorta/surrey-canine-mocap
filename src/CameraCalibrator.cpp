@@ -26,16 +26,17 @@ void CameraCalibrator::init(camVecT camera_arr_) {
 	camera_arr = camera_arr_;
 }
 
-//Point order should be
-//   p1____ p2
-//     |   |
-//     |   |
-//	 p0|___|p3
-void CameraCalibrator::set_plate_points(const osg::Vec3& p0,
-		const osg::Vec3& p1, const osg::Vec3& p2, const osg::Vec3& p3) {
+void CameraCalibrator::set_plate_points(const osg::Vec3& p0_,
+		const osg::Vec3& p1_, const osg::Vec3& p2_, const osg::Vec3& p3_) {
 
 	//Use the user points to calculate new origin coordinates
+	p0 = p0_;
+	p1 = p1_;
+	p2 = p2_;
+	p3 = p3_;
+}
 
+void CameraCalibrator::recalibrate_center_all_cameras() {
 	//First calculate translation, for that calculate the centre of the
 	//points
 	osg::Vec3 center;
@@ -43,8 +44,12 @@ void CameraCalibrator::set_plate_points(const osg::Vec3& p0,
 	center.y() = (p0.y() + p1.y() + p2.y() + p3.y()) / 4.0;
 	center.z() = (p0.z() + p1.z() + p2.z() + p3.z()) / 4.0;
 
-	osg::Vec3 x_axis, y_axis, z_axis;
+	calib_matrix = osg::Matrix::translate(-center);
+}
 
+void CameraCalibrator::recalibrate_axis_camera() {
+
+	osg::Vec3 x_axis, y_axis, z_axis;
 	//Then calculate rotations, use two vector sum to get an average
 	//to try to reduce the error
 	x_axis = (p3 - p0 + p2 - p1);
@@ -60,14 +65,12 @@ void CameraCalibrator::set_plate_points(const osg::Vec3& p0,
 
 	//A matrix which columns are the normalised vectors is
 	//the rotation matrix with respect to the origin
-	osg::Matrix rot(x_axis.x(), y_axis.x(), z_axis.x(), 0, x_axis.y(),
+	calib_matrix.set(x_axis.x(), y_axis.x(), z_axis.x(), 0, x_axis.y(),
 			y_axis.y(), z_axis.y(), 0, x_axis.z(), y_axis.z(), z_axis.z(), 0, 0,
 			0, 0, 1);
-
-	calib_matrix = osg::Matrix::translate(-center) * rot;
 }
 
-void CameraCalibrator::save_camera_calibration(int cam_index,
+void CameraCalibrator::save_camera_axis_calibration(int cam_index,
 		std::string path) {
 
 	camVecIte cam = camera_arr.begin() + cam_index;
@@ -93,5 +96,11 @@ void CameraCalibrator::save_camera_calibration(int cam_index,
 		T_file.close();
 	} else {
 		cout << "Error: Failed to save extrinsic calibration file" << endl;
+	}
+}
+
+void CameraCalibrator::save_all_cameras_center(std::string path) {
+	for (unsigned int i = 0; i < camera_arr.size(); i++) {
+		save_camera_axis_calibration(i, path);
 	}
 }

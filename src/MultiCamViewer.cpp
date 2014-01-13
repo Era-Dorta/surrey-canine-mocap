@@ -18,6 +18,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
 			manual_origin_set(true),
+			last_cam_index(0),
 			_dataset_path(path),
 			scene_root(new osg::Group),
 			rgb_render_interactive_view(new osg::Image),
@@ -26,8 +27,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_num_text(
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
-							18.0f)), alpha(0.f), num_plate_points(0),
-			last_cam_index(0) {
+							18.0f)), alpha(0.f), num_plate_points(0){
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;
 	get_dir_names(path, &cam_names);
@@ -615,7 +615,11 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 				CameraCalibrator cam_cal(camera_arr);
 				cam_cal.set_plate_points(plate_points[0], plate_points[1],
 						plate_points[2], plate_points[3]);
-				cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
+				cam_cal.recalibrate_center_all_cameras();
+				cam_cal.save_all_cameras_center(_dataset_path);
+
+				//cam_cal.recalibrate_axis_camera();
+				//cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
 			}
 		}
 	}
