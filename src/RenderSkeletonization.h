@@ -48,7 +48,7 @@ class RenderSkeletonization {
 		//coupling in the code
 		//Show the 2D skeleton images of each camera given a frame number
 		void display_2d_skeletons(int disp_frame_no,
-				Skeletonization3D& skeleton);
+				boost::shared_ptr<Skeletonization3D> skeleton);
 
 		//Show a 3D skeleton projection given a frame number
 		void display_3d_skeleon_cloud(int disp_frame_no,

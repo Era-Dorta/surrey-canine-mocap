@@ -173,7 +173,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 }
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
-		Skeletonization3D& skeleton) {
+		boost::shared_ptr<Skeletonization3D> skeleton) {
 	int rows = camera_arr[0]->get_d_rows();
 	int cols = camera_arr[0]->get_d_cols();
 	float ratio_x = cols / (float) rows;
@@ -214,7 +214,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 	quad->addPrimitiveSet(new osg::DrawArrays(GL_QUADS, 0, 4));
 
 	for (unsigned int i = 0; i < camera_arr.size(); i++) {
-		const cv::Mat* cvImg = skeleton.get_2D_frame(i, disp_frame_no);
+		const cv::Mat* cvImg = skeleton->get_2D_frame(i, disp_frame_no);
 
 		osg::ref_ptr<osg::Image> osgImage = new osg::Image;
 		osgImage->setImage(cvImg->cols, cvImg->rows, 3,

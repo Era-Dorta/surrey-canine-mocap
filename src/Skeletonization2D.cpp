@@ -140,7 +140,9 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(
 	res = remove_isolated_short_segments(temp1, 5);
 	temp1 = connectivity_preserving_thinning(res);
 	res = remove_isolated_short_segments(temp1, 15);
-	delete_arm(res);
+
+	//With an appropriate bounding box the arm gets cut already
+	//delete_arm(res);
 
 	return res;
 }

@@ -17,7 +17,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			with_colour(false),
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
-			manual_origin_set(true),
+			manual_origin_set(false),
 			last_cam_index(0),
 			_dataset_path(path),
 			scene_root(new osg::Group),
@@ -56,7 +56,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		//TODO This should be given by the user or somehow calculated from
 		//the images
 		//Set bounding box limits
-		bounding_box.set(-2, -0.53, -0.25, 2, -0.01, 0.25);
+		bounding_box.set(-2, -0.54, -0.25, 2, -0.01, 0.25);
 
 		//Remove background using bounding box
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {

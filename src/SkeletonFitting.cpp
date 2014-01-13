@@ -156,14 +156,16 @@ osg::Vec3 SkeletonFitting::get_paw(Skel_Leg leg) {
 }
 
 int SkeletonFitting::find_head() {
-	divide_four_sections(cloud);
-
-	float max_x = cloud->front().x();
 	int index = -1;
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == Not_Limbs && max_x < cloud->at(i).x()) {
-			max_x = cloud->at(i).x();
-			index = i;
+
+	if (cloud->size() > 4) {
+		divide_four_sections(cloud);
+		float max_x = cloud->front().x();
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (labels[i] == Not_Limbs && max_x < cloud->at(i).x()) {
+				max_x = cloud->at(i).x();
+				index = i;
+			}
 		}
 	}
 	return index;
@@ -481,8 +483,8 @@ void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
 }
 
 bool SkeletonFitting::check_bone_index(int bone0, int bone1) {
-	if (bone0 >= 0 && (unsigned)bone0 < skeleton->get_num_bones() && bone1 >= 0
-			&& (unsigned)bone1 < skeleton->get_num_bones()) {
+	if (bone0 >= 0 && (unsigned) bone0 < skeleton->get_num_bones() && bone1 >= 0
+			&& (unsigned) bone1 < skeleton->get_num_bones()) {
 		return true;
 	} else {
 		return false;
