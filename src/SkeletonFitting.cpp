@@ -323,185 +323,17 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 		}
 
 	}
-
-	/*//Kmeans does not gives good results, but leave code here in case it would
-	 // be used later
-	 int num_valid = cloud->size() - num_invalid;
-	 int max_clusters = 4;
-	 cv::Mat labels;
-
-	 cv::Mat data2(num_valid, 1, CV_32FC3);
-	 for(int i = 0; i < num_valid; i++) {
-	 if(result[i] != Not_Use){
-	 cv::Point3f ipt(cloud->at(i).x(),
-	 cloud->at(i).y(), cloud->at(i).z() );
-	 data2.at<cv::Point3f>(i) =ipt;
-	 }
-	 }
-
-	 cv::kmeans(data2, max_clusters, labels,
-	 cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0), 3,
-	 cv::KMEANS_PP_CENTERS);
-
-	 int j = 0;
-	 for(int i = 0; i < num_valid; i++) {
-	 if(result[i] != Not_Limbs){
-	 result[i] = (Skel_Leg)labels.at<int>(j);
-	 j++;
-	 }
-	 }*/
 }
 
 bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
 		int bone1, const osg::Vec3& position1) {
-	//Positive direction axis, axis pointing out of the body
-	const float Xaxis[] = { 1, 0, 0 };
-	//Projection axis, used to determine one of the axis of the local
-	//coordinate system
-	const float Yaxis[] = { 0, 1, 0 };
-
-	if (!check_bone_index(bone0, bone1)) {
-		cout << "solve_2_bones invalid bone index" << endl;
-		return false;
-	}
-
-	osg::Matrix bone_world_matrix_off;
-	Node* n_bone_0, *n_bone_1;
-	n_bone_0 = skeleton->get_node(bone0);
-	n_bone_1 = skeleton->get_node(bone1);
-	if (n_bone_0->parent) {
-		n_bone_0->parent->get_global_matrix(current_frame,
-				bone_world_matrix_off);
-	}
-
-	bone_world_matrix_off = osg::Matrix::translate(
-			n_bone_0->offset + n_bone_0->froset->at(current_frame))
-			* bone_world_matrix_off;
-	bone_world_matrix_off = osg::Matrix::inverse(bone_world_matrix_off);
-
-	osg::Quat prev_rot_0, prev_rot_1;
-	prev_rot_0 = n_bone_0->quat_arr.at(current_frame);
-	prev_rot_1 = n_bone_1->quat_arr.at(current_frame);
-
-	Matrix T, S;
-
-	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
-	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
-
-	SRS s(T, S, Yaxis, Xaxis);
-
-	Matrix R1, G;
-	osg_to_matrix(G, osg::Matrix::translate(position1 * bone_world_matrix_off));
-
-	float eangle = 0.0;
-	if (s.SetGoal(G, eangle)) {
-		float swivel_angle = s.PosToAngle(position0._v);
-		s.SolveR1(swivel_angle, R1);
-
-		osg::Matrix osg_mat;
-		osg::Quat q;
-
-		matrix_to_osg(osg_mat, R1);
-		q.set(osg_mat);
-
-		n_bone_0->quat_arr.at(current_frame) = q;
-
-		q = osg::Quat(eangle, osg::Vec3(0.0, 1.0, 0.0));
-		n_bone_1->quat_arr.at(current_frame) = q;
-	} else {
-		cout << "Can not put joint on coordinates eangle " << position1 << endl;
-		return false;
-	}
-
-	if (!are_equal(n_bone_1->get_end_bone_global_pos(current_frame),
-			position1)) {
-		//TODO Better check if position is within range and do not calculate
-		//anything if is not
-		n_bone_0->quat_arr.at(current_frame) = prev_rot_0;
-		n_bone_1->quat_arr.at(current_frame) = prev_rot_1;
-		cout << "Can not put joint on coordinates pos doesnt match "
-				<< position1 << endl;
-		return false;
-	} else {
-		return true;
-	}
+	return solve_2_bones_impl(bone0, position0, bone1, position1, 0.0, false);
 }
 
 bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 		const osg::Vec3& position, float swivel_angle) {
-	//TODO Calculate axis according to bones, this is arbitrary and
-	//it should not always work
-
-	//Positive direction axis, axis pointing out of the body
-	const float Xaxis[] = { 1, 0, 0 };
-	//Projection axis, used to determine one of the axis of the local
-	//coordinate system
-	const float Yaxis[] = { 0, 1, 0 };
-
-	if (!check_bone_index(bone0, bone1)) {
-		cout << "solve_2_bones invalid bone index" << endl;
-		return false;
-	}
-
-	osg::Matrix bone_world_matrix_off;
-	Node* n_bone_0, *n_bone_1;
-	n_bone_0 = skeleton->get_node(bone0);
-	n_bone_1 = skeleton->get_node(bone1);
-	if (n_bone_0->parent) {
-		n_bone_0->parent->get_global_matrix(current_frame,
-				bone_world_matrix_off);
-	}
-
-	bone_world_matrix_off = osg::Matrix::translate(
-			n_bone_0->offset + n_bone_0->froset->at(current_frame))
-			* bone_world_matrix_off;
-	bone_world_matrix_off = osg::Matrix::inverse(bone_world_matrix_off);
-
-	osg::Quat prev_rot_0, prev_rot_1;
-	prev_rot_0 = n_bone_0->quat_arr.at(current_frame);
-	prev_rot_1 = n_bone_1->quat_arr.at(current_frame);
-
-	Matrix T, S;
-
-	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
-	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
-
-	SRS s(T, S, Yaxis, Xaxis);
-
-	Matrix R1, G;
-	osg_to_matrix(G, osg::Matrix::translate(position * bone_world_matrix_off));
-
-	float eangle = 0.0;
-	if (s.SetGoal(G, eangle)) {
-		s.SolveR1(swivel_angle, R1);
-
-		osg::Matrix osg_mat;
-		osg::Quat q;
-
-		matrix_to_osg(osg_mat, R1);
-		q.set(osg_mat);
-
-		n_bone_0->quat_arr.at(current_frame) = q;
-
-		q = osg::Quat(eangle, osg::Vec3(0.0, 1.0, 0.0));
-		n_bone_1->quat_arr.at(current_frame) = q;
-	} else {
-		cout << "Can not put joint on coordinates eangle " << position << endl;
-		return false;
-	}
-
-	if (!are_equal(n_bone_1->get_end_bone_global_pos(current_frame),
-			position)) {
-		//TODO Better check if position is within range and do not calculate
-		//anything if is not
-		n_bone_0->quat_arr.at(current_frame) = prev_rot_0;
-		n_bone_1->quat_arr.at(current_frame) = prev_rot_1;
-		cout << "Can not put joint on coordinates pos doesnt match " << position
-				<< endl;
-		return false;
-	} else {
-		return true;
-	}
+	return solve_2_bones_impl(bone0, osg::Vec3(), bone1, position, swivel_angle,
+			true);
 }
 
 float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
@@ -520,15 +352,8 @@ float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
 	Node* n_bone_0, *n_bone_1;
 	n_bone_0 = skeleton->get_node(bone0);
 	n_bone_1 = skeleton->get_node(bone1);
-	if (n_bone_0->parent) {
-		n_bone_0->parent->get_global_matrix(current_frame,
-				bone_world_matrix_off);
-	}
 
-	bone_world_matrix_off = osg::Matrix::translate(
-			n_bone_0->offset + n_bone_0->froset->at(current_frame))
-			* bone_world_matrix_off;
-	bone_world_matrix_off = osg::Matrix::inverse(bone_world_matrix_off);
+	calculate_bone_world_matrix_origin(bone_world_matrix_off, n_bone_0);
 
 	osg::Vec3 position = n_bone_1->get_end_bone_global_pos(current_frame);
 
@@ -675,4 +500,94 @@ bool SkeletonFitting::get_top_left_white_pixel(const cv::Mat& img, int i_row,
 		return true;
 	}
 	return false;
+}
+
+bool SkeletonFitting::solve_2_bones_impl(int bone0, const osg::Vec3& position0,
+		int bone1, const osg::Vec3& position1, float swivel_angle,
+		bool use_swivel) {
+	//TODO Calculate axis according to bones, this is arbitrary and
+	//it should not always work
+
+	//Positive direction axis, axis pointing out of the body
+	const float Xaxis[] = { 1, 0, 0 };
+	//Projection axis, used to determine one of the axis of the local
+	//coordinate system
+	const float Yaxis[] = { 0, 1, 0 };
+
+	if (!check_bone_index(bone0, bone1)) {
+		cout << "solve_2_bones invalid bone index" << endl;
+		return false;
+	}
+
+	osg::Matrix bone_world_matrix_off;
+	Node* n_bone_0, *n_bone_1;
+	n_bone_0 = skeleton->get_node(bone0);
+	n_bone_1 = skeleton->get_node(bone1);
+
+	calculate_bone_world_matrix_origin(bone_world_matrix_off, n_bone_0);
+
+	//Save previous rotations
+	osg::Quat prev_rot_0, prev_rot_1;
+	prev_rot_0 = n_bone_0->quat_arr.at(current_frame);
+	prev_rot_1 = n_bone_1->quat_arr.at(current_frame);
+
+	Matrix T, S;
+
+	//Calculate the matrix that goes from one joint to the next in rest position
+	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
+	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
+
+	SRS s(T, S, Yaxis, Xaxis);
+
+	Matrix R1, G;
+	//Goal matrix is final position expressed in first bone coordinate axes
+	osg_to_matrix(G, osg::Matrix::translate(position1 * bone_world_matrix_off));
+
+	float eangle = 0.0;
+	if (s.SetGoal(G, eangle)) {
+		if (!use_swivel) {
+			//Joint is given as position, translate to swivel angle
+			swivel_angle = s.PosToAngle(position0._v);
+		}
+		s.SolveR1(swivel_angle, R1);
+
+		osg::Matrix osg_mat;
+
+		matrix_to_osg(osg_mat, R1);
+
+		//First bone rotation is R1
+		n_bone_0->quat_arr.at(current_frame).set(osg_mat);
+
+		//Second bone rotation is a rotation of eangle along the Y axes
+		n_bone_1->quat_arr.at(current_frame).makeRotate(eangle,
+				osg::Vec3(0.0, 1.0, 0.0));
+	} else {
+		cout << "Can not put joint on coordinates eangle " << position1 << endl;
+		return false;
+	}
+
+	if (!are_equal(n_bone_1->get_end_bone_global_pos(current_frame),
+			position1)) {
+		//TODO Better check if position is within range and do not calculate
+		//anything if is not
+		n_bone_0->quat_arr.at(current_frame) = prev_rot_0;
+		n_bone_1->quat_arr.at(current_frame) = prev_rot_1;
+		cout << "Can not put joint on coordinates pos doesnt match "
+				<< position1 << endl;
+		return false;
+	} else {
+		return true;
+	}
+}
+
+void SkeletonFitting::calculate_bone_world_matrix_origin(osg::Matrix& matrix,
+		const Node* const node) {
+
+	if (node->parent) {
+		node->parent->get_global_matrix(current_frame, matrix);
+	}
+
+	matrix = osg::Matrix::translate(
+			node->offset + node->froset->at(current_frame)) * matrix;
+	matrix = osg::Matrix::inverse(matrix);
 }
