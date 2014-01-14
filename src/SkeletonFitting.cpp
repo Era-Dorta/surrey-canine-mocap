@@ -143,7 +143,7 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 	}
 }
 
-osg::Vec3 SkeletonFitting::fit_vertebral_front() {
+void SkeletonFitting::fit_vertebral_front() {
 	int head_index = find_head();
 
 	if (head_index != -1) {
@@ -181,10 +181,12 @@ osg::Vec3 SkeletonFitting::fit_vertebral_front() {
 				}
 			} else {
 				cout << "could not do fit vertebral front 0" << endl;
-				return osg::Vec3();
+				return;
 			}
 		}
 		head_pos.set(aux_point.x, aux_point.y, aux_point.z);
+
+		refine_goal_position(head_pos, root_pos, bone_length);
 
 		const cv::Mat& bin_img2 = skeletonizator->get_2D_bin_frame(1,
 				current_frame);
@@ -203,16 +205,18 @@ osg::Vec3 SkeletonFitting::fit_vertebral_front() {
 				}
 			} else {
 				cout << "could not do fit vertebral front 1" << endl;
-				return osg::Vec3();
+				return;
 			}
 		}
 		shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
 
+		refine_goal_position(shoulder_pos, head_pos, bone_length);
+
 		solve_2_bones(0, head_pos, 1, shoulder_pos);
 
-		return shoulder_pos;
+		return;
 	}
-	return osg::Vec3();
+	return;
 }
 
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
@@ -590,4 +594,13 @@ void SkeletonFitting::calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 	matrix = osg::Matrix::translate(
 			node->offset + node->froset->at(current_frame)) * matrix;
 	matrix = osg::Matrix::inverse(matrix);
+}
+
+void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
+		const osg::Vec3& base_position, float length) {
+	//Recalculate bone goal position using its length so we are sure it can
+	//be reached
+	osg::Vec3 pos_direction = (end_position - base_position);
+	pos_direction.normalize();
+	end_position = base_position + pos_direction * length;
 }

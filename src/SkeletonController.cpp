@@ -95,7 +95,8 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
 
 	if (skeleton->isSkelLoaded()) {
-		//skel_fitter.fit_root_position();
+		skel_fitter.fit_root_position();
+		skel_fitter.fit_vertebral_front();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();

@@ -51,7 +51,7 @@ class SkeletonFitting {
 
 		void fit_leg_position(Skel_Leg leg);
 
-		osg::Vec3 fit_vertebral_front();
+		void fit_vertebral_front();
 
 		const std::vector<Skel_Leg>& getLabels() const;
 
@@ -96,6 +96,9 @@ class SkeletonFitting {
 
 		void calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 				const Node* const node);
+
+		void refine_goal_position(osg::Vec3& end_position,
+				const osg::Vec3& base_position, float length);
 
 		struct sortstruct {
 				// sortstruct needs to know its containing object
