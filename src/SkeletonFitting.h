@@ -51,9 +51,14 @@ class SkeletonFitting {
 
 		void fit_leg_position(Skel_Leg leg);
 
+		osg::Vec3 fit_vertebral_front();
+
 		const std::vector<Skel_Leg>& getLabels() const;
 
 		osg::Vec3 get_paw(Skel_Leg leg);
+
+		bool solve_2_bones(int bone0, const osg::Vec3& position0, int bone1,
+				const osg::Vec3& position1);
 
 		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position,
 				float swivel_angle = 0.0);
@@ -81,6 +86,9 @@ class SkeletonFitting {
 		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 
 		bool check_bone_index(int bone0, int bone1);
+
+		bool get_top_left_white_pixel(const cv::Mat& img, int i_row, int i_col,
+				int &res_row, int &res_col);
 
 		struct sortstruct {
 				// sortstruct needs to know its containing object

@@ -143,6 +143,78 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 	}
 }
 
+osg::Vec3 SkeletonFitting::fit_vertebral_front() {
+	int head_index = find_head();
+
+	if (head_index != -1) {
+		//TODO Could also do this by having a complete cloud point
+		//of the dog and going up and left (-y, -x) until distance was
+		//reached, in any case a complete cloud could be useful
+
+		osg::Vec3 root_pos = cloud->at(head_index);
+		float3 root_pos3 = make_float3(root_pos.x(), root_pos.y(),
+				root_pos.z());
+		//Use the third camera since it gives the best head view
+		const cv::Mat& bin_img = skeletonizator->get_2D_bin_frame(2,
+				current_frame);
+
+		int row = 0, col = 0;
+
+		float3 start_point = skeletonizator->get_2d_projection(root_pos, 2);
+		row = start_point.y;
+		col = start_point.x;
+
+		float bone_length = skeleton->get_node(0)->length.length();
+
+		osg::Vec3 head_pos, shoulder_pos;
+
+		bool not_bone_length = true;
+		float3 aux_point;
+		while (not_bone_length) {
+
+			if (get_top_left_white_pixel(bin_img, row, col, row, col)) {
+				aux_point = skeletonizator->get_3d_projection(row, col, 2,
+						current_frame);
+				float current_length = length(root_pos3 - aux_point);
+				if (current_length >= bone_length) {
+					not_bone_length = false;
+				}
+			} else {
+				cout << "could not do fit vertebral front 0" << endl;
+				return osg::Vec3();
+			}
+		}
+		head_pos.set(aux_point.x, aux_point.y, aux_point.z);
+
+		const cv::Mat& bin_img2 = skeletonizator->get_2D_bin_frame(1,
+				current_frame);
+		bone_length = skeleton->get_node(1)->length.length();
+
+		not_bone_length = true;
+		float3 head3 = aux_point;
+		while (not_bone_length) {
+
+			if (get_top_left_white_pixel(bin_img2, row, col, row, col)) {
+				aux_point = skeletonizator->get_3d_projection(row, col, 1,
+						current_frame);
+				float current_length = length(head3 - aux_point);
+				if (current_length >= bone_length) {
+					not_bone_length = false;
+				}
+			} else {
+				cout << "could not do fit vertebral front 1" << endl;
+				return osg::Vec3();
+			}
+		}
+		shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
+
+		solve_2_bones(0, head_pos, 1, shoulder_pos);
+
+		return shoulder_pos;
+	}
+	return osg::Vec3();
+}
+
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
 	return labels;
 }
@@ -278,6 +350,81 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 	 j++;
 	 }
 	 }*/
+}
+
+bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
+		int bone1, const osg::Vec3& position1) {
+	//Positive direction axis, axis pointing out of the body
+	const float Xaxis[] = { 1, 0, 0 };
+	//Projection axis, used to determine one of the axis of the local
+	//coordinate system
+	const float Yaxis[] = { 0, 1, 0 };
+
+	if (!check_bone_index(bone0, bone1)) {
+		cout << "solve_2_bones invalid bone index" << endl;
+		return false;
+	}
+
+	osg::Matrix bone_world_matrix_off;
+	Node* n_bone_0, *n_bone_1;
+	n_bone_0 = skeleton->get_node(bone0);
+	n_bone_1 = skeleton->get_node(bone1);
+	if (n_bone_0->parent) {
+		n_bone_0->parent->get_global_matrix(current_frame,
+				bone_world_matrix_off);
+	}
+
+	bone_world_matrix_off = osg::Matrix::translate(
+			n_bone_0->offset + n_bone_0->froset->at(current_frame))
+			* bone_world_matrix_off;
+	bone_world_matrix_off = osg::Matrix::inverse(bone_world_matrix_off);
+
+	osg::Quat prev_rot_0, prev_rot_1;
+	prev_rot_0 = n_bone_0->quat_arr.at(current_frame);
+	prev_rot_1 = n_bone_1->quat_arr.at(current_frame);
+
+	Matrix T, S;
+
+	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
+	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
+
+	SRS s(T, S, Yaxis, Xaxis);
+
+	Matrix R1, G;
+	osg_to_matrix(G, osg::Matrix::translate(position1 * bone_world_matrix_off));
+
+	float eangle = 0.0;
+	if (s.SetGoal(G, eangle)) {
+		float swivel_angle = s.PosToAngle(position0._v);
+		s.SolveR1(swivel_angle, R1);
+
+		osg::Matrix osg_mat;
+		osg::Quat q;
+
+		matrix_to_osg(osg_mat, R1);
+		q.set(osg_mat);
+
+		n_bone_0->quat_arr.at(current_frame) = q;
+
+		q = osg::Quat(eangle, osg::Vec3(0.0, 1.0, 0.0));
+		n_bone_1->quat_arr.at(current_frame) = q;
+	} else {
+		cout << "Can not put joint on coordinates eangle " << position1 << endl;
+		return false;
+	}
+
+	if (!are_equal(n_bone_1->get_end_bone_global_pos(current_frame),
+			position1)) {
+		//TODO Better check if position is within range and do not calculate
+		//anything if is not
+		n_bone_0->quat_arr.at(current_frame) = prev_rot_0;
+		n_bone_1->quat_arr.at(current_frame) = prev_rot_1;
+		cout << "Can not put joint on coordinates pos doesnt match "
+				<< position1 << endl;
+		return false;
+	} else {
+		return true;
+	}
 }
 
 bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
@@ -494,4 +641,38 @@ bool SkeletonFitting::check_bone_index(int bone0, int bone1) {
 	} else {
 		return false;
 	}
+}
+
+bool SkeletonFitting::get_top_left_white_pixel(const cv::Mat& img, int i_row,
+		int i_col, int &res_row, int &res_col) {
+	bool go_top, go_left, go_bot;
+
+	go_top = i_row > 0;
+	go_left = i_col > 0;
+	go_bot = i_col < img.rows - 1;
+
+	//Search order is
+	// 1 0
+	// 2 x
+	// 3
+	if (go_top && (int) img.at<uchar>(i_row - 1, i_col) == 255) {
+		res_row = i_row - 1;
+		res_col = i_col;
+		return true;
+	} else if (go_top && go_left
+			&& (int) img.at<uchar>(i_row - 1, i_col - 1) == 255) {
+		res_row = i_row - 1;
+		res_col = i_col - 1;
+		return true;
+	} else if (go_left && (int) img.at<uchar>(i_row, i_col - 1) == 255) {
+		res_row = i_row;
+		res_col = i_col - 1;
+		return true;
+	} else if (go_bot && go_left
+			&& (int) img.at<uchar>(i_row + 1, i_col - 1) == 255) {
+		res_row = i_row + 1;
+		res_col = i_col - 1;
+		return true;
+	}
+	return false;
 }
