@@ -97,6 +97,7 @@ class SkeletonFitting {
 
 		float move_joint_max_dist;
 		float error_threshold;
+		float body_height_extra_threshold;
 		std::vector<Skel_Leg> labels;
 		int current_frame;
 		osg::ref_ptr<osg::Vec3Array> cloud;

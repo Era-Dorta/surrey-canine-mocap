@@ -20,8 +20,11 @@ bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
 	return (i.z() < j.z());
 }
 
-SkeletonFitting::SkeletonFitting() :
-			move_joint_max_dist(0), error_threshold(0.005), current_frame(-1) {
+SkeletonFitting::SkeletonFitting() {
+	move_joint_max_dist = 0;
+	error_threshold = 0.005;
+	current_frame = -1;
+	body_height_extra_threshold = 0.04;
 }
 
 SkeletonFitting::~SkeletonFitting() {
@@ -159,8 +162,7 @@ int SkeletonFitting::find_head() {
 	int index = -1;
 
 	if (cloud->size() > 4) {
-		divide_four_sections(cloud);
-		float max_x = cloud->front().x();
+		float max_x = -FLT_MAX;
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] == Not_Limbs && max_x < cloud->at(i).x()) {
 				max_x = cloud->at(i).x();
@@ -200,19 +202,18 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 	labels.clear();
 	labels.resize(cloud->size(), Front_Left);
 
-	if (cloud->size() >= 4) {
+	if (cloud->size() > 4) {
 		float mean_y;
 		if (use_median) {
 			mean_y = get_median(cloud, Front_Left, Y);
 		} else {
 			mean_y = get_mean(cloud, Front_Left, Y);
 		}
-		int num_invalid = 0;
+
 		//Divide in half vertically, discard all values above
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (cloud->at(i).y() < mean_y) {
+			if (cloud->at(i).y() < mean_y + body_height_extra_threshold) {
 				labels[i] = Not_Limbs;
-				num_invalid++;
 			}
 		}
 
@@ -239,6 +240,7 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 			mean_z_front = get_mean(cloud, Front_Left, Z);
 			mean_z_back = get_mean(cloud, Back_Left, Z);
 		}
+
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] == Front_Left && cloud->at(i).z() < mean_z_front) {
 				labels[i] = Front_Right;
@@ -417,21 +419,24 @@ float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
 		}
 	}
 
-	osg::Vec3Array::iterator first = aux_vec->begin();
-	osg::Vec3Array::iterator last = aux_vec->end();
-	osg::Vec3Array::iterator middle = first + (last - first) / 2;
+	if (aux_vec->size() > 0) {
+		osg::Vec3Array::iterator first = aux_vec->begin();
+		osg::Vec3Array::iterator last = aux_vec->end();
+		osg::Vec3Array::iterator middle = first + (last - first) / 2;
 
-	switch (axis) {
-	case X:
-		std::nth_element(first, middle, last, comp_x);
-		return middle->x();
-	case Y:
-		std::nth_element(first, middle, last, comp_y);
-		return middle->y();
-	case Z:
-		std::nth_element(first, middle, last, comp_z);
-		return middle->z();
+		switch (axis) {
+		case X:
+			std::nth_element(first, middle, last, comp_x);
+			return middle->x();
+		case Y:
+			std::nth_element(first, middle, last, comp_y);
+			return middle->y();
+		case Z:
+			std::nth_element(first, middle, last, comp_z);
+			return middle->z();
+		}
 	}
+
 	return 0.0;
 }
 
