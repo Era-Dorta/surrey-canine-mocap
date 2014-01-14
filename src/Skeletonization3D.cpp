@@ -62,7 +62,13 @@ float3 Skeletonization3D::get_2d_projection(osg::Vec3 point, int cam_index) {
 	float3 point3 = make_float3(res4.x, res4.y, res4.z);
 
 	//Then do projection to 2D using camera extrinsics
-	return camera_arr.at(cam_index)->get_K_f3x3() * point3;
+	float3 res3 = camera_arr.at(cam_index)->get_K_f3x3() * point3;
+
+	//TODO Should give result in homogeneous coordinates, the fact that is not
+	//means I forgot to do something somewhere
+	float invz = 1.0 / res3.z;
+	res3 = res3 * invz;
+	return res3;
 }
 
 float3 Skeletonization3D::get_3d_projection(int row, int col, int cam_index,

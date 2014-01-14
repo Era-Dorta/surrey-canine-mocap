@@ -715,7 +715,7 @@ float3 RGBD_Camera::global_coord(int frame_num, int row, int col) {
 
 	//Reproject it:
 	float depth = ((float) frames[frame_num].depth_img.at<ushort>(row, col))
-			/ 1000.f;
+			* 0.001f;
 	float3 depth_pix_hom = make_float3(col, row, 1.f);
 	float3 local = depth * ((inv_K_d_f3x3) * depth_pix_hom);
 
@@ -732,7 +732,7 @@ osg::Vec3 RGBD_Camera::global_coord_osg(int frame_num, int row, int col) {
 
 	//Reproject it:
 	float depth = ((float) frames[frame_num].depth_img.at<ushort>(row, col))
-			/ 1000.f;
+			* 0.001f;
 	float3 depth_pix_hom = make_float3(col, row, 1.f);
 	float3 local = depth * ((inv_K_d_f3x3) * depth_pix_hom);
 
