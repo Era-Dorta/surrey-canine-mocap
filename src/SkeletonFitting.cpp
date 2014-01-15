@@ -151,6 +151,8 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 }
 
 void SkeletonFitting::fit_vertebral_front() {
+	//TODO SUPER IMPORTANT DO NOT DO THIS ON CAMERA BASED, DO A SUPER
+	//CAMERA A PROJECT ALL POINTS TO AXES
 	int head_index = find_head();
 
 	if (head_index != -1) {
@@ -187,7 +189,6 @@ void SkeletonFitting::fit_vertebral_front() {
 		}
 
 		while (not_bone_length) {
-
 			if (get_top_left_white_pixel(cam2_bin_img, row, col, row, col)) {
 				aux_point = skeletonizator->get_3d_projection(row, col, 2,
 						current_frame);
@@ -216,14 +217,15 @@ void SkeletonFitting::fit_vertebral_front() {
 			if (!get_nearest_white_pixel(cam1_bin_img, row, col, row, col)) {
 				cout << "Could not locate head end position on second camera"
 						<< endl;
+				return;
 			}
 		}
+
 		bone_length = skeleton->get_node(1)->length.length();
 
 		not_bone_length = true;
 		float3 head3 = aux_point;
 		while (not_bone_length) {
-
 			if (get_top_left_white_pixel(cam1_bin_img, row, col, row, col)) {
 				aux_point = skeletonizator->get_3d_projection(row, col, 1,
 						current_frame);
@@ -232,8 +234,10 @@ void SkeletonFitting::fit_vertebral_front() {
 					not_bone_length = false;
 				}
 			} else {
-				cout << "Vertebral front fit fail 1" << endl;
-				return;
+				if (!unstuck_go_down(cam1_bin_img, row, col, row, col)) {
+					cout << "Vertebral front fit fail 1" << endl;
+					return;
+				}
 			}
 		}
 		shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
@@ -242,8 +246,6 @@ void SkeletonFitting::fit_vertebral_front() {
 
 		if (!solve_2_bones(0, head_pos, 1, shoulder_pos)) {
 			cout << "Vertebral front fit fail 2" << endl;
-		} else {
-			cout << "fit done" << endl;
 		}
 	}
 }
@@ -532,6 +534,26 @@ bool SkeletonFitting::get_top_left_white_pixel(const cv::Mat& img, int i_row,
 		res_col = i_col - 1;
 		return true;
 	}
+	return false;
+}
+
+bool SkeletonFitting::unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
+		int &res_row, int &res_col) {
+	i_col--;
+	if (i_col < 0) {
+		return false;
+	}
+
+	while (i_row < img.rows && (int) img.at<uchar>(i_row, i_col) != 255) {
+		i_row++;
+	}
+
+	if (i_row < img.rows && (int) img.at<uchar>(i_row, i_col) == 255) {
+		res_row = i_row;
+		res_col = i_col;
+		return true;
+	}
+
 	return false;
 }
 
