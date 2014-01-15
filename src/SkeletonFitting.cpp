@@ -596,6 +596,116 @@ void SkeletonFitting::calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 	matrix = osg::Matrix::inverse(matrix);
 }
 
+bool SkeletonFitting::get_nearest_white_pixel(const cv::Mat& img, int i_row,
+		int i_col, int& res_row, int& res_col) {
+	int increment = 1;
+	int num_elements = 2;
+	int aux_num_elements = 2;
+	int i;
+	int total = img.cols * img.rows;
+	int current = 1;
+
+	//To search the nearest white pixel this method goes in squares
+	//searching
+
+	// 0 1 2
+	// 7 x 3
+	// 6 5 4
+
+	//If it does not find it, then is goes to a bigger outer square and so on
+	while (current < total) {
+
+		//Right
+		res_row = i_row - increment;
+		if (res_row >= 0) {
+			res_col = i_col - increment;
+			if (res_col < 0) {
+				num_elements = num_elements + res_col;
+				res_col = 0;
+			}
+
+			i = 0;
+			while (res_col < img.cols && i < num_elements) {
+				if(img.at<uchar>(res_row, res_col) == 255){
+					return true;
+				}
+				res_col++;
+				i++;
+			}
+			current += i;
+		}
+
+		//Bottom
+		num_elements = aux_num_elements;
+		res_col = i_col + increment;
+		if (res_col < img.cols) {
+			res_row = i_row - increment;
+			if (res_row < 0) {
+				num_elements = num_elements + res_row;
+				res_row = 0;
+			}
+
+			i = 0;
+			while (res_row < img.rows && i < num_elements) {
+				if(img.at<uchar>(res_row, res_col) == 255){
+					return true;
+				}
+				res_row++;
+				i++;
+			}
+			current += i;
+		}
+
+		//Left
+		num_elements = aux_num_elements;
+		res_row = i_row + increment;
+		if (res_row < img.rows) {
+			res_col = i_col + increment;
+			if (res_col >= img.cols) {
+				num_elements = num_elements - (res_col - img.cols + 1);
+				res_col = img.cols - 1;
+			}
+
+			i = 0;
+			while (res_col >= 0 && i < num_elements) {
+				if(img.at<uchar>(res_row, res_col) == 255){
+					return true;
+				}
+				res_col -= 1;
+				i++;
+			}
+			current += i;
+		}
+
+		//Up
+		num_elements = aux_num_elements;
+		res_col = i_col - increment;
+		if (res_col >= 0) {
+			res_row = i_row + increment;
+			if (res_row > img.rows) {
+				num_elements = num_elements - (res_row - img.rows + 1);
+				res_row = img.rows - 1;
+			}
+
+			i = 0;
+			while (res_row >= 0 && i < num_elements) {
+				if(img.at<uchar>(res_row, res_col) == 255){
+					return true;
+				}
+				res_row -= 1;
+				i++;
+			}
+			current += i;
+		}
+
+		increment++;
+		aux_num_elements += 2;
+		num_elements = aux_num_elements;
+	}
+
+	return false;
+}
+
 void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
 		const osg::Vec3& base_position, float length) {
 	//Recalculate bone goal position using its length so we are sure it can

@@ -90,6 +90,9 @@ class SkeletonFitting {
 		bool get_top_left_white_pixel(const cv::Mat& img, int i_row, int i_col,
 				int &res_row, int &res_col);
 
+		bool get_nearest_white_pixel(cv::Mat& img, int i_row, int i_col,
+				int &res_row, int &res_col);
+
 		bool solve_2_bones_impl(int bone0, const osg::Vec3& position0,
 				int bone1, const osg::Vec3& position1, float swivel_angle,
 				bool use_swivel);
