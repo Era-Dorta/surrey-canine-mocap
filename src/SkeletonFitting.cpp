@@ -136,10 +136,17 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 		}
 
 		//Solve for "shoulder" two bones
-		solve_2_bones(leg - 3, leg - 2, cloud->at(joint_positions_index[2]));
+		if (!solve_2_bones(leg - 3, leg - 2,
+				cloud->at(joint_positions_index[2]))) {
+			cout << "Failed leg fitting the first pair" << endl;
+			return;
+		}
 
 		//Solve for paw and parent bone
-		solve_2_bones(leg - 1, leg, cloud->at(joint_positions_index[0]));
+		if (!solve_2_bones(leg - 1, leg, cloud->at(joint_positions_index[0]))) {
+			cout << "Failed leg fitting the second pair" << endl;
+			return;
+		}
 	}
 }
 
@@ -155,7 +162,7 @@ void SkeletonFitting::fit_vertebral_front() {
 		float3 root_pos3 = make_float3(root_pos.x(), root_pos.y(),
 				root_pos.z());
 		//Use the third camera since it gives the best head view
-		const cv::Mat& bin_img = skeletonizator->get_2D_bin_frame(2,
+		const cv::Mat& cam2_bin_img = skeletonizator->get_2D_bin_frame(2,
 				current_frame);
 
 		int row = 0, col = 0;
@@ -170,9 +177,18 @@ void SkeletonFitting::fit_vertebral_front() {
 
 		bool not_bone_length = true;
 		float3 aux_point;
+
+		if (cam2_bin_img.at<uchar>(row, col) != 255) {
+			cout << "Head error, finding closest match" << endl;
+			if (!get_nearest_white_pixel(cam2_bin_img, row, col, row, col)) {
+				cout << "Head error not recoverable" << endl;
+				return;
+			}
+		}
+
 		while (not_bone_length) {
 
-			if (get_top_left_white_pixel(bin_img, row, col, row, col)) {
+			if (get_top_left_white_pixel(cam2_bin_img, row, col, row, col)) {
 				aux_point = skeletonizator->get_3d_projection(row, col, 2,
 						current_frame);
 				float current_length = length(root_pos3 - aux_point);
@@ -180,7 +196,7 @@ void SkeletonFitting::fit_vertebral_front() {
 					not_bone_length = false;
 				}
 			} else {
-				cout << "could not do fit vertebral front 0" << endl;
+				cout << "Vertebral front fit fail 0" << endl;
 				return;
 			}
 		}
@@ -188,15 +204,27 @@ void SkeletonFitting::fit_vertebral_front() {
 
 		refine_goal_position(head_pos, root_pos, bone_length);
 
-		const cv::Mat& bin_img2 = skeletonizator->get_2D_bin_frame(1,
+		const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
 				current_frame);
+
+		start_point = skeletonizator->get_2d_projection(head_pos, 1);
+
+		row = start_point.y;
+		col = start_point.x;
+
+		if (cam1_bin_img.at<uchar>(row, col) != 255) {
+			if (!get_nearest_white_pixel(cam1_bin_img, row, col, row, col)) {
+				cout << "Could not locate head end position on second camera"
+						<< endl;
+			}
+		}
 		bone_length = skeleton->get_node(1)->length.length();
 
 		not_bone_length = true;
 		float3 head3 = aux_point;
 		while (not_bone_length) {
 
-			if (get_top_left_white_pixel(bin_img2, row, col, row, col)) {
+			if (get_top_left_white_pixel(cam1_bin_img, row, col, row, col)) {
 				aux_point = skeletonizator->get_3d_projection(row, col, 1,
 						current_frame);
 				float current_length = length(head3 - aux_point);
@@ -204,7 +232,7 @@ void SkeletonFitting::fit_vertebral_front() {
 					not_bone_length = false;
 				}
 			} else {
-				cout << "could not do fit vertebral front 1" << endl;
+				cout << "Vertebral front fit fail 1" << endl;
 				return;
 			}
 		}
@@ -212,11 +240,12 @@ void SkeletonFitting::fit_vertebral_front() {
 
 		refine_goal_position(shoulder_pos, head_pos, bone_length);
 
-		solve_2_bones(0, head_pos, 1, shoulder_pos);
-
-		return;
+		if (!solve_2_bones(0, head_pos, 1, shoulder_pos)) {
+			cout << "Vertebral front fit fail 2" << endl;
+		} else {
+			cout << "fit done" << endl;
+		}
 	}
-	return;
 }
 
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
@@ -566,7 +595,8 @@ bool SkeletonFitting::solve_2_bones_impl(int bone0, const osg::Vec3& position0,
 		n_bone_1->quat_arr.at(current_frame).makeRotate(eangle,
 				osg::Vec3(0.0, 1.0, 0.0));
 	} else {
-		cout << "Can not put joint on coordinates eangle " << position1 << endl;
+		//According to the algorithm it is impossible to put the end effector
+		//in the given position
 		return false;
 	}
 
@@ -576,8 +606,7 @@ bool SkeletonFitting::solve_2_bones_impl(int bone0, const osg::Vec3& position0,
 		//anything if is not
 		n_bone_0->quat_arr.at(current_frame) = prev_rot_0;
 		n_bone_1->quat_arr.at(current_frame) = prev_rot_1;
-		cout << "Can not put joint on coordinates pos doesnt match "
-				<< position1 << endl;
+		//End position does not match desired position
 		return false;
 	} else {
 		return true;
@@ -606,7 +635,7 @@ bool SkeletonFitting::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 	int current = 1;
 
 	//To search the nearest white pixel this method goes in squares
-	//searching
+	//searching, it will not give the closer one, but is a good approximation
 
 	// 0 1 2
 	// 7 x 3
@@ -626,7 +655,7 @@ bool SkeletonFitting::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 
 			i = 0;
 			while (res_col < img.cols && i < num_elements) {
-				if(img.at<uchar>(res_row, res_col) == 255){
+				if (img.at<uchar>(res_row, res_col) == 255) {
 					return true;
 				}
 				res_col++;
@@ -647,7 +676,7 @@ bool SkeletonFitting::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 
 			i = 0;
 			while (res_row < img.rows && i < num_elements) {
-				if(img.at<uchar>(res_row, res_col) == 255){
+				if (img.at<uchar>(res_row, res_col) == 255) {
 					return true;
 				}
 				res_row++;
@@ -668,7 +697,7 @@ bool SkeletonFitting::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 
 			i = 0;
 			while (res_col >= 0 && i < num_elements) {
-				if(img.at<uchar>(res_row, res_col) == 255){
+				if (img.at<uchar>(res_row, res_col) == 255) {
 					return true;
 				}
 				res_col -= 1;
@@ -689,7 +718,7 @@ bool SkeletonFitting::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 
 			i = 0;
 			while (res_row >= 0 && i < num_elements) {
-				if(img.at<uchar>(res_row, res_col) == 255){
+				if (img.at<uchar>(res_row, res_col) == 255) {
 					return true;
 				}
 				res_row -= 1;
