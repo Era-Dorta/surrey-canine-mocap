@@ -484,6 +484,28 @@ void RGBD_Camera::remove_background(int num_back_frames,
 
 }
 
+void RGBD_Camera::remove_background_only_bounding_box(
+		const osg::BoundingBox& bound_box) {
+
+	//Set all depth pixels that are out of the bounding box to zero
+
+	for (std::map<int, RGBD_Frame>::iterator i(frames.begin());
+			i != frames.end(); ++i) {
+
+		for (int row = 0; row < d_rows; row++) {
+			for (int col = 0; col < d_cols; col++) {
+
+				osg::Vec3 glob_osg = global_coord_osg((*i).first, row, col);
+
+				if (!bound_box.contains(glob_osg)) {
+					//Point is classifies as background, set it to invalid (zero):
+					(*i).second.depth_img.at<ushort>(row, col) = 0;
+				}
+			}
+		}
+	}
+}
+
 void RGBD_Camera::get_surface_paths(int frame_num,
 		std::vector<std::vector<cv::Point> >& surface_paths) {
 	//cout << "Computing surface paths" << endl;

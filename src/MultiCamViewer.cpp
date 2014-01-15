@@ -60,7 +60,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 
 		//Remove background using bounding box
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
-			camera_arr[i]->remove_background(30, bounding_box);
+			camera_arr[i]->remove_background_only_bounding_box(bounding_box);
 		}
 		skel_controller.set_data(camera_arr, render_skel_group);
 	}

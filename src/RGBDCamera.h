@@ -69,6 +69,8 @@ class RGBD_Camera {
 		const osg::Vec3& getVisColour() const;
 		void remove_background(int num_back_frames,
 				const osg::BoundingBox& bound_box, float tolerance_factor = 4);
+		void remove_background_only_bounding_box(
+				const osg::BoundingBox& bound_box);
 		float3 global_coord(int frame_num, int row, int col);
 
 		osg::ref_ptr<osg::Group> cam_group;
