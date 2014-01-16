@@ -413,8 +413,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 			//Try to follow the bone, search for next pixel in its Moore
 			//neighbourhood
-			if (get_neighbor_white_pixel(visited_pixels[i], pixel_row,
-					pixel_col, next_row, next_col)) {
+			if (MiscUtils::get_neighbor_white_pixel(visited_pixels[i],
+					pixel_row, pixel_col, next_row, next_col)) {
 				pixel_row = next_row;
 				pixel_col = next_col;
 				continue_merge = true;

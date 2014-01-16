@@ -45,7 +45,8 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name) :
 
 	//Get list of RGB frames:
 	std::vector<std::string> rgb_files;
-	get_file_names(_dataset_path + "/" + cam_name + "/RGB", &rgb_files);
+	MiscUtils::get_file_names(_dataset_path + "/" + cam_name + "/RGB",
+			&rgb_files);
 
 	cout << "Found " << rgb_files.size() << " images." << endl;
 
@@ -224,7 +225,8 @@ void RGBD_Camera::create_cam_geom() {
 	//-----------------
 	int cam_num = boost::lexical_cast<int>(
 			_cam_name.substr(_cam_name.length() - 2, 2).c_str());
-	vis_colour = hsv_2_rgb(osg::Vec3(360 * (cam_num / 5.f), 0.6, 0.7));
+	vis_colour = MiscUtils::hsv_2_rgb(
+			osg::Vec3(360 * (cam_num / 5.f), 0.6, 0.7));
 	//-----------------
 
 	//Camera pose matrix:
@@ -241,7 +243,7 @@ void RGBD_Camera::create_cam_geom() {
 
 	//Camera axes:
 	//-----------------
-	osg::ref_ptr<osg::Geode> cam_axes = create_axes();
+	osg::ref_ptr<osg::Geode> cam_axes = MiscUtils::create_axes();
 	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
 	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7);
 	half_size->setMatrix(half_sz);
@@ -251,7 +253,7 @@ void RGBD_Camera::create_cam_geom() {
 
 	//Camera label:
 	//-----------------
-	osg::ref_ptr<osg::Group> cam_label = create_3D_label(_cam_name,
+	osg::ref_ptr<osg::Group> cam_label = MiscUtils::create_3D_label(_cam_name,
 			osg::Vec3(0, 0.2, 0), vis_colour);
 	cam_pose_xform->addChild(cam_label);
 	//-----------------

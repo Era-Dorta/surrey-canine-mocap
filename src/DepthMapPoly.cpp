@@ -139,9 +139,12 @@ void DepthMapPoly::polygonise_depth_map(cv::Mat* depth_map, cv::Mat* rgb_image,
 	for (int row = 0; row < rows - 1; row++) {
 		for (int col = 0; col < cols - 1; col++) {
 			//Compute cross product:
-			vert00 = osgvec_2_float3((*dm_vertices)[row * cols + col]);
-			vert01 = osgvec_2_float3((*dm_vertices)[row * cols + (col + 1)]);
-			vert10 = osgvec_2_float3((*dm_vertices)[(row + 1) * cols + col]);
+			vert00 = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[row * cols + col]);
+			vert01 = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[row * cols + (col + 1)]);
+			vert10 = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[(row + 1) * cols + col]);
 			unnorm_norm = cross((vert10 - vert00), (vert01 - vert00));
 			//Normalize:
 			float mag = length(unnorm_norm);

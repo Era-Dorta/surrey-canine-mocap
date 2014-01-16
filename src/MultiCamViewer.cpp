@@ -10,6 +10,8 @@
 using std::cout;
 using std::endl;
 
+extern bool MiscUtils::use_normal_shader;
+
 MultiCamViewer::MultiCamViewer(std::string path) :
 			win_width(1280),
 			win_height(720),
@@ -30,9 +32,14 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
 							18.0f)), alpha(0.f), num_plate_points(0) {
+
+	//When manual origin set use camera colour, if not then user normals
+	//for the shader
+	MiscUtils::use_normal_shader = !manual_origin_set;
+
 	//Get the list of cameras and construct camera objects for them:
 	std::vector<std::string> cam_names;
-	get_dir_names(path, &cam_names);
+	MiscUtils::get_dir_names(path, &cam_names);
 	for (unsigned int i = 0; i < cam_names.size(); i++) {
 		boost::shared_ptr<RGBD_Camera> cam(
 				new RGBD_Camera(_dataset_path, cam_names[i]));
@@ -126,9 +133,9 @@ void MultiCamViewer::setup_scene() {
 	//---------------------------
 	osg::ref_ptr<osg::Geode> axes;
 	if (!manual_axes_rot) {
-		axes = create_axes();
+		axes = MiscUtils::create_axes();
 	} else {
-		axes = create_axes(100);
+		axes = MiscUtils::create_axes(100);
 	}
 	scene_root->addChild(axes);
 	//---------------------------
@@ -468,7 +475,9 @@ void MultiCamViewer::update_dynamics() {
 			//Set colour:
 			osg::ref_ptr<osg::Vec4Array> colours = new osg::Vec4Array;
 			colours->push_back(
-					osg::Vec4(hsv_2_rgb(osg::Vec3(360 * (sp / 11.f), 0.6, 0.7)),
+					osg::Vec4(
+							MiscUtils::hsv_2_rgb(
+									osg::Vec3(360 * (sp / 11.f), 0.6, 0.7)),
 							1));
 			path_vis_geom->setColorArray(colours.get());
 			path_vis_geom->setColorBinding(osg::Geometry::BIND_OVERALL);

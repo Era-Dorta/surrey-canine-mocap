@@ -386,7 +386,7 @@ void RenderSkeletonization::display_text(std::string text, osg::Vec3 pos) {
 		skel_edit_text->setPosition(pos);
 	} else {
 		osg::ref_ptr<osg::Geode> text_geode = new osg::Geode;
-		skel_edit_text = create_text(pos, text, 18.0f);
+		skel_edit_text = MiscUtils::create_text(pos, text, 18.0f);
 		skel_edit_text->setDataVariance(osg::Object::DYNAMIC);
 		text_geode->addDrawable(skel_edit_text);
 		osg::ref_ptr<osg::Camera> text_cam = create_hud_camera(0, 1280, 0, 720);
@@ -461,7 +461,7 @@ void RenderSkeletonization::toggle_3d_merged_cloud() {
 void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
 		const osg::Matrix& trans) {
 	if (!axes.valid()) {
-		axes = create_axes();
+		axes = MiscUtils::create_axes();
 	}
 	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
 	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7) * trans;

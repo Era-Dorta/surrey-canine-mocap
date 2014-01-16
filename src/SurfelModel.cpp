@@ -48,7 +48,7 @@ SurfelModel::SurfelModel() {
 
 	//Enable splat rendering:
 	//------------------------
-	enable_splat_rendering(surfel_geode);
+	MiscUtils::enable_splat_rendering(surfel_geode);
 	//------------------------
 
 	//DEBUG TEST: Add some points

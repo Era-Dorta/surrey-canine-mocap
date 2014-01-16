@@ -66,7 +66,7 @@ osg::Geode* DepthMapSurfel::create_depth_map_surfel_geode() {
 
 	//Enable splat rendering:
 	//------------------------
-	enable_splat_rendering(dm_geode);
+	MiscUtils::enable_splat_rendering(dm_geode);
 	//------------------------
 
 	return dm_geode.release();
@@ -132,11 +132,16 @@ void DepthMapSurfel::surfelise_depth_map(const cv::Mat* depth_map,
 		for (int col = 1; col < cols - 1; col++) {
 
 			//Vertices of central vertex and its 4-neighbours
-			vert_0 = osgvec_2_float3((*dm_vertices)[row * cols + col]);
-			vert_r = osgvec_2_float3((*dm_vertices)[row * cols + (col + 1)]);
-			vert_b = osgvec_2_float3((*dm_vertices)[(row + 1) * cols + col]);
-			vert_l = osgvec_2_float3((*dm_vertices)[row * cols + (col - 1)]);
-			vert_t = osgvec_2_float3((*dm_vertices)[(row - 1) * cols + col]);
+			vert_0 = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[row * cols + col]);
+			vert_r = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[row * cols + (col + 1)]);
+			vert_b = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[(row + 1) * cols + col]);
+			vert_l = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[row * cols + (col - 1)]);
+			vert_t = MiscUtils::osgvec_2_float3(
+					(*dm_vertices)[(row - 1) * cols + col]);
 
 			//(Try central difference, if not possible, then fall back on single sided, and failing that use axis vector)
 
