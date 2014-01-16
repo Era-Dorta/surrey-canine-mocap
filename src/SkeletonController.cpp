@@ -92,7 +92,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 			skeletonized3D->get_merged_3d_projection(current_frame),
 			skel_fitter.getLabels());
 
-	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
+	//skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
 
 	if (skeleton->isSkelLoaded()) {
 		skel_fitter.fit_root_position();
@@ -381,12 +381,13 @@ bool SkeletonController::handle_keyboard_events(
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
 			load_skeleton_from_file(
-					"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
+			//		"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
 			break;
 
 			//Save skeleton to file:
