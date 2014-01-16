@@ -47,7 +47,7 @@ void CameraCalibrator::recalibrate_center_all_cameras() {
 	calib_matrix = osg::Matrix::translate(-center);
 }
 
-void CameraCalibrator::recalibrate_axis_camera() {
+void CameraCalibrator::recalibrate_axes_camera() {
 
 	osg::Vec3 x_axis, y_axis, z_axis;
 	//Then calculate rotations, use two vector sum to get an average
@@ -70,7 +70,27 @@ void CameraCalibrator::recalibrate_axis_camera() {
 			0, 0, 1);
 }
 
-void CameraCalibrator::save_camera_axis_calibration(int cam_index,
+void CameraCalibrator::manual_axes_rotation(float angle, int axes) {
+	osg::Vec3 axe_vector;
+	switch (axes) {
+	case 0:
+		axe_vector.set(1.0, 0.0, 0.0);
+		break;
+	case 1:
+		axe_vector.set(0.0, 1.0, 0.0);
+		break;
+	default:
+		axe_vector.set(0.0, 0.0, 1.0);
+	}
+	calib_matrix = osg::Matrix::rotate(angle, axe_vector);
+
+	camVecIte cam = camera_arr.begin();
+	for (; cam != camera_arr.end(); ++cam) {
+		(*cam)->set_T((*cam)->get_T_osg() * calib_matrix);
+	}
+}
+
+void CameraCalibrator::save_camera_axes_calibration(int cam_index,
 		std::string path) {
 
 	camVecIte cam = camera_arr.begin() + cam_index;
@@ -99,8 +119,8 @@ void CameraCalibrator::save_camera_axis_calibration(int cam_index,
 	}
 }
 
-void CameraCalibrator::save_all_cameras_center(std::string path) {
+void CameraCalibrator::save_all_cameras(std::string path) {
 	for (unsigned int i = 0; i < camera_arr.size(); i++) {
-		save_camera_axis_calibration(i, path);
+		save_camera_axes_calibration(i, path);
 	}
 }

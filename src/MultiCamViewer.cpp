@@ -17,7 +17,9 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			with_colour(false),
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
-			manual_origin_set(false),
+			manual_origin_set(true),
+			manual_axes_rot(true),
+			current_axe_manual(0),
 			last_cam_index(0),
 			_dataset_path(path),
 			scene_root(new osg::Group),
@@ -63,6 +65,8 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			camera_arr[i]->remove_background_only_bounding_box(bounding_box);
 		}
 		skel_controller.set_data(camera_arr, render_skel_group);
+	} else {
+		cam_calibrator.init(camera_arr);
 	}
 
 	//DEBUG:
@@ -155,6 +159,18 @@ void MultiCamViewer::setup_scene() {
 	 new osg::ShapeDrawable(
 	 new osg::Box(bounding_box.center(), lengths.x(),
 	 lengths.y(), lengths.z())));
+	 osg::StateSet* ss = geode->getOrCreateStateSet();
+	 ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
+	 ss->setAttributeAndModes(
+	 new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK,
+	 osg::PolygonMode::LINE));
+	 scene_root->addChild(geode.get());*/
+
+	//Shows box center in origin to help the user select points for
+	//camera calibration
+	/*osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	 geode->addDrawable(
+	 new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.8, 1, 1)));
 	 osg::StateSet* ss = geode->getOrCreateStateSet();
 	 ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
 	 ss->setAttributeAndModes(
@@ -305,6 +321,32 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			}
 			break;
 
+		case osgGA::GUIEventAdapter::KEY_V:
+			if (manual_origin_set && manual_axes_rot) {
+				cam_calibrator.manual_axes_rotation(0.01, current_axe_manual);
+				update_dynamics();
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_B:
+			if (manual_origin_set && manual_axes_rot) {
+				cam_calibrator.manual_axes_rotation(-0.01, current_axe_manual);
+				update_dynamics();
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_N:
+			if (manual_origin_set && manual_axes_rot) {
+				current_axe_manual++;
+				if (current_axe_manual == 3) {
+					current_axe_manual = 0;
+				}
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_M:
+			if (manual_origin_set && manual_axes_rot) {
+				cam_calibrator.save_all_cameras(_dataset_path);
+				update_dynamics();
+			}
+			break;
 		default:
 			break;
 		}
@@ -612,12 +654,13 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 				scene_root->addChild(sphere_geode.get());
 
 			} else {
-				CameraCalibrator cam_cal(camera_arr);
-				cam_cal.set_plate_points(plate_points[0], plate_points[1],
-						plate_points[2], plate_points[3]);
-				cam_cal.recalibrate_center_all_cameras();
-				cam_cal.save_all_cameras_center(_dataset_path);
+				cam_calibrator.set_plate_points(plate_points[0],
+						plate_points[1], plate_points[2], plate_points[3]);
+				//cam_cal.recalibrate_center_all_cameras();
+				cam_calibrator.recalibrate_axes_camera();
+				cam_calibrator.save_all_cameras(_dataset_path);
 
+				//Code to calibrate each camera axes separately
 				//cam_cal.recalibrate_axis_camera();
 				//cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
 			}

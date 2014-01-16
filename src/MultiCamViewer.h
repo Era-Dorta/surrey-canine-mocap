@@ -81,6 +81,8 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		float frame_period_s;
 		double last_frame_tick_count;
 		bool manual_origin_set;
+		bool manual_axes_rot;
+		int current_axe_manual;
 		int last_cam_index;
 
 		std::string _dataset_path;
@@ -100,6 +102,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 
 		osg::Vec3 plate_points[4];
 		osg::BoundingBox bounding_box;
+		CameraCalibrator cam_calibrator;
 		int num_plate_points;
 
 		SkeletonController skel_controller;

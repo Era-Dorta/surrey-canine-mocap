@@ -368,6 +368,11 @@ float4x4 RGBD_Camera::get_inv_T_f4x4() {
 	return inv_T_float4x4;
 }
 
+void RGBD_Camera::set_T(const osg::Matrix& new_T) {
+	T_osg = new_T;
+	cam_pose_xform->setMatrix(T_osg);
+}
+
 const cv::Mat* RGBD_Camera::get_depth_map(int frame_num) {
 	if (frames.find(frame_num) != frames.end()) {
 		return &frames[frame_num].depth_img;
