@@ -17,7 +17,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			with_colour(false),
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
-			manual_origin_set(true),
+			manual_origin_set(false),
 			manual_axes_rot(false),
 			current_axe_manual(0),
 			last_cam_index(0),
@@ -58,7 +58,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		//TODO This should be given by the user or somehow calculated from
 		//the images
 		//Set bounding box limits
-		bounding_box.set(-2, -0.54, -0.25, 2, -0.01, 0.25);
+		bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.01, 0.25);
 
 		//Remove background using bounding box
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
@@ -171,7 +171,7 @@ void MultiCamViewer::setup_scene() {
 	 osg::PolygonMode::LINE));
 	 scene_root->addChild(geode.get());*/
 
-	//Shows box center in origin to help the user select points for
+	//Shows box centred in origin to help the user select points for
 	//camera calibration
 	/*osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 	 geode->addDrawable(
