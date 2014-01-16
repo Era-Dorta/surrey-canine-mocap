@@ -19,10 +19,8 @@ class CameraCalibrator {
 		//TODO Should not give camera_arr as argument
 		//In save_camera_calibration, could give camera iterator or
 		//only path and matrix
-		CameraCalibrator();
-		CameraCalibrator(camVecT camera_arr_);
+		CameraCalibrator(const camVecT& camera_arr_);
 		virtual ~CameraCalibrator();
-		void init(camVecT camera_arr_);
 
 		//Point order should be
 		//   p1____ p2
@@ -58,7 +56,7 @@ class CameraCalibrator {
 		osg::Vec3 p0, p1, p2, p3;
 		osg::Matrix calib_matrix;
 
-		camVecT camera_arr;
+		const camVecT& camera_arr;
 };
 
 #endif /* CAMERACALIBRATOR_H_ */

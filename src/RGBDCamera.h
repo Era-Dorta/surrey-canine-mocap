@@ -117,5 +117,6 @@ class RGBD_Camera {
 
 typedef std::vector<boost::shared_ptr<RGBD_Camera> > camVecT;
 typedef std::vector<boost::shared_ptr<RGBD_Camera> >::iterator camVecIte;
+typedef std::vector<boost::shared_ptr<RGBD_Camera> >::const_iterator constCamVecIte;
 
 #endif /* RGBDCAMERA_H_ */

@@ -1,26 +1,27 @@
 #include "Skeletonization3D.h"
 #include "DebugUtil.h"
 
-Skeletonization3D::Skeletonization3D(float merge_treshold_, float row_treshold_,
-		float move_distance_) :
-			n_cameras(0), n_frames(0), merge_treshold(merge_treshold_),
-			row_treshold(row_treshold_), move_distance(move_distance_) {
+Skeletonization3D::Skeletonization3D(const camVecT& camera_arr_,
+		float merge_treshold_, float row_treshold_, float move_distance_) :
+			camera_arr(camera_arr_), n_cameras(0), n_frames(0),
+			merge_treshold(merge_treshold_), row_treshold(row_treshold_),
+			move_distance(move_distance_) {
 }
 
 Skeletonization3D::~Skeletonization3D() {
 	//dtor
 }
 
-void Skeletonization3D::set_cameras(camVecT camera_arr_) {
-	camera_arr = camera_arr_;
+void Skeletonization3D::generate_skeletonization() {
 	skel_arr.clear();
 	//Save number of cameras and total number of frames
 	n_cameras = camera_arr.size();
 	n_frames = camera_arr[0]->get_total_frame_num();
 
 	//Create a Skeleton2D for each camera
-	for (camVecIte i = camera_arr.begin(); i != camera_arr.end(); ++i) {
+	for (constCamVecIte i = camera_arr.begin(); i != camera_arr.end(); ++i) {
 		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D(*i));
+		skel->generate_skeletonization();
 		skel_arr.push_back(skel);
 	}
 	skel3d_merged_array.resize(n_frames);
@@ -175,7 +176,6 @@ void Skeletonization3D::translate_points_to_inside(
 
 void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 		int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const {
-
 	//Calculate 3D proyections of 2D skeleton images
 	//Every image is from a different camera
 	const cv::Mat* depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
@@ -184,7 +184,6 @@ void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 	float4x4 T = camera_arr[cam_num]->get_T_f4x4();
 	int rows = depth_map->rows;
 	int cols = depth_map->cols;
-
 	//Generate 3D vertices
 	for (int row = 0; row < rows; row++) {
 		for (int col = 0; col < cols; col++) {
@@ -219,7 +218,6 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	std::vector<std::map<osg::Vec2, osg::Vec3> > projection3d_array;
 
 	std::vector<cv::Mat> visited_pixels;
-
 	for (int i = 0; i < n_cameras; i++) {
 		//Calculate 3D projection
 		std::map<osg::Vec2, osg::Vec3> aux;
@@ -232,9 +230,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 	osg::ref_ptr<osg::Vec3Array> result;
 
 	//result = simple_2D_merge(projection3d_array);
-
 	result = follow_path_2D_merge(visited_pixels, projection3d_array);
-
 	return result.get();
 }
 

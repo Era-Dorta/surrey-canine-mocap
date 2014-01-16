@@ -8,27 +8,23 @@
 #include "SkeletonController.h"
 #include "DebugUtil.h"
 
-SkeletonController::SkeletonController() :
-			current_frame(0), last_mouse_pos_x(0), last_mouse_pos_y(0),
-			delete_skel(false), rotate_axis(X), show_joint_axis(false),
-			manual_mark_up(false), rotate_scale_factor(0.02),
-			translate_scale_factor(0.002), inv_kin_scale_factor(0.0005) {
+SkeletonController::SkeletonController(const camVecT& camera_arr,
+		osg::ref_ptr<osg::Group> render_skel_group) :
+			skeletonized3D(
+					boost::shared_ptr<Skeletonization3D>(
+							new Skeletonization3D(camera_arr))),
+			skeleton(boost::shared_ptr<Skeleton>(new Skeleton)),
+			skel_renderer(camera_arr, render_skel_group),
+			skel_fitter(skeleton, skeletonized3D), current_frame(0),
+			last_mouse_pos_x(0), last_mouse_pos_y(0), delete_skel(false),
+			rotate_axis(X), show_joint_axis(false), manual_mark_up(false),
+			rotate_scale_factor(0.02), translate_scale_factor(0.002),
+			inv_kin_scale_factor(0.0005) {
 	reset_state();
-	skeletonized3D = boost::shared_ptr<Skeletonization3D>(
-			new Skeletonization3D);
-	skeleton = boost::shared_ptr<Skeleton>(new Skeleton);
+	//mix_skeleton_sizes();
 }
 
 SkeletonController::~SkeletonController() {
-}
-
-void SkeletonController::set_data(camVecT camera_arr,
-		osg::ref_ptr<osg::Group> render_skel_group) {
-
-	skel_renderer.set_data(camera_arr, render_skel_group);
-	skeletonized3D->set_cameras(camera_arr);
-	skel_fitter.init(skeleton, skeletonized3D);
-	//mix_skeleton_sizes();
 }
 
 bool SkeletonController::handle(const osgGA::GUIEventAdapter& ea,
@@ -91,7 +87,6 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_cloud(
 			skeletonized3D->get_merged_3d_projection(current_frame),
 			skel_fitter.getLabels());
-
 	//skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
 
 	if (skeleton->isSkelLoaded()) {
@@ -105,6 +100,14 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 				skeleton->get_header(), current_frame, show_joint_axis);
 		draw_edit_text();
 	}
+}
+
+void SkeletonController::generate_skeletonization() {
+	skeletonized3D->generate_skeletonization();
+}
+
+void SkeletonController::setup_scene(){
+	skel_renderer.setup_scene();
 }
 
 Fitting_State SkeletonController::getState() const {

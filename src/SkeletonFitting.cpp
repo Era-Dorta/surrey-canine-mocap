@@ -20,20 +20,17 @@ bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
 	return (i.z() < j.z());
 }
 
-SkeletonFitting::SkeletonFitting() {
+SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
+		boost::shared_ptr<Skeletonization3D> skeletonization3d) {
 	move_joint_max_dist = 0;
 	error_threshold = 0.005;
 	current_frame = -1;
 	body_height_extra_threshold = 0.04;
+	skeleton = skeleton_;
+	skeletonizator = skeletonization3d;
 }
 
 SkeletonFitting::~SkeletonFitting() {
-}
-
-void SkeletonFitting::init(boost::shared_ptr<Skeleton> skeleton_,
-		boost::shared_ptr<Skeletonization3D> skeletonization3d) {
-	skeleton = skeleton_;
-	skeletonizator = skeletonization3d;
 }
 
 //void SkeletonFitting::fit_skeleton_into_cloud(Skeleton& skeleton,

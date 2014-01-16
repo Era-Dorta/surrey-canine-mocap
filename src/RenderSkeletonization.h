@@ -29,12 +29,13 @@ typedef std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator i
 
 class RenderSkeletonization {
 	public:
-		RenderSkeletonization();
+		RenderSkeletonization(const camVecT& camera_arr_,
+				osg::ref_ptr<osg::Group> render_skel_group);
 
 		virtual ~RenderSkeletonization();
 
-		void set_data(camVecT camera_arr_,
-				osg::ref_ptr<osg::Group> render_skel_group);
+		void setup_scene();
+
 		//Delete skeleton nodes from previous frame
 		void clean_scene();
 
@@ -108,7 +109,7 @@ class RenderSkeletonization {
 				osg::Group* to_add, const osg::Matrix& trans);
 
 		//Pointer to the camera array
-		camVecT camera_arr;
+		const camVecT& camera_arr;
 
 		//Root node of all skeleton related nodes
 		osg::ref_ptr<osg::Switch> skel_vis_switch;

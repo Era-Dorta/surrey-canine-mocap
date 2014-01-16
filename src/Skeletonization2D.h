@@ -16,9 +16,9 @@ class Skeletonization2D {
 		virtual ~Skeletonization2D();
 		const cv::Mat& get_frame(int frame_num) const;
 		const cv::Mat& get_bin_frame(int frame_num) const;
+		void generate_skeletonization();
 	protected:
 	private:
-		void generate_skeletonization();
 		osg::ref_ptr<osg::Vec3Array> points_from_image(const cv::Mat& seg_img);
 		cv::Mat dist_transform_skeletonization(const cv::Mat* seg_img);
 		cv::Mat connectivity_preserving_thinning(cv::Mat& img_in);

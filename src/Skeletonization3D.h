@@ -13,12 +13,12 @@ class Skeletonization3D {
 		//Merge bone which are 5 cm apart from each other
 		//Move bones inside the skin 2.5 cm since cameras indicate where is the
 		//skin but not the bones.
-		Skeletonization3D(float merge_treshold_ = 0.05, float row_treshold_ =
-				0.01, float move_distance_ = 0.025);
+		Skeletonization3D(const camVecT& camera_arr_, float merge_treshold_ =
+				0.05, float row_treshold_ = 0.01, float move_distance_ = 0.025);
 
 		virtual ~Skeletonization3D();
 
-		void set_cameras(camVecT camera_arr_);
+		void generate_skeletonization();
 
 		//Return an array of points, given a camera and a frame number
 		//Important: This coordinates are relative to the camera
@@ -98,11 +98,9 @@ class Skeletonization3D {
 		//in a given frame, after merging the views from all the cameras
 		std::vector<osg::ref_ptr<osg::Vec3Array> > skel3d_merged_array;
 
-		//There will not be many cameras, so a copy of the camera vector is not
-		//that painful to do and lest assume the cameras are not going to change
-		//in run time
-		//TODO This could be solved by using a reference instead of a whole copy
-		camVecT camera_arr;
+		//Reference to vector is much better than pointers
+		//Pointers are evil
+		const camVecT& camera_arr;
 
 		int n_cameras;
 		int n_frames;

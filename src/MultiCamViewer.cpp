@@ -31,7 +31,8 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_num_text(
 					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 							"Frame range XXX-XXX, displaying frame: XXX",
-							18.0f)), alpha(0.f), num_plate_points(0) {
+							18.0f)), alpha(0.f), cam_calibrator(camera_arr),
+			num_plate_points(0), skel_controller(camera_arr, render_skel_group) {
 
 	//When manual origin set use camera colour, if not then user normals
 	//for the shader
@@ -71,9 +72,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
 			camera_arr[i]->remove_background_only_bounding_box(bounding_box);
 		}
-		skel_controller.set_data(camera_arr, render_skel_group);
-	} else {
-		cam_calibrator.init(camera_arr);
+		skel_controller.generate_skeletonization();
 	}
 
 	//DEBUG:
@@ -161,6 +160,7 @@ void MultiCamViewer::setup_scene() {
 	//---------------------------
 
 	scene_root->addChild(render_skel_group.get());
+	skel_controller.setup_scene();
 
 	//Shows bounding box used to removed the background
 	/*osg::ref_ptr<osg::Geode> geode = new osg::Geode;

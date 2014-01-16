@@ -29,13 +29,12 @@ enum Fitting_State {
 
 class SkeletonController {
 	public:
-		SkeletonController();
+		//SkeletonController();
+
+		SkeletonController(const camVecT& camera_arr,
+				osg::ref_ptr<osg::Group> render_skel_group);
 
 		virtual ~SkeletonController();
-
-		//Set root node for this class, it should be call after creation
-		void set_data(camVecT camera_arr,
-				osg::ref_ptr<osg::Group> render_skel_group);
 
 		Fitting_State getState() const;
 		void setState(Fitting_State state);
@@ -45,6 +44,10 @@ class SkeletonController {
 				osgGA::GUIActionAdapter& aa);
 
 		void update_dynamics(int disp_frame_no);
+
+		void generate_skeletonization();
+
+		void setup_scene();
 	private:
 		enum Mod_State {
 			ROTATE, TRANSLATE, INV_KIN
@@ -73,14 +76,14 @@ class SkeletonController {
 		//Class that creates a skeleton from a given set of frames
 		boost::shared_ptr<Skeletonization3D> skeletonized3D;
 
+		boost::shared_ptr<Skeleton> skeleton;
+
 		//Class that renders all skeleton related objects
 		RenderSkeletonization skel_renderer;
 
 		//Class with methods to modify(and create???) a skeleton to fit into a
 		//cloud of points that represent a skeleton.
 		SkeletonFitting skel_fitter;
-
-		boost::shared_ptr<Skeleton> skeleton;
 
 		SkeletonMixer skel_mixer;
 

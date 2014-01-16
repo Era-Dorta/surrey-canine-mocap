@@ -10,20 +10,12 @@
 using std::cout;
 using std::endl;
 
-CameraCalibrator::CameraCalibrator() {
-
-}
-
-CameraCalibrator::CameraCalibrator(camVecT camera_arr_) {
-	init(camera_arr_);
+CameraCalibrator::CameraCalibrator(const camVecT& camera_arr_) :
+			camera_arr(camera_arr) {
 }
 
 CameraCalibrator::~CameraCalibrator() {
 
-}
-
-void CameraCalibrator::init(camVecT camera_arr_) {
-	camera_arr = camera_arr_;
 }
 
 void CameraCalibrator::set_plate_points(const osg::Vec3& p0_,
@@ -84,7 +76,7 @@ void CameraCalibrator::manual_axes_rotation(float angle, int axes) {
 	}
 	calib_matrix = osg::Matrix::rotate(angle, axe_vector);
 
-	camVecIte cam = camera_arr.begin();
+	constCamVecIte cam = camera_arr.begin();
 	for (; cam != camera_arr.end(); ++cam) {
 		(*cam)->set_T((*cam)->get_T_osg() * calib_matrix);
 	}
@@ -93,7 +85,7 @@ void CameraCalibrator::manual_axes_rotation(float angle, int axes) {
 void CameraCalibrator::save_camera_axes_calibration(int cam_index,
 		std::string path) {
 
-	camVecIte cam = camera_arr.begin() + cam_index;
+	constCamVecIte cam = camera_arr.begin() + cam_index;
 	std::string T_fn(
 			path + "/" + (*cam)->get_cam_name() + "/Calibration/T_rgb.txt");
 

@@ -4,9 +4,9 @@ using std::cout;
 using std::endl;
 
 Skeletonization2D::Skeletonization2D(
-		const boost::shared_ptr<RGBD_Camera> camera_, int max_clusters_) :
-			camera(camera_), max_clusters(max_clusters_) {
-	generate_skeletonization();
+		const boost::shared_ptr<RGBD_Camera> camera_, int max_clusters_) {
+	camera = camera_;
+	max_clusters = max_clusters_;
 }
 
 Skeletonization2D::~Skeletonization2D() {

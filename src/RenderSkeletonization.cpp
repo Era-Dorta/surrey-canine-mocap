@@ -1,26 +1,26 @@
 #include "RenderSkeletonization.h"
 #include "DebugUtil.h"
 
-RenderSkeletonization::RenderSkeletonization() :
-			display_merged(true) {
+RenderSkeletonization::RenderSkeletonization(const camVecT& camera_arr_,
+		osg::ref_ptr<osg::Group> render_skel_group) :
+			camera_arr(camera_arr_), display_merged(true) {
 	skel_created = false;
 	text_created = false;
 	skel_vis_switch = new osg::Switch;
 	skel_fitting_switch = new osg::Switch;
 	skel_group_div = new osg::Switch;
+
+	render_skel_group->addChild(skel_vis_switch);
+	render_skel_group->addChild(skel_fitting_switch.get());
+	render_skel_group->addChild(skel_group_div);
 }
 
 RenderSkeletonization::~RenderSkeletonization() {
 
 }
 
-void RenderSkeletonization::set_data(camVecT camera_arr_,
-		osg::ref_ptr<osg::Group> render_skel_group) {
-	//Save arguments
-	camera_arr = camera_arr_;
-	render_skel_group->addChild(skel_vis_switch);
-	render_skel_group->addChild(skel_fitting_switch.get());
-	render_skel_group->addChild(skel_group_div);
+void RenderSkeletonization::setup_scene() {
+
 	skel_fitting_switch->setNewChildDefaultValue(true);
 
 	//In case this is not first call, do a clean up
@@ -30,7 +30,7 @@ void RenderSkeletonization::set_data(camVecT camera_arr_,
 	skel_vis_switch->removeChildren(0, skel_vis_switch->getNumChildren());
 
 	//Set up the basics nodes
-	for (camVecIte i = camera_arr.begin(); i != camera_arr.end(); ++i) {
+	for (constCamVecIte i = camera_arr.begin(); i != camera_arr.end(); ++i) {
 		//Create main skeleton group for this camera and save it in an vector
 		osg::ref_ptr<osg::Group> skel_group = new osg::Group;
 		skel_vis_switch->addChild(skel_group.get(), true);

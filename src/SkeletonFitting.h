@@ -37,13 +37,12 @@ bool comp_y(const osg::Vec3& i, const osg::Vec3& j);
 
 class SkeletonFitting {
 	public:
-		SkeletonFitting();
+		SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
+				boost::shared_ptr<Skeletonization3D> skeletonization3d);
 		virtual ~SkeletonFitting();
 		//void fit_skeleton_into_cloud(Skeleton& skeleton,
 		//		osg::ref_ptr<osg::Vec3Array> cloud);
 		//void fit_skeleton_with_prev_nex_frame(Skeleton& skeleton, int frame);
-		void init(boost::shared_ptr<Skeleton> skeleton_,
-				boost::shared_ptr<Skeletonization3D> skeletonization3d);
 
 		void calculate_for_frame(int frame_num);
 
