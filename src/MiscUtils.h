@@ -142,17 +142,23 @@ inline osgText::Text* create_text(const osg::Vec3& pos,
 	return text.release();
 }
 
-inline osg::Geode* create_axes() {
+inline osg::Geode* create_axes(float over_length = 1) {
 	osg::ref_ptr<osg::ShapeDrawable> a_x = new osg::ShapeDrawable;
-	a_x->setShape(new osg::Box(osg::Vec3(0.05, 0, 0), 0.1, 0.005, 0.005));
+	a_x->setShape(
+			new osg::Box(osg::Vec3(0.05, 0, 0), 0.1 * over_length, 0.005,
+					0.005));
 	a_x->setColor(osg::Vec4(1, 0, 0, 1));
 
 	osg::ref_ptr<osg::ShapeDrawable> a_y = new osg::ShapeDrawable;
-	a_y->setShape(new osg::Box(osg::Vec3(0, 0.05, 0), 0.005, 0.1, 0.005));
+	a_y->setShape(
+			new osg::Box(osg::Vec3(0, 0.05, 0), 0.005, 0.1 * over_length,
+					0.005));
 	a_y->setColor(osg::Vec4(0, 1, 0, 1));
 
 	osg::ref_ptr<osg::ShapeDrawable> a_z = new osg::ShapeDrawable;
-	a_z->setShape(new osg::Box(osg::Vec3(0, 0, 0.05), 0.005, 0.005, 0.1));
+	a_z->setShape(
+			new osg::Box(osg::Vec3(0, 0, 0.05), 0.005, 0.005,
+					0.1 * over_length));
 	a_z->setColor(osg::Vec4(0, 0, 1, 1));
 
 	osg::ref_ptr<osg::Geode> axes = new osg::Geode;

@@ -18,7 +18,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			frame_period_s(1.0 / 30.0), //30fps
 			last_frame_tick_count(0),
 			manual_origin_set(true),
-			manual_axes_rot(true),
+			manual_axes_rot(false),
 			current_axe_manual(0),
 			last_cam_index(0),
 			_dataset_path(path),
@@ -124,7 +124,12 @@ int MultiCamViewer::run_viewer() {
 void MultiCamViewer::setup_scene() {
 	//Global axes:
 	//---------------------------
-	osg::ref_ptr<osg::Geode> axes = create_axes();
+	osg::ref_ptr<osg::Geode> axes;
+	if (!manual_axes_rot) {
+		axes = create_axes();
+	} else {
+		axes = create_axes(100);
+	}
 	scene_root->addChild(axes);
 	//---------------------------
 
@@ -323,13 +328,13 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 
 		case osgGA::GUIEventAdapter::KEY_V:
 			if (manual_origin_set && manual_axes_rot) {
-				cam_calibrator.manual_axes_rotation(0.01, current_axe_manual);
+				cam_calibrator.manual_axes_rotation(0.001, current_axe_manual);
 				update_dynamics();
 			}
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (manual_origin_set && manual_axes_rot) {
-				cam_calibrator.manual_axes_rotation(-0.01, current_axe_manual);
+				cam_calibrator.manual_axes_rotation(-0.001, current_axe_manual);
 				update_dynamics();
 			}
 			break;
