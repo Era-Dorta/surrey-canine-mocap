@@ -65,10 +65,11 @@ class MocapData {
 	protected:
 		NodePtr root;
 		//TODO Instead of Node* use weak pointers
+		//But weak pointers have to be converted to shared_ptr, too complicated
 		std::vector<Node*> nodelist;
 		MocapHeader header;
 
-		char error[255];          // Used to store any errors that occured
+		char error[255];          // Used to store any errors that occurred
 
 		void reset_state();
 };

@@ -8,11 +8,8 @@
 #include "RGBDFrame.h"
 
 RGBD_Frame::RGBD_Frame() {
-	// TODO Auto-generated constructor stub
-
 }
 
 RGBD_Frame::~RGBD_Frame() {
-	// TODO Auto-generated destructor stub
 }
 

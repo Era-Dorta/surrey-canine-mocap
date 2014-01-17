@@ -12,8 +12,7 @@
 bool PixelSearch::get_neighbor_white_pixel(cv::Mat& img, int i_row, int i_col,
 		int &res_row, int &res_col) {
 	bool go_top, go_bot, go_left, go_right;
-	//TODO Maybe it would be better to calculate this as they are needed
-	//and not all together in the beggining
+
 	go_top = i_row > 0;
 	go_bot = i_col < img.rows - 1;
 	go_left = i_col > 0;

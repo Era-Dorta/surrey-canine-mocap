@@ -62,7 +62,6 @@ class Node {
 		osg::Vec3f length;    // length of segment
 		osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
 		std::vector<NodePtr> children;    // Array of pointers to child nodes
-		//TODO Instead of Node* use weak pointers
 		Node *parent;       // Back pointer to parent node
 		osg::ref_ptr<osg::Vec3Array> froset;  // Array of offsets for each frame
 		osg::ref_ptr<osg::Vec3Array> freuler;  // Array of angles for each frame

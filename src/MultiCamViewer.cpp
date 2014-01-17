@@ -83,7 +83,6 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 }
 
 MultiCamViewer::~MultiCamViewer() {
-	// TODO Auto-generated destructor stub
 }
 
 int MultiCamViewer::run_viewer() {
