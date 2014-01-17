@@ -71,10 +71,7 @@ class SkeletonFitting {
 
 		//From a cloud of points, fill result vector with a label for each point
 		//Median gives better results that mean, but it is not as fast
-		void divide_four_sections(bool use_median = false);
-
-		float get_median(osg::ref_ptr<osg::Vec3Array> points,
-				Skel_Leg use_label, Axis axis);
+		void divide_four_sections();
 
 		float get_mean(osg::ref_ptr<osg::Vec3Array> points, Skel_Leg use_label,
 				Axis axis);
@@ -100,6 +97,7 @@ class SkeletonFitting {
 		void refine_goal_position(osg::Vec3& end_position,
 				const osg::Vec3& base_position, float length);
 
+		//Needed to use std::sort with comp_y
 		struct sortstruct {
 				// sortstruct needs to know its containing object
 				SkeletonFitting* m;

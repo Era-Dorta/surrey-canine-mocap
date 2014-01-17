@@ -306,17 +306,12 @@ int SkeletonFitting::find_paw(Skel_Leg leg,
 	}
 }
 
-void SkeletonFitting::divide_four_sections(bool use_median) {
+void SkeletonFitting::divide_four_sections() {
 	labels.clear();
 	labels.resize(cloud->size(), Front_Left);
 
 	if (cloud->size() > 4) {
-		float mean_y;
-		if (use_median) {
-			mean_y = get_median(cloud, Front_Left, Y);
-		} else {
-			mean_y = get_mean(cloud, Front_Left, Y);
-		}
+		float mean_y = get_mean(cloud, Front_Left, Y);
 
 		//Divide in half vertically, discard all values above
 		for (unsigned int i = 0; i < cloud->size(); i++) {
@@ -326,12 +321,8 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 		}
 
 		//Divide the remaining values in front/back part along x
-		float mean_x;
-		if (use_median) {
-			mean_x = get_median(cloud, Front_Left, X);
-		} else {
-			mean_x = get_mean(cloud, Front_Left, X);
-		}
+		float mean_x = get_mean(cloud, Front_Left, X);
+
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] == Front_Left && cloud->at(i).x() <= mean_x) {
 				labels[i] = Back_Left;
@@ -339,15 +330,8 @@ void SkeletonFitting::divide_four_sections(bool use_median) {
 		}
 
 		//Divide the two groups into left and right
-		float mean_z_front;
-		float mean_z_back;
-		if (use_median) {
-			mean_z_front = get_median(cloud, Front_Left, Z);
-			mean_z_back = get_median(cloud, Back_Left, Z);
-		} else {
-			mean_z_front = get_mean(cloud, Front_Left, Z);
-			mean_z_back = get_mean(cloud, Back_Left, Z);
-		}
+		float mean_z_front = get_mean(cloud, Front_Left, Z);
+		float mean_z_back = get_mean(cloud, Back_Left, Z);
 
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] == Front_Left && cloud->at(i).z() < mean_z_front) {
@@ -415,37 +399,6 @@ float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
 	}
 
 	return swivel_angle;
-}
-
-float SkeletonFitting::get_median(osg::ref_ptr<osg::Vec3Array> points,
-		Skel_Leg use_label, Axis axis) {
-	osg::ref_ptr<osg::Vec3Array> aux_vec = new osg::Vec3Array();
-
-	for (unsigned int i = 0; i < points->size(); i++) {
-		if (labels[i] == use_label) {
-			aux_vec->push_back(points->at(i));
-		}
-	}
-
-	if (aux_vec->size() > 0) {
-		osg::Vec3Array::iterator first = aux_vec->begin();
-		osg::Vec3Array::iterator last = aux_vec->end();
-		osg::Vec3Array::iterator middle = first + (last - first) / 2;
-
-		switch (axis) {
-		case X:
-			std::nth_element(first, middle, last, comp_x);
-			return middle->x();
-		case Y:
-			std::nth_element(first, middle, last, comp_y);
-			return middle->y();
-		case Z:
-			std::nth_element(first, middle, last, comp_z);
-			return middle->z();
-		}
-	}
-
-	return 0.0;
 }
 
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
