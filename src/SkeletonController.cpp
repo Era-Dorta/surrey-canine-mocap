@@ -87,11 +87,15 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_cloud(
 			skeletonized3D->get_merged_3d_projection(current_frame),
 			skel_fitter.getLabels());
-	//skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
+
+	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
+	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Left), 1);
 
 	if (skeleton->isSkelLoaded()) {
 		skel_fitter.fit_root_position();
 		skel_fitter.fit_vertebral_front();
+		skel_fitter.fit_leg_position_simple(Front_Right);
+		skel_fitter.fit_leg_position_simple(Front_Left);
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();

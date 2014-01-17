@@ -284,6 +284,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 		//to follow the path of the other bones.
 		//TODO More ideas to avoid calculating distance, maybe do first box
 		//check, if it is "close" on 3 dimensions then calculate the distance.
+		//Third idea, use square distance, since it is faster to calculate
 		int pixel_row = 0, pixel_col = 0;
 		osg::Vec3 merged_pixel, aux_pixel;
 		int n_pixel_merge;

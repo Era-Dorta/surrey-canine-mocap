@@ -51,6 +51,8 @@ class SkeletonFitting {
 
 		void fit_leg_position(Skel_Leg leg);
 
+		void fit_leg_position_simple(Skel_Leg leg);
+
 		void fit_vertebral_front();
 
 		const std::vector<Skel_Leg>& getLabels() const;

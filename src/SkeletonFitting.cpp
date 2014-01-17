@@ -147,6 +147,36 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 	}
 }
 
+void SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
+	std::vector<int> leg_points_index;
+
+	int paw_index = find_paw(leg, leg_points_index);
+
+	if (paw_index != -1) {
+
+		Node* n_bone = skeleton->get_node(1);
+		osg::Vec3 prev_bone_position = n_bone->get_end_bone_global_pos(
+				current_frame);
+
+		//Put the "shoulder" two bones halfway from the previous bones
+		//and the paw
+		osg::Vec3 mid_position = (cloud->at(paw_index) + prev_bone_position)
+				* 0.5;
+
+		//Solve for "shoulder" two bones
+		if (!solve_2_bones(leg - 3, leg - 2, mid_position)) {
+			cout << "Failed leg fitting the first pair" << endl;
+			return;
+		}
+
+		//Solve for paw and parent bone
+		if (!solve_2_bones(leg - 1, leg, cloud->at(paw_index))) {
+			cout << "Failed leg fitting the second pair" << endl;
+			return;
+		}
+	}
+}
+
 void SkeletonFitting::fit_vertebral_front() {
 	//TODO SUPER IMPORTANT DO NOT DO THIS ON CAMERA BASED, DO A SUPER
 	//CAMERA A PROJECT ALL POINTS TO AXES
