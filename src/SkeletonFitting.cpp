@@ -336,42 +336,91 @@ int SkeletonFitting::find_paw(Skel_Leg leg,
 	}
 }
 
-void SkeletonFitting::divide_four_sections() {
+void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 	labels.clear();
-	labels.resize(cloud->size(), Front_Left);
+	labels.resize(cloud->size(), Front_Right);
 
 	if (cloud->size() > 4) {
-		float mean_y = get_mean(cloud, Front_Left, Y);
+		float mean_y = get_mean(cloud, Front_Right, Y);
+		int num_invalid = 0;
 
 		//Divide in half vertically, discard all values above
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (cloud->at(i).y() < mean_y + body_height_extra_threshold) {
+			if (cloud->at(i).y() <= mean_y + body_height_extra_threshold) {
 				labels[i] = Not_Limbs;
+				num_invalid++;
 			}
 		}
 
-		//Divide the remaining values in front/back part along x
-		float mean_x = get_mean(cloud, Front_Left, X);
+		if (use_simple_division) {
+			//Divide the remaining values in front/back part along x
+			float mean_x = get_mean(cloud, Front_Right, X);
 
-		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] == Front_Left && cloud->at(i).x() <= mean_x) {
-				labels[i] = Back_Left;
+			for (unsigned int i = 0; i < cloud->size(); i++) {
+				if (labels[i] == Front_Right && cloud->at(i).x() <= mean_x) {
+					labels[i] = Back_Left;
+				}
+			}
+
+			//Divide the two groups into left and right
+			float mean_z_front = get_mean(cloud, Front_Right, Z);
+			float mean_z_back = get_mean(cloud, Back_Left, Z);
+
+			for (unsigned int i = 0; i < cloud->size(); i++) {
+				if (labels[i] == Front_Right
+						&& cloud->at(i).z() >= mean_z_front) {
+					labels[i] = Front_Left;
+				} else if (labels[i] == Back_Left
+						&& cloud->at(i).z() <= mean_z_back) {
+					labels[i] = Back_Right;
+				}
+			}
+		} else {
+
+			int num_valid = cloud->size() - num_invalid;
+			int max_clusters = 4;
+			cv::Mat knn_labels;
+
+			if (num_valid > 4) {
+
+				cv::Mat data2(num_valid, 1, CV_32FC3);
+				int j = 0;
+				for (unsigned int i = 0; i < cloud->size(); i++) {
+					if (labels[i] != Not_Limbs) {
+						cv::Point3f ipt(cloud->at(i).x(), cloud->at(i).y(),
+								cloud->at(i).z());
+						data2.at<cv::Point3f>(j) = ipt;
+						j++;
+					}
+				}
+
+				cv::kmeans(data2, max_clusters, knn_labels,
+						cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER,
+								10, 1.0), 10, cv::KMEANS_PP_CENTERS);
+
+				j = 0;
+				//TODO This division is arbitrary, does not have to correspond
+				//with the names
+				for (unsigned int i = 0; i < cloud->size(); i++) {
+					if (labels[i] != Not_Limbs) {
+						switch (knn_labels.at<int>(j)) {
+						case 0:
+							labels[i] = Front_Left;
+							break;
+						case 1:
+							labels[i] = Front_Right;
+							break;
+						case 2:
+							labels[i] = Back_Left;
+							break;
+						default:
+							labels[i] = Back_Right;
+						}
+						j++;
+					}
+				}
 			}
 		}
-
-		//Divide the two groups into left and right
-		float mean_z_front = get_mean(cloud, Front_Left, Z);
-		float mean_z_back = get_mean(cloud, Back_Left, Z);
-
-		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] == Front_Left && cloud->at(i).z() < mean_z_front) {
-				labels[i] = Front_Right;
-			} else if (labels[i] == Back_Left
-					&& cloud->at(i).z() < mean_z_back) {
-				labels[i] = Back_Right;
-			}
-		}
-
 	}
 }
 

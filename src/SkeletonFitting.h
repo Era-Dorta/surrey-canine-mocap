@@ -73,7 +73,7 @@ class SkeletonFitting {
 
 		//From a cloud of points, fill result vector with a label for each point
 		//Median gives better results that mean, but it is not as fast
-		void divide_four_sections();
+		void divide_four_sections(bool use_simple_division = true);
 
 		float get_mean(osg::ref_ptr<osg::Vec3Array> points, Skel_Leg use_label,
 				Axis axis);
