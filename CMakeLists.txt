@@ -8,33 +8,29 @@ SET( PROJECT_EXE "${PROJECT_NAME}_exe" )
 FIND_PACKAGE( Boost 1.46 REQUIRED COMPONENTS filesystem system )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
-INCLUDE(FindFreetype)
-MESSAGE(STATUS "Freetype lib dir found at ${FREETYPE_LIBRARIES}")
-MESSAGE(STATUS "Freetype include dir found at ${FREETYPE_INCLUDE_DIRS}")
-
-#OSG
-find_package(OpenThreads )
-find_package(osg)
-find_package(osgDB )
-find_package(osgUtil )
-find_package(osgViewer )
-find_package(osgGA )
-find_package(osgText )
-find_package(osgAnimation )
-
 #CUDA
 SET( CUDA_INCLUDE_DIRS "dependencies/CUDA")
 INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
 
-#Custom path to compiled by hand libraries, thanks to not having permision to install software
-#If you have installation permisions remove this line
-#SET( CMAKE_PREFIX_PATH "/home/garoe/Descargas/opencv-2.4.7/build" )
-#SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
-
 #OpenCV
-FIND_PACKAGE( OpenCV REQUIRED HINTS "/home/garoe/Descargas/opencv-2.4.7/build" ) 
+FIND_PACKAGE( OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs" ) 
 MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
 MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
+
+#Custom path to compiled by hand libraries, thanks to not having permision to install software
+#If you have installation permisions remove this line
+SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
+
+#TODO HINT does not work with osg, not sure why
+#OSG
+FIND_PACKAGE(OpenThreads )
+FIND_PACKAGE(osg)
+FIND_PACKAGE(osgDB )
+FIND_PACKAGE(osgUtil )
+FIND_PACKAGE(osgViewer )
+FIND_PACKAGE(osgGA )
+FIND_PACKAGE(osgText )
+FIND_PACKAGE(osgAnimation )
 
 #IKAN
 #For this library we are also going to compile the sources
@@ -53,15 +49,18 @@ INCLUDE_DIRECTORIES( ${IKAN_INCLUDE_DIRS} )
 #Source and header files: 
 SET(SOURCE 
 src/BVHFormat.cpp
+src/CameraCalibrator.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
 src/Extras.cpp
 src/main.cpp
 src/MessageHandler.cpp
+src/MiscUtils.cpp
 src/MocapData.cpp
 src/MocapHeader.cpp
 src/MultiCamViewer.cpp
 src/Node.cpp
+src/PixelSearch.cpp
 src/PointFusion.cpp
 src/RenderPOV.cpp
 src/RenderSkeletonization.cpp
@@ -80,6 +79,7 @@ src/SurfelModel.cpp
 
 SET(HEADERS 
 src/BVHFormat.h
+src/CameraCalibrator.h
 src/CudaVec.h
 src/DebugUtil.h
 src/DepthMapPoly.h
@@ -91,6 +91,7 @@ src/MocapData.h
 src/MocapHeader.h
 src/MultiCamViewer.h
 src/Node.h
+src/PixelSearch.h
 src/PointFusion.h
 src/RenderPOV.h
 src/RenderSkeletonization.h
