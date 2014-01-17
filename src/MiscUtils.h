@@ -80,15 +80,6 @@ namespace MiscUtils {
 			std::string file_name);
 
 	osg::Geode* surfel_ply_read(std::string file_name);
-
-	//TODO Maybe it would be better to put this method in some abstract class
-	//that Skeletonization classes would inherit from. Lest actually see how much
-	//they turn out to have in common
-
-	//Given a uchar 1 channel image, and a start points it returns true and a position
-	//if it finds a white pixel next to it. False otherwise.
-	bool get_neighbor_white_pixel(cv::Mat& img, int i_row, int i_col,
-			int &res_row, int &res_col);
 }
 
 #endif /* MISCUTILS_H_ */

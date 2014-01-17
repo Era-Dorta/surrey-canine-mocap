@@ -10,6 +10,7 @@
 
 #include "Skeleton.h"
 #include "Skeletonization3D.h"
+#include "PixelSearch.h"
 #include "IKAN/srs.h"
 
 #include "osg/Array"
@@ -85,12 +86,6 @@ class SkeletonFitting {
 		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 
 		bool check_bone_index(int bone0, int bone1);
-
-		bool get_top_left_white_pixel(const cv::Mat& img, int i_row, int i_col,
-				int &res_row, int &res_col);
-
-		bool get_nearest_white_pixel(const cv::Mat& img, int i_row, int i_col,
-				int &res_row, int &res_col);
 
 		bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
 				int &res_row, int &res_col);

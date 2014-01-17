@@ -16,7 +16,6 @@
 
 class CameraCalibrator {
 	public:
-		//TODO Should not give camera_arr as argument
 		//In save_camera_calibration, could give camera iterator or
 		//only path and matrix
 		CameraCalibrator(const camVecT& camera_arr_);

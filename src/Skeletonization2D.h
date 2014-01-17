@@ -2,6 +2,7 @@
 #define SKELETONIZATION2D_H
 
 #include "RGBDCamera.h"
+#include "PixelSearch.h"
 
 #include "opencv2/opencv.hpp"
 

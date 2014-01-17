@@ -3,6 +3,7 @@
 
 #include "Skeletonization2D.h"
 #include "RGBDCamera.h"
+#include "PixelSearch.h"
 
 #include <vector>
 
@@ -48,17 +49,6 @@ class Skeletonization3D {
 		osg::ref_ptr<osg::Vec3Array> merge_2D_skeletons_impl(
 				std::vector<const cv::Mat*>& skeletonized_frames,
 				int frame_num);
-
-		//Auxiliary method that finds a white pixel in a given image and returns
-		//where in res_row and res_col
-		bool get_white_pixel(cv::Mat& img, int &res_row, int &res_col,
-				int i_row = 0, int i_col = 0);
-
-		//Auxiliary method that finds the white pixel situated most at the
-		//bottom left of the image.
-		bool get_bottom_white_pixel(cv::Mat& img, int &res_row, int &res_col);
-		bool get_bottom_white_pixel(cv::Mat& img, int &res_row, int &res_col,
-				int i_row, int i_col);
 
 		//Translate a set of given points, away from a camera a distance.
 		//Points should be in CAMERA coordinates

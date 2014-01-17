@@ -490,7 +490,7 @@ void Skeletonization2D::delete_arm(cv::Mat& img_in) {
 		row = data2.at<cv::Point2f>(lowest_index).x;
 		col = data2.at<cv::Point2f>(lowest_index).y;
 
-		while (MiscUtils::get_neighbor_white_pixel(img_in, row, col, next_row,
+		while (PixelSearch::get_neighbor_white_pixel(img_in, row, col, next_row,
 				next_col)) {
 			img_in.at<uchar>(next_row, next_col) = 0;
 			row = next_row;

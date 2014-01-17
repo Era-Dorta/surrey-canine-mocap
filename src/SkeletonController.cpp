@@ -106,7 +106,7 @@ void SkeletonController::generate_skeletonization() {
 	skeletonized3D->generate_skeletonization();
 }
 
-void SkeletonController::setup_scene(){
+void SkeletonController::setup_scene() {
 	skel_renderer.setup_scene();
 }
 

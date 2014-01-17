@@ -127,43 +127,6 @@ void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	skel2d_cam_array[frame_num * n_cameras + cam_num] = skeleton_3d.get();
 }
 
-bool Skeletonization3D::get_white_pixel(cv::Mat& img, int &res_row,
-		int &res_col, int i_row, int i_col) {
-	for (int row = i_row; row < img.rows; row++) {
-		for (int col = i_col; col < img.cols; col++) {
-			//If pixel is white
-			if ((int) img.at<uchar>(row, col) == 255) {
-				res_row = row;
-				res_col = col;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
-		int &res_col) {
-	return get_bottom_white_pixel(img, res_row, res_col, img.rows - 1, 0);
-}
-
-bool Skeletonization3D::get_bottom_white_pixel(cv::Mat& img, int &res_row,
-		int &res_col, int i_row, int i_col) {
-	//Since we want the bottom-left white pixel
-	//and 0,0 is top-left in openCV
-	for (int row = i_row; row > 0; row--) {
-		for (int col = i_col; col < img.cols; col++) {
-			//If pixel is white
-			if ((int) img.at<uchar>(row, col) == 255) {
-				res_row = row;
-				res_col = col;
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
 void Skeletonization3D::translate_points_to_inside(
 		osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num) const {
 	osg::Vec3Array::iterator point;
@@ -324,8 +287,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 		int pixel_row = 0, pixel_col = 0;
 		osg::Vec3 merged_pixel, aux_pixel;
 		int n_pixel_merge;
-		bool continue_merge = get_bottom_white_pixel(visited_pixels[i],
-				pixel_row, pixel_col);
+		bool continue_merge = PixelSearch::get_bottom_white_pixel(
+				visited_pixels[i], pixel_row, pixel_col);
 
 		while (continue_merge) {
 			//Mark found pixel as visited
@@ -409,7 +372,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 			//Try to follow the bone, search for next pixel in its Moore
 			//neighbourhood
-			if (MiscUtils::get_neighbor_white_pixel(visited_pixels[i],
+			if (PixelSearch::get_neighbor_white_pixel(visited_pixels[i],
 					pixel_row, pixel_col, next_row, next_col)) {
 				pixel_row = next_row;
 				pixel_col = next_col;
@@ -417,8 +380,8 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 			} else {
 				//If the search fails, find another pixel starting from top-left
 				//corner
-				continue_merge = get_bottom_white_pixel(visited_pixels[i],
-						pixel_row, pixel_col);
+				continue_merge = PixelSearch::get_bottom_white_pixel(
+						visited_pixels[i], pixel_row, pixel_col);
 			}
 		}
 	}

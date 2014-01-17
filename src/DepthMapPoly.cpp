@@ -23,7 +23,6 @@ void DepthMapPoly::init(int _rows, int _cols, osg::Vec3 _vis_colour) {
 }
 
 DepthMapPoly::~DepthMapPoly() {
-	// TODO Auto-generated destructor stub
 }
 
 osg::Geode* DepthMapPoly::create_depth_map_geode() {
