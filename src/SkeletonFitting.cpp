@@ -75,6 +75,7 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 		current_frame = frame_num;
 		cloud = skeletonizator->get_merged_3d_projection(current_frame);
 		divide_four_sections();
+		refine_four_sections_division();
 	}
 }
 
@@ -360,7 +361,6 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 			//float mean_x = get_mean(cloud, Front_Right, X);
 			float mean_x = get_division_val(cloud, Front_Right, X);
 
-
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right && cloud->at(i).x() <= mean_x) {
 					labels[i] = Back_Right;
@@ -378,8 +378,7 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right
-						&& cloud->at(i).z()
-								>= mean_z_front) {
+						&& cloud->at(i).z() >= mean_z_front) {
 					labels[i] = Front_Left;
 				} else if (labels[i] == Back_Right
 						&& cloud->at(i).z() >= mean_z_back) {
@@ -435,14 +434,46 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 }
 
 void SkeletonFitting::refine_four_sections_division() {
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] != Not_Limbs) {
-			//Better calculate only square distances
-			//Precalculate a matrix of distances?, vector of vectors?
-			//Calculate closest neighbors
-			//Discard closest that are beyond a treshold
-			//If most of they are from the other cluster
-			//then change self label
+	//Better calculate only square distances
+	//Precalculate a matrix of distances?, vector of vectors?
+	//Calculate closest neighbors
+	//Discard closest that are beyond a treshold
+	//If most of they are from the other cluster
+	//then change self label
+
+	if (cloud->size() > 4) {
+
+		float mean_z_front = (get_mean(cloud, Front_Right, Z)
+				+ get_mean(cloud, Front_Left, Z)) * 0.5;
+
+		float mean_z_back = (get_mean(cloud, Back_Right, Z)
+				+ get_mean(cloud, Back_Left, Z)) * 0.5;
+
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			switch (labels[i]) {
+			case Front_Right:
+				if (cloud->at(i).z() >= mean_z_front) {
+					labels[i] = Front_Left;
+				}
+				break;
+			case Front_Left:
+				if (cloud->at(i).z() < mean_z_front) {
+					labels[i] = Front_Right;
+				}
+				break;
+			case Back_Right:
+				if (cloud->at(i).z() >= mean_z_back) {
+					labels[i] = Back_Left;
+				}
+				break;
+			case Back_Left:
+				if (cloud->at(i).z() < mean_z_back) {
+					labels[i] = Back_Right;
+				}
+				break;
+			default:
+				break;
+			}
 		}
 	}
 }
