@@ -34,8 +34,6 @@ enum Axis {
 	X, Y, Z
 };
 
-bool comp_y(const osg::Vec3& i, const osg::Vec3& j);
-
 class SkeletonFitting {
 	public:
 		SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
@@ -75,8 +73,13 @@ class SkeletonFitting {
 		//Median gives better results that mean, but it is not as fast
 		void divide_four_sections(bool use_simple_division = true);
 
+		void refine_four_sections_division();
+
 		float get_mean(osg::ref_ptr<osg::Vec3Array> points, Skel_Leg use_label,
-				Axis axis);
+				Axis axes);
+
+		float get_division_val(osg::ref_ptr<osg::Vec3Array> points,
+				Skel_Leg use_label, Axis axes);
 
 		bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
 
@@ -103,19 +106,29 @@ class SkeletonFitting {
 		struct sortstruct {
 				// sortstruct needs to know its containing object
 				SkeletonFitting* m;
-				sortstruct(SkeletonFitting* p) :
+				bool (*comp_funct)(const osg::Vec3&, const osg::Vec3&);
+				sortstruct(SkeletonFitting* p,
+						bool (*comp_funct_)(const osg::Vec3&,
+								const osg::Vec3&)) :
 							m(p) {
+					m = p;
+					comp_funct = comp_funct_;
 				}
 				;
 
 				bool operator()(int i, int j) {
-					return (!comp_y(m->cloud->at(i), m->cloud->at(j)));
+					return (!comp_funct(m->cloud->at(i), m->cloud->at(j)));
+				}
+
+				bool operator()(const osg::Vec3& i, const osg::Vec3& j) {
+					return (!comp_funct(i, j));
 				}
 		};
 
 		float move_joint_max_dist;
 		float error_threshold;
 		float body_height_extra_threshold;
+		float left_side_extra_threshold;
 		std::vector<Skel_Leg> labels;
 		int current_frame;
 		osg::ref_ptr<osg::Vec3Array> cloud;

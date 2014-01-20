@@ -26,6 +26,7 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 	error_threshold = 0.005;
 	current_frame = -1;
 	body_height_extra_threshold = 0.04;
+	left_side_extra_threshold = 0.02;
 	skeleton = skeleton_;
 	skeletonizator = skeletonization3d;
 }
@@ -100,7 +101,7 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 		//TODO Not sure if this should be here or in some other place
 		//Since we are going to go up the leg better to have all the points ordered
 		//along the y axis
-		sortstruct s(this);
+		sortstruct s(this, comp_y);
 		std::sort(leg_points_index.begin(), leg_points_index.end(), s);
 
 		int bones_per_leg = 4;
@@ -345,6 +346,8 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 		int num_invalid = 0;
 
 		//Divide in half vertically, discard all values above
+		//The body is larger than the legs so, add a extra
+		//so more points are assing to the body
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (cloud->at(i).y() <= mean_y + body_height_extra_threshold) {
 				labels[i] = Not_Limbs;
@@ -358,25 +361,30 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right && cloud->at(i).x() <= mean_x) {
-					labels[i] = Back_Left;
+					labels[i] = Back_Right;
 				}
 			}
 
 			//Divide the two groups into left and right
+			//Since we are filming the dog from the right side
+			//there are less left points than right, so displace the
+			//mean point a bit to the left
 			float mean_z_front = get_mean(cloud, Front_Right, Z);
-			float mean_z_back = get_mean(cloud, Back_Left, Z);
+			float mean_z_back = get_mean(cloud, Back_Right, Z);
+			//float mean_z_front = get_division_val(cloud, Front_Right, Z);
+			//float mean_z_back = get_division_val(cloud, Back_Right, Z);
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right
-						&& cloud->at(i).z() >= mean_z_front) {
+						&& cloud->at(i).z()
+								>= mean_z_front + left_side_extra_threshold) {
 					labels[i] = Front_Left;
-				} else if (labels[i] == Back_Left
-						&& cloud->at(i).z() <= mean_z_back) {
-					labels[i] = Back_Right;
+				} else if (labels[i] == Back_Right
+						&& cloud->at(i).z() >= mean_z_back) {
+					labels[i] = Back_Left;
 				}
 			}
 		} else {
-
 			int num_valid = cloud->size() - num_invalid;
 			int max_clusters = 4;
 			cv::Mat knn_labels;
@@ -420,6 +428,19 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 					}
 				}
 			}
+		}
+	}
+}
+
+void SkeletonFitting::refine_four_sections_division() {
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] != Not_Limbs) {
+			//Better calculate only square distances
+			//Precalculate a matrix of distances?, vector of vectors?
+			//Calculate closest neighbors
+			//Discard closest that are beyond a treshold
+			//If most of they are from the other cluster
+			//then change self label
 		}
 	}
 }
@@ -481,19 +502,51 @@ float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
 }
 
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
-		Skel_Leg use_label, Axis axis) {
+		Skel_Leg use_label, Axis axes) {
 
 	float mean = 0.0;
 	int num_valid = 0;
 	for (unsigned int i = 0; i < points->size(); i++) {
 		if (labels[i] == use_label) {
-			mean += points->at(i)[axis];
+			mean += points->at(i)[axes];
 			num_valid++;
 		}
 	}
 
 	if (num_valid > 0) {
 		return mean / num_valid;
+	} else {
+		return 0.0;
+	}
+}
+
+//This method returns the mean value between the two most distant
+//points, it does not solve the problems of the simple division either
+float SkeletonFitting::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
+		Skel_Leg use_label, Axis axes) {
+
+	osg::ref_ptr<osg::Vec3Array> points_copy = new osg::Vec3Array;
+	for (unsigned int i = 0; i < points->size(); i++) {
+		if (labels[i] == use_label) {
+			points_copy->push_back(points->at(i));
+		}
+	}
+
+	if (points_copy->size() >= 2) {
+		bool (*comp_funct)(const osg::Vec3&, const osg::Vec3&);
+		switch (axes) {
+		case X:
+			comp_funct = comp_x;
+			break;
+		case Y:
+			comp_funct = comp_y;
+			break;
+		default:
+			comp_funct = comp_z;
+		}
+		sortstruct s(this, comp_funct);
+		std::sort(points_copy->begin(), points_copy->end(), s);
+		return (points_copy->front()[axes] + points_copy->back()[axes]) * 0.5;
 	} else {
 		return 0.0;
 	}
