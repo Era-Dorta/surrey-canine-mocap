@@ -25,7 +25,7 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 	move_joint_max_dist = 0;
 	error_threshold = 0.005;
 	current_frame = -1;
-	body_height_extra_threshold = 0.04;
+	body_height_extra_threshold = 0.045;
 	left_side_extra_threshold = 0.02;
 	skeleton = skeleton_;
 	skeletonizator = skeletonization3d;
@@ -347,7 +347,7 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 
 		//Divide in half vertically, discard all values above
 		//The body is larger than the legs so, add a extra
-		//so more points are assing to the body
+		//so more points are assign to the body
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (cloud->at(i).y() <= mean_y + body_height_extra_threshold) {
 				labels[i] = Not_Limbs;
@@ -357,7 +357,9 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 
 		if (use_simple_division) {
 			//Divide the remaining values in front/back part along x
-			float mean_x = get_mean(cloud, Front_Right, X);
+			//float mean_x = get_mean(cloud, Front_Right, X);
+			float mean_x = get_division_val(cloud, Front_Right, X);
+
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right && cloud->at(i).x() <= mean_x) {
@@ -369,15 +371,15 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 			//Since we are filming the dog from the right side
 			//there are less left points than right, so displace the
 			//mean point a bit to the left
-			float mean_z_front = get_mean(cloud, Front_Right, Z);
-			float mean_z_back = get_mean(cloud, Back_Right, Z);
-			//float mean_z_front = get_division_val(cloud, Front_Right, Z);
-			//float mean_z_back = get_division_val(cloud, Back_Right, Z);
+			//float mean_z_front = get_mean(cloud, Front_Right, Z);
+			//float mean_z_back = get_mean(cloud, Back_Right, Z);
+			float mean_z_front = get_division_val(cloud, Front_Right, Z);
+			float mean_z_back = get_division_val(cloud, Back_Right, Z);
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right
 						&& cloud->at(i).z()
-								>= mean_z_front + left_side_extra_threshold) {
+								>= mean_z_front) {
 					labels[i] = Front_Left;
 				} else if (labels[i] == Back_Right
 						&& cloud->at(i).z() >= mean_z_back) {

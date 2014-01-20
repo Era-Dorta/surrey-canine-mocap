@@ -66,7 +66,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		//TODO This should be given by the user or somehow calculated from
 		//the images
 		//Set bounding box limits
-		bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.01, 0.25);
+		bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.015, 0.25);
 
 		//Remove background using bounding box
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
