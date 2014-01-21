@@ -108,8 +108,7 @@ class SkeletonFitting {
 				SkeletonFitting* m;
 				bool (*comp_funct)(const osg::Vec3&, const osg::Vec3&);
 				sortstruct(SkeletonFitting* p,
-						bool (*comp_funct_)(const osg::Vec3&,
-								const osg::Vec3&)) :
+						bool (*comp_funct_)(const osg::Vec3&, const osg::Vec3&)) :
 							m(p) {
 					m = p;
 					comp_funct = comp_funct_;
@@ -128,9 +127,13 @@ class SkeletonFitting {
 		float move_joint_max_dist;
 		float error_threshold;
 		float body_height_extra_threshold;
-		float left_side_extra_threshold;
+		std::vector<float> mean_z_front_arr;
+		std::vector<float> mean_z_back_arr;
+		float mean_z_front_all_frames;
+		float mean_z_back_all_frames;
 		std::vector<Skel_Leg> labels;
 		int current_frame;
+		int n_frames;
 		osg::ref_ptr<osg::Vec3Array> cloud;
 		boost::shared_ptr<Skeletonization3D> skeletonizator;
 		boost::shared_ptr<Skeleton> skeleton;

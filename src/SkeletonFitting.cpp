@@ -26,7 +26,8 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 	error_threshold = 0.005;
 	current_frame = -1;
 	body_height_extra_threshold = 0.045;
-	left_side_extra_threshold = 0.02;
+	mean_z_front_all_frames = 0.0;
+	mean_z_back_all_frames = 0.0;
 	skeleton = skeleton_;
 	skeletonizator = skeletonization3d;
 }
@@ -73,6 +74,12 @@ SkeletonFitting::~SkeletonFitting() {
 void SkeletonFitting::calculate_for_frame(int frame_num) {
 	if (current_frame != frame_num) {
 		current_frame = frame_num;
+		if (mean_z_front_arr.empty()) {
+			n_frames = skeletonizator->get_n_frames();
+			mean_z_front_arr.resize(n_frames, 0);
+			mean_z_back_arr.resize(n_frames, 0);
+
+		}
 		cloud = skeletonizator->get_merged_3d_projection(current_frame);
 		divide_four_sections();
 		refine_four_sections_division();
@@ -374,7 +381,9 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 			//float mean_z_front = get_mean(cloud, Front_Right, Z);
 			//float mean_z_back = get_mean(cloud, Back_Right, Z);
 			float mean_z_front = get_division_val(cloud, Front_Right, Z);
+			mean_z_front_arr.at(current_frame) = mean_z_front;
 			float mean_z_back = get_division_val(cloud, Back_Right, Z);
+			mean_z_back_arr.at(current_frame) = mean_z_back;
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Right
@@ -442,19 +451,86 @@ void SkeletonFitting::refine_four_sections_division() {
 	//then change self label
 
 	if (cloud->size() > 10) {
+		//Attempt to do some time coherence between frames, code works but
+		//the result is the same
+#if false
+		float mean_z_front = mean_z_front_arr.at(current_frame);
+		float mean_z_back = mean_z_back_arr.at(current_frame);
+		int front_valid = 1, back_valid = 1;
 
+		if (current_frame > 0
+				&& mean_z_front_arr.at(current_frame - 1) != 0.0) {
+			mean_z_front += mean_z_front_arr.at(current_frame - 1);
+			front_valid++;
+		}
+		if (current_frame > 0
+				&& mean_z_back_arr.at(current_frame - 1) != 0.0) {
+			mean_z_back += mean_z_back_arr.at(current_frame - 1);
+			back_valid++;
+		}
+		if (current_frame < n_frames - 1
+				&& mean_z_front_arr.at(current_frame + 1) != 0.0) {
+			mean_z_front += mean_z_front_arr.at(current_frame + 1);
+			front_valid++;
+		}
+		if (current_frame < n_frames - 1
+				&& mean_z_back_arr.at(current_frame + 1) != 0.0) {
+			mean_z_back += mean_z_back_arr.at(current_frame + 1);
+			back_valid++;
+		}
+
+		//Calculate mean of previous and next frame z value
+		mean_z_front = mean_z_front / front_valid;
+		mean_z_back = mean_z_back / back_valid;
+
+		//New z division is combination of current and previous/next frame
+		mean_z_front = mean_z_front * 0.7
+		+ mean_z_front_arr.at(current_frame) * 0.3;
+		mean_z_back = mean_z_back * 0.7
+		+ mean_z_back_arr.at(current_frame) * 0.3;
+		//Redo division using new z value
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			switch (labels[i]) {
+				case Front_Right:
+				if (cloud->at(i).z() >= mean_z_front) {
+					labels[i] = Front_Left;
+				}
+				break;
+				case Front_Left:
+				if (cloud->at(i).z() < mean_z_front) {
+					labels[i] = Front_Right;
+				}
+				break;
+				case Back_Right:
+				if (cloud->at(i).z() >= mean_z_back) {
+					labels[i] = Back_Left;
+				}
+				break;
+				case Back_Left:
+				if (cloud->at(i).z() < mean_z_back) {
+					labels[i] = Back_Right;
+				}
+				break;
+				default:
+				break;
+			}
+		}
+	}
+#endif
 		//Calculate the mean z of each leg
 		//Then recalculate what points belong to each leg, if the
 		//calculation changes any point then do it again
 		//This fixes errors in two frames
 		bool point_relabeled = true;
-		while(point_relabeled){
+		while (point_relabeled) {
 			point_relabeled = false;
 			float mean_z_front = (get_mean(cloud, Front_Right, Z)
 					+ get_mean(cloud, Front_Left, Z)) * 0.5;
+			mean_z_front_arr.at(current_frame) = mean_z_front;
 
 			float mean_z_back = (get_mean(cloud, Back_Right, Z)
 					+ get_mean(cloud, Back_Left, Z)) * 0.5;
+			mean_z_back_arr.at(current_frame) = mean_z_back;
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				switch (labels[i]) {
