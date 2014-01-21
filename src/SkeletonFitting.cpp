@@ -436,43 +436,55 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 void SkeletonFitting::refine_four_sections_division() {
 	//Better calculate only square distances
 	//Precalculate a matrix of distances?, vector of vectors?
-	//Calculate closest neighbors
+	//Calculate closest neighbours
 	//Discard closest that are beyond a treshold
 	//If most of they are from the other cluster
 	//then change self label
 
-	if (cloud->size() > 4) {
+	if (cloud->size() > 10) {
 
-		float mean_z_front = (get_mean(cloud, Front_Right, Z)
-				+ get_mean(cloud, Front_Left, Z)) * 0.5;
+		//Calculate the mean z of each leg
+		//Then recalculate what points belong to each leg, if the
+		//calculation changes any point then do it again
+		//This fixes errors in two frames
+		bool point_relabeled = true;
+		while(point_relabeled){
+			point_relabeled = false;
+			float mean_z_front = (get_mean(cloud, Front_Right, Z)
+					+ get_mean(cloud, Front_Left, Z)) * 0.5;
 
-		float mean_z_back = (get_mean(cloud, Back_Right, Z)
-				+ get_mean(cloud, Back_Left, Z)) * 0.5;
+			float mean_z_back = (get_mean(cloud, Back_Right, Z)
+					+ get_mean(cloud, Back_Left, Z)) * 0.5;
 
-		for (unsigned int i = 0; i < cloud->size(); i++) {
-			switch (labels[i]) {
-			case Front_Right:
-				if (cloud->at(i).z() >= mean_z_front) {
-					labels[i] = Front_Left;
+			for (unsigned int i = 0; i < cloud->size(); i++) {
+				switch (labels[i]) {
+				case Front_Right:
+					if (cloud->at(i).z() >= mean_z_front) {
+						labels[i] = Front_Left;
+						point_relabeled = true;
+					}
+					break;
+				case Front_Left:
+					if (cloud->at(i).z() < mean_z_front) {
+						labels[i] = Front_Right;
+						point_relabeled = true;
+					}
+					break;
+				case Back_Right:
+					if (cloud->at(i).z() >= mean_z_back) {
+						labels[i] = Back_Left;
+						point_relabeled = true;
+					}
+					break;
+				case Back_Left:
+					if (cloud->at(i).z() < mean_z_back) {
+						labels[i] = Back_Right;
+						point_relabeled = true;
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			case Front_Left:
-				if (cloud->at(i).z() < mean_z_front) {
-					labels[i] = Front_Right;
-				}
-				break;
-			case Back_Right:
-				if (cloud->at(i).z() >= mean_z_back) {
-					labels[i] = Back_Left;
-				}
-				break;
-			case Back_Left:
-				if (cloud->at(i).z() < mean_z_back) {
-					labels[i] = Back_Right;
-				}
-				break;
-			default:
-				break;
 			}
 		}
 	}
