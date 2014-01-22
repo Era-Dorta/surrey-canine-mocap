@@ -442,6 +442,45 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 	}
 }
 
+float3 get_2d_projection(osg::Vec3 point, const osg::Vec3& trans) {
+	float4 res4, point4 = make_float4(point.x(), point.y(), point.z(), 1.0);
+
+	//To 3D point to camera 2D point
+	//First put in point in camera axis
+
+	//We want a front view so in world axes is vectors
+	//x = [0,0,1]
+	//y = [0,1,0]
+	//z = [-1,0,0]
+	//Then also add a translation, matrix should be T*R, but since R is simple
+	//it is easier to put translation in new world coordinates
+	float4x4 invT(0.0);
+	invT[0 * 4 + 2] = -1;
+	invT[1 * 4 + 1] = 1;
+	invT[2 * 4 + 0] = 1;
+	invT[3 * 4 + 0] = trans.z() + 0.05;
+	invT[3 * 4 + 1] = trans.y() - 0.15;
+	invT[3 * 4 + 2] = -(trans.x() - 0.3);
+	invT[3 * 4 + 3] = 1;
+
+	res4 = point4 * invT;
+	float3 point3 = make_float3(res4.x, res4.y, res4.z);
+
+	//K matrix copied from one of the K files, should read it from a camera???
+	float3x3 K(0.0);
+	K[0 * 3 + 0] = 536.9423704440301;
+	K[0 * 3 + 2] = 321.1102172809362;
+	K[1 * 3 + 1] = 536.5481474898438;
+	K[1 * 3 + 2] = 236.1034464602599;
+	K[2 * 3 + 2] = 1;
+
+	float3 res3 = K * point3;
+
+	float invz = 1.0 / res3.z;
+	res3 = res3 * invz;
+	return res3;
+}
+
 void SkeletonFitting::refine_four_sections_division() {
 	//Better calculate only square distances
 	//Precalculate a matrix of distances?, vector of vectors?
