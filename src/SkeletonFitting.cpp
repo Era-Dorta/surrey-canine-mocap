@@ -21,7 +21,9 @@ bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
 }
 
 SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
-		boost::shared_ptr<Skeletonization3D> skeletonization3d) {
+		boost::shared_ptr<Skeletonization3D> skeletonization3d,
+		const camVecT& camera_arr_) :
+			camera_arr(camera_arr_) {
 	move_joint_max_dist = 0;
 	error_threshold = 0.005;
 	current_frame = -1;
@@ -282,7 +284,8 @@ bool SkeletonFitting::find_first_bone_end_pos(const osg::Vec3& root_pos,
 
 	int row = 0, col = 0;
 
-	float3 start_point = skeletonizator->get_2d_projection(root_pos, 2);
+	float3 start_point = Projections::get_2d_projection(root_pos,
+			camera_arr.begin() + 2);
 	row = start_point.y;
 	col = start_point.x;
 
@@ -303,8 +306,8 @@ bool SkeletonFitting::find_first_bone_end_pos(const osg::Vec3& root_pos,
 	while (not_bone_length) {
 		if (PixelSearch::get_top_left_white_pixel(cam2_bin_img, row, col, row,
 				col)) {
-			aux_point = skeletonizator->get_3d_projection(row, col, 2,
-					current_frame);
+			aux_point = Projections::get_3d_projection(row, col,
+					camera_arr.begin() + 2, current_frame);
 			float current_length = length(root_pos3 - aux_point);
 			if (current_length >= bone_length) {
 				not_bone_length = false;
@@ -323,7 +326,8 @@ bool SkeletonFitting::find_second_bone_end_pos(const osg::Vec3& head_pos,
 	const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
 			current_frame);
 
-	float3 start_point = skeletonizator->get_2d_projection(head_pos, 1);
+	float3 start_point = Projections::get_2d_projection(head_pos,
+			camera_arr.begin() + 1);
 
 	int row = start_point.y;
 	int col = start_point.x;
@@ -345,8 +349,8 @@ bool SkeletonFitting::find_second_bone_end_pos(const osg::Vec3& head_pos,
 	while (not_bone_length) {
 		if (PixelSearch::get_top_left_white_pixel(cam1_bin_img, row, col, row,
 				col)) {
-			aux_point = skeletonizator->get_3d_projection(row, col, 1,
-					current_frame);
+			aux_point = Projections::get_3d_projection(row, col,
+					camera_arr.begin() + 1, current_frame);
 			float current_length = length(head3 - aux_point);
 			if (current_length >= bone_length) {
 				not_bone_length = false;
@@ -618,8 +622,8 @@ void SkeletonFitting::refine_four_sections_division() {
 			current_div.y() = current_div.y() + 0.09;
 			current_div.z() = mean_z_front_arr.at(current_frame);
 			float depth;
-			float3 point2d = Projections::get_2d_projection(current_div,
-					invT, depth);
+			float3 point2d = Projections::get_2d_projection(current_div, invT,
+					depth);
 
 			if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
 					&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
@@ -751,15 +755,16 @@ float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
 
 	Matrix T, S;
 
-	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
-	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
+	MiscUtils::osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
+	MiscUtils::osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
 
 	SRS s(T, S, Yaxis, Xaxis);
 
 	Matrix G;
 	//TODO Final position calculus could be simplified, look through
 	//matrices
-	osg_to_matrix(G, osg::Matrix::translate(position * bone_world_matrix_off));
+	MiscUtils::osg_to_matrix(G,
+			osg::Matrix::translate(position * bone_world_matrix_off));
 
 	float eangle = 0.0;
 	if (s.SetGoal(G, eangle)) {
@@ -836,22 +841,6 @@ bool SkeletonFitting::are_equal(const osg::Vec3& v0, const osg::Vec3& v1) {
 	}
 }
 
-void SkeletonFitting::osg_to_matrix(Matrix& dest, const osg::Matrix& orig) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			dest[i][j] = orig(i, j);
-		}
-	}
-}
-
-void SkeletonFitting::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			dest(i, j) = orig[i][j];
-		}
-	}
-}
-
 bool SkeletonFitting::check_bone_index(int bone0, int bone1) {
 	if (bone0 >= 0 && (unsigned) bone0 < skeleton->get_num_bones() && bone1 >= 0
 			&& (unsigned) bone1 < skeleton->get_num_bones()) {
@@ -913,14 +902,15 @@ bool SkeletonFitting::solve_2_bones_impl(int bone0, const osg::Vec3& position0,
 	Matrix T, S;
 
 	//Calculate the matrix that goes from one joint to the next in rest position
-	osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
-	osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
+	MiscUtils::osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
+	MiscUtils::osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
 
 	SRS s(T, S, Yaxis, Xaxis);
 
 	Matrix R1, G;
 	//Goal matrix is final position expressed in first bone coordinate axes
-	osg_to_matrix(G, osg::Matrix::translate(position1 * bone_world_matrix_off));
+	MiscUtils::osg_to_matrix(G,
+			osg::Matrix::translate(position1 * bone_world_matrix_off));
 
 	float eangle = 0.0;
 	if (s.SetGoal(G, eangle)) {
@@ -932,7 +922,7 @@ bool SkeletonFitting::solve_2_bones_impl(int bone0, const osg::Vec3& position0,
 
 		osg::Matrix osg_mat;
 
-		matrix_to_osg(osg_mat, R1);
+		MiscUtils::matrix_to_osg(osg_mat, R1);
 
 		//First bone rotation is R1
 		n_bone_0->quat_arr.at(current_frame).set(osg_mat);

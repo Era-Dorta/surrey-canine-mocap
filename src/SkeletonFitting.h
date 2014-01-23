@@ -38,7 +38,8 @@ enum Axis {
 class SkeletonFitting {
 	public:
 		SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
-				boost::shared_ptr<Skeletonization3D> skeletonization3d);
+				boost::shared_ptr<Skeletonization3D> skeletonization3d,
+				const camVecT& camera_arr);
 		virtual ~SkeletonFitting();
 		//void fit_skeleton_into_cloud(Skeleton& skeleton,
 		//		osg::ref_ptr<osg::Vec3Array> cloud);
@@ -90,10 +91,6 @@ class SkeletonFitting {
 
 		bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
 
-		void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
-
-		void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
-
 		bool check_bone_index(int bone0, int bone1);
 
 		bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
@@ -144,6 +141,7 @@ class SkeletonFitting {
 		osg::ref_ptr<osg::Vec3Array> cloud;
 		boost::shared_ptr<Skeletonization3D> skeletonizator;
 		boost::shared_ptr<Skeleton> skeleton;
+		const camVecT& camera_arr;
 };
 
 #endif /* SKELETONFITTING_H_ */
