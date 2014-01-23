@@ -764,32 +764,7 @@ void SkeletonFitting::recalculate_z_division_with_time_coherence() {
 			+ mean_z_front_arr.at(current_frame) * 0.3;
 	mean_z_back = mean_z_back * 0.7 + mean_z_back_arr.at(current_frame) * 0.3;
 	//Redo division using new z value
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		switch (labels[i]) {
-		case Front_Right:
-			if (cloud->at(i).z() >= mean_z_front) {
-				labels[i] = Front_Left;
-			}
-			break;
-		case Front_Left:
-			if (cloud->at(i).z() < mean_z_front) {
-				labels[i] = Front_Right;
-			}
-			break;
-		case Back_Right:
-			if (cloud->at(i).z() >= mean_z_back) {
-				labels[i] = Back_Left;
-			}
-			break;
-		case Back_Left:
-			if (cloud->at(i).z() < mean_z_back) {
-				labels[i] = Back_Right;
-			}
-			break;
-		default:
-			break;
-		}
-	}
+	reclassify_left_right_leg_points(mean_z_front, mean_z_back);
 }
 
 void SkeletonFitting::recalculate_z_division_with_mass_center() {
@@ -808,36 +783,8 @@ void SkeletonFitting::recalculate_z_division_with_mass_center() {
 				+ get_mean(cloud, Back_Left, Z)) * 0.5;
 		mean_z_back_arr.at(current_frame) = mean_z_back;
 
-		for (unsigned int i = 0; i < cloud->size(); i++) {
-			switch (labels[i]) {
-			case Front_Right:
-				if (cloud->at(i).z() > mean_z_front) {
-					labels[i] = Front_Left;
-					point_relabeled = true;
-				}
-				break;
-			case Front_Left:
-				if (cloud->at(i).z() <= mean_z_front) {
-					labels[i] = Front_Right;
-					point_relabeled = true;
-				}
-				break;
-			case Back_Right:
-				if (cloud->at(i).z() > mean_z_back) {
-					labels[i] = Back_Left;
-					point_relabeled = true;
-				}
-				break;
-			case Back_Left:
-				if (cloud->at(i).z() <= mean_z_back) {
-					labels[i] = Back_Right;
-					point_relabeled = true;
-				}
-				break;
-			default:
-				break;
-			}
-		}
+		point_relabeled = reclassify_left_right_leg_points(mean_z_front,
+				mean_z_back);
 	}
 }
 
@@ -915,4 +862,40 @@ void SkeletonFitting::recalculate_z_division_with_2d_front_view() {
 			}
 		}
 	}
+}
+
+bool SkeletonFitting::reclassify_left_right_leg_points(float mean_z_front,
+		float mean_z_back) {
+	bool point_relabeled = false;
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		switch (labels[i]) {
+		case Front_Right:
+			if (cloud->at(i).z() > mean_z_front) {
+				labels[i] = Front_Left;
+				point_relabeled = true;
+			}
+			break;
+		case Front_Left:
+			if (cloud->at(i).z() <= mean_z_front) {
+				labels[i] = Front_Right;
+				point_relabeled = true;
+			}
+			break;
+		case Back_Right:
+			if (cloud->at(i).z() > mean_z_back) {
+				labels[i] = Back_Left;
+				point_relabeled = true;
+			}
+			break;
+		case Back_Left:
+			if (cloud->at(i).z() <= mean_z_back) {
+				labels[i] = Back_Right;
+				point_relabeled = true;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	return point_relabeled;
 }

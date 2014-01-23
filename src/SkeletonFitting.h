@@ -112,6 +112,9 @@ class SkeletonFitting {
 
 		void recalculate_z_division_with_2d_front_view();
 
+		bool reclassify_left_right_leg_points(float mean_z_front,
+				float mean_z_back);
+
 		//Needed to use std::sort with comp_y
 		struct sortstruct {
 				// sortstruct needs to know its containing object
