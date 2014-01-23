@@ -230,3 +230,131 @@ bool PixelSearch::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 
 	return false;
 }
+
+void PixelSearch::connectivity_preserving_thinning(const cv::Mat& img_in,
+		cv::Mat& result) {
+	result = img_in.clone();
+
+	//Two iterations should be sufficient (TODO - rather check if result changed between iterations
+	bool was_updated_this_iter = true;
+	int iter = 0;
+	while (was_updated_this_iter == true) {
+		was_updated_this_iter = false;
+		iter++;
+
+		for (int row = 1; row < result.rows - 1; row++) {
+			for (int col = 1; col < result.cols - 1; col++) {
+				//Check that pixel is occupied:
+				if (result.at<uchar>(row, col) != 0) {
+					//Establish original connectivity:
+					//(it is trivial that all 'on' pixels are known to be connected each other
+					//when the central pixel is 'on')
+
+					//Establish connectivity if removed:
+					//Check that number of connected components is still 1:
+					int seed_d_row = -2;
+					int seed_d_col = -2;
+					bool found_seed = false;
+					for (int d_row = -1; d_row <= 1; d_row++) {
+						if (found_seed) {
+							break;
+						}
+						for (int d_col = -1; d_col <= 1; d_col++) {
+							if (d_row == 0 && d_col == 0) {
+								continue;
+							}
+							if (result.at<uchar>(row + d_row, col + d_col)
+									!= 0) {
+								seed_d_row = d_row;
+								seed_d_col = d_col;
+								found_seed = true;
+								break;
+							}
+						}
+					}
+					//(Note: seed is the top-left-most 'on' pixel)
+
+					//Set central pixel to 'off':
+					result.at<uchar>(row, col) = 0;
+
+					int num_in_win = 0;
+					int num_con = 0;
+
+					if (found_seed) {
+						cv::Mat propergated(3, 3, CV_8U, cv::Scalar(0));
+
+						for (int s_row = -1; s_row <= 1; s_row++) {
+							for (int s_col = -1; s_col <= 1; s_col++) {
+								if (result.at<uchar>(row + s_row, col + s_col)
+										!= 0) {
+									num_in_win++;
+								}
+							}
+						}
+
+						//Set seed pixel to 'on': (adding (1,1) offset to get beteen (-1,-1) and (0,0) origin)
+						propergated.at<uchar>(seed_d_row + 1, seed_d_col + 1) =
+								255;
+
+						//Iterate thrice to cover the 3x3 region:
+						for (int iter = 0; iter < 3; iter++) {
+							//Propagate using 8-connectivity from seed:
+							for (int s_row = 0; s_row < 3; s_row++) {
+								for (int s_col = 0; s_col < 3; s_col++) {
+									if (propergated.at<uchar>(s_row, s_col)
+											!= 0) {
+										for (int t_d_row = -1; t_d_row <= 1;
+												t_d_row++) {
+											for (int t_d_col = -1; t_d_col <= 1;
+													t_d_col++) {
+												if ((s_row + t_d_row >= 0
+														&& s_row + t_d_row < 3
+														&& s_col + t_d_col >= 0
+														&& s_col + t_d_col < 3)	//check bounds
+														&& result.at<uchar>(
+																row + s_row
+																		+ t_d_row
+																		- 1,
+																col + s_col
+																		+ t_d_col
+																		- 1)
+																!= 0) {
+													propergated.at<uchar>(
+															s_row + t_d_row,
+															s_col + t_d_col) =
+															255;
+												}
+											}
+										}
+									}
+
+								}
+							}
+						}
+						for (int s_row = 0; s_row < 3; s_row++) {
+							for (int s_col = 0; s_col < 3; s_col++) {
+								if (propergated.at<uchar>(s_row, s_col) != 0) {
+									num_con++;
+								}
+							}
+						}
+					}
+
+					//Set on again if neighbours get disconnected, or if it has fewer than 2 neighours
+					//(in which case it is the end of a line, which must not be shortened):
+					if (num_con != num_in_win || num_con < 2) {
+						//Set central pixel back to 'on':
+						result.at<uchar>(row, col) = 255;
+
+						//DEBUG:
+						//cout << "num_con: " << num_con << ", num_in_win: " << num_in_win << endl;
+					} else {
+						was_updated_this_iter = true;
+					}
+
+				}
+			}
+		}
+
+	}
+}

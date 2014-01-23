@@ -21,9 +21,9 @@ class Skeletonization2D {
 	protected:
 	private:
 		osg::ref_ptr<osg::Vec3Array> points_from_image(const cv::Mat& seg_img);
-		cv::Mat dist_transform_skeletonization(const cv::Mat* seg_img);
-		cv::Mat connectivity_preserving_thinning(cv::Mat& img_in);
-		cv::Mat remove_isolated_short_segments(cv::Mat& img_in,
+		void dist_transform_skeletonization(const cv::Mat* seg_img,
+				cv::Mat& res);
+		void remove_isolated_short_segments(const cv::Mat& img_in, cv::Mat& res,
 				unsigned int thresh_length);
 
 		//TODO This takes the most top white pixel and follows its line to delete

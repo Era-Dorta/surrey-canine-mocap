@@ -25,9 +25,10 @@ void Skeletonization2D::generate_skeletonization() {
 	int begin = camera->get_first_frame_num();
 	int end = camera->get_last_frame_num();
 	skeletonized_frames.reserve(end - begin);
+	cv::Mat aux;
 	for (int i = begin; i <= end; i++) {
-		skeletonized_frames.push_back(
-				dist_transform_skeletonization(camera->get_depth_map(i)));
+		dist_transform_skeletonization(camera->get_depth_map(i), aux);
+		skeletonized_frames.push_back(aux.clone());
 	}
 }
 
@@ -54,13 +55,13 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization2D::points_from_image(
 }
 
 //Generates a skeletonized image from a depth image
-cv::Mat Skeletonization2D::dist_transform_skeletonization(
-		const cv::Mat* seg_img) {
+void Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img,
+		cv::Mat& res) {
 
 	int rows = seg_img->rows;
 	int cols = seg_img->cols;
 
-	cv::Mat res, temp1, temp2;
+	cv::Mat temp1, temp2;
 	//Make binary image of segmented depth map:
 	//---------------------
 	cv::Mat bin_img(rows, cols, CV_8U);
@@ -141,20 +142,18 @@ cv::Mat Skeletonization2D::dist_transform_skeletonization(
 
 	cv::erode(bin_img, temp1, res);
 	cv::bitwise_and(thresh_8bit, temp1, res);
-	temp1 = connectivity_preserving_thinning(res);
-	res = remove_isolated_short_segments(temp1, 5);
-	temp1 = connectivity_preserving_thinning(res);
-	res = remove_isolated_short_segments(temp1, 15);
+	PixelSearch::connectivity_preserving_thinning(res, temp1);
+	remove_isolated_short_segments(temp1, res, 5);
+	PixelSearch::connectivity_preserving_thinning(res, temp1);
+	remove_isolated_short_segments(temp1, res, 15);
 
 	//With an appropriate bounding box the arm gets cut already
 	//delete_arm(res);
-
-	return res;
 }
 
-cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in,
-		unsigned int thresh_length) {
-	cv::Mat result = img_in.clone();
+void Skeletonization2D::remove_isolated_short_segments(const cv::Mat& img_in,
+		cv::Mat& result, unsigned int thresh_length) {
+	result = img_in.clone();
 
 	cv::Mat free_nodes(result.rows, result.cols, CV_8U, cv::Scalar(0));
 	cv::Mat junction_nodes(result.rows, result.cols, CV_8U, cv::Scalar(0));
@@ -280,141 +279,8 @@ cv::Mat Skeletonization2D::remove_isolated_short_segments(cv::Mat& img_in,
 		}
 	}
 
-	//If the distance walked is less than the threshold, delete the node and all points between it and the node found
-
-	return result;
-}
-
-cv::Mat Skeletonization2D::connectivity_preserving_thinning(cv::Mat& img_in) {
-	cv::Mat result = img_in.clone();
-
-	//Two iterations should be sufficient (TODO - rather check if result changed between iterations
-	bool was_updated_this_iter = true;
-	int iter = 0;
-	while (was_updated_this_iter == true) {
-		was_updated_this_iter = false;
-		iter++;
-
-		for (int row = 1; row < result.rows - 1; row++) {
-			for (int col = 1; col < result.cols - 1; col++) {
-				//Check that pixel is occupied:
-				if (result.at<uchar>(row, col) != 0) {
-					//Establish original connectivity:
-					//(it is trivial that all 'on' pixels are known to be connected each other
-					//when the central pixel is 'on')
-
-					//Establish connectivity if removed:
-					//Check that number of connected components is still 1:
-					int seed_d_row = -2;
-					int seed_d_col = -2;
-					bool found_seed = false;
-					for (int d_row = -1; d_row <= 1; d_row++) {
-						if (found_seed) {
-							break;
-						}
-						for (int d_col = -1; d_col <= 1; d_col++) {
-							if (d_row == 0 && d_col == 0) {
-								continue;
-							}
-							if (result.at<uchar>(row + d_row, col + d_col)
-									!= 0) {
-								seed_d_row = d_row;
-								seed_d_col = d_col;
-								found_seed = true;
-								break;
-							}
-						}
-					}
-					//(Note: seed is the top-left-most 'on' pixel)
-
-					//Set central pixel to 'off':
-					result.at<uchar>(row, col) = 0;
-
-					int num_in_win = 0;
-					int num_con = 0;
-
-					if (found_seed) {
-						cv::Mat propergated(3, 3, CV_8U, cv::Scalar(0));
-
-						for (int s_row = -1; s_row <= 1; s_row++) {
-							for (int s_col = -1; s_col <= 1; s_col++) {
-								if (result.at<uchar>(row + s_row, col + s_col)
-										!= 0) {
-									num_in_win++;
-								}
-							}
-						}
-
-						//Set seed pixel to 'on': (adding (1,1) offset to get beteen (-1,-1) and (0,0) origin)
-						propergated.at<uchar>(seed_d_row + 1, seed_d_col + 1) =
-								255;
-
-						//Iterate thrice to cover the 3x3 region:
-						for (int iter = 0; iter < 3; iter++) {
-							//Propagate using 8-connectivity from seed:
-							for (int s_row = 0; s_row < 3; s_row++) {
-								for (int s_col = 0; s_col < 3; s_col++) {
-									if (propergated.at<uchar>(s_row, s_col)
-											!= 0) {
-										for (int t_d_row = -1; t_d_row <= 1;
-												t_d_row++) {
-											for (int t_d_col = -1; t_d_col <= 1;
-													t_d_col++) {
-												if ((s_row + t_d_row >= 0
-														&& s_row + t_d_row < 3
-														&& s_col + t_d_col >= 0
-														&& s_col + t_d_col < 3)	//check bounds
-														&& result.at<uchar>(
-																row + s_row
-																		+ t_d_row
-																		- 1,
-																col + s_col
-																		+ t_d_col
-																		- 1)
-																!= 0) {
-													propergated.at<uchar>(
-															s_row + t_d_row,
-															s_col + t_d_col) =
-															255;
-												}
-											}
-										}
-									}
-
-								}
-							}
-						}
-						for (int s_row = 0; s_row < 3; s_row++) {
-							for (int s_col = 0; s_col < 3; s_col++) {
-								if (propergated.at<uchar>(s_row, s_col) != 0) {
-									num_con++;
-								}
-							}
-						}
-					}
-
-					//Set on again if neighbours get disconnected, or if it has fewer than 2 neighours
-					//(in which case it is the end of a line, which must not be shortened):
-					if (num_con != num_in_win || num_con < 2) {
-						//Set central pixel back to 'on':
-						result.at<uchar>(row, col) = 255;
-
-						//DEBUG:
-						//cout << "num_con: " << num_con << ", num_in_win: " << num_in_win << endl;
-					} else {
-						was_updated_this_iter = true;
-					}
-
-				}
-			}
-		}
-
-	}
-
-	//DEBUG:
-	//cout << "Skeleton thinning done in " << iter << " iterations" << endl;
-
-	return result;
+	//If the distance walked is less than the threshold, delete the node and all
+	//points between it and the node found
 }
 
 void Skeletonization2D::delete_arm(cv::Mat& img_in) {
