@@ -230,3 +230,59 @@ bool PixelSearch::get_nearest_white_pixel(const cv::Mat& img, int i_row,
 
 	return false;
 }
+
+void PixelSearch::cascade_down_lower_pixel(const cv::Mat& img, int i_row,
+		int i_col, int &res_row, int &res_col) {
+	bool search_ended = false;
+	while (!search_ended && i_row < img.rows) {
+		//First try to go down
+		if (img.at<uchar>(i_row + 1, i_col) == 0) {
+			i_row++;
+		} else {
+			//Diagonally right
+			if (img.at<uchar>(i_row + 1, i_col + 1) == 0) {
+				i_col++;
+				i_row++;
+			} else {
+				if (img.at<uchar>(i_row + 1, i_col - 1) == 0) {
+					//Diagonally left
+					i_col--;
+					i_row++;
+				} else {
+					//Go right
+					int aux_col = i_col;
+					while (aux_col + 1 < img.cols
+							&& img.at<uchar>(i_row, aux_col + 1) == 0
+							&& img.at<uchar>(i_row + 1, aux_col + 1) == 255) {
+						aux_col++;
+					}
+
+					if (aux_col + 1 < img.cols
+							&& img.at<uchar>(i_row + 1, aux_col + 1) == 0) {
+						i_col = aux_col + 1;
+						i_row++;
+					} else {
+						//Go left
+						aux_col = i_col;
+						while (aux_col - 1 >= 0
+								&& img.at<uchar>(i_row, aux_col - 1) == 0
+								&& img.at<uchar>(i_row + 1, aux_col - 1) == 255) {
+							aux_col--;
+						}
+
+						if (aux_col - 1 >= 0
+								&& img.at<uchar>(i_row, aux_col - 1) == 0) {
+							i_col = aux_col - 1;
+							i_row++;
+						} else {
+							//End of the search
+							search_ended = true;
+						}
+					}
+				}
+			}
+		}
+	}
+	res_row = i_row;
+	res_col = i_col;
+}

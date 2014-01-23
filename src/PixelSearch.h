@@ -28,6 +28,9 @@ namespace PixelSearch {
 
 	bool get_nearest_white_pixel(const cv::Mat& img, int i_row, int i_col,
 			int &res_row, int &res_col);
+
+	void cascade_down_lower_pixel(const cv::Mat& img, int i_row, int i_col,
+			int &res_row, int &res_col);
 }
 
 #endif /* PIXELSEARCH_H_ */
