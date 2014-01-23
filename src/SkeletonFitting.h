@@ -106,6 +106,12 @@ class SkeletonFitting {
 		void refine_goal_position(osg::Vec3& end_position,
 				const osg::Vec3& base_position, float length);
 
+		void recalculate_z_division_with_time_coherence();
+
+		void recalculate_z_division_with_mass_center();
+
+		void recalculate_z_division_with_2d_front_view();
+
 		//Needed to use std::sort with comp_y
 		struct sortstruct {
 				// sortstruct needs to know its containing object

@@ -474,250 +474,11 @@ void SkeletonFitting::refine_four_sections_division() {
 	if (cloud->size() > 10) {
 		//Attempt to do some time coherence between frames, code works but
 		//the result is the same
-#if false
-		float mean_z_front = mean_z_front_arr.at(current_frame);
-		float mean_z_back = mean_z_back_arr.at(current_frame);
-		int front_valid = 1, back_valid = 1;
+		//recalculate_z_division_with_time_coherence();
 
-		if (current_frame > 0
-				&& mean_z_front_arr.at(current_frame - 1) != 0.0) {
-			mean_z_front += mean_z_front_arr.at(current_frame - 1);
-			front_valid++;
-		}
-		if (current_frame > 0
-				&& mean_z_back_arr.at(current_frame - 1) != 0.0) {
-			mean_z_back += mean_z_back_arr.at(current_frame - 1);
-			back_valid++;
-		}
-		if (current_frame < n_frames - 1
-				&& mean_z_front_arr.at(current_frame + 1) != 0.0) {
-			mean_z_front += mean_z_front_arr.at(current_frame + 1);
-			front_valid++;
-		}
-		if (current_frame < n_frames - 1
-				&& mean_z_back_arr.at(current_frame + 1) != 0.0) {
-			mean_z_back += mean_z_back_arr.at(current_frame + 1);
-			back_valid++;
-		}
+		recalculate_z_division_with_mass_center();
 
-		//Calculate mean of previous and next frame z value
-		mean_z_front = mean_z_front / front_valid;
-		mean_z_back = mean_z_back / back_valid;
-
-		//New z division is combination of current and previous/next frame
-		mean_z_front = mean_z_front * 0.7
-		+ mean_z_front_arr.at(current_frame) * 0.3;
-		mean_z_back = mean_z_back * 0.7
-		+ mean_z_back_arr.at(current_frame) * 0.3;
-		//Redo division using new z value
-		for (unsigned int i = 0; i < cloud->size(); i++) {
-			switch (labels[i]) {
-				case Front_Right:
-				if (cloud->at(i).z() >= mean_z_front) {
-					labels[i] = Front_Left;
-				}
-				break;
-				case Front_Left:
-				if (cloud->at(i).z() < mean_z_front) {
-					labels[i] = Front_Right;
-				}
-				break;
-				case Back_Right:
-				if (cloud->at(i).z() >= mean_z_back) {
-					labels[i] = Back_Left;
-				}
-				break;
-				case Back_Left:
-				if (cloud->at(i).z() < mean_z_back) {
-					labels[i] = Back_Right;
-				}
-				break;
-				default:
-				break;
-			}
-		}
-#endif
-		//Calculate the mean z of each leg
-		//Then recalculate what points belong to each leg, if the
-		//calculation changes any point then do it again
-		//This fixes errors in two frames
-		bool point_relabeled = true;
-		while (point_relabeled) {
-			point_relabeled = false;
-			float mean_z_front = (get_mean(cloud, Front_Right, Z)
-					+ get_mean(cloud, Front_Left, Z)) * 0.5;
-			mean_z_front_arr.at(current_frame) = mean_z_front;
-
-			float mean_z_back = (get_mean(cloud, Back_Right, Z)
-					+ get_mean(cloud, Back_Left, Z)) * 0.5;
-			mean_z_back_arr.at(current_frame) = mean_z_back;
-
-			for (unsigned int i = 0; i < cloud->size(); i++) {
-				switch (labels[i]) {
-				case Front_Right:
-					if (cloud->at(i).z() > mean_z_front) {
-						labels[i] = Front_Left;
-						point_relabeled = true;
-					}
-					break;
-				case Front_Left:
-					if (cloud->at(i).z() <= mean_z_front) {
-						labels[i] = Front_Right;
-						point_relabeled = true;
-					}
-					break;
-				case Back_Right:
-					if (cloud->at(i).z() > mean_z_back) {
-						labels[i] = Back_Left;
-						point_relabeled = true;
-					}
-					break;
-				case Back_Left:
-					if (cloud->at(i).z() <= mean_z_back) {
-						labels[i] = Back_Right;
-						point_relabeled = true;
-					}
-					break;
-				default:
-					break;
-				}
-			}
-		}
-
-		//Project leg points to front view, using orthogonal projection
-		//move from z value
-		int head_index = find_head();
-		if (head_index != -1) {
-
-			cv::Mat proyected_img(skeletonizator->get_d_rows(),
-					skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
-			osg::Vec3 head_pos_trans = -cloud->at(head_index);
-			float4x4 invT(0.0);
-			invT[0 * 4 + 2] = -1;
-			invT[1 * 4 + 1] = 1;
-			invT[2 * 4 + 0] = 1;
-			invT[3 * 4 + 0] = head_pos_trans.z() + 0.05;
-			invT[3 * 4 + 1] = head_pos_trans.y() - 0.15;
-			invT[3 * 4 + 2] = -(head_pos_trans.x() - 0.3);
-			invT[3 * 4 + 3] = 1;
-
-			for (unsigned int i = 0; i < cloud->size(); i++) {
-				if (labels[i] == Front_Left || labels[i] == Front_Right) {
-					float3 point2d = Projections::get_2d_projection(
-							cloud->at(i), invT);
-					if (point2d.y >= 0 && point2d.y < proyected_img.rows
-							&& point2d.x >= 0 && point2d.x < proyected_img.cols)
-						proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
-				}
-			}
-
-			int erosion_size = 2;
-			cv::Mat res2 = cv::getStructuringElement(cv::MORPH_RECT,
-					cv::Size(4 * erosion_size + 1, erosion_size + 1),
-					cv::Point(erosion_size, erosion_size));
-
-			cv::dilate(proyected_img, proyected_img, res2);
-
-			osg::Vec3 current_div = cloud->at(head_index);
-			current_div.y() = current_div.y() + 0.09;
-			current_div.z() = mean_z_front_arr.at(current_frame);
-			float depth;
-			float3 point2d = Projections::get_2d_projection(current_div, invT,
-					depth);
-
-			if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
-					&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
-
-				bool search_failed = false;
-				while (!search_failed && point2d.y < proyected_img.rows) {
-					//First try to go down
-					if (proyected_img.at<uchar>(point2d.y + 1, point2d.x)
-							== 0) {
-						point2d.y++;
-					} else {
-						//Diagonally right
-						if (proyected_img.at<uchar>(point2d.y + 1,
-								point2d.x + 1) == 0) {
-							point2d.x++;
-							point2d.y++;
-						} else {
-							if (proyected_img.at<uchar>(point2d.y + 1,
-									point2d.x - 1) == 0) {
-								//Diagonally left
-								point2d.x--;
-								point2d.y++;
-							} else {
-								//Go right
-								int aux_col = point2d.x;
-								while (aux_col + 1 < proyected_img.cols
-										&& proyected_img.at<uchar>(point2d.y,
-												aux_col + 1) == 0
-										&& proyected_img.at<uchar>(
-												point2d.y + 1, aux_col + 1)
-												== 255) {
-									aux_col++;
-								}
-
-								if (aux_col + 1 < proyected_img.cols
-										&& proyected_img.at<uchar>(
-												point2d.y + 1, aux_col + 1)
-												== 0) {
-									point2d.x = aux_col + 1;
-									point2d.y++;
-								} else {
-									//Go left
-									aux_col = point2d.x;
-									while (aux_col - 1 >= 0
-											&& proyected_img.at<uchar>(
-													point2d.y, aux_col - 1) == 0
-											&& proyected_img.at<uchar>(
-													point2d.y + 1, aux_col - 1)
-													== 255) {
-										aux_col--;
-									}
-
-									if (aux_col - 1 >= 0
-											&& proyected_img.at<uchar>(
-													point2d.y, aux_col - 1)
-													== 0) {
-										point2d.x = aux_col - 1;
-										point2d.y++;
-									} else {
-										//End of the search
-										search_failed = true;
-									}
-								}
-							}
-						}
-					}
-				}
-
-				//Proyect back to 3D
-				float4 result = Projections::get_3d_projection(point2d, depth,
-						-cloud->at(head_index));
-				if (result.z != mean_z_front_arr.at(current_frame)) {
-					mean_z_front_arr.at(current_frame) = result.z;
-					for (unsigned int i = 0; i < cloud->size(); i++) {
-						switch (labels[i]) {
-						case Front_Right:
-							if (cloud->at(i).z() > result.z) {
-								labels[i] = Front_Left;
-								point_relabeled = true;
-							}
-							break;
-						case Front_Left:
-							if (cloud->at(i).z() <= result.z) {
-								labels[i] = Front_Right;
-								point_relabeled = true;
-							}
-							break;
-						default:
-							break;
-						}
-					}
-				}
-			}
-		}
+		recalculate_z_division_with_2d_front_view();
 	}
 }
 
@@ -968,4 +729,252 @@ void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
 	osg::Vec3 pos_direction = (end_position - base_position);
 	pos_direction.normalize();
 	end_position = base_position + pos_direction * length;
+}
+
+void SkeletonFitting::recalculate_z_division_with_time_coherence(){
+	float mean_z_front = mean_z_front_arr.at(current_frame);
+	float mean_z_back = mean_z_back_arr.at(current_frame);
+	int front_valid = 1, back_valid = 1;
+
+	if (current_frame > 0
+			&& mean_z_front_arr.at(current_frame - 1) != 0.0) {
+		mean_z_front += mean_z_front_arr.at(current_frame - 1);
+		front_valid++;
+	}
+	if (current_frame > 0
+			&& mean_z_back_arr.at(current_frame - 1) != 0.0) {
+		mean_z_back += mean_z_back_arr.at(current_frame - 1);
+		back_valid++;
+	}
+	if (current_frame < n_frames - 1
+			&& mean_z_front_arr.at(current_frame + 1) != 0.0) {
+		mean_z_front += mean_z_front_arr.at(current_frame + 1);
+		front_valid++;
+	}
+	if (current_frame < n_frames - 1
+			&& mean_z_back_arr.at(current_frame + 1) != 0.0) {
+		mean_z_back += mean_z_back_arr.at(current_frame + 1);
+		back_valid++;
+	}
+
+	//Calculate mean of previous and next frame z value
+	mean_z_front = mean_z_front / front_valid;
+	mean_z_back = mean_z_back / back_valid;
+
+	//New z division is combination of current and previous/next frame
+	mean_z_front = mean_z_front * 0.7
+	+ mean_z_front_arr.at(current_frame) * 0.3;
+	mean_z_back = mean_z_back * 0.7
+	+ mean_z_back_arr.at(current_frame) * 0.3;
+	//Redo division using new z value
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		switch (labels[i]) {
+			case Front_Right:
+			if (cloud->at(i).z() >= mean_z_front) {
+				labels[i] = Front_Left;
+			}
+			break;
+			case Front_Left:
+			if (cloud->at(i).z() < mean_z_front) {
+				labels[i] = Front_Right;
+			}
+			break;
+			case Back_Right:
+			if (cloud->at(i).z() >= mean_z_back) {
+				labels[i] = Back_Left;
+			}
+			break;
+			case Back_Left:
+			if (cloud->at(i).z() < mean_z_back) {
+				labels[i] = Back_Right;
+			}
+			break;
+			default:
+			break;
+		}
+	}
+}
+
+void SkeletonFitting::recalculate_z_division_with_mass_center(){
+	//Calculate the mean z of each leg
+	//Then recalculate what points belong to each leg, if the
+	//calculation changes any point then do it again
+	//This fixes errors in two frames
+	bool point_relabeled = true;
+	while (point_relabeled) {
+		point_relabeled = false;
+		float mean_z_front = (get_mean(cloud, Front_Right, Z)
+				+ get_mean(cloud, Front_Left, Z)) * 0.5;
+		mean_z_front_arr.at(current_frame) = mean_z_front;
+
+		float mean_z_back = (get_mean(cloud, Back_Right, Z)
+				+ get_mean(cloud, Back_Left, Z)) * 0.5;
+		mean_z_back_arr.at(current_frame) = mean_z_back;
+
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			switch (labels[i]) {
+			case Front_Right:
+				if (cloud->at(i).z() > mean_z_front) {
+					labels[i] = Front_Left;
+					point_relabeled = true;
+				}
+				break;
+			case Front_Left:
+				if (cloud->at(i).z() <= mean_z_front) {
+					labels[i] = Front_Right;
+					point_relabeled = true;
+				}
+				break;
+			case Back_Right:
+				if (cloud->at(i).z() > mean_z_back) {
+					labels[i] = Back_Left;
+					point_relabeled = true;
+				}
+				break;
+			case Back_Left:
+				if (cloud->at(i).z() <= mean_z_back) {
+					labels[i] = Back_Right;
+					point_relabeled = true;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+void SkeletonFitting::recalculate_z_division_with_2d_front_view(){
+	//Project leg points to front view, using orthogonal projection
+	//move from z value
+	int head_index = find_head();
+	if (head_index != -1) {
+
+		cv::Mat proyected_img(skeletonizator->get_d_rows(),
+				skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
+		osg::Vec3 head_pos_trans = -cloud->at(head_index);
+		float4x4 invT(0.0);
+		invT[0 * 4 + 2] = -1;
+		invT[1 * 4 + 1] = 1;
+		invT[2 * 4 + 0] = 1;
+		invT[3 * 4 + 0] = head_pos_trans.z() + 0.05;
+		invT[3 * 4 + 1] = head_pos_trans.y() - 0.15;
+		invT[3 * 4 + 2] = -(head_pos_trans.x() - 0.3);
+		invT[3 * 4 + 3] = 1;
+
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (labels[i] == Front_Left || labels[i] == Front_Right) {
+				float3 point2d = Projections::get_2d_projection(
+						cloud->at(i), invT);
+				if (point2d.y >= 0 && point2d.y < proyected_img.rows
+						&& point2d.x >= 0 && point2d.x < proyected_img.cols)
+					proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
+			}
+		}
+
+		int erosion_size = 2;
+		cv::Mat res2 = cv::getStructuringElement(cv::MORPH_RECT,
+				cv::Size(4 * erosion_size + 1, erosion_size + 1),
+				cv::Point(erosion_size, erosion_size));
+
+		cv::dilate(proyected_img, proyected_img, res2);
+
+		osg::Vec3 current_div = cloud->at(head_index);
+		current_div.y() = current_div.y() + 0.09;
+		current_div.z() = mean_z_front_arr.at(current_frame);
+		float depth;
+		float3 point2d = Projections::get_2d_projection(current_div, invT,
+				depth);
+
+		if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
+				&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
+
+			bool search_failed = false;
+			while (!search_failed && point2d.y < proyected_img.rows) {
+				//First try to go down
+				if (proyected_img.at<uchar>(point2d.y + 1, point2d.x)
+						== 0) {
+					point2d.y++;
+				} else {
+					//Diagonally right
+					if (proyected_img.at<uchar>(point2d.y + 1,
+							point2d.x + 1) == 0) {
+						point2d.x++;
+						point2d.y++;
+					} else {
+						if (proyected_img.at<uchar>(point2d.y + 1,
+								point2d.x - 1) == 0) {
+							//Diagonally left
+							point2d.x--;
+							point2d.y++;
+						} else {
+							//Go right
+							int aux_col = point2d.x;
+							while (aux_col + 1 < proyected_img.cols
+									&& proyected_img.at<uchar>(point2d.y,
+											aux_col + 1) == 0
+									&& proyected_img.at<uchar>(
+											point2d.y + 1, aux_col + 1)
+											== 255) {
+								aux_col++;
+							}
+
+							if (aux_col + 1 < proyected_img.cols
+									&& proyected_img.at<uchar>(
+											point2d.y + 1, aux_col + 1)
+											== 0) {
+								point2d.x = aux_col + 1;
+								point2d.y++;
+							} else {
+								//Go left
+								aux_col = point2d.x;
+								while (aux_col - 1 >= 0
+										&& proyected_img.at<uchar>(
+												point2d.y, aux_col - 1) == 0
+										&& proyected_img.at<uchar>(
+												point2d.y + 1, aux_col - 1)
+												== 255) {
+									aux_col--;
+								}
+
+								if (aux_col - 1 >= 0
+										&& proyected_img.at<uchar>(
+												point2d.y, aux_col - 1)
+												== 0) {
+									point2d.x = aux_col - 1;
+									point2d.y++;
+								} else {
+									//End of the search
+									search_failed = true;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			//Proyect back to 3D
+			float4 result = Projections::get_3d_projection(point2d, depth,
+					-cloud->at(head_index));
+			if (result.z != mean_z_front_arr.at(current_frame)) {
+				mean_z_front_arr.at(current_frame) = result.z;
+				for (unsigned int i = 0; i < cloud->size(); i++) {
+					switch (labels[i]) {
+					case Front_Right:
+						if (cloud->at(i).z() > result.z) {
+							labels[i] = Front_Left;
+						}
+						break;
+					case Front_Left:
+						if (cloud->at(i).z() <= result.z) {
+							labels[i] = Front_Right;
+						}
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+	}
 }
