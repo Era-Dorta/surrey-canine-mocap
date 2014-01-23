@@ -79,7 +79,6 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 			n_frames = skeletonizator->get_n_frames();
 			mean_z_front_arr.resize(n_frames, 0);
 			mean_z_back_arr.resize(n_frames, 0);
-
 		}
 		cloud = skeletonizator->get_merged_3d_projection(current_frame);
 		divide_four_sections();
@@ -611,25 +610,25 @@ void SkeletonFitting::refine_four_sections_division() {
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				switch (labels[i]) {
 				case Front_Right:
-					if (cloud->at(i).z() >= mean_z_front) {
+					if (cloud->at(i).z() > mean_z_front) {
 						labels[i] = Front_Left;
 						point_relabeled = true;
 					}
 					break;
 				case Front_Left:
-					if (cloud->at(i).z() < mean_z_front) {
+					if (cloud->at(i).z() <= mean_z_front) {
 						labels[i] = Front_Right;
 						point_relabeled = true;
 					}
 					break;
 				case Back_Right:
-					if (cloud->at(i).z() >= mean_z_back) {
+					if (cloud->at(i).z() > mean_z_back) {
 						labels[i] = Back_Left;
 						point_relabeled = true;
 					}
 					break;
 				case Back_Left:
-					if (cloud->at(i).z() < mean_z_back) {
+					if (cloud->at(i).z() <= mean_z_back) {
 						labels[i] = Back_Right;
 						point_relabeled = true;
 					}
@@ -640,10 +639,10 @@ void SkeletonFitting::refine_four_sections_division() {
 			}
 		}
 
-		//Project leg points to front view, using ortogonal projection
+		//Project leg points to front view, using orthogonal projection
 		//move from z value
 		int head_index = find_head();
-		if (current_frame >= 20 && head_index != -1) {
+		if (head_index != -1) {
 
 			cv::Mat proyected_img(skeletonizator->get_d_rows(),
 					skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
@@ -658,14 +657,14 @@ void SkeletonFitting::refine_four_sections_division() {
 			}
 
 			int erosion_size = 2;
-			cv::Mat res = cv::getStructuringElement(cv::MORPH_ELLIPSE,
-					cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+			cv::Mat res2 = cv::getStructuringElement(cv::MORPH_RECT,
+					cv::Size(4 * erosion_size + 1, erosion_size + 1),
 					cv::Point(erosion_size, erosion_size));
 
-			cv::dilate(proyected_img, proyected_img, res);
+			cv::dilate(proyected_img, proyected_img, res2);
 
 			osg::Vec3 current_div = cloud->at(head_index);
-			current_div.y() = current_div.y() + 0.12;
+			current_div.y() = current_div.y() + 0.09;
 			current_div.z() = mean_z_front_arr.at(current_frame);
 			float depth;
 			float3 point2d = get_2d_projection(current_div,
@@ -673,78 +672,96 @@ void SkeletonFitting::refine_four_sections_division() {
 
 			if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
 					&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
-				proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
-				proyected_img.at<uchar>(point2d.y + 1, point2d.x) = 255;
-				proyected_img.at<uchar>(point2d.y - 1, point2d.x) = 255;
-				proyected_img.at<uchar>(point2d.y, point2d.x + 1) = 255;
-				proyected_img.at<uchar>(point2d.y, point2d.x - 1) = 255;
 
-				bool continue_search = true;
-				point2d.y++;
-				while (continue_search && point2d.y < proyected_img.rows) {
+				bool search_failed = false;
+				while (!search_failed && point2d.y < proyected_img.rows) {
 					//First try to go down
-					if (proyected_img.at<uchar>(point2d.y, point2d.x) == 0) {
+					if (proyected_img.at<uchar>(point2d.y + 1, point2d.x)
+							== 0) {
 						point2d.y++;
 					} else {
 						//Diagonally right
-						if (proyected_img.at<uchar>(point2d.y, point2d.x + 1)
-								== 255
-								&& proyected_img.at<uchar>(point2d.y + 1,
-										point2d.x + 1) == 0) {
+						if (proyected_img.at<uchar>(point2d.y + 1,
+								point2d.x + 1) == 0) {
 							point2d.x++;
 							point2d.y++;
-
-						} else if (proyected_img.at<uchar>(point2d.y,
-								point2d.x - 1) == 255
-								&& proyected_img.at<uchar>(point2d.y + 1,
-										point2d.x - 1) == 0) {
-							//Diagonally left
-							point2d.x--;
-							point2d.y++;
 						} else {
-							//Go right
-							int aux_col = point2d.x + 1;
-							while (aux_col < proyected_img.cols
-									&& proyected_img.at<uchar>(point2d.y,
-											aux_col) == 0
-									&& proyected_img.at<uchar>(point2d.y + 1,
-											aux_col) == 255) {
-								aux_col++;
-							}
-
-							if (aux_col < proyected_img.cols
-									&& proyected_img.at<uchar>(point2d.y + 1,
-											aux_col) == 0) {
-								point2d.x = aux_col;
+							if (proyected_img.at<uchar>(point2d.y + 1,
+									point2d.x - 1) == 0) {
+								//Diagonally left
+								point2d.x--;
 								point2d.y++;
 							} else {
-								//Go left
-								aux_col = point2d.x - 1;
-								while (aux_col >= 0
+								//Go right
+								int aux_col = point2d.x;
+								while (aux_col + 1 < proyected_img.cols
 										&& proyected_img.at<uchar>(point2d.y,
-												aux_col) == 0
+												aux_col + 1) == 0
 										&& proyected_img.at<uchar>(
-												point2d.y + 1, aux_col) == 255) {
-									aux_col--;
+												point2d.y + 1, aux_col + 1)
+												== 255) {
+									aux_col++;
 								}
 
-								if (aux_col >= 0
+								if (aux_col + 1 < proyected_img.cols
 										&& proyected_img.at<uchar>(
-												point2d.y + 1, aux_col) == 0) {
-									point2d.x = aux_col;
+												point2d.y + 1, aux_col + 1)
+												== 0) {
+									point2d.x = aux_col + 1;
 									point2d.y++;
 								} else {
-									//End of the search
-									continue_search = false;
+									//Go left
+									aux_col = point2d.x;
+									while (aux_col - 1 >= 0
+											&& proyected_img.at<uchar>(
+													point2d.y, aux_col - 1) == 0
+											&& proyected_img.at<uchar>(
+													point2d.y + 1, aux_col - 1)
+													== 255) {
+										aux_col--;
+									}
+
+									if (aux_col - 1 >= 0
+											&& proyected_img.at<uchar>(
+													point2d.y, aux_col - 1)
+													== 0) {
+										point2d.x = aux_col - 1;
+										point2d.y++;
+									} else {
+										//End of the search
+										search_failed = true;
+									}
 								}
 							}
 						}
 					}
 				}
+
+				//Proyect back to 3D
+				float4 result = get_3d_projection(point2d, depth,
+						-cloud->at(head_index));
+				if (result.z != mean_z_front_arr.at(current_frame)) {
+					mean_z_front_arr.at(current_frame) = result.z;
+					for (unsigned int i = 0; i < cloud->size(); i++) {
+						switch (labels[i]) {
+						case Front_Right:
+							if (cloud->at(i).z() > result.z) {
+								labels[i] = Front_Left;
+								point_relabeled = true;
+							}
+							break;
+						case Front_Left:
+							if (cloud->at(i).z() <= result.z) {
+								labels[i] = Front_Right;
+								point_relabeled = true;
+							}
+							break;
+						default:
+							break;
+						}
+					}
+				}
 			}
-			//Code to get the 3D coordinate of the 2D image
-			//float4 result = get_3d_projection(point2d, depth,
-			//		-cloud->at(head_index));
 		}
 	}
 }
