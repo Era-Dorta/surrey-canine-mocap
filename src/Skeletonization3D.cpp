@@ -389,3 +389,15 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 
 	return result.get();
 }
+
+int Skeletonization3D::get_n_frames() const {
+	return n_frames;
+}
+
+int Skeletonization3D::get_d_rows() const {
+	return camera_arr.front()->get_d_rows();
+}
+
+int Skeletonization3D::get_d_cols() const {
+	return camera_arr.front()->get_d_cols();
+}

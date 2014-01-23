@@ -38,6 +38,12 @@ class Skeletonization3D {
 		//Calculates the 2D projection of 3D point given a camera index
 		float3 get_2d_projection(osg::Vec3 point, int cam_index);
 		float3 get_3d_projection(int row, int col, int cam_index, int frame);
+
+		int get_n_frames() const;
+
+		int get_d_rows() const;
+		int get_d_cols() const;
+
 	protected:
 	private:
 		//Merges several 2D images to a 3D complete image of a skeleton
