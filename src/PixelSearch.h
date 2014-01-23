@@ -28,10 +28,6 @@ namespace PixelSearch {
 
 	bool get_nearest_white_pixel(const cv::Mat& img, int i_row, int i_col,
 			int &res_row, int &res_col);
-
-	//TODO This method does not belong here, think how to organise the code
-	void connectivity_preserving_thinning(const cv::Mat& img_in,
-			cv::Mat& result);
 }
 
 #endif /* PIXELSEARCH_H_ */

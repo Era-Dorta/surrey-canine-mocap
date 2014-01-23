@@ -54,101 +54,132 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization2D::points_from_image(
 	return skeleton_points.get();
 }
 
-//Generates a skeletonized image from a depth image
-void Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img,
-		cv::Mat& res) {
+void Skeletonization2D::connectivity_preserving_thinning(const cv::Mat& img_in,
+		cv::Mat& result) {
+	result = img_in.clone();
 
-	int rows = seg_img->rows;
-	int cols = seg_img->cols;
+	//Two iterations should be sufficient (TODO - rather check if result changed between iterations
+	bool was_updated_this_iter = true;
+	int iter = 0;
+	while (was_updated_this_iter == true) {
+		was_updated_this_iter = false;
+		iter++;
 
-	cv::Mat temp1, temp2;
-	//Make binary image of segmented depth map:
-	//---------------------
-	cv::Mat bin_img(rows, cols, CV_8U);
-	for (int row = 0; row < rows; row++) {
-		for (int col = 0; col < cols; col++) {
-			//If any of the 4 neighbours are inconsistent with the central pixel,
-			//set it to background to force an edge there:
-			int threshold = 40;			//40mm
-			bool has_consistent_4_neighbours = true;
-			if (row > 0
-					&& abs(
-							(int) seg_img->at<ushort>(row, col)
-									- (int) seg_img->at<ushort>(row - 1, col))
-							> threshold) {
-				has_consistent_4_neighbours = false;
-			}
-			if (row < rows - 1
-					&& abs(
-							(int) seg_img->at<ushort>(row, col)
-									- (int) seg_img->at<ushort>(row + 1, col))
-							> threshold) {
-				has_consistent_4_neighbours = false;
-			}
-			if (col > 0
-					&& abs(
-							(int) seg_img->at<ushort>(row, col)
-									- (int) seg_img->at<ushort>(row, col - 1))
-							> threshold) {
-				has_consistent_4_neighbours = false;
-			}
-			if (col < cols - 1
-					&& abs(
-							(int) seg_img->at<ushort>(row, col)
-									- (int) seg_img->at<ushort>(row, col + 1))
-							> threshold) {
-				has_consistent_4_neighbours = false;
-			}
+		for (int row = 1; row < result.rows - 1; row++) {
+			for (int col = 1; col < result.cols - 1; col++) {
+				//Check that pixel is occupied:
+				if (result.at<uchar>(row, col) != 0) {
+					//Establish original connectivity:
+					//(it is trivial that all 'on' pixels are known to be connected each other
+					//when the central pixel is 'on')
 
-			if (seg_img->at<ushort>(row, col) != 0
-					&& has_consistent_4_neighbours) {
-				bin_img.at<uchar>(row, col) = 255;
-			} else {
-				bin_img.at<uchar>(row, col) = 0;
+					//Establish connectivity if removed:
+					//Check that number of connected components is still 1:
+					int seed_d_row = -2;
+					int seed_d_col = -2;
+					bool found_seed = false;
+					for (int d_row = -1; d_row <= 1; d_row++) {
+						if (found_seed) {
+							break;
+						}
+						for (int d_col = -1; d_col <= 1; d_col++) {
+							if (d_row == 0 && d_col == 0) {
+								continue;
+							}
+							if (result.at<uchar>(row + d_row, col + d_col)
+									!= 0) {
+								seed_d_row = d_row;
+								seed_d_col = d_col;
+								found_seed = true;
+								break;
+							}
+						}
+					}
+					//(Note: seed is the top-left-most 'on' pixel)
+
+					//Set central pixel to 'off':
+					result.at<uchar>(row, col) = 0;
+
+					int num_in_win = 0;
+					int num_con = 0;
+
+					if (found_seed) {
+						cv::Mat propergated(3, 3, CV_8U, cv::Scalar(0));
+
+						for (int s_row = -1; s_row <= 1; s_row++) {
+							for (int s_col = -1; s_col <= 1; s_col++) {
+								if (result.at<uchar>(row + s_row, col + s_col)
+										!= 0) {
+									num_in_win++;
+								}
+							}
+						}
+
+						//Set seed pixel to 'on': (adding (1,1) offset to get beteen (-1,-1) and (0,0) origin)
+						propergated.at<uchar>(seed_d_row + 1, seed_d_col + 1) =
+								255;
+
+						//Iterate thrice to cover the 3x3 region:
+						for (int iter = 0; iter < 3; iter++) {
+							//Propagate using 8-connectivity from seed:
+							for (int s_row = 0; s_row < 3; s_row++) {
+								for (int s_col = 0; s_col < 3; s_col++) {
+									if (propergated.at<uchar>(s_row, s_col)
+											!= 0) {
+										for (int t_d_row = -1; t_d_row <= 1;
+												t_d_row++) {
+											for (int t_d_col = -1; t_d_col <= 1;
+													t_d_col++) {
+												if ((s_row + t_d_row >= 0
+														&& s_row + t_d_row < 3
+														&& s_col + t_d_col >= 0
+														&& s_col + t_d_col < 3)	//check bounds
+														&& result.at<uchar>(
+																row + s_row
+																		+ t_d_row
+																		- 1,
+																col + s_col
+																		+ t_d_col
+																		- 1)
+																!= 0) {
+													propergated.at<uchar>(
+															s_row + t_d_row,
+															s_col + t_d_col) =
+															255;
+												}
+											}
+										}
+									}
+
+								}
+							}
+						}
+						for (int s_row = 0; s_row < 3; s_row++) {
+							for (int s_col = 0; s_col < 3; s_col++) {
+								if (propergated.at<uchar>(s_row, s_col) != 0) {
+									num_con++;
+								}
+							}
+						}
+					}
+
+					//Set on again if neighbours get disconnected, or if it has fewer than 2 neighours
+					//(in which case it is the end of a line, which must not be shortened):
+					if (num_con != num_in_win || num_con < 2) {
+						//Set central pixel back to 'on':
+						result.at<uchar>(row, col) = 255;
+
+						//DEBUG:
+						//cout << "num_con: " << num_con << ", num_in_win: " << num_in_win << endl;
+					} else {
+						was_updated_this_iter = true;
+					}
+
+				}
 			}
 		}
+
 	}
-	bin_frames.push_back(bin_img);
-
-	//Perform distance transform:
-	//---------------------
-
-	cv::distanceTransform(bin_img, temp2, CV_DIST_L2, CV_DIST_MASK_PRECISE);
-
-	//2nd derivative magnitude image:
-	//---------------------
-
-	cv::Sobel(temp2, temp1, CV_32F, 2, 0, 1);
-	cv::Sobel(temp2, res, CV_32F, 0, 2, 1);
-
-	cv::multiply(temp1, temp1, temp2);
-	cv::multiply(res, res, temp1);
-
-	cv::sqrt(temp2 + temp1, res);	//abs(diff_xx) + abs(diff_yy);
-
-	//Threshold
-	//---------------------
-	cv::threshold(res, temp1, 0.7, 255, CV_8U);
-	cv::Mat thresh_8bit;
-	temp1.convertTo(thresh_8bit, CV_8U);
-	//---------------------
-
-	//Erode binary image
-	//---------------------
-	int erosion_size = 2;
-	res = cv::getStructuringElement(cv::MORPH_ELLIPSE,
-			cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
-			cv::Point(erosion_size, erosion_size));
-
-	cv::erode(bin_img, temp1, res);
-	cv::bitwise_and(thresh_8bit, temp1, res);
-	PixelSearch::connectivity_preserving_thinning(res, temp1);
-	remove_isolated_short_segments(temp1, res, 5);
-	PixelSearch::connectivity_preserving_thinning(res, temp1);
-	remove_isolated_short_segments(temp1, res, 15);
-
-	//With an appropriate bounding box the arm gets cut already
-	//delete_arm(res);
 }
 
 void Skeletonization2D::remove_isolated_short_segments(const cv::Mat& img_in,
@@ -281,6 +312,103 @@ void Skeletonization2D::remove_isolated_short_segments(const cv::Mat& img_in,
 
 	//If the distance walked is less than the threshold, delete the node and all
 	//points between it and the node found
+}
+
+//Generates a skeletonized image from a depth image
+void Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img,
+		cv::Mat& res) {
+
+	int rows = seg_img->rows;
+	int cols = seg_img->cols;
+
+	cv::Mat temp1, temp2;
+	//Make binary image of segmented depth map:
+	//---------------------
+	cv::Mat bin_img(rows, cols, CV_8U);
+	for (int row = 0; row < rows; row++) {
+		for (int col = 0; col < cols; col++) {
+			//If any of the 4 neighbours are inconsistent with the central pixel,
+			//set it to background to force an edge there:
+			int threshold = 40;			//40mm
+			bool has_consistent_4_neighbours = true;
+			if (row > 0
+					&& abs(
+							(int) seg_img->at<ushort>(row, col)
+									- (int) seg_img->at<ushort>(row - 1, col))
+							> threshold) {
+				has_consistent_4_neighbours = false;
+			}
+			if (row < rows - 1
+					&& abs(
+							(int) seg_img->at<ushort>(row, col)
+									- (int) seg_img->at<ushort>(row + 1, col))
+							> threshold) {
+				has_consistent_4_neighbours = false;
+			}
+			if (col > 0
+					&& abs(
+							(int) seg_img->at<ushort>(row, col)
+									- (int) seg_img->at<ushort>(row, col - 1))
+							> threshold) {
+				has_consistent_4_neighbours = false;
+			}
+			if (col < cols - 1
+					&& abs(
+							(int) seg_img->at<ushort>(row, col)
+									- (int) seg_img->at<ushort>(row, col + 1))
+							> threshold) {
+				has_consistent_4_neighbours = false;
+			}
+
+			if (seg_img->at<ushort>(row, col) != 0
+					&& has_consistent_4_neighbours) {
+				bin_img.at<uchar>(row, col) = 255;
+			} else {
+				bin_img.at<uchar>(row, col) = 0;
+			}
+		}
+	}
+	bin_frames.push_back(bin_img);
+
+	//Perform distance transform:
+	//---------------------
+
+	cv::distanceTransform(bin_img, temp2, CV_DIST_L2, CV_DIST_MASK_PRECISE);
+
+	//2nd derivative magnitude image:
+	//---------------------
+
+	cv::Sobel(temp2, temp1, CV_32F, 2, 0, 1);
+	cv::Sobel(temp2, res, CV_32F, 0, 2, 1);
+
+	cv::multiply(temp1, temp1, temp2);
+	cv::multiply(res, res, temp1);
+
+	cv::sqrt(temp2 + temp1, res);	//abs(diff_xx) + abs(diff_yy);
+
+	//Threshold
+	//---------------------
+	cv::threshold(res, temp1, 0.7, 255, CV_8U);
+	cv::Mat thresh_8bit;
+	temp1.convertTo(thresh_8bit, CV_8U);
+	//---------------------
+
+	//Erode binary image
+	//---------------------
+	int erosion_size = 2;
+	res = cv::getStructuringElement(cv::MORPH_ELLIPSE,
+			cv::Size(2 * erosion_size + 1, 2 * erosion_size + 1),
+			cv::Point(erosion_size, erosion_size));
+
+	cv::erode(bin_img, temp1, res);
+	cv::bitwise_and(thresh_8bit, temp1, res);
+	connectivity_preserving_thinning(res, temp1);
+	remove_isolated_short_segments(temp1, res, 5);
+	connectivity_preserving_thinning(res, temp1);
+	remove_isolated_short_segments(temp1, res, 15);
+
+	//With an appropriate bounding box the arm gets cut already
+	//delete_arm(res);
 }
 
 void Skeletonization2D::delete_arm(cv::Mat& img_in) {
