@@ -84,3 +84,26 @@ float4 Projections::get_3d_projection(const float3& point, const float& depth,
 	float4 vert_global = vert_hom * T;
 	return vert_global;
 }
+
+float3 Projections::get_2d_projection(osg::Vec3 point, constCamVecIte cam) {
+	float4 res4, point4 = make_float4(point.x(), point.y(), point.z(), 1.0);
+
+	//To 3D point to camera 2D point
+	//First put in point in camera axis
+	res4 = (*cam)->get_inv_T_f4x4() * point4;
+	float3 point3 = make_float3(res4.x, res4.y, res4.z);
+
+	//Then do projection to 2D using camera extrinsics
+	float3 res3 = (*cam)->get_K_f3x3() * point3;
+
+	//TODO Should give result in homogeneous coordinates, the fact that is not
+	//means I forgot to do something somewhere
+	float invz = 1.0 / res3.z;
+	res3 = res3 * invz;
+	return res3;
+}
+
+float3 Projections::get_3d_projection(int row, int col, constCamVecIte cam,
+		int frame) {
+	return (*cam)->global_coord(frame, row, col);
+}

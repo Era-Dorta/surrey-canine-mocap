@@ -11,6 +11,8 @@ using std::cout;
 using std::endl;
 
 extern bool MiscUtils::use_normal_shader;
+extern float3x3 Projections::K;
+extern float3x3 Projections::invK;
 
 MultiCamViewer::MultiCamViewer(std::string path) :
 			win_width(1280),
@@ -75,6 +77,8 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		skel_controller.generate_skeletonization();
 	}
 
+	Projections::K = camera_arr.front()->get_K_f3x3();
+	Projections::invK = camera_arr.front()->get_inv_K_f3x3();
 	//DEBUG:
 	//cout << "begin_frame_no: " << begin_frame_no << " end_frame_no: " << end_frame_no << endl;
 

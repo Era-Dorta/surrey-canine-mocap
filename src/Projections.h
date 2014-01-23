@@ -9,6 +9,7 @@
 #define PROJECTIONS_H_
 
 #include "CudaVec.h"
+#include "RGBDCamera.h"
 #include <osg/Vec3>
 
 namespace Projections {
@@ -27,6 +28,10 @@ namespace Projections {
 
 	float4 get_3d_projection(const float3& point, const float& depth,
 			const float4x4& T);
+
+	float3 get_2d_projection(osg::Vec3 point, constCamVecIte cam);
+
+	float3 get_3d_projection(int row, int col, constCamVecIte cam, int frame);
 
 	extern float3x3 K;
 	extern float3x3 invK;

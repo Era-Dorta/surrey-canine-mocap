@@ -15,6 +15,7 @@
 #include "SimpleTimer.h"
 #include "SkeletonController.h"
 #include "CameraCalibrator.h"
+#include "Projections.h"
 
 #include <string>
 #include <vector>

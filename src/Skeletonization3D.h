@@ -35,10 +35,6 @@ class Skeletonization3D {
 
 		const cv::Mat& get_2D_bin_frame(int cam_num, int frame_num) const;
 
-		//Calculates the 2D projection of 3D point given a camera index
-		float3 get_2d_projection(osg::Vec3 point, int cam_index);
-		float3 get_3d_projection(int row, int col, int cam_index, int frame);
-
 		int get_n_frames() const;
 
 		int get_d_rows() const;
