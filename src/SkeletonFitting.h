@@ -69,6 +69,12 @@ class SkeletonFitting {
 
 		int find_paw(Skel_Leg leg, std::vector<int>& leg_points_index);
 
+		bool find_first_bone_end_pos(const osg::Vec3& root_pos,
+				osg::Vec3& head_pos);
+
+		bool find_second_bone_end_pos(const osg::Vec3& head_pos,
+				osg::Vec3& shoulder_pos);
+
 		//From a cloud of points, fill result vector with a label for each point
 		//Median gives better results that mean, but it is not as fast
 		void divide_four_sections(bool use_simple_division = true);

@@ -187,105 +187,26 @@ void SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
 }
 
 void SkeletonFitting::fit_vertebral_front() {
-	//TODO SUPER IMPORTANT DO NOT DO THIS ON CAMERA BASED, DO A SUPER
-	//CAMERA A PROJECT ALL POINTS TO AXES
+
 	int head_index = find_head();
 
 	if (head_index != -1) {
-		//TODO Could also do this by having a complete cloud point
-		//of the dog and going up and left (-y, -x) until distance was
-		//reached, in any case a complete cloud could be useful
-
-		osg::Vec3 root_pos = cloud->at(head_index);
-		float3 root_pos3 = make_float3(root_pos.x(), root_pos.y(),
-				root_pos.z());
-		//Use the third camera since it gives the best head view
-		const cv::Mat& cam2_bin_img = skeletonizator->get_2D_bin_frame(2,
-				current_frame);
-
-		int row = 0, col = 0;
-
-		float3 start_point = skeletonizator->get_2d_projection(root_pos, 2);
-		row = start_point.y;
-		col = start_point.x;
-
-		float bone_length = skeleton->get_node(0)->length.length();
-
 		osg::Vec3 head_pos, shoulder_pos;
-
-		bool not_bone_length = true;
-		float3 aux_point;
-
-		if (cam2_bin_img.at<uchar>(row, col) != 255) {
-			cout << "Head error, finding closest match" << endl;
-			if (!PixelSearch::get_nearest_white_pixel(cam2_bin_img, row, col,
-					row, col)) {
-				cout << "Head error not recoverable" << endl;
-				return;
-			}
+		osg::Vec3 root_pos = cloud->at(head_index);
+		if (!find_first_bone_end_pos(root_pos, head_pos)) {
+			return;
 		}
-
-		while (not_bone_length) {
-			if (PixelSearch::get_top_left_white_pixel(cam2_bin_img, row, col,
-					row, col)) {
-				aux_point = skeletonizator->get_3d_projection(row, col, 2,
-						current_frame);
-				float current_length = length(root_pos3 - aux_point);
-				if (current_length >= bone_length) {
-					not_bone_length = false;
-				}
-			} else {
-				cout << "Vertebral front fit fail 0" << endl;
-				return;
-			}
-		}
-		head_pos.set(aux_point.x, aux_point.y, aux_point.z);
-
+		float bone_length = skeleton->get_node(0)->length.length();
 		refine_goal_position(head_pos, root_pos, bone_length);
 
-		const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
-				current_frame);
-
-		start_point = skeletonizator->get_2d_projection(head_pos, 1);
-
-		row = start_point.y;
-		col = start_point.x;
-
-		if (cam1_bin_img.at<uchar>(row, col) != 255) {
-			if (!PixelSearch::get_nearest_white_pixel(cam1_bin_img, row, col,
-					row, col)) {
-				cout << "Could not locate head end position on second camera"
-						<< endl;
-				return;
-			}
+		if (!find_second_bone_end_pos(head_pos, shoulder_pos)) {
+			return;
 		}
-
 		bone_length = skeleton->get_node(1)->length.length();
-
-		not_bone_length = true;
-		float3 head3 = aux_point;
-		while (not_bone_length) {
-			if (PixelSearch::get_top_left_white_pixel(cam1_bin_img, row, col,
-					row, col)) {
-				aux_point = skeletonizator->get_3d_projection(row, col, 1,
-						current_frame);
-				float current_length = length(head3 - aux_point);
-				if (current_length >= bone_length) {
-					not_bone_length = false;
-				}
-			} else {
-				if (!unstuck_go_down(cam1_bin_img, row, col, row, col)) {
-					cout << "Vertebral front fit fail 1" << endl;
-					return;
-				}
-			}
-		}
-		shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
-
 		refine_goal_position(shoulder_pos, head_pos, bone_length);
 
 		if (!solve_2_bones(0, head_pos, 1, shoulder_pos)) {
-			cout << "Vertebral front fit fail 2" << endl;
+			cout << "Vertebral front fit fail" << endl;
 		}
 	}
 }
@@ -343,6 +264,102 @@ int SkeletonFitting::find_paw(Skel_Leg leg,
 	} else {
 		return -1;
 	}
+}
+
+bool SkeletonFitting::find_first_bone_end_pos(const osg::Vec3& root_pos,
+		osg::Vec3& head_pos) {
+	//TODO Could also do this by having a complete cloud point
+	//of the dog and going up and left (-y, -x) until distance was
+	//reached, in any case a complete cloud could be useful
+
+	float3 root_pos3 = make_float3(root_pos.x(), root_pos.y(), root_pos.z());
+
+	//TODO SUPER IMPORTANT DO NOT DO THIS ON CAMERA BASED, DO A SUPER
+	//CAMERA A PROJECT ALL POINTS TO AXES, on find second bone too
+	//Use the third camera since it gives the best head view
+	const cv::Mat& cam2_bin_img = skeletonizator->get_2D_bin_frame(2,
+			current_frame);
+
+	int row = 0, col = 0;
+
+	float3 start_point = skeletonizator->get_2d_projection(root_pos, 2);
+	row = start_point.y;
+	col = start_point.x;
+
+	float bone_length = skeleton->get_node(0)->length.length();
+
+	//The point could be projected on a position this camera does not have
+	//information on. So find the closest point and continue from there
+	if (cam2_bin_img.at<uchar>(row, col) != 255) {
+		if (!PixelSearch::get_nearest_white_pixel(cam2_bin_img, row, col, row,
+				col)) {
+			cout << "Head error not recoverable" << endl;
+			return false;
+		}
+	}
+
+	bool not_bone_length = true;
+	float3 aux_point;
+	while (not_bone_length) {
+		if (PixelSearch::get_top_left_white_pixel(cam2_bin_img, row, col, row,
+				col)) {
+			aux_point = skeletonizator->get_3d_projection(row, col, 2,
+					current_frame);
+			float current_length = length(root_pos3 - aux_point);
+			if (current_length >= bone_length) {
+				not_bone_length = false;
+			}
+		} else {
+			cout << "Error calculating first bone position" << endl;
+			return false;
+		}
+	}
+	head_pos.set(aux_point.x, aux_point.y, aux_point.z);
+	return true;
+}
+
+bool SkeletonFitting::find_second_bone_end_pos(const osg::Vec3& head_pos,
+		osg::Vec3& shoulder_pos) {
+	const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
+			current_frame);
+
+	float3 start_point = skeletonizator->get_2d_projection(head_pos, 1);
+
+	int row = start_point.y;
+	int col = start_point.x;
+
+	if (cam1_bin_img.at<uchar>(row, col) != 255) {
+		if (!PixelSearch::get_nearest_white_pixel(cam1_bin_img, row, col, row,
+				col)) {
+			cout << "Could not locate head end position on second camera"
+					<< endl;
+			return false;
+		}
+	}
+
+	float bone_length = skeleton->get_node(1)->length.length();
+
+	bool not_bone_length = true;
+	float3 aux_point, head3 = make_float3(head_pos.x(), head_pos.y(),
+			head_pos.z());
+	while (not_bone_length) {
+		if (PixelSearch::get_top_left_white_pixel(cam1_bin_img, row, col, row,
+				col)) {
+			aux_point = skeletonizator->get_3d_projection(row, col, 1,
+					current_frame);
+			float current_length = length(head3 - aux_point);
+			if (current_length >= bone_length) {
+				not_bone_length = false;
+			}
+		} else {
+			if (!unstuck_go_down(cam1_bin_img, row, col, row, col)) {
+				cout << "Error calculating second bone position" << endl;
+				return false;
+			}
+		}
+	}
+	shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
+	return true;
 }
 
 void SkeletonFitting::divide_four_sections(bool use_simple_division) {
