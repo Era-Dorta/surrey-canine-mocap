@@ -459,82 +459,6 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 	}
 }
 
-float3 get_2d_projection(osg::Vec3 point, const osg::Vec3& trans,
-		float& z_val) {
-	float4 res4, point4 = make_float4(point.x(), point.y(), point.z(), 1.0);
-
-	//To 3D point to camera 2D point
-	//First put in point in camera axis
-
-	//We want a front view so in world axes is vectors
-	//x = [0,0,1]
-	//y = [0,1,0]
-	//z = [-1,0,0]
-	//Then also add a translation, matrix should be T*R, but since R is simple
-	//it is easier to put translation in new world coordinates
-	float4x4 invT(0.0);
-	invT[0 * 4 + 2] = -1;
-	invT[1 * 4 + 1] = 1;
-	invT[2 * 4 + 0] = 1;
-	invT[3 * 4 + 0] = trans.z() + 0.05;
-	invT[3 * 4 + 1] = trans.y() - 0.15;
-	invT[3 * 4 + 2] = -(trans.x() - 0.3);
-	invT[3 * 4 + 3] = 1;
-
-	res4 = point4 * invT;
-
-	float3 point3 = make_float3(res4.x, res4.y, res4.z);
-
-	//TODO K matrix copied from one of the K files, should read it from a camera???
-	float3x3 K(0.0);
-	K[0 * 3 + 0] = 536.9423704440301;
-	K[0 * 3 + 2] = 321.1102172809362;
-	K[1 * 3 + 1] = 536.5481474898438;
-	K[1 * 3 + 2] = 236.1034464602599;
-	K[2 * 3 + 2] = 1;
-
-	float3 res3 = K * point3;
-
-	z_val = res3.z;
-	float invz = 1.0 / res3.z;
-	res3 = res3 * invz;
-	return res3;
-}
-
-float3 get_2d_projection(osg::Vec3 point, const osg::Vec3& trans) {
-	float zval;
-	return get_2d_projection(point, trans, zval);
-}
-
-float4 get_3d_projection(const float3& point, const float& depth,
-		const osg::Vec3& trans) {
-
-	float3 depth_pix_hom = make_float3(point.x, point.y, 1.f);
-
-	float3x3 K(0.0);
-	K[0 * 3 + 0] = 536.9423704440301;
-	K[0 * 3 + 2] = 321.1102172809362;
-	K[1 * 3 + 1] = 536.5481474898438;
-	K[1 * 3 + 2] = 236.1034464602599;
-	K[2 * 3 + 2] = 1;
-
-	float3 vert = depth * (K.inverse() * depth_pix_hom);
-
-	float4 vert_hom = make_float4(vert, 1.f);
-
-	float4x4 T(0.0);
-	T[0 * 4 + 2] = 1;
-	T[1 * 4 + 1] = 1;
-	T[2 * 4 + 0] = -1;
-	T[3 * 4 + 0] = -(trans.x() - 0.3);
-	T[3 * 4 + 1] = -(trans.y() - 0.15);
-	T[3 * 4 + 2] = -(trans.z() + 0.05);
-	T[3 * 4 + 3] = 1;
-
-	float4 vert_global = vert_hom * T;
-	return vert_global;
-}
-
 void SkeletonFitting::refine_four_sections_division() {
 	//Better calculate only square distances
 	//Precalculate a matrix of distances?, vector of vectors?
@@ -663,10 +587,20 @@ void SkeletonFitting::refine_four_sections_division() {
 
 			cv::Mat proyected_img(skeletonizator->get_d_rows(),
 					skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
+			osg::Vec3 head_pos_trans = -cloud->at(head_index);
+			float4x4 invT(0.0);
+			invT[0 * 4 + 2] = -1;
+			invT[1 * 4 + 1] = 1;
+			invT[2 * 4 + 0] = 1;
+			invT[3 * 4 + 0] = head_pos_trans.z() + 0.05;
+			invT[3 * 4 + 1] = head_pos_trans.y() - 0.15;
+			invT[3 * 4 + 2] = -(head_pos_trans.x() - 0.3);
+			invT[3 * 4 + 3] = 1;
+
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Front_Left || labels[i] == Front_Right) {
-					float3 point2d = get_2d_projection(cloud->at(i),
-							-cloud->at(head_index));
+					float3 point2d = Projections::get_2d_projection(
+							cloud->at(i), invT);
 					if (point2d.y >= 0 && point2d.y < proyected_img.rows
 							&& point2d.x >= 0 && point2d.x < proyected_img.cols)
 						proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
@@ -684,8 +618,8 @@ void SkeletonFitting::refine_four_sections_division() {
 			current_div.y() = current_div.y() + 0.09;
 			current_div.z() = mean_z_front_arr.at(current_frame);
 			float depth;
-			float3 point2d = get_2d_projection(current_div,
-					-cloud->at(head_index), depth);
+			float3 point2d = Projections::get_2d_projection(current_div,
+					invT, depth);
 
 			if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
 					&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
@@ -755,7 +689,7 @@ void SkeletonFitting::refine_four_sections_division() {
 				}
 
 				//Proyect back to 3D
-				float4 result = get_3d_projection(point2d, depth,
+				float4 result = Projections::get_3d_projection(point2d, depth,
 						-cloud->at(head_index));
 				if (result.z != mean_z_front_arr.at(current_frame)) {
 					mean_z_front_arr.at(current_frame) = result.z;

@@ -11,6 +11,7 @@
 #include "Skeleton.h"
 #include "Skeletonization3D.h"
 #include "PixelSearch.h"
+#include "Projections.h"
 #include "IKAN/srs.h"
 
 #include "osg/Array"
