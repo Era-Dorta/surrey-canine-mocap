@@ -338,27 +338,27 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour) {
 	return cam_vis.release();
 }
 
-cv::Mat RGBD_Camera::get_K_rgb() {
+const cv::Mat& RGBD_Camera::get_K_rgb() {
 	return K_rgb;
 }
 
-float3x3 RGBD_Camera::get_K_f3x3() {
+const float3x3& RGBD_Camera::get_K_f3x3() {
 	return K_d_f3x3;
 }
 
-cv::Mat RGBD_Camera::get_inv_K_rgb() {
+const cv::Mat& RGBD_Camera::get_inv_K_rgb() {
 	return inv_K_rgb;
 }
 
-float3x3 RGBD_Camera::get_inv_K_f3x3() {
+const float3x3& RGBD_Camera::get_inv_K_f3x3() {
 	return inv_K_d_f3x3;
 }
 
-cv::Mat RGBD_Camera::get_T_rgb() {
+const cv::Mat& RGBD_Camera::get_T_rgb() {
 	return T_rgb;
 }
 
-float4x4 RGBD_Camera::get_T_f4x4() {
+const float4x4& RGBD_Camera::get_T_f4x4() {
 	return T_float4x4;
 }
 
@@ -366,7 +366,7 @@ const osg::Matrix& RGBD_Camera::get_T_osg() {
 	return T_osg;
 }
 
-float4x4 RGBD_Camera::get_inv_T_f4x4() {
+const float4x4& RGBD_Camera::get_inv_T_f4x4() {
 	return inv_T_float4x4;
 }
 
@@ -419,7 +419,7 @@ int RGBD_Camera::get_d_cols() {
 	return d_cols;
 }
 
-osg::Vec3 RGBD_Camera::get_vis_colour() {
+const osg::Vec3& RGBD_Camera::get_vis_colour() {
 	return vis_colour;
 }
 
