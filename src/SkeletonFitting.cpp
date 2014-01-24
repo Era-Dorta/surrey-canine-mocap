@@ -165,8 +165,23 @@ void SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
 	int paw_index = find_paw(leg, leg_points_index);
 
 	if (paw_index != -1) {
+		int prev_bone_index = 0;
 
-		Node* n_bone = skeleton->get_node(1);
+		switch (leg) {
+		case Front_Right:
+		case Front_Left:
+			prev_bone_index = 1;
+			break;
+		case Back_Right:
+		case Back_Left:
+			prev_bone_index = 10;
+			break;
+		case Not_Limbs:
+			cout << "Call to fit leg with Not_limbs" << endl;
+			return;
+		}
+
+		Node* n_bone = skeleton->get_node(prev_bone_index);
 		osg::Vec3 prev_bone_position = n_bone->get_end_bone_global_pos(
 				current_frame);
 
