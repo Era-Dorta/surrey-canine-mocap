@@ -109,6 +109,8 @@ class SkeletonFitting {
 
 		void recalculate_z_division_with_2d_front_view();
 
+		void recalculate_z_division_with_2d_back_view();
+
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 

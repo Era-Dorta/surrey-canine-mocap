@@ -2209,7 +2209,7 @@ class float3x3 {
 			return result;
 		}
 
-		CUDA_VEC_HOSTDEVICE void print_mat()
+		CUDA_VEC_HOSTDEVICE void print_mat() const
 		//__host__ void print_mat()
 		{
 			printf("------------------------\n");
@@ -2794,7 +2794,7 @@ class float4x4 {
 			return result;
 		}
 
-		CUDA_VEC_HOSTDEVICE void print_mat()
+		CUDA_VEC_HOSTDEVICE void print_mat() const
 		//__host__ void print_mat()
 		{
 			printf("------------------------\n");

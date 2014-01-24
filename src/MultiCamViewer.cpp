@@ -64,6 +64,9 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 
 	}
 
+	Projections::K = camera_arr.front()->get_K_f3x3();
+	Projections::invK = camera_arr.front()->get_inv_K_f3x3();
+
 	if (!manual_origin_set) {
 		//TODO This should be given by the user or somehow calculated from
 		//the images
@@ -76,9 +79,6 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		}
 		skel_controller.generate_skeletonization();
 	}
-
-	Projections::K = camera_arr.front()->get_K_f3x3();
-	Projections::invK = camera_arr.front()->get_inv_K_f3x3();
 	//DEBUG:
 	//cout << "begin_frame_no: " << begin_frame_no << " end_frame_no: " << end_frame_no << endl;
 
