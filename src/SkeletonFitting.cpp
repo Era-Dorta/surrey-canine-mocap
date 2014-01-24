@@ -744,7 +744,7 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 	int head_index = find_head();
 	if (head_index != -1) {
 
-		cv::Mat proyected_img(skeletonizator->get_d_rows(),
+		cv::Mat projected_img(skeletonizator->get_d_rows(),
 				skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
 		osg::Vec3 head_pos_trans = -cloud->at(head_index);
 
@@ -768,9 +768,9 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 			if (labels[i] != Not_Limbs) {
 				float3 point2d = Projections::get_2d_projection(cloud->at(i),
 						invT);
-				if (point2d.y >= 0 && point2d.y < proyected_img.rows
-						&& point2d.x >= 0 && point2d.x < proyected_img.cols)
-					proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
+				if (point2d.y >= 0 && point2d.y < projected_img.rows
+						&& point2d.x >= 0 && point2d.x < projected_img.cols)
+					projected_img.at<uchar>(point2d.y, point2d.x) = 255;
 			}
 		}
 
@@ -779,7 +779,7 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 				cv::Size(4 * erosion_size + 1, erosion_size + 1),
 				cv::Point(erosion_size, erosion_size));
 
-		cv::dilate(proyected_img, proyected_img, res2);
+		cv::dilate(projected_img, projected_img, res2);
 
 		osg::Vec3 current_div = cloud->at(head_index);
 		current_div.x() = mean_x_arr.at(current_frame);
@@ -789,10 +789,10 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 		float3 point2d = Projections::get_2d_projection(current_div, invT,
 				depth);
 
-		if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
-				&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
+		if (point2d.y >= 0 && point2d.y < projected_img.rows - 1
+				&& point2d.x >= 0 && point2d.x < projected_img.cols) {
 			int res_row, res_col;
-			PixelSearch::cascade_down_left_lower_pixel(proyected_img,
+			PixelSearch::cascade_down_left_lower_pixel(projected_img,
 					(int) point2d.y, (int) point2d.x, res_row, res_col);
 
 			point2d.y = res_row;
@@ -806,7 +806,7 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 			T[3 * 4 + 1] = -(head_pos_trans.y() - 0.05);
 			T[3 * 4 + 2] = -(head_pos_trans.z() + 1.5);
 			T[3 * 4 + 3] = 1;
-			//Proyect back to 3D
+			//Project back to 3D
 			float4 result = Projections::get_3d_projection(point2d, depth, T);
 			if (result.x != mean_x_arr.at(current_frame)) {
 				mean_x_arr.at(current_frame) = result.x;
@@ -924,7 +924,7 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 	int head_index = find_head();
 	if (head_index != -1) {
 
-		cv::Mat proyected_img(skeletonizator->get_d_rows(),
+		cv::Mat projected_img(skeletonizator->get_d_rows(),
 				skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
 		osg::Vec3 head_pos_trans = -cloud->at(head_index);
 
@@ -948,9 +948,9 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 			if (labels[i] == Front_Left || labels[i] == Front_Right) {
 				float3 point2d = Projections::get_2d_projection(cloud->at(i),
 						invT);
-				if (point2d.y >= 0 && point2d.y < proyected_img.rows
-						&& point2d.x >= 0 && point2d.x < proyected_img.cols)
-					proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
+				if (point2d.y >= 0 && point2d.y < projected_img.rows
+						&& point2d.x >= 0 && point2d.x < projected_img.cols)
+					projected_img.at<uchar>(point2d.y, point2d.x) = 255;
 			}
 		}
 
@@ -959,7 +959,7 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 				cv::Size(4 * erosion_size + 1, erosion_size + 1),
 				cv::Point(erosion_size, erosion_size));
 
-		cv::dilate(proyected_img, proyected_img, res2);
+		cv::dilate(projected_img, projected_img, res2);
 
 		osg::Vec3 current_div = cloud->at(head_index);
 		current_div.y() += 0.09;
@@ -968,10 +968,10 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 		float3 point2d = Projections::get_2d_projection(current_div, invT,
 				depth);
 
-		if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
-				&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
+		if (point2d.y >= 0 && point2d.y < projected_img.rows - 1
+				&& point2d.x >= 0 && point2d.x < projected_img.cols) {
 			int res_row, res_col;
-			PixelSearch::cascade_down_right_lower_pixel(proyected_img,
+			PixelSearch::cascade_down_right_lower_pixel(projected_img,
 					(int) point2d.y, (int) point2d.x, res_row, res_col);
 			point2d.y = res_row;
 			point2d.x = res_col;
@@ -984,7 +984,7 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 			T[3 * 4 + 1] = -(head_pos_trans.y() - 0.15);
 			T[3 * 4 + 2] = -(head_pos_trans.z() + 0.05);
 			T[3 * 4 + 3] = 1;
-			//Proyect back to 3D
+			//Project back to 3D
 			float4 result = Projections::get_3d_projection(point2d, depth, T);
 			if (result.z != mean_z_front_arr.at(current_frame)) {
 				mean_z_front_arr.at(current_frame) = result.z;
@@ -1015,7 +1015,7 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 	int head_index = find_head();
 	if (head_index != -1) {
 
-		cv::Mat proyected_img(skeletonizator->get_d_rows(),
+		cv::Mat projected_img(skeletonizator->get_d_rows(),
 				skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
 		osg::Vec3 head_pos_trans = -cloud->at(head_index);
 
@@ -1039,9 +1039,9 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 			if (labels[i] == Back_Left || labels[i] == Back_Right) {
 				float3 point2d = Projections::get_2d_projection(cloud->at(i),
 						invT);
-				if (point2d.y >= 0 && point2d.y < proyected_img.rows
-						&& point2d.x >= 0 && point2d.x < proyected_img.cols)
-					proyected_img.at<uchar>(point2d.y, point2d.x) = 255;
+				if (point2d.y >= 0 && point2d.y < projected_img.rows
+						&& point2d.x >= 0 && point2d.x < projected_img.cols)
+					projected_img.at<uchar>(point2d.y, point2d.x) = 255;
 			}
 		}
 
@@ -1050,7 +1050,7 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 				cv::Size(4 * erosion_size + 1, erosion_size + 1),
 				cv::Point(erosion_size, erosion_size));
 
-		cv::dilate(proyected_img, proyected_img, res2);
+		cv::dilate(projected_img, projected_img, res2);
 
 		osg::Vec3 current_div = cloud->at(head_index);
 		current_div.y() += 0.09;
@@ -1059,10 +1059,10 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 		float3 point2d = Projections::get_2d_projection(current_div, invT,
 				depth);
 
-		if (point2d.y >= 0 && point2d.y < proyected_img.rows - 1
-				&& point2d.x >= 0 && point2d.x < proyected_img.cols) {
+		if (point2d.y >= 0 && point2d.y < projected_img.rows - 1
+				&& point2d.x >= 0 && point2d.x < projected_img.cols) {
 			int res_row, res_col;
-			PixelSearch::cascade_down_right_lower_pixel(proyected_img,
+			PixelSearch::cascade_down_right_lower_pixel(projected_img,
 					(int) point2d.y, (int) point2d.x, res_row, res_col);
 
 			point2d.y = res_row;
@@ -1076,7 +1076,7 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 			T[3 * 4 + 1] = -(head_pos_trans.y() - 0.15);
 			T[3 * 4 + 2] = -(head_pos_trans.z() + 0.05);
 			T[3 * 4 + 3] = 1;
-			//Proyect back to 3D
+			//Project back to 3D
 			float4 result = Projections::get_3d_projection(point2d, depth, T);
 			if (result.z != mean_z_back_arr.at(current_frame)) {
 				mean_z_back_arr.at(current_frame) = result.z;
