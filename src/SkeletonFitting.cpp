@@ -797,6 +797,14 @@ void SkeletonFitting::recalculate_z_division_with_2d_front_view() {
 		cv::Mat proyected_img(skeletonizator->get_d_rows(),
 				skeletonizator->get_d_cols(), CV_8U, cv::Scalar(0));
 		osg::Vec3 head_pos_trans = -cloud->at(head_index);
+
+		//We want a front view so in world axes is vectors
+		//x = [0,0,1]
+		//y = [0,1,0]
+		//z = [-1,0,0]
+		//For the projection position the head position is used,
+		//but for the legs to be the centre of the projection
+		//an offset is needed
 		float4x4 invT(0.0);
 		invT[0 * 4 + 2] = -1;
 		invT[1 * 4 + 1] = 1;
@@ -838,9 +846,16 @@ void SkeletonFitting::recalculate_z_division_with_2d_front_view() {
 			point2d.y = res_row;
 			point2d.x = res_col;
 
+			float4x4 T(0.0);
+			T[0 * 4 + 2] = 1;
+			T[1 * 4 + 1] = 1;
+			T[2 * 4 + 0] = -1;
+			T[3 * 4 + 0] = -(head_pos_trans.x() - 0.3);
+			T[3 * 4 + 1] = -(head_pos_trans.y() - 0.15);
+			T[3 * 4 + 2] = -(head_pos_trans.z() + 0.05);
+			T[3 * 4 + 3] = 1;
 			//Proyect back to 3D
-			float4 result = Projections::get_3d_projection(point2d, depth,
-					-cloud->at(head_index));
+			float4 result = Projections::get_3d_projection(point2d, depth, T);
 			if (result.z != mean_z_front_arr.at(current_frame)) {
 				mean_z_front_arr.at(current_frame) = result.z;
 				for (unsigned int i = 0; i < cloud->size(); i++) {
