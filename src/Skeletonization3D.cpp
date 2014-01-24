@@ -71,7 +71,7 @@ void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	//Return vector
 	osg::ref_ptr<osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
 
-	//Calculate 3D proyections of 2D skeleton images
+	//Calculate 3D projections of 2D skeleton images
 	//Every image is from a different camera
 	const cv::Mat* depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
 	const cv::Mat& skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
@@ -116,7 +116,7 @@ void Skeletonization3D::translate_points_to_inside(
 
 void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 		int frame_num, std::map<osg::Vec2, osg::Vec3>& projection3d) const {
-	//Calculate 3D proyections of 2D skeleton images
+	//Calculate 3D projections of 2D skeleton images
 	//Every image is from a different camera
 	const cv::Mat* depth_map = camera_arr[cam_num]->get_depth_map(frame_num);
 	const cv::Mat& skeleton_img = skel_arr[cam_num]->get_frame(frame_num);
