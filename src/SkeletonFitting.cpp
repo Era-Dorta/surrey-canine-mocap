@@ -506,13 +506,38 @@ void SkeletonFitting::refine_four_sections_division() {
 
 bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
 		int bone1, const osg::Vec3& position1) {
-	return solve_2_bones_impl(bone0, position0, bone1, position1, 0.0, false);
+	osg::Vec3 aux_pos0 = position0;
+	osg::Vec3 aux_pos1 = position1;
+	bool solve_success = solve_2_bones_impl(bone0, position0, bone1, position1,
+			0.0, false);
+	int attempt = 0;
+	while (!solve_success && attempt < 3) {
+		aux_pos0 = position0;
+		aux_pos1 = position1;
+		move_goal(aux_pos0, attempt);
+		move_goal(aux_pos1, attempt);
+		solve_success = solve_2_bones_impl(bone0, aux_pos0, bone1, aux_pos1,
+				0.0, false);
+		attempt++;
+	}
+	return solve_success;
 }
 
 bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 		const osg::Vec3& position, float swivel_angle) {
-	return solve_2_bones_impl(bone0, osg::Vec3(), bone1, position, swivel_angle,
-			true);
+
+	osg::Vec3 aux_pos = position;
+	bool solve_success = solve_2_bones_impl(bone0, position, bone1, position,
+			swivel_angle, true);
+	int attempt = 0;
+	while (!solve_success && attempt < 3) {
+		aux_pos = position;
+		move_goal(aux_pos, attempt);
+		solve_success = solve_2_bones_impl(bone0, aux_pos, bone1, aux_pos,
+				swivel_angle, true);
+		attempt++;
+	}
+	return solve_success;
 }
 
 float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
@@ -1150,4 +1175,14 @@ bool SkeletonFitting::reclassify_left_right_leg_points(float mean_z_front,
 		}
 	}
 	return point_relabeled;
+}
+
+void SkeletonFitting::move_goal(osg::Vec3& goal, int attempt) {
+	if (attempt == 0) {
+		goal.x() += 0.05;
+	} else if (attempt == 1) {
+		goal.y() += 0.05;
+	} else {
+		goal.z() += 0.05;
+	}
 }

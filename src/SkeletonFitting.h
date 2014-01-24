@@ -116,6 +116,8 @@ class SkeletonFitting {
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 
+		void move_goal(osg::Vec3& goal, int attempt);
+
 		//Needed to use std::sort with comp_y
 		struct sortstruct {
 				// sortstruct needs to know its containing object
