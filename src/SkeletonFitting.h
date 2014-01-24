@@ -103,13 +103,15 @@ class SkeletonFitting {
 		void refine_goal_position(osg::Vec3& end_position,
 				const osg::Vec3& base_position, float length);
 
-		void recalculate_z_division_with_time_coherence();
+		void recalculate_front_back_division_side_view();
 
-		void recalculate_z_division_with_mass_center();
+		void recalculate_right_left_division_time_coherence();
 
-		void recalculate_z_division_with_2d_front_view();
+		void recalculate_right_left_division_mass_center();
 
-		void recalculate_z_division_with_2d_back_view();
+		void recalculate_right_left_division_front_view();
+
+		void recalculate_right_left_division_back_view();
 
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
@@ -141,6 +143,7 @@ class SkeletonFitting {
 		float body_height_extra_threshold;
 		std::vector<float> mean_z_front_arr;
 		std::vector<float> mean_z_back_arr;
+		std::vector<float> mean_x_arr;
 		float mean_z_front_all_frames;
 		float mean_z_back_all_frames;
 		std::vector<Skel_Leg> labels;
