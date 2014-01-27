@@ -28,7 +28,7 @@ void KNNSearch::set_num_kd_trees(unsigned int num_kd_trees) {
 	this->num_kd_trees = num_kd_trees;
 }
 
-bool KNNSearch::knn_search(osg::ref_ptr<osg::Vec3Array> data,unsigned int knn,
+bool KNNSearch::knn_search(osg::ref_ptr<osg::Vec3Array> data, unsigned int knn,
 		std::vector<std::vector<int> >& indices,
 		std::vector<std::vector<float> >& dists) {
 
@@ -37,8 +37,8 @@ bool KNNSearch::knn_search(osg::ref_ptr<osg::Vec3Array> data,unsigned int knn,
 	}
 
 	//Since it is a Vec3Array it has 3 dimensions
-	flann::Matrix<float> dataset(new float[data->size()], data->size(), 3);
-	flann::Matrix<float> query(new float[data->size()], data->size(), 3);
+	flann::Matrix<float> dataset(new float[data->size() * 3], data->size(), 3);
+	flann::Matrix<float> query(new float[data->size() * 3], data->size(), 3);
 
 	vec3Array_to_flann_matrix(data, dataset);
 	vec3Array_to_flann_matrix(data, query);
