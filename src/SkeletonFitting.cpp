@@ -1179,10 +1179,10 @@ bool SkeletonFitting::reclassify_left_right_leg_points(float mean_z_front,
 
 void SkeletonFitting::move_goal(osg::Vec3& goal, int attempt) {
 	if (attempt == 0) {
-		goal.x() += 0.05;
+		goal.x() += 0.01;
 	} else if (attempt == 1) {
-		goal.y() += 0.05;
+		goal.y() += 0.01;
 	} else {
-		goal.z() += 0.05;
+		goal.z() += 0.01;
 	}
 }
