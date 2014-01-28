@@ -61,7 +61,8 @@ class RenderSkeletonization {
 
 		void display_cloud(osg::Vec3Array* points, std::vector<Skel_Leg> group);
 
-		void display_sphere(const osg::Vec3& position, unsigned index);
+		void display_sphere(const osg::Vec3& position, unsigned index,
+				const osg::Vec4& color = osg::Vec4(0.0, 0.0, 0.0, 0.0));
 
 		//TODO Should not use Node, but it is much easier not to strictly follow
 		//the Model-View-Controller pattern

@@ -114,6 +114,8 @@ class SkeletonFitting {
 
 		void recalculate_right_left_division_back_view();
 
+		void recalculate_right_left_knn(unsigned int num_nn = 10);
+
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 
@@ -155,6 +157,7 @@ class SkeletonFitting {
 		osg::ref_ptr<osg::Vec3Array> cloud;
 		boost::shared_ptr<Skeletonization3D> skeletonizator;
 		boost::shared_ptr<Skeleton> skeleton;
+		KNNSearch knn_searcher;
 		const camVecT& camera_arr;
 };
 

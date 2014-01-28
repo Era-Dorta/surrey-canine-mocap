@@ -551,10 +551,10 @@ void RenderSkeletonization::toggle_group_div() {
 }
 
 void RenderSkeletonization::display_sphere(const osg::Vec3& position,
-		unsigned index) {
+		unsigned index, const osg::Vec4& color) {
 	if (index + 1 >= skel_group_div->getNumChildren()) {
-		add_sphere_to_node(Node::joint_radius, osg::Vec4(0.0, 0.0, 0.0, 0.0),
-				skel_group_div, osg::Matrix::translate(position));
+		add_sphere_to_node(Node::joint_radius, color, skel_group_div,
+				osg::Matrix::translate(position));
 	} else {
 		skel_group_div->getChild(index + 1)->asTransform()->asMatrixTransform()->setMatrix(
 				osg::Matrix::translate(position));
