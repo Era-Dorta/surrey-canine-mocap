@@ -1179,76 +1179,97 @@ bool SkeletonFitting::reclassify_left_right_leg_points(float mean_z_front,
 	return point_relabeled;
 }
 
-void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn) {
+void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
+		float max_distance_threshold, unsigned int max_ite) {
+	if (cloud->size() < num_nn) {
+		return;
+	}
 	std::vector<std::vector<int> > indices;
 	std::vector<std::vector<float> > dists;
 	knn_searcher.knn_search(cloud, num_nn, indices, dists);
 
 	std::vector<Skel_Leg> labels_new(labels);
-	//TODO Could add a threshold distance and after it don't count the points
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		int same_leg_neighbours = 0;
-		int total_valid_neighbours = 0;
-		for (unsigned int j = 0; j < num_nn; j++) {
-			switch (labels[i]) {
-			case Front_Right:
-				if (labels[indices[i][j]] == Front_Right) {
-					same_leg_neighbours++;
-					total_valid_neighbours++;
-				} else if (labels[indices[i][j]] == Front_Left) {
-					total_valid_neighbours++;
+	unsigned int num_ite = 0;
+	bool points_moved;
+	do {
+		points_moved = false;
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			int same_leg_neighbours = 0;
+			int total_valid_neighbours = 0;
+			for (unsigned int j = 0; j < num_nn; j++) {
+				switch (labels[i]) {
+				case Front_Right:
+					if (labels[indices[i][j]] == Front_Right
+							&& dists[i][j] < max_distance_threshold) {
+						same_leg_neighbours++;
+						total_valid_neighbours++;
+					} else if (labels[indices[i][j]] == Front_Left
+							&& dists[i][j] < max_distance_threshold) {
+						total_valid_neighbours++;
+					}
+					break;
+				case Front_Left:
+					if (labels[indices[i][j]] == Front_Left
+							&& dists[i][j] < max_distance_threshold) {
+						same_leg_neighbours++;
+						total_valid_neighbours++;
+					} else if (labels[indices[i][j]] == Front_Right
+							&& dists[i][j] < max_distance_threshold) {
+						total_valid_neighbours++;
+					}
+					break;
+				case Back_Right:
+					if (labels[indices[i][j]] == Back_Right
+							&& dists[i][j] < max_distance_threshold) {
+						same_leg_neighbours++;
+						total_valid_neighbours++;
+					} else if (labels[indices[i][j]] == Back_Left
+							&& dists[i][j] < max_distance_threshold) {
+						total_valid_neighbours++;
+					}
+					break;
+				case Back_Left:
+					if (labels[indices[i][j]] == Back_Left
+							&& dists[i][j] < max_distance_threshold) {
+						same_leg_neighbours++;
+						total_valid_neighbours++;
+					} else if (labels[indices[i][j]] == Back_Right
+							&& dists[i][j] < max_distance_threshold) {
+						total_valid_neighbours++;
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			case Front_Left:
-				if (labels[indices[i][j]] == Front_Left) {
-					same_leg_neighbours++;
-					total_valid_neighbours++;
-				} else if (labels[indices[i][j]] == Front_Right) {
-					total_valid_neighbours++;
-				}
-				break;
-			case Back_Right:
-				if (labels[indices[i][j]] == Back_Right) {
-					same_leg_neighbours++;
-					total_valid_neighbours++;
-				} else if (labels[indices[i][j]] == Back_Left) {
-					total_valid_neighbours++;
-				}
-				break;
-			case Back_Left:
-				if (labels[indices[i][j]] == Back_Left) {
-					same_leg_neighbours++;
-					total_valid_neighbours++;
-				} else if (labels[indices[i][j]] == Back_Right) {
-					total_valid_neighbours++;
-				}
-				break;
-			default:
-				break;
 			}
-		}
 
-		if (total_valid_neighbours > 0
-				&& same_leg_neighbours < total_valid_neighbours / 2.0) {
-			switch (labels[i]) {
-			case Front_Right:
-				labels_new[i] = Front_Left;
-				break;
-			case Front_Left:
-				labels_new[i] = Front_Right;
-				break;
-			case Back_Right:
-				labels_new[i] = Back_Left;
-				break;
-			case Back_Left:
-				labels_new[i] = Back_Right;
-				break;
-			default:
-				break;
+			if (total_valid_neighbours > 0
+					&& same_leg_neighbours < total_valid_neighbours / 2.0) {
+				switch (labels[i]) {
+				case Front_Right:
+					labels_new[i] = Front_Left;
+					points_moved = true;
+					break;
+				case Front_Left:
+					labels_new[i] = Front_Right;
+					points_moved = true;
+					break;
+				case Back_Right:
+					labels_new[i] = Back_Left;
+					points_moved = true;
+					break;
+				case Back_Left:
+					labels_new[i] = Back_Right;
+					points_moved = true;
+					break;
+				default:
+					break;
+				}
 			}
 		}
-	}
-	labels = labels_new;
+		labels = labels_new;
+		num_ite++;
+	} while (points_moved && num_ite < max_ite);
 }
 
 void SkeletonFitting::move_goal(osg::Vec3& goal, int attempt) {
