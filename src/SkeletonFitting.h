@@ -130,6 +130,12 @@ class SkeletonFitting {
 
 		void move_goal(osg::Vec3& goal, int attempt);
 
+		void get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
+				const osg::Vec3& trans = osg::Vec3());
+
+		void get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
+				const osg::Vec3& trans = osg::Vec3());
+
 		//Needed to use std::sort with comp_y
 		struct sortstruct {
 				// sortstruct needs to know its containing object
