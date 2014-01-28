@@ -4,6 +4,9 @@ SET( PROJECT_NAME MultiCamViewer )
 PROJECT( ${PROJECT_NAME} ) 
 SET( PROJECT_EXE "${PROJECT_NAME}_exe" ) 
 
+#Add custom .cmake files located in this folder
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmakeModules")
+
 #Boost
 FIND_PACKAGE( Boost 1.46 REQUIRED COMPONENTS filesystem system )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
@@ -14,12 +17,17 @@ INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
 
 #OpenCV
 FIND_PACKAGE( OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs" ) 
+INCLUDE_DIRECTORIES( ${OpenCV_INCLUDE_DIRS} )
 MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
 MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
 
 #Custom path to compiled by hand libraries, thanks to not having permision to install software
 #If you have installation permisions remove this line
 SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
+
+#FLANN
+FIND_PACKAGE( Flann )
+INCLUDE_DIRECTORIES( ${FLANN_INCLUDE_DIRS} )
 
 #TODO HINT does not work with osg, not sure why
 #OSG
@@ -53,6 +61,7 @@ src/CameraCalibrator.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
 src/Extras.cpp
+src/KNNSearch.cpp
 src/main.cpp
 src/MessageHandler.cpp
 src/MiscUtils.cpp
@@ -62,6 +71,7 @@ src/MultiCamViewer.cpp
 src/Node.cpp
 src/PixelSearch.cpp
 src/PointFusion.cpp
+src/Projections.cpp
 src/RenderPOV.cpp
 src/RenderSkeletonization.cpp
 src/RGBDCamera.cpp
@@ -85,6 +95,7 @@ src/DebugUtil.h
 src/DepthMapPoly.h
 src/DepthMapSurfel.h
 src/Extras.h
+src/KNNSearch.h
 src/MessageHandler.h
 src/MiscUtils.h
 src/MocapData.h
@@ -93,6 +104,7 @@ src/MultiCamViewer.h
 src/Node.h
 src/PixelSearch.h
 src/PointFusion.h
+src/Projections.h
 src/RenderPOV.h
 src/RenderSkeletonization.h
 src/RGBDCamera.h
@@ -109,13 +121,22 @@ src/SurfelModel.h
 ) 
 
 
-macro( config_project PROJNAME LIBNAME )
-	include_directories( ${${LIBNAME}_INCLUDE_DIR} )
-	target_link_libraries( ${PROJNAME} ${${LIBNAME}_LIBRARY} )
-endmacro()
+MACRO( config_project PROJNAME LIBNAME )
+	INCLUDE_DIRECTORIES( ${${LIBNAME}_INCLUDE_DIR} )
+	TARGET_LINK_LIBRARIES( ${PROJNAME} ${${LIBNAME}_LIBRARY} )
+ENDMACRO()
 
 #Create the executable
 ADD_EXECUTABLE( ${PROJECT_EXE} ${DEP_SOURCE} ${SOURCE} ${HEADERS} ) 
+
+#Boost linking
+TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${Boost_LIBRARIES} )
+
+#FLANN linking
+TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${FLANN_LIBRARIES} )
+
+#OpenCV linking
+TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${OpenCV_LIBS} )
 
 #OSG linking
 config_project( ${PROJECT_EXE} OPENTHREADS )
@@ -128,12 +149,3 @@ config_project( ${PROJECT_EXE} OSGSIM )
 config_project( ${PROJECT_EXE} OSGWIDGET )
 config_project( ${PROJECT_EXE} OSGANIMATION )
 config_project( ${PROJECT_EXE} OSGTEXT )
-
-#OpenCV linking
-target_link_libraries( ${PROJECT_EXE} ${OpenCV_LIBS} )
-
-#Boost linking
-target_link_libraries( ${PROJECT_EXE} ${Boost_LIBRARIES} )
-
-INCLUDE_DIRECTORIES(${FREETYPE_INCLUDE_DIRS})
-TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${FREETYPE_LIBRARIES})
