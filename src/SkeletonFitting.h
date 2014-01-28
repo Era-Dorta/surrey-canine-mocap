@@ -53,7 +53,7 @@ class SkeletonFitting {
 
 		void fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg);
 
-		void fit_vertebral_front();
+		void fit_head_and_back();
 
 		const std::vector<Skel_Leg>& getLabels() const;
 
@@ -79,6 +79,9 @@ class SkeletonFitting {
 
 		bool find_second_bone_end_pos(const osg::Vec3& head_pos,
 				osg::Vec3& shoulder_pos);
+
+		bool find_vertebral_end_pos(const osg::Vec3& shoulder_pos,
+				osg::Vec3& vertebral_end_pos);
 
 		void fit_leg_pos_impl(Skel_Leg leg, const osg::Vec3& paw_position,
 				const osg::Vec3& middle_position);

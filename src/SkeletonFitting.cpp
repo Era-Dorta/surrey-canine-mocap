@@ -212,27 +212,46 @@ void SkeletonFitting::fit_leg_pos_impl(Skel_Leg leg,
 	}
 }
 
-void SkeletonFitting::fit_vertebral_front() {
+void SkeletonFitting::fit_head_and_back() {
 
 	int head_index = find_head();
 
 	if (head_index != -1) {
-		osg::Vec3 head_pos, shoulder_pos;
-		osg::Vec3 root_pos = cloud->at(head_index);
+
+		//Calculate positions
+		//First bone
+		osg::Vec3 head_pos, root_pos = cloud->at(head_index);
 		if (!find_first_bone_end_pos(root_pos, head_pos)) {
 			return;
 		}
 		float bone_length = skeleton->get_node(0)->length.length();
 		refine_goal_position(head_pos, root_pos, bone_length);
 
+		//Second bone
+		osg::Vec3 shoulder_pos;
 		if (!find_second_bone_end_pos(head_pos, shoulder_pos)) {
 			return;
 		}
 		bone_length = skeleton->get_node(1)->length.length();
 		refine_goal_position(shoulder_pos, head_pos, bone_length);
 
+		//Third bone
+		osg::Vec3 vertebral_back_pos;
+		if (!find_vertebral_end_pos(shoulder_pos, vertebral_back_pos)) {
+			return;
+		}
+		bone_length = skeleton->get_node(10)->length.length();
+		refine_goal_position(vertebral_back_pos, shoulder_pos, bone_length);
+
+		//Use inverse kinematics to fit bones into positions
 		if (!solve_2_bones(0, head_pos, 1, shoulder_pos)) {
 			cout << "Vertebral front fit fail" << endl;
+			return;
+		}
+
+		if (!solve_2_bones(1, shoulder_pos, 10, vertebral_back_pos)) {
+			cout << "Vertebral back fit fail" << endl;
+			return;
 		}
 	}
 }
@@ -376,6 +395,7 @@ bool SkeletonFitting::find_first_bone_end_pos(const osg::Vec3& root_pos,
 
 bool SkeletonFitting::find_second_bone_end_pos(const osg::Vec3& head_pos,
 		osg::Vec3& shoulder_pos) {
+	//Use the second camera for a side view
 	const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
 			current_frame);
 
@@ -416,6 +436,53 @@ bool SkeletonFitting::find_second_bone_end_pos(const osg::Vec3& head_pos,
 		}
 	}
 	shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
+	return true;
+}
+
+bool SkeletonFitting::find_vertebral_end_pos(const osg::Vec3& shoulder_pos,
+		osg::Vec3& vertebral_end_pos) {
+	//Use the second camera for a side view
+	const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
+			current_frame);
+
+	float3 start_point = Projections::get_2d_projection(shoulder_pos,
+			camera_arr.begin() + 1);
+
+	int row = start_point.y;
+	int col = start_point.x;
+
+	if (cam1_bin_img.at<uchar>(row, col) != 255) {
+		if (!PixelSearch::get_nearest_white_pixel(cam1_bin_img, row, col, row,
+				col)) {
+			cout << "Could not locate shoulder end position on second camera"
+					<< endl;
+			return false;
+		}
+	}
+
+	//Vertebral bone is index 10
+	float bone_length = skeleton->get_node(10)->length.length();
+
+	bool not_bone_length = true;
+	float3 aux_point, head3 = make_float3(shoulder_pos.x(), shoulder_pos.y(),
+			shoulder_pos.z());
+	while (not_bone_length) {
+		if (PixelSearch::get_top_left_white_pixel(cam1_bin_img, row, col, row,
+				col)) {
+			aux_point = Projections::get_3d_projection(row, col,
+					camera_arr.begin() + 1, current_frame);
+			float current_length = length(head3 - aux_point);
+			if (current_length >= bone_length) {
+				not_bone_length = false;
+			}
+		} else {
+			if (!unstuck_go_down(cam1_bin_img, row, col, row, col)) {
+				cout << "Error calculating third bone position" << endl;
+				return false;
+			}
+		}
+	}
+	vertebral_end_pos.set(aux_point.x, aux_point.y, aux_point.z);
 	return true;
 }
 
