@@ -327,6 +327,10 @@ bool SkeletonFitting::find_first_bone_end_pos(const osg::Vec3& root_pos,
 
 	//TODO SUPER IMPORTANT DO NOT DO THIS ON CAMERA BASED, DO A SUPER
 	//CAMERA A PROJECT ALL POINTS TO AXES, on find second bone too
+	//To be able to do this, I have to take the binary images from each camera
+	//project them to 3D, and them project the resulting cloud to 2D using the
+	//projections methods in this class
+
 	//Use the third camera since it gives the best head view
 	const cv::Mat& cam2_bin_img = skeletonizator->get_2D_bin_frame(2,
 			current_frame);
