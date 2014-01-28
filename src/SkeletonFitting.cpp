@@ -144,18 +144,8 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 			joint_positions_index[i] = *j;
 		}
 
-		//Solve for "shoulder" two bones
-		if (!solve_2_bones(leg - 3, leg - 2,
-				cloud->at(joint_positions_index[2]))) {
-			cout << "Failed leg fitting the first pair" << endl;
-			return;
-		}
-
-		//Solve for paw and parent bone
-		if (!solve_2_bones(leg - 1, leg, cloud->at(joint_positions_index[0]))) {
-			cout << "Failed leg fitting the second pair" << endl;
-			return;
-		}
+		fit_leg_pos_impl(leg, cloud->at(joint_positions_index[2]),
+				cloud->at(joint_positions_index[0]));
 	}
 }
 
@@ -190,17 +180,35 @@ void SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
 		osg::Vec3 mid_position = (cloud->at(paw_index) + prev_bone_position)
 				* 0.5;
 
-		//Solve for "shoulder" two bones
-		if (!solve_2_bones(leg - 3, leg - 2, mid_position)) {
-			cout << "Failed leg fitting the first pair" << endl;
-			return;
-		}
+		fit_leg_pos_impl(leg, mid_position, cloud->at(paw_index));
+	}
+}
 
-		//Solve for paw and parent bone
-		if (!solve_2_bones(leg - 1, leg, cloud->at(paw_index))) {
-			cout << "Failed leg fitting the second pair" << endl;
-			return;
-		}
+void SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg) {
+	std::vector<int> leg_points_index;
+
+	int paw_index = find_paw(leg, leg_points_index);
+
+	if (paw_index != -1) {
+		//Put the "shoulder" at the highest point of the cloud for this leg
+		int mid_position = find_leg_upper_end(leg, leg_points_index);
+
+		fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
+	}
+}
+
+void SkeletonFitting::fit_leg_pos_impl(Skel_Leg leg,
+		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
+	//Solve for "shoulder" two bones
+	if (!solve_2_bones(leg - 3, leg - 2, middle_position)) {
+		cout << "Failed leg fitting the first pair" << endl;
+		return;
+	}
+
+	//Solve for paw and parent bone
+	if (!solve_2_bones(leg - 1, leg, paw_position)) {
+		cout << "Failed leg fitting the second pair" << endl;
+		return;
 	}
 }
 
@@ -275,6 +283,31 @@ int SkeletonFitting::find_paw(Skel_Leg leg,
 		for (unsigned int i = 0; i < leg_points_index.size(); i++) {
 			if (max_y < cloud->at(leg_points_index[i]).y()) {
 				max_y = cloud->at(leg_points_index[i]).y();
+				index = leg_points_index[i];
+			}
+		}
+		return index;
+	} else {
+		return -1;
+	}
+}
+
+int SkeletonFitting::find_leg_upper_end(Skel_Leg leg,
+		std::vector<int>& leg_points_index) {
+	leg_points_index.clear();
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == leg) {
+			leg_points_index.push_back(i);
+		}
+	}
+
+	if (leg_points_index.size() > 0) {
+		float min_y = cloud->at(leg_points_index.front()).y();
+		int index = leg_points_index.front();
+		for (unsigned int i = 0; i < leg_points_index.size(); i++) {
+			if (min_y > cloud->at(leg_points_index[i]).y()) {
+				min_y = cloud->at(leg_points_index[i]).y();
 				index = leg_points_index[i];
 			}
 		}
