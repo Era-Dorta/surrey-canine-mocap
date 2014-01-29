@@ -13,7 +13,7 @@
 #include "PixelSearch.h"
 #include "Projections.h"
 #include "KNNSearch.h"
-#include "IKAN/srs.h"
+#include "IKSolver.h"
 
 #include "osg/Array"
 #include "opencv2/opencv.hpp"
@@ -182,6 +182,7 @@ class SkeletonFitting {
 		boost::shared_ptr<Skeletonization3D> skeletonizator;
 		boost::shared_ptr<Skeleton> skeleton;
 		KNNSearch knn_searcher;
+		IKSolver ik_solver;
 		const camVecT& camera_arr;
 };
 
