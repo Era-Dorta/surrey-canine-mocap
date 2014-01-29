@@ -131,7 +131,7 @@ class SkeletonFitting {
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 
-		void move_goal(osg::Vec3& goal, int attempt);
+		void move_goal(osg::Vec3& goal, unsigned int attempt);
 
 		void get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
 				const osg::Vec3& trans = osg::Vec3());
@@ -174,6 +174,8 @@ class SkeletonFitting {
 		std::vector<Skel_Leg> labels;
 		int current_frame;
 		int n_frames;
+		bool move_goal_change_sign;
+		float move_goal_offset;
 		osg::ref_ptr<osg::Vec3Array> cloud;
 		boost::shared_ptr<Skeletonization3D> skeletonizator;
 		boost::shared_ptr<Skeleton> skeleton;

@@ -28,6 +28,8 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 	error_threshold = 0.005;
 	current_frame = -1;
 	n_frames = 0;
+	move_goal_change_sign = true;
+	move_goal_offset = 0.001;
 	body_height_extra_threshold = 0.045;
 	mean_z_front_all_frames = 0.0;
 	mean_z_back_all_frames = 0.0;
@@ -617,7 +619,7 @@ bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
 	bool solve_success = solve_2_bones_impl(bone0, position0, bone1, position1,
 			0.0, false);
 	int attempt = 0;
-	while (!solve_success && attempt < 20) {
+	while (!solve_success && attempt < 28) {
 		aux_pos0 = position0;
 		aux_pos1 = position1;
 		move_goal(aux_pos0, attempt);
@@ -626,6 +628,10 @@ bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
 				0.0, false);
 		attempt++;
 	}
+	//Reset move goal variables
+	move_goal_change_sign = true;
+	move_goal_offset = 0.001;
+
 	return solve_success;
 }
 
@@ -636,13 +642,16 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	bool solve_success = solve_2_bones_impl(bone0, position, bone1, position,
 			swivel_angle, true);
 	int attempt = 0;
-	while (!solve_success && attempt < 20) {
+	while (!solve_success && attempt < 28) {
 		aux_pos = position;
 		move_goal(aux_pos, attempt);
 		solve_success = solve_2_bones_impl(bone0, aux_pos, bone1, aux_pos,
 				swivel_angle, true);
 		attempt++;
 	}
+	move_goal_change_sign = true;
+	move_goal_offset = 0.001;
+
 	return solve_success;
 }
 
@@ -1376,16 +1385,46 @@ void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 	} while (points_moved && num_ite < max_ite);
 }
 
-void SkeletonFitting::move_goal(osg::Vec3& goal, int attempt) {
-	float extra_dist = attempt * 0.5;
-	float rand_num = get_rand_0_01();
-	goal.x() += rand_num + rand_num * extra_dist;
+void SkeletonFitting::move_goal(osg::Vec3& goal, unsigned int attempt) {
+	//First seven attempts is increases goal in some dimensions,
+	//next seven it decreases, then it increments the offset at starts again
+	int move_action = attempt % 7;
 
-	rand_num = get_rand_0_01();
-	goal.y() += rand_num + rand_num * extra_dist;
+	switch (move_action) {
+	case 0:
+		goal.x() += move_goal_offset;
+		break;
+	case 1:
+		goal.y() += move_goal_offset;
+		break;
+	case 2:
+		goal.z() += move_goal_offset;
+		break;
+	case 3:
+		goal.x() += move_goal_offset;
+		goal.y() += move_goal_offset;
+		break;
+	case 4:
+		goal.x() += move_goal_offset;
+		goal.z() += move_goal_offset;
+		break;
+	case 5:
+		goal.y() += move_goal_offset;
+		goal.z() += move_goal_offset;
+		break;
+	default:
+		goal.x() += move_goal_offset;
+		goal.y() += move_goal_offset;
+		goal.z() += move_goal_offset;
 
-	rand_num = get_rand_0_01();
-	goal.z() += rand_num + rand_num * extra_dist;
+		if (move_goal_change_sign) {
+			move_goal_offset = -move_goal_offset;
+		} else {
+			move_goal_offset = -2 * move_goal_offset;
+		}
+		move_goal_change_sign = !move_goal_change_sign;
+		break;
+	}
 }
 
 void SkeletonFitting::get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
