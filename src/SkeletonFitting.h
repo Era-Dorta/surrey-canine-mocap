@@ -139,6 +139,8 @@ class SkeletonFitting {
 		void get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
 				const osg::Vec3& trans = osg::Vec3());
 
+		float get_rand_0_01();
+
 		//Needed to use std::sort with comp_y
 		struct sortstruct {
 				// sortstruct needs to know its containing object

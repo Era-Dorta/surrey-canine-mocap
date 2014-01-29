@@ -617,7 +617,7 @@ bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
 	bool solve_success = solve_2_bones_impl(bone0, position0, bone1, position1,
 			0.0, false);
 	int attempt = 0;
-	while (!solve_success && attempt < 3) {
+	while (!solve_success && attempt < 20) {
 		aux_pos0 = position0;
 		aux_pos1 = position1;
 		move_goal(aux_pos0, attempt);
@@ -636,7 +636,7 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	bool solve_success = solve_2_bones_impl(bone0, position, bone1, position,
 			swivel_angle, true);
 	int attempt = 0;
-	while (!solve_success && attempt < 3) {
+	while (!solve_success && attempt < 20) {
 		aux_pos = position;
 		move_goal(aux_pos, attempt);
 		solve_success = solve_2_bones_impl(bone0, aux_pos, bone1, aux_pos,
@@ -1377,13 +1377,15 @@ void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 }
 
 void SkeletonFitting::move_goal(osg::Vec3& goal, int attempt) {
-	if (attempt == 0) {
-		goal.x() += 0.01;
-	} else if (attempt == 1) {
-		goal.y() += 0.01;
-	} else {
-		goal.z() += 0.01;
-	}
+	float extra_dist = attempt * 0.5;
+	float rand_num = get_rand_0_01();
+	goal.x() += rand_num + rand_num * extra_dist;
+
+	rand_num = get_rand_0_01();
+	goal.y() += rand_num + rand_num * extra_dist;
+
+	rand_num = get_rand_0_01();
+	goal.z() += rand_num + rand_num * extra_dist;
 }
 
 void SkeletonFitting::get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
@@ -1440,4 +1442,16 @@ void SkeletonFitting::get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;
 		}
 	}
+}
+
+float SkeletonFitting::get_rand_0_01() {
+	//rand give a number between 0 and RAND_MAX, so in random we have a
+	//[0, 1] float
+	float random = ((float) std::rand()) / (float) RAND_MAX;
+
+	//[-0.5, 0.5]
+	random = random - 0.5;
+
+	//[-0.01, 0.01]
+	return random * 0.002;
 }
