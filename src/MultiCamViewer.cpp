@@ -23,6 +23,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 			last_frame_tick_count(0),
 			manual_origin_set(false),
 			manual_axes_rot(false),
+			show_bounding_box(false),
 			current_axe_manual(0),
 			last_cam_index(0),
 			_dataset_path(path),
@@ -67,12 +68,12 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	Projections::K = camera_arr.front()->get_K_f3x3();
 	Projections::invK = camera_arr.front()->get_inv_K_f3x3();
 
-	if (!manual_origin_set) {
-		//TODO This should be given by the user or somehow calculated from
-		//the images
-		//Set bounding box limits
-		bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.015, 0.25);
+	//TODO This should be given by the user or somehow calculated from
+	//the images
+	//Set bounding box limits
+	bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.015, 0.25);
 
+	if (!manual_origin_set) {
 		//Remove background using bounding box
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
 			camera_arr[i]->remove_background_only_bounding_box(bounding_box);
@@ -162,24 +163,29 @@ void MultiCamViewer::setup_scene() {
 	scene_root->addChild(cam_vis_switch);
 	//---------------------------
 
-	scene_root->addChild(render_skel_group.get());
-	skel_controller.setup_scene();
+	scene_root->addChild(render_skel_group);
 
-	//Shows bounding box used to removed the background
-	/*osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	 osg::Vec3 lengths(bounding_box.xMax() - bounding_box.xMin(),
-	 bounding_box.yMax() - bounding_box.yMin(),
-	 bounding_box.zMax() - bounding_box.zMin());
-	 geode->addDrawable(
-	 new osg::ShapeDrawable(
-	 new osg::Box(bounding_box.center(), lengths.x(),
-	 lengths.y(), lengths.z())));
-	 osg::StateSet* ss = geode->getOrCreateStateSet();
-	 ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
-	 ss->setAttributeAndModes(
-	 new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK,
-	 osg::PolygonMode::LINE));
-	 scene_root->addChild(geode.get());*/
+	if (!manual_origin_set) {
+		skel_controller.setup_scene();
+	}
+
+	if (show_bounding_box) {
+		//Shows bounding box used to removed the background
+		osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+		osg::Vec3 lengths(bounding_box.xMax() - bounding_box.xMin(),
+				bounding_box.yMax() - bounding_box.yMin(),
+				bounding_box.zMax() - bounding_box.zMin());
+		geode->addDrawable(
+				new osg::ShapeDrawable(
+						new osg::Box(bounding_box.center(), lengths.x(),
+								lengths.y(), lengths.z())));
+		osg::StateSet* ss = geode->getOrCreateStateSet();
+		ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
+		ss->setAttributeAndModes(
+				new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK,
+						osg::PolygonMode::LINE));
+		scene_root->addChild(geode);
+	}
 
 	//Shows box centred in origin to help the user select points for
 	//camera calibration

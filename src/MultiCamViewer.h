@@ -83,6 +83,7 @@ class MultiCamViewer: public osgGA::GUIEventHandler {
 		double last_frame_tick_count;
 		bool manual_origin_set;
 		bool manual_axes_rot;
+		bool show_bounding_box;
 		int current_axe_manual;
 		int last_cam_index;
 
