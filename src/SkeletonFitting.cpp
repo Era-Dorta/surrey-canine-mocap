@@ -91,6 +91,15 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 	}
 }
 
+void SkeletonFitting::fit_skeleton_to_cloud(){
+	fit_root_position();
+	fit_head_and_back();
+	fit_leg_position_mid_pos_in_top_leg(Front_Right);
+	fit_leg_position_mid_pos_in_top_leg(Front_Left);
+	fit_leg_position_mid_pos_in_top_leg(Back_Right);
+	fit_leg_position_mid_pos_in_top_leg(Back_Left);
+}
+
 void SkeletonFitting::fit_root_position() {
 	int head_index = find_head();
 

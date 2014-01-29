@@ -92,12 +92,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Left), 1);
 
 	if (skeleton->isSkelLoaded()) {
-		skel_fitter.fit_root_position();
-		skel_fitter.fit_head_and_back();
-		skel_fitter.fit_leg_position_mid_pos_in_top_leg(Front_Right);
-		skel_fitter.fit_leg_position_mid_pos_in_top_leg(Front_Left);
-		skel_fitter.fit_leg_position_mid_pos_in_top_leg(Back_Right);
-		skel_fitter.fit_leg_position_mid_pos_in_top_leg(Back_Left);
+		skel_fitter.fit_skeleton_to_cloud();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();

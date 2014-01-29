@@ -45,15 +45,7 @@ class SkeletonFitting {
 
 		void calculate_for_frame(int frame_num);
 
-		void fit_root_position();
-
-		void fit_leg_position(Skel_Leg leg);
-
-		void fit_leg_position_simple(Skel_Leg leg);
-
-		void fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg);
-
-		void fit_head_and_back();
+		void fit_skeleton_to_cloud();
 
 		const std::vector<Skel_Leg>& getLabels() const;
 
@@ -67,6 +59,16 @@ class SkeletonFitting {
 
 		float get_swivel_angle(int bone0, int bone1);
 	private:
+		void fit_root_position();
+
+		void fit_leg_position(Skel_Leg leg);
+
+		void fit_leg_position_simple(Skel_Leg leg);
+
+		void fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg);
+
+		void fit_head_and_back();
+
 		int find_head();
 
 		int find_paw(Skel_Leg leg, std::vector<int>& leg_points_index);
