@@ -8,6 +8,8 @@
 #ifndef IKSOLVER_H_
 #define IKSOLVER_H_
 
+#include "CudaVec.h"
+
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
@@ -21,16 +23,18 @@ class IKSolver {
 
 		void start_chain();
 
-		void add_bone_to_chain(const osg::Vec3& offset,
-				const osg::Quat& rot);
+		void add_bone_to_chain(const float3& offset, const float4& rot);
 
-		bool solve_chain(const osg::Vec3& goal_position);
+		bool solve_chain(const float3& goal_position,
+				unsigned int max_ite = 100, float accuracy = 1e-6);
 
-		unsigned int get_num_segments() const;
+		unsigned int get_num_joints() const;
 
-		void get_rotation_joint( int index, osg::Quat& rot);
+		void get_rotation_joint(unsigned int index, float4& rot);
 	private:
 		KDL::Chain chain;
+		KDL::JntArray solved_joints;
+		unsigned int num_joints;
 };
 
 #endif /* IKSOLVER_H_ */
