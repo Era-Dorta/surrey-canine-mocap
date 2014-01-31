@@ -11,6 +11,8 @@
 #include "Skeleton.h"
 #include "boost/shared_ptr.hpp"
 
+//TODO Update to save all the skeleton now that inverse kinematics move
+//several bones at a time
 class SkeletonState {
 	public:
 		SkeletonState();

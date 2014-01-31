@@ -34,7 +34,9 @@ class IKSolver {
 	private:
 		KDL::Chain chain;
 		KDL::JntArray solved_joints;
+		KDL::JntArray current_joints;
 		unsigned int num_joints;
+		bool need_extra_joints;
 };
 
 #endif /* IKSOLVER_H_ */

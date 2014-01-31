@@ -8,6 +8,10 @@
 #ifndef DEBUGUTIL_HPP_
 #define DEBUGUTIL_HPP_
 
+#include <osg/Vec3>
+#include <osg/Vec4>
+#include <osg/Matrix>
+
 #include <iostream>
 using std::cout;
 using std::endl;
