@@ -45,6 +45,59 @@
 #include <math.h>
 #include "BVHFormat.h"
 
+#define XROT 1
+#define YROT 2
+#define ZROT 4
+#define XTRA 32
+#define YTRA 64
+#define ZTRA 128
+
+int strstrEx(const char *string, const char *strCharSet) {
+	// Like strstr but not case sensitve and returns the offset within the string of the start of strCharSet
+	// Assumes that strCharSet is already presented in upper case
+	int i = 0, j = 0, k = 0;
+	if (!strCharSet[0])
+		return -1;
+	while (string[i]) {
+		while (((string[i] > 96 && string[i] < 123) ?
+				string[i] & 0xdf : string[i]) != strCharSet[0] && string[i++])
+			;
+		j = ++i;
+		while (((string[j] > 96 && string[j] < 123) ?
+				string[j] & 0xdf : string[j]) == strCharSet[++k] && string[j++])
+			;
+		if (strCharSet[k])
+			k = 0;
+		else
+			return i - 1;
+	}
+	return -1;
+}
+
+int strstrEx(const char *string, char strChar) {
+	// Like strchr but not case sensitve and returns the offset within the string of the start of strCharSet
+	// Assumes that strChar is already presented in upper case
+	int i = 0;
+	if (!strChar)
+		return -1;
+	while (string[i] && (string[i++] & 0xdf) != strChar)
+		;
+	if (string[i])
+		return i - 1;
+	else
+		return -1;
+}
+
+bool strcompEx(const char *string, const char* strCharSet) {
+	int i = 0;
+	while (string[i] && strCharSet[i] && (string[i] & 0xdf) == strCharSet[i++])
+		;
+	if (!string[i] && !strCharSet[i])
+		return true;
+	else
+		return false;
+}
+
 inline std::ostream& operator<<(std::ostream &out, const osg::Vec3 &vector) {
 	out << vector.x() << " " << vector.y() << " " << vector.z();
 	return out;

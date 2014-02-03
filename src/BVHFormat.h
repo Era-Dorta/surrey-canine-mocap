@@ -43,7 +43,6 @@
 #ifndef __bvhformat_h__
 #define __bvhformat_h__
 #include "MocapData.h"
-#include "Extras.h"
 #include <fstream>
 #include <iostream>
 using std::cout;

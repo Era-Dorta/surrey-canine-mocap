@@ -66,7 +66,7 @@ src/BVHFormat.cpp
 src/CameraCalibrator.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
-src/Extras.cpp
+src/IKSolver.cpp
 src/KNNSearch.cpp
 src/main.cpp
 src/MessageHandler.cpp
@@ -100,7 +100,7 @@ src/CudaVec.h
 src/DebugUtil.h
 src/DepthMapPoly.h
 src/DepthMapSurfel.h
-src/Extras.h
+src/IKSolver.h
 src/KNNSearch.h
 src/MessageHandler.h
 src/MiscUtils.h
