@@ -15,11 +15,19 @@ SkeletonController::SkeletonController(const camVecT& camera_arr,
 							new Skeletonization3D(camera_arr))),
 			skeleton(boost::shared_ptr<Skeleton>(new Skeleton)),
 			skel_renderer(camera_arr, render_skel_group),
-			skel_fitter(skeleton, skeletonized3D, camera_arr), current_frame(0),
-			last_mouse_pos_x(0), last_mouse_pos_y(0), delete_skel(false),
-			rotate_axis(X), show_joint_axis(false), manual_mark_up(false),
-			rotate_scale_factor(0.02), translate_scale_factor(0.002),
-			inv_kin_scale_factor(0.0005) {
+			skel_fitter(skeleton, skeletonized3D, camera_arr) {
+	current_frame = 0;
+	last_mouse_pos_x = 0;
+	last_mouse_pos_y = 0;
+	num_bones_chain = 1;
+	delete_skel = false;
+	rotate_axis = X;
+	show_joint_axis = false;
+	manual_mark_up = false;
+	rotate_scale_factor = 0.02;
+	translate_scale_factor = 0.002;
+	inv_kin_scale_factor = 0.0005;
+
 	reset_state();
 	//mix_skeleton_sizes();
 }
@@ -92,7 +100,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Left), 1);
 
 	if (skeleton->isSkelLoaded()) {
-		skel_fitter.fit_skeleton_to_cloud();
+		//skel_fitter.fit_skeleton_to_cloud();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
@@ -121,7 +129,8 @@ void SkeletonController::setState(Fitting_State state) {
 
 void SkeletonController::draw_edit_text() {
 	if (is_point_selected) {
-		std::string edit_text = "v(finish) b(rot) n(axis) m(frames) ,(root)\n";
+		std::string edit_text =
+				"v(finish) b(rot) n(axis) m(frames) ,(root) +-(n_bones)\n";
 		edit_text += "Editing ";
 		switch (mod_state) {
 		case ROTATE:
@@ -160,6 +169,13 @@ void SkeletonController::draw_edit_text() {
 		} else {
 			edit_text += "bone ";
 		}
+
+		edit_text += "n_bones ";
+
+		std::ostringstream oss;
+		oss << num_bones_chain;
+		edit_text += oss.str();
+
 		skel_renderer.display_text(edit_text, osg::Vec3(600.0f, 50.0f, 0.0f));
 	}
 }
@@ -207,9 +223,29 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 							//known position, this avoids big sudden moves
 							//in the bones when they are moves for the first
 							//time using inverse kinematics
-							swivel_angle = skel_fitter.get_swivel_angle(
-									selected_point_index - 1,
-									selected_point_index);
+							//swivel_angle = skel_fitter.get_swivel_angle(
+							//		selected_point_index - 1,
+							//		selected_point_index);
+
+							/*ik_solver.start_chain();
+							 //Node* node = skeleton->get_node(
+							 //		selected_point_index);
+							 Node* node = skeleton->get_root();
+							 cout << "selected point index "
+							 << selected_point_index << endl;
+							 for (int i = 0; i <= selected_point_index; i++) {
+							 cout << "addging bones " << i << endl;
+							 float3 offset = make_float3(node->length._v);
+							 osg::Quat q = node->quat_arr.at(current_frame);
+							 float4 rot = make_float4(q.x(), q.y(), q.z(),
+							 q.w());
+							 ik_solver.add_bone_to_chain(offset, rot);
+							 if (node->children.size()) {
+							 node = node->children[0].get();
+							 }
+							 }
+							 cout << "end" << endl;*/
+							fill_chain();
 							update_dynamics(current_frame);
 						}
 					}
@@ -262,8 +298,21 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				break;
 			case INV_KIN:
 				if (!change_all_frames) {
-					skel_fitter.solve_2_bones(selected_point_index - 1,
-							selected_point_index, move_axis, swivel_angle);
+					//move_axis.set(0.15,0.0,0.0);
+					//osg::Matrix m;
+					//skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
+					//move_axis = move_axis * m;
+
+					ik_solver.solve_chain(make_float3(move_axis._v));
+
+					int j = 0;
+					for (int i = ik_chain.size() - 1; i >= 0; i--) {
+						float4 new_rot;
+						ik_solver.get_rotation_joint(j, new_rot);
+						ik_chain.at(i)->quat_arr.at(current_frame).set(
+								new_rot.x, new_rot.y, new_rot.z, new_rot.w);
+						j++;
+					}
 				}
 				break;
 			}
@@ -371,6 +420,20 @@ bool SkeletonController::handle_keyboard_events(
 				update_dynamics(current_frame);
 			}
 			break;
+		case osgGA::GUIEventAdapter::KEY_Plus:
+		case osgGA::GUIEventAdapter::KEY_KP_Add:
+			if (is_point_selected) {
+				num_bones_chain++;
+				update_dynamics(current_frame);
+			}
+			break;
+		case osgGA::GUIEventAdapter::KEY_Minus:
+		case osgGA::GUIEventAdapter::KEY_KP_Subtract:
+			if (is_point_selected && num_bones_chain > 0) {
+				num_bones_chain--;
+				update_dynamics(current_frame);
+			}
+			break;
 		case osgGA::GUIEventAdapter::KEY_G:
 			skel_renderer.clean_skeleton();
 			show_joint_axis = !show_joint_axis;
@@ -384,14 +447,15 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
+			cout << "loading" << endl;
 			load_skeleton_from_file(
 			//		"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
-					"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
+			//		"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
 			break;
 
 			//Save skeleton to file:
@@ -454,10 +518,19 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 					mouse_vec * inv_kin_scale_factor
 							+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
 									current_frame);
+			//Put final position in first bone coordinate system
+			osg::Matrix m;
+			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
+			mouse_vec = mouse_vec * m;
+
 		} else {
 			mouse_vec =
 					skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
 							current_frame);
+			osg::Matrix m;
+			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
+			mouse_vec = mouse_vec * m;
+
 			if (last_mouse_pos_y - y > 0) {
 				swivel_angle += 0.01;
 			} else {
@@ -498,4 +571,25 @@ void SkeletonController::finish_bone_trans() {
 	skel_renderer.clean_text();
 	update_dynamics(current_frame);
 	delete_skel = false;
+}
+
+void SkeletonController::fill_chain() {
+	ik_chain.clear();
+
+	Node* node = skeleton->get_node(selected_point_index);
+	int i = num_bones_chain - 1;
+	while (i >= 0 && node != NULL) {
+		ik_chain.push_back(node);
+		node = node->parent;
+		i--;
+	}
+
+	ik_solver.start_chain();
+
+	for (int i = ik_chain.size() - 1; i >= 0; i--) {
+		float3 offset = make_float3(ik_chain.at(i)->length._v);
+		osg::Quat q = ik_chain.at(i)->quat_arr.at(current_frame);
+		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
+		ik_solver.add_bone_to_chain(offset, rot);
+	}
 }

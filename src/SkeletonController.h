@@ -15,6 +15,7 @@
 #include "SkeletonMixer.h"
 #include "MessageHandler.h"
 #include "SkeletonState.h"
+#include "IKSolver.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -73,6 +74,8 @@ class SkeletonController {
 
 		void finish_bone_trans();
 
+		void fill_chain();
+
 		//Class that creates a skeleton from a given set of frames
 		boost::shared_ptr<Skeletonization3D> skeletonized3D;
 
@@ -102,6 +105,8 @@ class SkeletonController {
 		Mod_State mod_state;
 		bool change_all_frames;
 		bool only_root;
+		unsigned int num_bones_chain;
+		std::vector<Node*> ik_chain;
 		bool transforming_skeleton;
 		bool delete_skel;
 		Axis rotate_axis;
@@ -113,6 +118,8 @@ class SkeletonController {
 		float swivel_angle;
 
 		MessageHandler msg_handler;
+
+		IKSolver ik_solver;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */

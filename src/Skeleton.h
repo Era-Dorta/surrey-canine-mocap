@@ -21,6 +21,9 @@
 using std::cout;
 using std::endl;
 
+//TODO Skeleton should hide what internal structure it uses for the nodes
+//should have methods to access children/parent and other attributes
+
 class Skeleton: public BVHFormat {
 	public:
 		Skeleton();

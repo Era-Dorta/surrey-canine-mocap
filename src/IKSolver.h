@@ -23,7 +23,9 @@ class IKSolver {
 
 		void start_chain();
 
-		void add_bone_to_chain(const float3& offset, const float4& rot);
+		void start_chain(const float3& offset, const float4& rot);
+
+		void add_bone_to_chain(const float3& length, const float4& rot);
 
 		bool solve_chain(const float3& goal_position,
 				unsigned int max_ite = 100, float accuracy = 1e-6);
@@ -37,6 +39,7 @@ class IKSolver {
 		KDL::JntArray current_joints;
 		unsigned int num_joints;
 		bool need_extra_joints;
+		int extra_segment;
 };
 
 #endif /* IKSOLVER_H_ */

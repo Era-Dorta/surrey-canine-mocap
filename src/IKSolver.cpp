@@ -10,6 +10,7 @@
 IKSolver::IKSolver() {
 	num_joints = 0;
 	need_extra_joints = true;
+	extra_segment = 0;
 }
 
 void IKSolver::start_chain() {
@@ -17,21 +18,36 @@ void IKSolver::start_chain() {
 	current_joints = KDL::JntArray();
 	num_joints = 0;
 	need_extra_joints = true;
+	extra_segment = 0;
 }
-void IKSolver::add_bone_to_chain(const float3& offset, const float4& rot) {
+
+void IKSolver::start_chain(const float3& offset, const float4& rot) {
+	start_chain();
+
+	//Adds an offset to the chain start, since it does not have
+	//joints it cannot move
+	KDL::Vector kdl_offset(offset.x, offset.y, offset.z);
+	KDL::Frame frame(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
+			kdl_offset);
+
+	KDL::Segment segment(KDL::Joint(KDL::Joint::None), frame);
+	chain.addSegment(segment);
+	extra_segment = 1;
+}
+void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
 	//Create a 3DOF joint
 	KDL::Joint kdl_jointx(KDL::Joint::RotZ);
 	KDL::Joint kdl_jointy(KDL::Joint::RotY);
 	KDL::Joint kdl_jointz(KDL::Joint::RotX);
 
 	//Set bone length
-	KDL::Vector kdl_offset(offset.x, offset.y, offset.z);
+	KDL::Vector kdl_length(length.x, length.y, length.z);
 
 	//In KDL a 3DOF joint are two 1DOF joints without length
 	//and a third one with with the bone length
 	KDL::Segment segmentx(kdl_jointx);
 	KDL::Segment segmenty(kdl_jointy);
-	KDL::Segment segmentz(kdl_jointz, KDL::Frame(kdl_offset));
+	KDL::Segment segmentz(kdl_jointz, KDL::Frame(kdl_length));
 
 	//Put the segment in the chain
 	chain.addSegment(segmentx);
@@ -109,6 +125,9 @@ void IKSolver::get_rotation_joint(unsigned int index, float4& rot) {
 	double angle_z = solved_joints(index);
 	double angle_y = solved_joints(index + 1);
 	double angle_x = solved_joints(index + 2);
+
+	//If there is an extra offset segment then do not use it for the angles
+	index += extra_segment;
 
 	//The total rotation is the product of all the single axes rotations
 	(chain.getSegment(index).getJoint().pose(angle_z).M
