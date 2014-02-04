@@ -31,7 +31,7 @@ class IKSolver {
 		void add_bone_to_chain(const float3& length, const float4& rot);
 
 		bool solve_chain(const float3& goal_position,
-				unsigned int max_ite = 200, float accuracy = 1e-5);
+				unsigned int max_ite = 200, float accuracy = 1e-4);
 
 		unsigned int get_num_joints() const;
 

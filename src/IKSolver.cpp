@@ -6,6 +6,7 @@
  */
 
 #include "IKSolver.h"
+#include "DebugUtil.h"
 
 IKSolver::IKSolver() {
 	num_joints = 0;
@@ -118,7 +119,7 @@ bool IKSolver::solve_chain(const float3& goal_position, unsigned int max_ite,
 	//but it is not on the  documentation.
 	//It uses a L matrix to weight the rotations and translations
 	//But default one fails, so we use our own
-	KDL::ChainIkSolverPos_LMA iksolver1(chain, L);
+	KDL::ChainIkSolverPos_LMA iksolver1(chain, L, accuracy, max_ite);
 
 	//Creation of result array
 	solved_joints = KDL::JntArray(chain.getNrOfJoints());
@@ -135,6 +136,23 @@ bool IKSolver::solve_chain(const float3& goal_position, unsigned int max_ite,
 	//faster and produces fluid movements when moving bones manually
 	if (exit_flag >= 0) {
 		current_joints = solved_joints;
+	} else {
+		//Manually check how far is from the result, because sometimes
+		//specially with only one bone, the iksolver will return -3
+		//but the chain will be in a valid position
+
+		//Forward position solver
+		KDL::ChainFkSolverPos_recursive fksolver1(chain);
+
+		KDL::Frame solved_pos;
+		fksolver1.JntToCart(solved_joints, solved_pos);
+
+		if (KDL::Equal(solved_pos.p, F_dest.p, accuracy)) {
+			current_joints = solved_joints;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	return exit_flag >= 0;
 }
