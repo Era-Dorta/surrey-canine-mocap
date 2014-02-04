@@ -11,6 +11,12 @@ IKSolver::IKSolver() {
 	num_joints = 0;
 	need_extra_joints = true;
 	extra_segment = 0;
+	L(0) = 1;
+	L(1) = 1;
+	L(2) = 1;
+	L(3) = 1;
+	L(4) = 1;
+	L(5) = 1;
 }
 
 void IKSolver::start_chain() {
@@ -99,15 +105,20 @@ bool IKSolver::solve_chain(const float3& goal_position, unsigned int max_ite,
 		need_extra_joints = false;
 	}
 
+	//Documentation solver
 	//Forward position solver
-	KDL::ChainFkSolverPos_recursive fksolver1(chain);
-
+	//KDL::ChainFkSolverPos_recursive fksolver1(chain);
 	//Inverse velocity solver
-	KDL::ChainIkSolverVel_pinv iksolver1v(chain);
-
+	//KDL::ChainIkSolverVel_pinv iksolver1v(chain);
 	//Inverse position solver with velocity
-	KDL::ChainIkSolverPos_NR iksolver1(chain, fksolver1, iksolver1v, max_ite,
-			accuracy);
+	//KDL::ChainIkSolverPos_NR iksolver1(chain, fksolver1, iksolver1v, max_ite,
+	//		accuracy);
+
+	//According to source code this solver is faster and more accurate,
+	//but it is not on the  documentation.
+	//It uses a L matrix to weight the rotations and translations
+	//But default one fails, so we use our own
+	KDL::ChainIkSolverPos_LMA iksolver1(chain, L);
 
 	//Creation of result array
 	solved_joints = KDL::JntArray(chain.getNrOfJoints());

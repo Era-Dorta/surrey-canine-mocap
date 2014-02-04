@@ -15,6 +15,7 @@
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/chainiksolvervel_pinv.hpp>
 #include <kdl/chainiksolverpos_nr.hpp>
+#include <kdl/chainiksolverpos_lma.hpp>
 #include <kdl/frames_io.hpp>
 
 class IKSolver {
@@ -30,7 +31,7 @@ class IKSolver {
 		void add_bone_to_chain(const float3& length, const float4& rot);
 
 		bool solve_chain(const float3& goal_position,
-				unsigned int max_ite = 100, float accuracy = 1e-6);
+				unsigned int max_ite = 200, float accuracy = 1e-5);
 
 		unsigned int get_num_joints() const;
 
@@ -42,6 +43,7 @@ class IKSolver {
 		unsigned int num_joints;
 		bool need_extra_joints;
 		int extra_segment;
+		Eigen::Matrix<double, 6, 1> L;
 };
 
 #endif /* IKSOLVER_H_ */
