@@ -28,8 +28,6 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 	error_threshold = 0.005;
 	current_frame = -1;
 	n_frames = 0;
-	move_goal_change_sign = true;
-	move_goal_offset = 0.001;
 	body_height_extra_threshold = 0.045;
 	mean_z_front_all_frames = 0.0;
 	mean_z_back_all_frames = 0.0;
@@ -211,13 +209,13 @@ void SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg) {
 void SkeletonFitting::fit_leg_pos_impl(Skel_Leg leg,
 		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
 	//Solve for "shoulder" two bones
-	if (!solve_2_bones(leg - 3, leg - 2, middle_position)) {
+	if (!solve_chain(leg - 3, leg - 2, middle_position)) {
 		cout << "Failed leg fitting the first pair" << endl;
 		return;
 	}
 
 	//Solve for paw and parent bone
-	if (!solve_2_bones(leg - 1, leg, paw_position)) {
+	if (!solve_chain(leg - 1, leg, paw_position)) {
 		cout << "Failed leg fitting the second pair" << endl;
 		return;
 	}
@@ -255,12 +253,18 @@ void SkeletonFitting::fit_head_and_back() {
 		refine_goal_position(vertebral_back_pos, shoulder_pos, bone_length);
 
 		//Use inverse kinematics to fit bones into positions
-		if (!solve_2_bones(0, head_pos, 1, shoulder_pos)) {
+		if (!solve_chain(0, 0, head_pos)) {
 			cout << "Vertebral front fit fail" << endl;
 			return;
 		}
 
-		if (!solve_2_bones(1, shoulder_pos, 10, vertebral_back_pos)) {
+		//Use inverse kinematics to fit bones into positions
+		if (!solve_chain(1, 1, shoulder_pos)) {
+			cout << "Vertebral front fit fail" << endl;
+			return;
+		}
+
+		if (!solve_chain(10, 10, vertebral_back_pos)) {
 			cout << "Vertebral back fit fail" << endl;
 			return;
 		}
@@ -631,16 +635,10 @@ bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
 	while (!solve_success && attempt < 28) {
 		aux_pos0 = position0;
 		aux_pos1 = position1;
-		move_goal(aux_pos0, attempt);
-		move_goal(aux_pos1, attempt);
 		solve_success = solve_2_bones_impl(bone0, aux_pos0, bone1, aux_pos1,
 				0.0, false);
 		attempt++;
 	}
-	//Reset move goal variables
-	move_goal_change_sign = true;
-	move_goal_offset = 0.001;
-
 	return solve_success;
 }
 
@@ -653,15 +651,59 @@ bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
 	int attempt = 0;
 	while (!solve_success && attempt < 28) {
 		aux_pos = position;
-		move_goal(aux_pos, attempt);
 		solve_success = solve_2_bones_impl(bone0, aux_pos, bone1, aux_pos,
 				swivel_angle, true);
 		attempt++;
 	}
-	move_goal_change_sign = true;
-	move_goal_offset = 0.001;
-
 	return solve_success;
+}
+
+bool SkeletonFitting::solve_chain(int root_bone, int end_bone,
+		const osg::Vec3& position) {
+
+	ik_solver.start_chain();
+	std::vector<int> indices;
+
+	//Create vector of indices since root_bone can be bigger than end_bone
+	if (root_bone - end_bone >= 0) {
+		for (int i = root_bone; i <= end_bone; i++) {
+			indices.push_back(i);
+		}
+	} else {
+		for (int i = root_bone; i >= end_bone; i--) {
+			indices.push_back(i);
+		}
+	}
+
+	//Insert bones in ik_solver
+	for (unsigned int i = 0; i < indices.size(); i++) {
+		Node * node = skeleton->get_node(indices[i]);
+		float3 offset = make_float3(node->length._v);
+		osg::Quat q = node->quat_arr.at(current_frame);
+		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
+		ik_solver.add_bone_to_chain(offset, rot);
+	}
+
+	//Calculate in root_bone coordinate system where is the goal position
+	osg::Matrix m;
+	calculate_bone_world_matrix_origin(m, skeleton->get_node(root_bone));
+	osg::Vec3 goal_position = position * m;
+
+	//Solve and update the rotations
+	if (ik_solver.solve_chain(make_float3(goal_position._v))) {
+		int j = 0;
+		for (unsigned int i = 0; i < indices.size(); i++) {
+			Node * node = skeleton->get_node(indices[i]);
+			float4 new_rot;
+			ik_solver.get_rotation_joint(j, new_rot);
+			node->quat_arr.at(current_frame).set(new_rot.x, new_rot.y,
+					new_rot.z, new_rot.w);
+			j++;
+		}
+		return true;
+	} else {
+		return false;
+	}
 }
 
 float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
@@ -1394,48 +1436,6 @@ void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 	} while (points_moved && num_ite < max_ite);
 }
 
-void SkeletonFitting::move_goal(osg::Vec3& goal, unsigned int attempt) {
-	//First seven attempts is increases goal in some dimensions,
-	//next seven it decreases, then it increments the offset at starts again
-	int move_action = attempt % 7;
-
-	switch (move_action) {
-	case 0:
-		goal.x() += move_goal_offset;
-		break;
-	case 1:
-		goal.y() += move_goal_offset;
-		break;
-	case 2:
-		goal.z() += move_goal_offset;
-		break;
-	case 3:
-		goal.x() += move_goal_offset;
-		goal.y() += move_goal_offset;
-		break;
-	case 4:
-		goal.x() += move_goal_offset;
-		goal.z() += move_goal_offset;
-		break;
-	case 5:
-		goal.y() += move_goal_offset;
-		goal.z() += move_goal_offset;
-		break;
-	default:
-		goal.x() += move_goal_offset;
-		goal.y() += move_goal_offset;
-		goal.z() += move_goal_offset;
-
-		if (move_goal_change_sign) {
-			move_goal_offset = -move_goal_offset;
-		} else {
-			move_goal_offset = -2 * move_goal_offset;
-		}
-		move_goal_change_sign = !move_goal_change_sign;
-		break;
-	}
-}
-
 void SkeletonFitting::get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
 		const osg::Vec3& trans) {
 	//We want a front view so in world axes is vectors
@@ -1490,16 +1490,4 @@ void SkeletonFitting::get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;
 		}
 	}
-}
-
-float SkeletonFitting::get_rand_0_01() {
-	//rand give a number between 0 and RAND_MAX, so in random we have a
-	//[0, 1] float
-	float random = ((float) std::rand()) / (float) RAND_MAX;
-
-	//[-0.5, 0.5]
-	random = random - 0.5;
-
-	//[-0.01, 0.01]
-	return random * 0.002;
 }

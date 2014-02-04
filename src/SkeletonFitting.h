@@ -58,6 +58,9 @@ class SkeletonFitting {
 		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position,
 				float swivel_angle = 0.0);
 
+		bool solve_chain(int root_bone, int end_bone,
+				const osg::Vec3& position);
+
 		float get_swivel_angle(int bone0, int bone1);
 
 		void calculate_bone_world_matrix_origin(osg::Matrix& matrix,
@@ -134,15 +137,11 @@ class SkeletonFitting {
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 
-		void move_goal(osg::Vec3& goal, unsigned int attempt);
-
 		void get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
 				const osg::Vec3& trans = osg::Vec3());
 
 		void get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
 				const osg::Vec3& trans = osg::Vec3());
-
-		float get_rand_0_01();
 
 		//Needed to use std::sort with comp_y
 		struct sortstruct {
@@ -177,8 +176,6 @@ class SkeletonFitting {
 		std::vector<Skel_Leg> labels;
 		int current_frame;
 		int n_frames;
-		bool move_goal_change_sign;
-		float move_goal_offset;
 		osg::ref_ptr<osg::Vec3Array> cloud;
 		boost::shared_ptr<Skeletonization3D> skeletonizator;
 		boost::shared_ptr<Skeleton> skeleton;
