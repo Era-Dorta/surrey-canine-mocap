@@ -6,7 +6,6 @@
  */
 
 #include "IKSolver.h"
-#include "DebugUtil.h"
 
 IKSolver::IKSolver() {
 	num_joints = 0;
@@ -89,8 +88,7 @@ void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
 	num_joints++;
 }
 
-bool IKSolver::solve_chain(const float3& goal_position, float accuracy,
-		unsigned int max_ite) {
+bool IKSolver::solve_chain(const float3& goal_position) {
 	if (need_extra_joints) {
 		//To be able to solve without aiming we introduce a new virtual joint
 		//to cancel the rotations introduced by the chain
@@ -106,63 +104,14 @@ bool IKSolver::solve_chain(const float3& goal_position, float accuracy,
 		need_extra_joints = false;
 	}
 
-	//Documentation solver
-	//Forward position solver
-	//KDL::ChainFkSolverPos_recursive fksolver1(chain);
-	//Inverse velocity solver
-	//KDL::ChainIkSolverVel_pinv iksolver1v(chain);
-	//Inverse position solver with velocity
-	//KDL::ChainIkSolverPos_NR iksolver1(chain, fksolver1, iksolver1v, max_ite,
-	//		accuracy);
-
-	//According to source code this solver is faster and more accurate,
-	//but it is not on the  documentation.
-	//It uses a L matrix to weight the rotations and translations
-	//But default one fails, so we use our own
-	KDL::ChainIkSolverPos_LMA iksolver1(chain, L, accuracy, max_ite);
-
-	//Creation of result array
-	solved_joints = KDL::JntArray(chain.getNrOfJoints());
-
-	//Destination frame has identity matrix for rotation
-	// and goal position for translation
-	KDL::Frame F_dest(
-			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
-
-	//Call the solver
-	int exit_flag = iksolver1.CartToJnt(current_joints, F_dest, solved_joints);
-
-	//On success update the current position, this helps the solver to converge
-	//faster and produces fluid movements when moving bones manually
-	if (exit_flag >= 0) {
-		current_joints = solved_joints;
+	if (num_joints == 1) {
+		//If we are solving for only one 3DOF joint this method is better
+		return solve_chain_1_segment(goal_position);
 	} else {
-		//Try again with a different solver
-
-		//Forward position solver
-		KDL::ChainFkSolverPos_recursive fksolver1(chain);
-		//Inverse velocity solver
-		KDL::ChainIkSolverVel_pinv iksolver1v(chain);
-		//Inverse position solver with velocity
-		KDL::ChainIkSolverPos_NR iksolver1(chain, fksolver1, iksolver1v, 100,
-				accuracy);
-
-		iksolver1.CartToJnt(current_joints, F_dest, solved_joints);
-
-		KDL::Frame solved_pos;
-		fksolver1.JntToCart(solved_joints, solved_pos);
-
-		//Manually check how far is from the result, because sometimes
-		//specially with only one bone, the iksolver will return -3
-		//but the chain will be in a valid position
-		if (KDL::Equal(solved_pos.p, F_dest.p, accuracy)) {
-			current_joints = solved_joints;
-			return true;
-		} else {
-			return false;
-		}
+		//For larger chains this method is better
+		return solve_chain_several_segments(goal_position);
 	}
-	return exit_flag >= 0;
+
 }
 
 unsigned int IKSolver::get_num_joints() const {
@@ -192,4 +141,76 @@ void IKSolver::get_rotation_joint(unsigned int index, float4& rot) {
 	rot.y = y;
 	rot.z = z;
 	rot.w = w;
+}
+
+bool IKSolver::solve_chain_1_segment(const float3& goal_position,
+		float accuracy, unsigned int max_ite) {
+
+	//Forward position solver
+	KDL::ChainFkSolverPos_recursive fksolver1(chain);
+	//Inverse velocity solver
+	KDL::ChainIkSolverVel_pinv iksolver1v(chain);
+	//Inverse position solver with velocity
+	KDL::ChainIkSolverPos_NR iksolver1(chain, fksolver1, iksolver1v, max_ite,
+			accuracy);
+
+	//Creation of result array
+	solved_joints = KDL::JntArray(chain.getNrOfJoints());
+
+	//Destination frame has identity matrix for rotation
+	// and goal position for translation
+	KDL::Frame f_goal(
+			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
+
+	//Call the solver
+	int exit_flag = iksolver1.CartToJnt(current_joints, f_goal, solved_joints);
+
+	//On success update the current position, this helps the solver to converge
+	//faster and produces fluid movements when moving bones manually
+	if (exit_flag >= 0) {
+		current_joints = solved_joints;
+	} else {
+		iksolver1.CartToJnt(current_joints, f_goal, solved_joints);
+
+		KDL::Frame solved_pos;
+		fksolver1.JntToCart(solved_joints, solved_pos);
+
+		//Manually check how far is from the result, because sometimes
+		//the iksolver will return -3 but the chain will be in a valid position
+		if (KDL::Equal(solved_pos.p, f_goal.p, accuracy)) {
+			current_joints = solved_joints;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return exit_flag >= 0;
+}
+
+bool IKSolver::solve_chain_several_segments(const float3& goal_position,
+		float accuracy, unsigned int max_ite) {
+
+	//According to source code this solver is faster and more accurate,
+	//but it is not on the  documentation.
+	//It uses a L matrix to weight the rotations and translations
+	//But default one fails, so we use our own
+	KDL::ChainIkSolverPos_LMA iksolver1(chain, L, accuracy, max_ite);
+
+	//Creation of result array
+	solved_joints = KDL::JntArray(chain.getNrOfJoints());
+
+	//Destination frame has identity matrix for rotation
+	// and goal position for translation
+	KDL::Frame f_goal(
+			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
+
+	//Call the solver
+	int exit_flag = iksolver1.CartToJnt(current_joints, f_goal, solved_joints);
+
+	//On success update the current position, this helps the solver to converge
+	//faster and produces fluid movements when moving bones manually
+	if (exit_flag >= 0) {
+		current_joints = solved_joints;
+	}
+	return exit_flag >= 0;
 }
