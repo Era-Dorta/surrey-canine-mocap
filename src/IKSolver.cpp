@@ -34,6 +34,23 @@ void IKSolver::start_chain(const float3& offset, const float4& rot) {
 	chain.addSegment(segment);
 	extra_segment = 1;
 }
+
+void IKSolver::start_chain(const float4x4& matrix) {
+	start_chain();
+
+	KDL::Frame frame;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			frame.M(i, j) = matrix.get(i, j);
+		}
+		frame.p[i] = matrix.get(3, i);
+	}
+
+	KDL::Segment segment(KDL::Joint(KDL::Joint::None), frame);
+	chain.addSegment(segment);
+	extra_segment = 1;
+}
+
 void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
 	//Create a 3DOF joint
 	KDL::Joint kdl_jointx(KDL::Joint::RotZ);

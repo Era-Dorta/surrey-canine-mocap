@@ -25,6 +25,8 @@ class IKSolver {
 
 		void start_chain(const float3& offset, const float4& rot);
 
+		void start_chain(const float4x4& matrix);
+
 		void add_bone_to_chain(const float3& length, const float4& rot);
 
 		bool solve_chain(const float3& goal_position,
