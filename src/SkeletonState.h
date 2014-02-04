@@ -11,24 +11,18 @@
 #include "Skeleton.h"
 #include "boost/shared_ptr.hpp"
 
-//TODO Update to save all the skeleton now that inverse kinematics move
-//several bones at a time
 class SkeletonState {
 	public:
 		SkeletonState();
 		virtual ~SkeletonState();
-		void save_state(boost::shared_ptr<Skeleton> skeleton, int frame_num,
-				unsigned int node_index);
-		void restore_state(boost::shared_ptr<Skeleton> skeleton, int frame_num,
-				unsigned int node_index);
+		void save_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
+		void restore_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
 	private:
-		osg::Quat node_rotation;
-		osg::Vec3 node_offset;
-		osg::Vec3 node_length;
-		osg::Quat parent_rotation;
-		osg::Vec3 parent_offset;
-		osg::Vec3 parent_length;
-		osg::ref_ptr<osg::Vec3Array> children_offset;
+		void init(unsigned int size);
+
+		std::vector<osg::Quat> rotations;
+		osg::ref_ptr<osg::Vec3Array> offsets;
+		osg::ref_ptr<osg::Vec3Array> lengths;
 };
 
 #endif /* SKELETONSTATE_H_ */

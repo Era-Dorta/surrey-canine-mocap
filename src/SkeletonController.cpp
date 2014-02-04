@@ -217,8 +217,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 									selected_point);
 							skeleton->toggle_color(selected_point_index);
 							delete_skel = true;
-							skel_state.save_state(skeleton, current_frame,
-									selected_point_index);
+							skel_state.save_state(skeleton, current_frame);
 
 							fill_chain();
 							update_dynamics(current_frame);
@@ -461,8 +460,7 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 		case osgGA::GUIEventAdapter::KEY_BackSpace:
 			if (is_point_selected) {
-				skel_state.restore_state(skeleton, current_frame,
-						selected_point_index);
+				skel_state.restore_state(skeleton, current_frame);
 				finish_bone_trans();
 			}
 			break;

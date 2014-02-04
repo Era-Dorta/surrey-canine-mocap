@@ -8,7 +8,8 @@
 #include "SkeletonState.h"
 
 SkeletonState::SkeletonState() {
-	children_offset = new osg::Vec3Array;
+	offsets = new osg::Vec3Array;
+	lengths = new osg::Vec3Array;
 }
 
 SkeletonState::~SkeletonState() {
@@ -16,41 +17,32 @@ SkeletonState::~SkeletonState() {
 }
 
 void SkeletonState::save_state(boost::shared_ptr<Skeleton> skeleton,
-		int frame_num, unsigned int node_index) {
-	children_offset->clear();
-	Node* node = skeleton->get_node(node_index);
-	node_rotation = node->quat_arr.at(frame_num);
-	node_offset = node->offset;
-	node_length = node->length;
+		int frame_num) {
 
-	children_offset->reserve(node->get_num_children());
-	for (unsigned int i = 0; i < node->get_num_children(); i++) {
-		children_offset->push_back(node->children[i]->offset);
+	if (skeleton->get_num_bones() != rotations.size()) {
+		init(skeleton->get_num_bones());
 	}
 
-	if (node->parent) {
-		node = node->parent;
-		parent_rotation = node->quat_arr.at(frame_num);
-		parent_offset = node->offset;
-		parent_length = node->length;
+	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
+		Node* node = skeleton->get_node(i);
+		rotations.at(i) = node->quat_arr.at(frame_num);
+		offsets->at(i) = node->offset;
+		lengths->at(i) = node->length;
 	}
 }
 
 void SkeletonState::restore_state(boost::shared_ptr<Skeleton> skeleton,
-		int frame_num, unsigned int node_index) {
-	Node* node = skeleton->get_node(node_index);
-	node->quat_arr.at(frame_num) = node_rotation;
-	node->offset = node_offset;
-	node->length = node_length;
-
-	for (unsigned int i = 0; i < node->get_num_children(); i++) {
-		node->children[i]->offset = children_offset->at(i);
+		int frame_num) {
+	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
+		Node* node = skeleton->get_node(i);
+		node->quat_arr.at(frame_num) = rotations.at(i);
+		node->offset = offsets->at(i);
+		node->length = lengths->at(i);
 	}
+}
 
-	if (node->parent) {
-		node = node->parent;
-		node->quat_arr.at(frame_num) = parent_rotation;
-		node->offset = parent_offset;
-		node->length = parent_length;
-	}
+void SkeletonState::init(unsigned int size) {
+	rotations.resize(size);
+	offsets->resize(size);
+	lengths->resize(size);
 }
