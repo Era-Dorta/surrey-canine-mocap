@@ -89,8 +89,8 @@ void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
 	num_joints++;
 }
 
-bool IKSolver::solve_chain(const float3& goal_position, unsigned int max_ite,
-		float accuracy) {
+bool IKSolver::solve_chain(const float3& goal_position, float accuracy,
+		unsigned int max_ite) {
 	if (need_extra_joints) {
 		//To be able to solve without aiming we introduce a new virtual joint
 		//to cancel the rotations introduced by the chain
