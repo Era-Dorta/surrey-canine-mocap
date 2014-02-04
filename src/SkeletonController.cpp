@@ -273,20 +273,21 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				break;
 			case INV_KIN:
 				if (!change_all_frames) {
-					//move_axis.set(0.15,0.0,0.0);
+					//move_axis.set(0.15, 0.0, 0.0);
 					//osg::Matrix m;
-					//skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
+					//skel_fitter.calculate_bone_world_matrix_origin(m,
+					//		ik_chain.front());
 					//move_axis = move_axis * m;
 
-					if (ik_solver.solve_chain(make_float3(move_axis._v))) {
+					bool exit_flag = ik_solver.solve_chain(
+							make_float3(move_axis._v));
 
-						int j = 0;
-						for (int i = ik_chain.size() - 1; i >= 0; i--) {
+					if (exit_flag) {
+						for (unsigned int i = 0; i < ik_chain.size(); i++) {
 							float4 new_rot;
-							ik_solver.get_rotation_joint(j, new_rot);
+							ik_solver.get_rotation_joint(i, new_rot);
 							ik_chain.at(i)->quat_arr.at(current_frame).set(
 									new_rot.x, new_rot.y, new_rot.z, new_rot.w);
-							j++;
 						}
 					} else {
 						cout << "IKSolver cannot put chain goal position"
@@ -499,7 +500,7 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 									current_frame);
 			//Put final position in first bone coordinate system
 			osg::Matrix m;
-			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
+			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.front());
 			mouse_vec = mouse_vec * m;
 
 		} else {
@@ -507,7 +508,7 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 					skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
 							current_frame);
 			osg::Matrix m;
-			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
+			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.front());
 			mouse_vec = mouse_vec * m;
 
 			if (last_mouse_pos_y - y > 0) {
@@ -556,16 +557,18 @@ void SkeletonController::fill_chain() {
 	ik_chain.clear();
 
 	Node* node = skeleton->get_node(selected_point_index);
-	int i = num_bones_chain - 1;
-	while (i >= 0 && node != NULL) {
-		ik_chain.push_back(node);
+	unsigned int i = 0;
+	while (i < num_bones_chain && node != NULL) {
+		//Insert in the beginning is not efficient but we are not
+		//going to insert a lot of them
+		ik_chain.insert(ik_chain.begin(), node);
 		node = node->parent;
-		i--;
+		i++;
 	}
 
 	ik_solver.start_chain();
 
-	for (int i = ik_chain.size() - 1; i >= 0; i--) {
+	for (unsigned int i = 0; i < ik_chain.size(); i++) {
 		float3 offset = make_float3(ik_chain.at(i)->length._v);
 		osg::Quat q = ik_chain.at(i)->quat_arr.at(current_frame);
 		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
