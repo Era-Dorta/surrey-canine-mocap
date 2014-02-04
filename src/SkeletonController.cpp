@@ -219,32 +219,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 							delete_skel = true;
 							skel_state.save_state(skeleton, current_frame,
 									selected_point_index);
-							//Get swivel angle to maintain the bone in a
-							//known position, this avoids big sudden moves
-							//in the bones when they are moves for the first
-							//time using inverse kinematics
-							//swivel_angle = skel_fitter.get_swivel_angle(
-							//		selected_point_index - 1,
-							//		selected_point_index);
 
-							/*ik_solver.start_chain();
-							 //Node* node = skeleton->get_node(
-							 //		selected_point_index);
-							 Node* node = skeleton->get_root();
-							 cout << "selected point index "
-							 << selected_point_index << endl;
-							 for (int i = 0; i <= selected_point_index; i++) {
-							 cout << "addging bones " << i << endl;
-							 float3 offset = make_float3(node->length._v);
-							 osg::Quat q = node->quat_arr.at(current_frame);
-							 float4 rot = make_float4(q.x(), q.y(), q.z(),
-							 q.w());
-							 ik_solver.add_bone_to_chain(offset, rot);
-							 if (node->children.size()) {
-							 node = node->children[0].get();
-							 }
-							 }
-							 cout << "end" << endl;*/
 							fill_chain();
 							update_dynamics(current_frame);
 						}
@@ -303,15 +278,19 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 					//skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.back());
 					//move_axis = move_axis * m;
 
-					ik_solver.solve_chain(make_float3(move_axis._v));
+					if (ik_solver.solve_chain(make_float3(move_axis._v))) {
 
-					int j = 0;
-					for (int i = ik_chain.size() - 1; i >= 0; i--) {
-						float4 new_rot;
-						ik_solver.get_rotation_joint(j, new_rot);
-						ik_chain.at(i)->quat_arr.at(current_frame).set(
-								new_rot.x, new_rot.y, new_rot.z, new_rot.w);
-						j++;
+						int j = 0;
+						for (int i = ik_chain.size() - 1; i >= 0; i--) {
+							float4 new_rot;
+							ik_solver.get_rotation_joint(j, new_rot);
+							ik_chain.at(i)->quat_arr.at(current_frame).set(
+									new_rot.x, new_rot.y, new_rot.z, new_rot.w);
+							j++;
+						}
+					} else {
+						cout << "IKSolver cannot put chain goal position"
+								<< endl;
 					}
 				}
 				break;
