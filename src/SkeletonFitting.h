@@ -13,7 +13,6 @@
 #include "PixelSearch.h"
 #include "Projections.h"
 #include "KNNSearch.h"
-#include "IKAN/srs.h"
 #include "IKSolver.h"
 
 #include "osg/Array"
@@ -54,8 +53,6 @@ class SkeletonFitting {
 
 		bool solve_chain(int root_bone, int end_bone,
 				const osg::Vec3& position);
-
-		float get_swivel_angle(int bone0, int bone1);
 
 		void calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 				const Node* const node);

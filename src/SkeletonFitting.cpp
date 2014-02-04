@@ -89,13 +89,17 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 	}
 }
 
-void SkeletonFitting::fit_skeleton_to_cloud(){
+void SkeletonFitting::fit_skeleton_to_cloud() {
 	fit_root_position();
 	fit_head_and_back();
 	fit_leg_position_mid_pos_in_top_leg(Front_Right);
 	fit_leg_position_mid_pos_in_top_leg(Front_Left);
 	fit_leg_position_mid_pos_in_top_leg(Back_Right);
 	fit_leg_position_mid_pos_in_top_leg(Back_Left);
+	//fit_leg_position_simple(Front_Right);
+	//fit_leg_position_simple(Front_Left);
+	//fit_leg_position_simple(Back_Right);
+	//fit_leg_position_simple(Back_Left);
 }
 
 void SkeletonFitting::fit_root_position() {
@@ -164,32 +168,11 @@ void SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
 	int paw_index = find_paw(leg, leg_points_index);
 
 	if (paw_index != -1) {
-		int prev_bone_index = 0;
-
-		switch (leg) {
-		case Front_Right:
-		case Front_Left:
-			prev_bone_index = 1;
-			break;
-		case Back_Right:
-		case Back_Left:
-			prev_bone_index = 10;
-			break;
-		case Not_Limbs:
-			cout << "Call to fit leg with Not_limbs" << endl;
+		//Solve leg
+		if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
+			cout << "Failed leg fitting simple" << endl;
 			return;
 		}
-
-		Node* n_bone = skeleton->get_node(prev_bone_index);
-		osg::Vec3 prev_bone_position = n_bone->get_end_bone_global_pos(
-				current_frame);
-
-		//Put the "shoulder" two bones halfway from the previous bones
-		//and the paw
-		osg::Vec3 mid_position = (cloud->at(paw_index) + prev_bone_position)
-				* 0.5;
-
-		fit_leg_pos_impl(leg, mid_position, cloud->at(paw_index));
 	}
 }
 
@@ -632,7 +615,7 @@ bool SkeletonFitting::solve_chain(int root_bone, int end_bone,
 	std::vector<int> indices;
 
 	//Create vector of indices since root_bone can be bigger than end_bone
-	if (root_bone - end_bone >= 0) {
+	if (root_bone - end_bone <= 0) {
 		for (int i = root_bone; i <= end_bone; i++) {
 			indices.push_back(i);
 		}
@@ -671,52 +654,6 @@ bool SkeletonFitting::solve_chain(int root_bone, int end_bone,
 	} else {
 		return false;
 	}
-}
-
-float SkeletonFitting::get_swivel_angle(int bone0, int bone1) {
-	float swivel_angle = 0.0;
-	//Positive direction axis, axis pointing out of the body
-	const float Xaxis[] = { 1, 0, 0 };
-	//Projection axis, used to determine one of the axis of the local
-	//coordinate system
-	const float Yaxis[] = { 0, 1, 0 };
-
-	if (!check_bone_index(bone0, bone1)) {
-		return swivel_angle;
-	}
-
-	osg::Matrix bone_world_matrix_off;
-	Node* n_bone_0, *n_bone_1;
-	n_bone_0 = skeleton->get_node(bone0);
-	n_bone_1 = skeleton->get_node(bone1);
-
-	calculate_bone_world_matrix_origin(bone_world_matrix_off, n_bone_0);
-
-	osg::Vec3 position = n_bone_1->get_end_bone_global_pos(current_frame);
-
-	Matrix T, S;
-
-	MiscUtils::osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
-	MiscUtils::osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
-
-	SRS s(T, S, Yaxis, Xaxis);
-
-	Matrix G;
-	//TODO Final position calculus could be simplified, look through
-	//matrices
-	MiscUtils::osg_to_matrix(G,
-			osg::Matrix::translate(position * bone_world_matrix_off));
-
-	float eangle = 0.0;
-	if (s.SetGoal(G, eangle)) {
-		position = n_bone_0->get_end_bone_global_pos(current_frame);
-		position = position * bone_world_matrix_off;
-		swivel_angle = s.PosToAngle(position._v);
-	} else {
-		cout << "get_swivel_angle() could not recreate bone position" << endl;
-	}
-
-	return swivel_angle;
 }
 
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
