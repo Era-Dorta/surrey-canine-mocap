@@ -4,6 +4,11 @@ SET( PROJECT_NAME MultiCamViewer )
 PROJECT( ${PROJECT_NAME} ) 
 SET( PROJECT_EXE "${PROJECT_NAME}_exe" ) 
 
+#Set build to Release is none is given
+if (NOT CMAKE_BUILD_TYPE)
+    SET(CMAKE_BUILD_TYPE Release)
+endif()    
+
 #Add custom .cmake files located in this folder
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmakeModules")
 
@@ -45,20 +50,6 @@ FIND_PACKAGE(osgViewer )
 FIND_PACKAGE(osgGA )
 FIND_PACKAGE(osgText )
 FIND_PACKAGE(osgAnimation )
-
-#IKAN
-#For this library we are also going to compile the sources
-#TODO A better way would be to compile it and link it like all the other
-#normal libraries
-SET(DEP_SOURCE
-dependencies/IKAN/src/myvec.cxx
-dependencies/IKAN/src/myvec.cxx
-dependencies/IKAN/src/srs.cxx
-dependencies/IKAN/src/trig.cxx
-)
-
-SET( IKAN_INCLUDE_DIRS "dependencies/IKAN/include")
-INCLUDE_DIRECTORIES( ${IKAN_INCLUDE_DIRS} )
 
 #Source and header files: 
 SET(SOURCE 
@@ -133,7 +124,7 @@ MACRO( config_project PROJNAME LIBNAME )
 ENDMACRO()
 
 #Create the executable
-ADD_EXECUTABLE( ${PROJECT_EXE} ${DEP_SOURCE} ${SOURCE} ${HEADERS} ) 
+ADD_EXECUTABLE( ${PROJECT_EXE} ${SOURCE} ${HEADERS} ) 
 
 #Boost linking
 TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${Boost_LIBRARIES} )

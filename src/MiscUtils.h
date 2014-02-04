@@ -44,8 +44,6 @@
 
 #include "CudaVec.h"
 
-#include "IKAN/myvec.h"
-
 namespace MiscUtils {
 
 	void get_file_names(std::string path_in,
@@ -82,10 +80,6 @@ namespace MiscUtils {
 			std::string file_name);
 
 	osg::Geode* surfel_ply_read(std::string file_name);
-
-	void osg_to_matrix(Matrix &dest, const osg::Matrix &orig);
-
-	void matrix_to_osg(osg::Matrix& dest, const Matrix& orig);
 }
 
 #endif /* MISCUTILS_H_ */

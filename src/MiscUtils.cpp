@@ -570,19 +570,3 @@ osg::Geode* MiscUtils::surfel_ply_read(std::string file_name) {
 
 	return geode.release();
 }
-
-void MiscUtils::osg_to_matrix(Matrix& dest, const osg::Matrix& orig) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			dest[i][j] = orig(i, j);
-		}
-	}
-}
-
-void MiscUtils::matrix_to_osg(osg::Matrix& dest, const Matrix& orig) {
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			dest(i, j) = orig[i][j];
-		}
-	}
-}
