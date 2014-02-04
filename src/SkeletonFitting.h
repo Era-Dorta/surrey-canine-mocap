@@ -52,12 +52,6 @@ class SkeletonFitting {
 
 		osg::Vec3 get_paw(Skel_Leg leg);
 
-		bool solve_2_bones(int bone0, const osg::Vec3& position0, int bone1,
-				const osg::Vec3& position1);
-
-		bool solve_2_bones(int bone0, int bone1, const osg::Vec3& position,
-				float swivel_angle = 0.0);
-
 		bool solve_chain(int root_bone, int end_bone,
 				const osg::Vec3& position);
 
@@ -113,10 +107,6 @@ class SkeletonFitting {
 
 		bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
 				int &res_row, int &res_col);
-
-		bool solve_2_bones_impl(int bone0, const osg::Vec3& position0,
-				int bone1, const osg::Vec3& position1, float swivel_angle,
-				bool use_swivel);
 
 		void refine_goal_position(osg::Vec3& end_position,
 				const osg::Vec3& base_position, float length);

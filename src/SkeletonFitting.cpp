@@ -625,39 +625,6 @@ void SkeletonFitting::refine_four_sections_division() {
 	}
 }
 
-bool SkeletonFitting::solve_2_bones(int bone0, const osg::Vec3& position0,
-		int bone1, const osg::Vec3& position1) {
-	osg::Vec3 aux_pos0 = position0;
-	osg::Vec3 aux_pos1 = position1;
-	bool solve_success = solve_2_bones_impl(bone0, position0, bone1, position1,
-			0.0, false);
-	int attempt = 0;
-	while (!solve_success && attempt < 28) {
-		aux_pos0 = position0;
-		aux_pos1 = position1;
-		solve_success = solve_2_bones_impl(bone0, aux_pos0, bone1, aux_pos1,
-				0.0, false);
-		attempt++;
-	}
-	return solve_success;
-}
-
-bool SkeletonFitting::solve_2_bones(int bone0, int bone1,
-		const osg::Vec3& position, float swivel_angle) {
-
-	osg::Vec3 aux_pos = position;
-	bool solve_success = solve_2_bones_impl(bone0, position, bone1, position,
-			swivel_angle, true);
-	int attempt = 0;
-	while (!solve_success && attempt < 28) {
-		aux_pos = position;
-		solve_success = solve_2_bones_impl(bone0, aux_pos, bone1, aux_pos,
-				swivel_angle, true);
-		attempt++;
-	}
-	return solve_success;
-}
-
 bool SkeletonFitting::solve_chain(int root_bone, int end_bone,
 		const osg::Vec3& position) {
 
@@ -842,85 +809,6 @@ bool SkeletonFitting::unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
 	}
 
 	return false;
-}
-
-bool SkeletonFitting::solve_2_bones_impl(int bone0, const osg::Vec3& position0,
-		int bone1, const osg::Vec3& position1, float swivel_angle,
-		bool use_swivel) {
-	//TODO Calculate axis according to bones, this is arbitrary and
-	//it should not always work
-
-	//Positive direction axis, axis pointing out of the body
-	const float Xaxis[] = { 1, 0, 0 };
-	//Projection axis, used to determine one of the axis of the local
-	//coordinate system
-	const float Yaxis[] = { 0, 1, 0 };
-
-	if (!check_bone_index(bone0, bone1)) {
-		cout << "solve_2_bones invalid bone index" << endl;
-		return false;
-	}
-
-	osg::Matrix bone_world_matrix_off;
-	Node* n_bone_0, *n_bone_1;
-	n_bone_0 = skeleton->get_node(bone0);
-	n_bone_1 = skeleton->get_node(bone1);
-
-	calculate_bone_world_matrix_origin(bone_world_matrix_off, n_bone_0);
-
-	//Save previous rotations
-	osg::Quat prev_rot_0, prev_rot_1;
-	prev_rot_0 = n_bone_0->quat_arr.at(current_frame);
-	prev_rot_1 = n_bone_1->quat_arr.at(current_frame);
-
-	Matrix T, S;
-
-	//Calculate the matrix that goes from one joint to the next in rest position
-	MiscUtils::osg_to_matrix(T, osg::Matrix::translate(n_bone_0->length));
-	MiscUtils::osg_to_matrix(S, osg::Matrix::translate(n_bone_1->length));
-
-	SRS s(T, S, Yaxis, Xaxis);
-
-	Matrix R1, G;
-	//Goal matrix is final position expressed in first bone coordinate axes
-	MiscUtils::osg_to_matrix(G,
-			osg::Matrix::translate(position1 * bone_world_matrix_off));
-
-	float eangle = 0.0;
-	if (s.SetGoal(G, eangle)) {
-		if (!use_swivel) {
-			//Joint is given as position, translate to swivel angle
-			swivel_angle = s.PosToAngle(position0._v);
-		}
-		s.SolveR1(swivel_angle, R1);
-
-		osg::Matrix osg_mat;
-
-		MiscUtils::matrix_to_osg(osg_mat, R1);
-
-		//First bone rotation is R1
-		n_bone_0->quat_arr.at(current_frame).set(osg_mat);
-
-		//Second bone rotation is a rotation of eangle along the Y axes
-		n_bone_1->quat_arr.at(current_frame).makeRotate(eangle,
-				osg::Vec3(0.0, 1.0, 0.0));
-	} else {
-		//According to the algorithm it is impossible to put the end effector
-		//in the given position
-		return false;
-	}
-
-	if (!are_equal(n_bone_1->get_end_bone_global_pos(current_frame),
-			position1)) {
-		//TODO Better check if position is within range and do not calculate
-		//anything if is not
-		n_bone_0->quat_arr.at(current_frame) = prev_rot_0;
-		n_bone_1->quat_arr.at(current_frame) = prev_rot_1;
-		//End position does not match desired position
-		return false;
-	} else {
-		return true;
-	}
 }
 
 void SkeletonFitting::calculate_bone_world_matrix_origin(osg::Matrix& matrix,
