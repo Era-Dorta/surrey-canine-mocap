@@ -273,7 +273,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				break;
 			case INV_KIN:
 				if (!change_all_frames) {
-					//move_axis.set(0.15, 0.0, 0.0);
+					//move_axis.set(0.0, 0.0, 0.15);
 					//osg::Matrix m;
 					//skel_fitter.calculate_bone_world_matrix_origin(m,
 					//		ik_chain.front());
@@ -281,6 +281,12 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 
 					bool exit_flag = ik_solver.solve_chain(
 							make_float3(move_axis._v));
+
+					//With one bone the goal position is not going
+					//to be reachable but we take the result anyway
+					if (ik_chain.size() == 1) {
+						exit_flag = true;
+					}
 
 					if (exit_flag) {
 						for (unsigned int i = 0; i < ik_chain.size(); i++) {
