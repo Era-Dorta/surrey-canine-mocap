@@ -100,7 +100,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	skel_renderer.display_sphere(skel_fitter.get_paw(Front_Left), 1);
 
 	if (skeleton->isSkelLoaded()) {
-		//skel_fitter.fit_skeleton_to_cloud();
+		skel_fitter.fit_skeleton_to_cloud();
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
@@ -440,8 +440,8 @@ bool SkeletonController::handle_keyboard_events(
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
-					"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
-			//		"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
+					"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
 			break;
 
 			//Save skeleton to file:
