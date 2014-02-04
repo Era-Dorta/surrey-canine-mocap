@@ -137,16 +137,24 @@ bool IKSolver::solve_chain(const float3& goal_position, float accuracy,
 	if (exit_flag >= 0) {
 		current_joints = solved_joints;
 	} else {
-		//Manually check how far is from the result, because sometimes
-		//specially with only one bone, the iksolver will return -3
-		//but the chain will be in a valid position
+		//Try again with a different solver
 
 		//Forward position solver
 		KDL::ChainFkSolverPos_recursive fksolver1(chain);
+		//Inverse velocity solver
+		KDL::ChainIkSolverVel_pinv iksolver1v(chain);
+		//Inverse position solver with velocity
+		KDL::ChainIkSolverPos_NR iksolver1(chain, fksolver1, iksolver1v, 100,
+				accuracy);
+
+		iksolver1.CartToJnt(current_joints, F_dest, solved_joints);
 
 		KDL::Frame solved_pos;
 		fksolver1.JntToCart(solved_joints, solved_pos);
 
+		//Manually check how far is from the result, because sometimes
+		//specially with only one bone, the iksolver will return -3
+		//but the chain will be in a valid position
 		if (KDL::Equal(solved_pos.p, F_dest.p, accuracy)) {
 			current_joints = solved_joints;
 			return true;
