@@ -92,28 +92,35 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 void SkeletonFitting::fit_skeleton_to_cloud() {
 	fit_root_position();
 	fit_head_and_back();
-	fit_leg_position_mid_pos_in_top_leg(Front_Right);
-	fit_leg_position_mid_pos_in_top_leg(Front_Left);
-	fit_leg_position_mid_pos_in_top_leg(Back_Right);
-	fit_leg_position_mid_pos_in_top_leg(Back_Left);
-	//fit_leg_position_simple(Front_Right);
-	//fit_leg_position_simple(Front_Left);
-	//fit_leg_position_simple(Back_Right);
-	//fit_leg_position_simple(Back_Left);
-}
 
-void SkeletonFitting::fit_root_position() {
-	int head_index = find_head();
-
-	if (head_index != -1) {
-		osg::Vec3 translation = cloud->at(head_index)
-				- skeleton->get_root()->offset
-				- skeleton->get_root()->froset->at(current_frame);
-		skeleton->translate_root(translation);
+	if (!fit_leg_position_mid_pos_in_top_leg(Front_Right)) {
+		fit_leg_position_simple(Front_Right);
+	}
+	if (!fit_leg_position_mid_pos_in_top_leg(Front_Left)) {
+		fit_leg_position_simple(Front_Left);
+	}
+	if (!fit_leg_position_mid_pos_in_top_leg(Back_Right)) {
+		fit_leg_position_simple(Back_Right);
+	}
+	if (!fit_leg_position_mid_pos_in_top_leg(Back_Left)) {
+		fit_leg_position_simple(Back_Left);
 	}
 }
 
-void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
+bool SkeletonFitting::fit_root_position() {
+	int head_index = find_head();
+
+	if (head_index == -1) {
+		return false;
+	}
+	osg::Vec3 translation = cloud->at(head_index) - skeleton->get_root()->offset
+			- skeleton->get_root()->froset->at(current_frame);
+	skeleton->translate_root(translation);
+	return true;
+
+}
+
+bool SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 	std::vector<int> leg_points_index, joint_positions_index;
 
 	//TODO find_paw initialises leg_points_index, should have another method
@@ -121,137 +128,146 @@ void SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 
 	int paw_index = find_paw(leg, leg_points_index);
 
-	if (paw_index != -1) {
-		//TODO Not sure if this should be here or in some other place
-		//Since we are going to go up the leg better to have all the points ordered
-		//along the y axis
-		sortstruct s(this, comp_y);
-		std::sort(leg_points_index.begin(), leg_points_index.end(), s);
+	if (paw_index == -1) {
+		return false;
+	}
 
-		int bones_per_leg = 4;
-		joint_positions_index.resize(bones_per_leg);
+	//TODO Not sure if this should be here or in some other place
+	//Since we are going to go up the leg better to have all the points ordered
+	//along the y axis
+	sortstruct s(this, comp_y);
+	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
 
-		joint_positions_index[0] = paw_index;
-		//TODO Much more efficient to have the iterate backwards
+	int bones_per_leg = 4;
+	joint_positions_index.resize(bones_per_leg);
 
-		std::vector<int>::iterator j = leg_points_index.begin();
-		for (int i = 1; i < bones_per_leg; i++) {
+	joint_positions_index[0] = paw_index;
+	//TODO Much more efficient to have the iterate backwards
 
-			float bone_length =
-					skeleton->get_node(leg - i + 1)->length.length();
-			//Set bone length to paw_index
-			//Go up bone length
-			bool not_bone_length = true;
+	std::vector<int>::iterator j = leg_points_index.begin();
+	for (int i = 1; i < bones_per_leg; i++) {
 
-			while (not_bone_length && j != leg_points_index.end()) {
+		float bone_length = skeleton->get_node(leg - i + 1)->length.length();
+		//Set bone length to paw_index
+		//Go up bone length
+		bool not_bone_length = true;
 
-				float current_length = (cloud->at(joint_positions_index[i - 1])
-						- cloud->at(*j)).length();
-				if (current_length >= bone_length) {
-					not_bone_length = false;
-				} else {
-					j++;
-				}
+		while (not_bone_length && j != leg_points_index.end()) {
+
+			float current_length = (cloud->at(joint_positions_index[i - 1])
+					- cloud->at(*j)).length();
+			if (current_length >= bone_length) {
+				not_bone_length = false;
+			} else {
+				j++;
 			}
-
-			joint_positions_index[i] = *j;
 		}
 
-		fit_leg_pos_impl(leg, cloud->at(joint_positions_index[2]),
-				cloud->at(joint_positions_index[0]));
+		joint_positions_index[i] = *j;
 	}
+
+	return fit_leg_pos_impl(leg, cloud->at(joint_positions_index[2]),
+			cloud->at(joint_positions_index[0]));
+
 }
 
-void SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
+bool SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
 	std::vector<int> leg_points_index;
 
 	int paw_index = find_paw(leg, leg_points_index);
 
-	if (paw_index != -1) {
-		//Solve leg
-		if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
-			cout << "Failed leg fitting simple" << endl;
-			return;
-		}
+	if (paw_index == -1) {
+		return false;
 	}
+
+	//Solve leg
+	if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
+		cout << "Failed leg fitting simple" << endl;
+		return false;
+	}
+	return true;
 }
 
-void SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg) {
+bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg) {
 	std::vector<int> leg_points_index;
 
 	int paw_index = find_paw(leg, leg_points_index);
 
-	if (paw_index != -1) {
-		//Put the "shoulder" at the highest point of the cloud for this leg
-		int mid_position = find_leg_upper_end(leg, leg_points_index);
-
-		fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
+	if (paw_index == -1) {
+		return false;
 	}
+	//Put the "shoulder" at the highest point of the cloud for this leg
+	int mid_position = find_leg_upper_end(leg, leg_points_index);
+
+	return fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
 }
 
-void SkeletonFitting::fit_leg_pos_impl(Skel_Leg leg,
+bool SkeletonFitting::fit_leg_pos_impl(Skel_Leg leg,
 		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
 	//Solve for "shoulder" two bones
 	if (!solve_chain(leg - 3, leg - 2, middle_position)) {
 		cout << "Failed leg fitting the first pair" << endl;
-		return;
+		return false;
 	}
 
 	//Solve for paw and parent bone
 	if (!solve_chain(leg - 1, leg, paw_position)) {
 		cout << "Failed leg fitting the second pair" << endl;
-		return;
+		return false;
 	}
+	return true;
 }
 
-void SkeletonFitting::fit_head_and_back() {
+bool SkeletonFitting::fit_head_and_back() {
 
 	int head_index = find_head();
 
-	if (head_index != -1) {
-
-		//Calculate positions
-		//First bone
-		osg::Vec3 head_pos, root_pos = cloud->at(head_index);
-		if (!find_first_bone_end_pos(root_pos, head_pos)) {
-			return;
-		}
-		float bone_length = skeleton->get_node(0)->length.length();
-		refine_goal_position(head_pos, root_pos, bone_length);
-
-		//Second bone
-		osg::Vec3 shoulder_pos;
-		if (!find_second_bone_end_pos(head_pos, shoulder_pos)) {
-			return;
-		}
-		bone_length = skeleton->get_node(1)->length.length();
-		refine_goal_position(shoulder_pos, head_pos, bone_length);
-
-		//Third bone
-		osg::Vec3 vertebral_back_pos;
-		if (!find_vertebral_end_pos(shoulder_pos, vertebral_back_pos)) {
-			return;
-		}
-		bone_length = skeleton->get_node(10)->length.length();
-		refine_goal_position(vertebral_back_pos, shoulder_pos, bone_length);
-
-		//Use inverse kinematics to fit bones into positions
-		if (!solve_chain(0, 0, head_pos)) {
-			cout << "Vertebral front fit fail" << endl;
-			return;
-		}
-
-		//Use inverse kinematics to fit bones into positions
-		if (!solve_chain(1, 1, shoulder_pos)) {
-			cout << "Vertebral front fit fail" << endl;
-			return;
-		}
-
-		if (!solve_chain(10, 10, vertebral_back_pos)) {
-			cout << "Vertebral back fit fail" << endl;
-			return;
-		}
+	if (head_index == -1) {
+		return false;
 	}
+
+	//Calculate positions
+	//First bone
+	osg::Vec3 head_pos, root_pos = cloud->at(head_index);
+	if (!find_first_bone_end_pos(root_pos, head_pos)) {
+		return false;
+	}
+	float bone_length = skeleton->get_node(0)->length.length();
+	refine_goal_position(head_pos, root_pos, bone_length);
+
+	//Second bone
+	osg::Vec3 shoulder_pos;
+	if (!find_second_bone_end_pos(head_pos, shoulder_pos)) {
+		return false;
+	}
+	bone_length = skeleton->get_node(1)->length.length();
+	refine_goal_position(shoulder_pos, head_pos, bone_length);
+
+	//Third bone
+	osg::Vec3 vertebral_back_pos;
+	if (!find_vertebral_end_pos(shoulder_pos, vertebral_back_pos)) {
+		return false;
+	}
+	bone_length = skeleton->get_node(10)->length.length();
+	refine_goal_position(vertebral_back_pos, shoulder_pos, bone_length);
+
+	//Use inverse kinematics to fit bones into positions
+	if (!solve_chain(0, 0, head_pos)) {
+		cout << "Vertebral front fit fail" << endl;
+		return false;
+	}
+
+	//Use inverse kinematics to fit bones into positions
+	if (!solve_chain(1, 1, shoulder_pos)) {
+		cout << "Vertebral front fit fail" << endl;
+		return false;
+	}
+
+	if (!solve_chain(10, 10, vertebral_back_pos)) {
+		cout << "Vertebral back fit fail" << endl;
+		return false;
+	}
+	return true;
 }
 
 const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {

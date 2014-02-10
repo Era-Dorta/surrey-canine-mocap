@@ -57,15 +57,15 @@ class SkeletonFitting {
 		void calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 				const Node* const node);
 	private:
-		void fit_root_position();
+		bool fit_root_position();
 
-		void fit_leg_position(Skel_Leg leg);
+		bool fit_leg_position(Skel_Leg leg);
 
-		void fit_leg_position_simple(Skel_Leg leg);
+		bool fit_leg_position_simple(Skel_Leg leg);
 
-		void fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg);
+		bool fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg);
 
-		void fit_head_and_back();
+		bool fit_head_and_back();
 
 		int find_head();
 
@@ -83,7 +83,7 @@ class SkeletonFitting {
 		bool find_vertebral_end_pos(const osg::Vec3& shoulder_pos,
 				osg::Vec3& vertebral_end_pos);
 
-		void fit_leg_pos_impl(Skel_Leg leg, const osg::Vec3& paw_position,
+		bool fit_leg_pos_impl(Skel_Leg leg, const osg::Vec3& paw_position,
 				const osg::Vec3& middle_position);
 
 		//From a cloud of points, fill result vector with a label for each point
