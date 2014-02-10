@@ -1170,95 +1170,156 @@ bool SkeletonFitting::reclassify_left_right_leg_points(float mean_z_front,
 
 void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 		float max_distance_threshold, unsigned int max_ite) {
-	if (cloud->size() < num_nn) {
-		return;
-	}
+
 	std::vector<std::vector<int> > indices;
 	std::vector<std::vector<float> > dists;
-	knn_searcher.knn_search(cloud, num_nn, indices, dists);
+	unsigned int num_ex_it = 0;
+	bool bad_division = true;
 
-	std::vector<Skel_Leg> labels_new(labels);
-	unsigned int num_ite = 0;
-	bool points_moved;
-	do {
-		points_moved = false;
-		for (unsigned int i = 0; i < cloud->size(); i++) {
-			int same_leg_neighbours = 0;
-			int total_valid_neighbours = 0;
-			for (unsigned int j = 0; j < num_nn; j++) {
-				switch (labels[i]) {
-				case Front_Right:
-					if (labels[indices[i][j]] == Front_Right
-							&& dists[i][j] < max_distance_threshold) {
-						same_leg_neighbours++;
-						total_valid_neighbours++;
-					} else if (labels[indices[i][j]] == Front_Left
-							&& dists[i][j] < max_distance_threshold) {
-						total_valid_neighbours++;
+	while (bad_division && num_ex_it < max_ite) {
+
+		if (cloud->size() < num_nn) {
+			return;
+		}
+
+		indices.clear();
+		dists.clear();
+
+		if (!knn_searcher.knn_search(cloud, num_nn, indices, dists)) {
+			return;
+		}
+
+		std::vector<Skel_Leg> labels_new(labels);
+		unsigned int num_ite = 0;
+		bool points_moved;
+		do {
+			points_moved = false;
+			for (unsigned int i = 0; i < cloud->size(); i++) {
+				int same_leg_neighbours = 0;
+				int total_valid_neighbours = 0;
+				for (unsigned int j = 0; j < num_nn; j++) {
+					switch (labels[i]) {
+					case Front_Right:
+						if (labels[indices[i][j]] == Front_Right
+								&& dists[i][j] < max_distance_threshold) {
+							same_leg_neighbours++;
+							total_valid_neighbours++;
+						} else if (labels[indices[i][j]] == Front_Left
+								&& dists[i][j] < max_distance_threshold) {
+							total_valid_neighbours++;
+						}
+						break;
+					case Front_Left:
+						if (labels[indices[i][j]] == Front_Left
+								&& dists[i][j] < max_distance_threshold) {
+							same_leg_neighbours++;
+							total_valid_neighbours++;
+						} else if (labels[indices[i][j]] == Front_Right
+								&& dists[i][j] < max_distance_threshold) {
+							total_valid_neighbours++;
+						}
+						break;
+					case Back_Right:
+						if (labels[indices[i][j]] == Back_Right
+								&& dists[i][j] < max_distance_threshold) {
+							same_leg_neighbours++;
+							total_valid_neighbours++;
+						} else if (labels[indices[i][j]] == Back_Left
+								&& dists[i][j] < max_distance_threshold) {
+							total_valid_neighbours++;
+						}
+						break;
+					case Back_Left:
+						if (labels[indices[i][j]] == Back_Left
+								&& dists[i][j] < max_distance_threshold) {
+							same_leg_neighbours++;
+							total_valid_neighbours++;
+						} else if (labels[indices[i][j]] == Back_Right
+								&& dists[i][j] < max_distance_threshold) {
+							total_valid_neighbours++;
+						}
+						break;
+					default:
+						break;
 					}
-					break;
-				case Front_Left:
-					if (labels[indices[i][j]] == Front_Left
-							&& dists[i][j] < max_distance_threshold) {
-						same_leg_neighbours++;
-						total_valid_neighbours++;
-					} else if (labels[indices[i][j]] == Front_Right
-							&& dists[i][j] < max_distance_threshold) {
-						total_valid_neighbours++;
+				}
+
+				if (total_valid_neighbours > 0
+						&& same_leg_neighbours < total_valid_neighbours / 2.0) {
+					switch (labels[i]) {
+					case Front_Right:
+						labels_new[i] = Front_Left;
+						points_moved = true;
+						break;
+					case Front_Left:
+						labels_new[i] = Front_Right;
+						points_moved = true;
+						break;
+					case Back_Right:
+						labels_new[i] = Back_Left;
+						points_moved = true;
+						break;
+					case Back_Left:
+						labels_new[i] = Back_Right;
+						points_moved = true;
+						break;
+					default:
+						break;
 					}
-					break;
-				case Back_Right:
-					if (labels[indices[i][j]] == Back_Right
-							&& dists[i][j] < max_distance_threshold) {
-						same_leg_neighbours++;
-						total_valid_neighbours++;
-					} else if (labels[indices[i][j]] == Back_Left
-							&& dists[i][j] < max_distance_threshold) {
-						total_valid_neighbours++;
-					}
-					break;
-				case Back_Left:
-					if (labels[indices[i][j]] == Back_Left
-							&& dists[i][j] < max_distance_threshold) {
-						same_leg_neighbours++;
-						total_valid_neighbours++;
-					} else if (labels[indices[i][j]] == Back_Right
-							&& dists[i][j] < max_distance_threshold) {
-						total_valid_neighbours++;
-					}
-					break;
-				default:
-					break;
 				}
 			}
+			labels = labels_new;
+			num_ite++;
+		} while (points_moved && num_ite < max_ite);
 
-			if (total_valid_neighbours > 0
-					&& same_leg_neighbours < total_valid_neighbours / 2.0) {
-				switch (labels[i]) {
-				case Front_Right:
-					labels_new[i] = Front_Left;
-					points_moved = true;
-					break;
-				case Front_Left:
-					labels_new[i] = Front_Right;
-					points_moved = true;
-					break;
-				case Back_Right:
-					labels_new[i] = Back_Left;
-					points_moved = true;
-					break;
-				case Back_Left:
-					labels_new[i] = Back_Right;
-					points_moved = true;
-					break;
-				default:
-					break;
+		bad_division = !knn_division_done(num_nn, indices, dists);
+		num_nn += 10;
+		max_distance_threshold += 0.005;
+		num_ex_it++;
+	}
+}
+
+bool SkeletonFitting::knn_division_done(unsigned int num_nn,
+		const std::vector<std::vector<int> >& indices,
+		const std::vector<std::vector<float> >& dists,
+		float min_distance_treshold) {
+
+	//If any point of the other leg is closer than a threshold then
+	//the division is not finished yet
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		for (unsigned int j = 0; j < num_nn; j++) {
+			switch (labels[i]) {
+			case Front_Right:
+				if (labels[indices[i][j]] == Front_Left
+						&& dists[i][j] < min_distance_treshold) {
+					return false;
 				}
+				break;
+			case Front_Left:
+				if (labels[indices[i][j]] == Front_Right
+						&& dists[i][j] < min_distance_treshold) {
+					return false;
+				}
+				break;
+			case Back_Right:
+				if (labels[indices[i][j]] == Back_Left
+						&& dists[i][j] < min_distance_treshold) {
+					return false;
+				}
+				break;
+			case Back_Left:
+				if (labels[indices[i][j]] == Back_Right
+						&& dists[i][j] < min_distance_treshold) {
+					return false;
+				}
+				break;
+			default:
+				break;
 			}
 		}
-		labels = labels_new;
-		num_ite++;
-	} while (points_moved && num_ite < max_ite);
+	}
+
+	return true;
 }
 
 void SkeletonFitting::get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,

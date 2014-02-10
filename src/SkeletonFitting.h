@@ -121,6 +121,11 @@ class SkeletonFitting {
 		void recalculate_right_left_knn(unsigned int num_nn = 50,
 				float max_distance_threshold = 0.01, unsigned int max_ite = 10);
 
+		bool knn_division_done(unsigned int num_nn,
+				const std::vector<std::vector<int> >& indices,
+				const std::vector<std::vector<float> >& dists,
+				float min_distance_treshold = 0.0005);
+
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 
