@@ -7,9 +7,8 @@ Release
 #Resources
 FreeSans.ttf
 #Eclipse and codeblocks files
-.cproject
-.project
-.settings
-src/myvec.cxx
-src/trig.cxx
-src/srs.cxx
+*.cproject
+*.project
+*.settings
+*.cbp
+*.depend
