@@ -170,8 +170,6 @@ bool IKSolver::solve_chain_1_segment(const float3& goal_position,
 	if (exit_flag >= 0) {
 		current_joints = solved_joints;
 	} else {
-		iksolver1.CartToJnt(current_joints, f_goal, solved_joints);
-
 		KDL::Frame solved_pos;
 		fksolver1.JntToCart(solved_joints, solved_pos);
 
