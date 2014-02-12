@@ -10,16 +10,11 @@
 
 #include "Skeleton.h"
 #include "Skeletonization3D.h"
-#include "PixelSearch.h"
-#include "Projections.h"
-#include "KNNSearch.h"
 #include "IKSolver.h"
+#include "CloudClusterer.h"
 
 #include "osg/Array"
 #include "opencv2/opencv.hpp"
-
-#include <vector>
-#include <algorithm>
 
 #include "boost/shared_ptr.hpp"
 
@@ -72,18 +67,6 @@ private:
 	bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
 			const osg::Vec3& middle_position);
 
-	//From a cloud of points, fill result vector with a label for each point
-	//Median gives better results that mean, but it is not as fast
-	void divide_four_sections(bool use_simple_division = true);
-
-	void refine_four_sections_division();
-
-	float get_mean(osg::ref_ptr<osg::Vec3Array> points,
-			Skeleton::Skel_Leg use_label, Skeleton::Axis axes);
-
-	float get_division_val(osg::ref_ptr<osg::Vec3Array> points,
-			Skeleton::Skel_Leg use_label, Skeleton::Axis axes);
-
 	bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
 
 	bool check_bone_index(int bone0, int bone1);
@@ -93,27 +76,6 @@ private:
 
 	void refine_goal_position(osg::Vec3& end_position,
 			const osg::Vec3& base_position, float length);
-
-	void recalculate_front_back_division_side_view();
-
-	void recalculate_right_left_division_time_coherence();
-
-	void recalculate_right_left_division_mass_center();
-
-	void recalculate_right_left_division_front_view();
-
-	void recalculate_right_left_division_back_view();
-
-	void recalculate_right_left_knn(unsigned int num_nn = 50,
-			float max_distance_threshold = 0.01, unsigned int max_ite = 10);
-
-	bool knn_division_done(unsigned int num_nn,
-			const std::vector<std::vector<int> >& indices,
-			const std::vector<std::vector<float> >& dists,
-			float min_distance_treshold = 0.0005);
-
-	bool reclassify_left_right_leg_points(float mean_z_front,
-			float mean_z_back);
 
 	void get_y_z_front_projection(Skeleton::Skel_Leg leg, cv::Mat& out_img,
 			const osg::Vec3& trans = osg::Vec3());
@@ -145,10 +107,6 @@ private:
 
 	float move_joint_max_dist;
 	float error_threshold;
-	float body_height_extra_threshold;
-	std::vector<float> mean_z_front_arr;
-	std::vector<float> mean_z_back_arr;
-	std::vector<float> mean_x_arr;
 	float mean_z_front_all_frames;
 	float mean_z_back_all_frames;
 	std::vector<Skeleton::Skel_Leg> labels;
@@ -157,9 +115,11 @@ private:
 	osg::ref_ptr<osg::Vec3Array> cloud;
 	boost::shared_ptr<Skeletonization3D> skeletonizator;
 	boost::shared_ptr<Skeleton> skeleton;
-	KNNSearch knn_searcher;
+	bool first_call;
+
 	IKSolver ik_solver;
 	const camVecT& camera_arr;
+	CloudClusterer cloud_clusterer;
 };
 
 #endif /* SKELETONFITTING_H_ */
