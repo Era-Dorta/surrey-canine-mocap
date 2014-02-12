@@ -340,27 +340,6 @@ bool SkeletonFitting::solve_chain(int root_bone, int end_bone,
 	}
 }
 
-bool SkeletonFitting::are_equal(const osg::Vec3& v0, const osg::Vec3& v1) {
-	if (v0.x() + error_threshold >= v1.x() && v0.x() - error_threshold <= v1.x()
-			&& v0.y() + error_threshold >= v1.y()
-			&& v0.y() - error_threshold <= v1.y()
-			&& v0.z() + error_threshold >= v1.z()
-			&& v0.z() - error_threshold <= v1.z()) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-bool SkeletonFitting::check_bone_index(int bone0, int bone1) {
-	if (bone0 >= 0 && (unsigned) bone0 < skeleton->get_num_bones() && bone1 >= 0
-			&& (unsigned) bone1 < skeleton->get_num_bones()) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
 void SkeletonFitting::calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 		const Node* const node) {
 
@@ -380,60 +359,4 @@ void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
 	osg::Vec3 pos_direction = (end_position - base_position);
 	pos_direction.normalize();
 	end_position = base_position + pos_direction * length;
-}
-
-void SkeletonFitting::get_y_z_front_projection(Skeleton::Skel_Leg leg,
-		cv::Mat& out_img, const osg::Vec3& trans) {
-	//We want a front view so in world axes is vectors
-	//x = [0,0,1]
-	//y = [0,1,0]
-	//z = [-1,0,0]
-	//For the projection position the head position is used,
-	//but for the legs to be the centre of the projection
-	//an offset is needed
-	float4x4 invT(0.0);
-	invT[0 * 4 + 2] = -1;
-	invT[1 * 4 + 1] = 1;
-	invT[2 * 4 + 0] = 1;
-	invT[3 * 4 + 0] = trans.z() + 0.05;
-	invT[3 * 4 + 1] = trans.y() + 0.0;
-	invT[3 * 4 + 2] = -(trans.x() - 0.3);
-	invT[3 * 4 + 3] = 1;
-
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == leg) {
-			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
-			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
-					&& point2d.x < out_img.cols)
-				out_img.at<uchar>(point2d.y, point2d.x) = 255;
-		}
-	}
-}
-
-void SkeletonFitting::get_x_y_side_projection(Skeleton::Skel_Leg leg,
-		cv::Mat& out_img, const osg::Vec3& trans) {
-	//We want a side view, so no rotation is needed
-	//x = [1,0,0]
-	//y = [0,1,0]
-	//z = [0,0,1]
-	//For the projection position the head position is used,
-	//but for the legs to be the centre of the projection
-	//an offset is needed
-	float4x4 invT(0.0);
-	invT[0 * 4 + 0] = 1;
-	invT[1 * 4 + 1] = 1;
-	invT[2 * 4 + 2] = 1;
-	invT[3 * 4 + 0] = trans.x() + 0.5;
-	invT[3 * 4 + 1] = trans.y() - 0.05;
-	invT[3 * 4 + 2] = trans.z() + 1.5;
-	invT[3 * 4 + 3] = 1;
-
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == leg) {
-			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
-			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
-					&& point2d.x < out_img.cols)
-				out_img.at<uchar>(point2d.y, point2d.x) = 255;
-		}
-	}
 }

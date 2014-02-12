@@ -39,8 +39,19 @@ public:
 			constCamVecIte& cam, int current_frame,
 			const osg::Vec3& shoulder_pos, osg::Vec3& vertebral_end_pos);
 
+private:
 	bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col, int &res_row,
 			int &res_col);
+
+	void get_y_z_front_projection(const osg::ref_ptr<osg::Vec3Array>& cloud,
+			const std::vector<Skeleton::Skel_Leg>& labels,
+			Skeleton::Skel_Leg leg, cv::Mat& out_img, const osg::Vec3& trans =
+					osg::Vec3());
+
+	void get_x_y_side_projection(const osg::ref_ptr<osg::Vec3Array>& cloud,
+			const std::vector<Skeleton::Skel_Leg>& labels,
+			Skeleton::Skel_Leg leg, cv::Mat& out_img, const osg::Vec3& trans =
+					osg::Vec3());
 };
 
 #endif /* BONEPOSFINDER_H_ */

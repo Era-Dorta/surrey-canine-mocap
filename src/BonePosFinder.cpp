@@ -232,3 +232,63 @@ bool BonePosFinder::unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
 
 	return false;
 }
+
+void BonePosFinder::get_y_z_front_projection(
+		const osg::ref_ptr<osg::Vec3Array>& cloud,
+		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
+		cv::Mat& out_img, const osg::Vec3& trans) {
+	//We want a front view so in world axes is vectors
+	//x = [0,0,1]
+	//y = [0,1,0]
+	//z = [-1,0,0]
+	//For the projection position the head position is used,
+	//but for the legs to be the centre of the projection
+	//an offset is needed
+	float4x4 invT(0.0);
+	invT[0 * 4 + 2] = -1;
+	invT[1 * 4 + 1] = 1;
+	invT[2 * 4 + 0] = 1;
+	invT[3 * 4 + 0] = trans.z() + 0.05;
+	invT[3 * 4 + 1] = trans.y() + 0.0;
+	invT[3 * 4 + 2] = -(trans.x() - 0.3);
+	invT[3 * 4 + 3] = 1;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == leg) {
+			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
+			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
+					&& point2d.x < out_img.cols)
+				out_img.at<uchar>(point2d.y, point2d.x) = 255;
+		}
+	}
+}
+
+void BonePosFinder::get_x_y_side_projection(
+		const osg::ref_ptr<osg::Vec3Array>& cloud,
+		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
+		cv::Mat& out_img, const osg::Vec3& trans) {
+	//We want a side view, so no rotation is needed
+	//x = [1,0,0]
+	//y = [0,1,0]
+	//z = [0,0,1]
+	//For the projection position the head position is used,
+	//but for the legs to be the centre of the projection
+	//an offset is needed
+	float4x4 invT(0.0);
+	invT[0 * 4 + 0] = 1;
+	invT[1 * 4 + 1] = 1;
+	invT[2 * 4 + 2] = 1;
+	invT[3 * 4 + 0] = trans.x() + 0.5;
+	invT[3 * 4 + 1] = trans.y() - 0.05;
+	invT[3 * 4 + 2] = trans.z() + 1.5;
+	invT[3 * 4 + 3] = 1;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == leg) {
+			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
+			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
+					&& point2d.x < out_img.cols)
+				out_img.at<uchar>(point2d.y, point2d.x) = 255;
+		}
+	}
+}

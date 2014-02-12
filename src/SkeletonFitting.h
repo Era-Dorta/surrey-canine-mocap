@@ -52,18 +52,8 @@ private:
 	bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
 			const osg::Vec3& middle_position);
 
-	bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
-
-	bool check_bone_index(int bone0, int bone1);
-
 	void refine_goal_position(osg::Vec3& end_position,
 			const osg::Vec3& base_position, float length);
-
-	void get_y_z_front_projection(Skeleton::Skel_Leg leg, cv::Mat& out_img,
-			const osg::Vec3& trans = osg::Vec3());
-
-	void get_x_y_side_projection(Skeleton::Skel_Leg leg, cv::Mat& out_img,
-			const osg::Vec3& trans = osg::Vec3());
 
 	//Needed to use std::sort with comp_y
 	struct sortstruct {
