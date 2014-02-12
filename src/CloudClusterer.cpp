@@ -51,86 +51,9 @@ void CloudClusterer::divide_four_sections(
 		}
 
 		if (use_simple_division) {
-			//Divide the remaining values in front/back part along x
-			//float mean_x = get_mean(cloud, Skeleton::Front_Right, X);
-			float mean_x = get_division_val(cloud, labels,
-					Skeleton::Front_Right, Skeleton::X);
-			mean_x_arr.at(current_frame) = mean_x;
-
-			for (unsigned int i = 0; i < cloud->size(); i++) {
-				if (labels[i] == Skeleton::Front_Right
-						&& cloud->at(i).x() <= mean_x) {
-					labels[i] = Skeleton::Back_Right;
-				}
-			}
-
-			//Divide the two groups into left and right
-			//Since we are filming the dog from the right side
-			//there are less left points than right, so displace the
-			//mean point a bit to the left
-			//float mean_z_front = get_mean(cloud, Skeleton::Front_Right, Z);
-			//float mean_z_back = get_mean(cloud, Skeleton::Back_Right, Z);
-			float mean_z_front = get_division_val(cloud, labels,
-					Skeleton::Front_Right, Skeleton::Z);
-			mean_z_front_arr.at(current_frame) = mean_z_front;
-			float mean_z_back = get_division_val(cloud, labels,
-					Skeleton::Back_Right, Skeleton::Z);
-			mean_z_back_arr.at(current_frame) = mean_z_back;
-
-			for (unsigned int i = 0; i < cloud->size(); i++) {
-				if (labels[i] == Skeleton::Front_Right
-						&& cloud->at(i).z() >= mean_z_front) {
-					labels[i] = Skeleton::Front_Left;
-				} else if (labels[i] == Skeleton::Back_Right
-						&& cloud->at(i).z() >= mean_z_back) {
-					labels[i] = Skeleton::Back_Left;
-				}
-			}
+			divide_four_sections_simple(labels);
 		} else {
-			int num_valid = cloud->size() - num_invalid;
-			int max_clusters = 4;
-			cv::Mat knn_labels;
-
-			if (num_valid > 4) {
-
-				cv::Mat data2(num_valid, 1, CV_32FC3);
-				int j = 0;
-				for (unsigned int i = 0; i < cloud->size(); i++) {
-					if (labels[i] != Skeleton::Not_Limbs) {
-						cv::Point3f ipt(cloud->at(i).x(), cloud->at(i).y(),
-								cloud->at(i).z());
-						data2.at<cv::Point3f>(j) = ipt;
-						j++;
-					}
-				}
-
-				cv::kmeans(data2, max_clusters, knn_labels,
-						cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10,
-								1.0), 10, cv::KMEANS_PP_CENTERS);
-
-				j = 0;
-				//TODO This division is arbitrary, does not have to correspond
-				//with the names
-				for (unsigned int i = 0; i < cloud->size(); i++) {
-					if (labels[i] != Skeleton::Not_Limbs) {
-						switch (knn_labels.at<int>(j)) {
-						case 0:
-							labels[i] = Skeleton::Front_Left;
-							break;
-						case 1:
-							labels[i] = Skeleton::Front_Right;
-							break;
-						case 2:
-							labels[i] = Skeleton::Back_Left;
-							break;
-						default:
-							labels[i] = Skeleton::Back_Right;
-							break;
-						}
-						j++;
-					}
-				}
-			}
+			divide_four_sections_knn(labels, num_invalid);
 		}
 	}
 }
@@ -139,12 +62,6 @@ void CloudClusterer::refine_four_sections_division(
 		const osg::ref_ptr<osg::Vec3Array>& point_cloud,
 		std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
 		int head_index) {
-	//Better calculate only square distances
-	//Precalculate a matrix of distances?, vector of vectors?
-	//Calculate closest neighbours
-	//Discard closest that are beyond a treshold
-	//If most of they are from the other cluster
-	//then change self label
 
 	if (cloud->size() > 10) {
 
@@ -156,11 +73,100 @@ void CloudClusterer::refine_four_sections_division(
 
 		recalculate_right_left_division_back_view(labels, head_index);
 
+		//TODO If knn deletes all the labels of a certain leg then
+		//reset the labels vector to its previous state
 		recalculate_right_left_knn(labels);
 
 		//Attempt to do some time coherence between frames, code works but
 		//the result is the same
 		//recalculate_z_division_with_time_coherence();
+	}
+}
+
+void CloudClusterer::divide_four_sections_simple(
+		std::vector<Skeleton::Skel_Leg>& labels) {
+	//Divide the remaining values in front/back part along x
+	//float mean_x = get_mean(cloud, Skeleton::Front_Right, X);
+	float mean_x = get_division_val(cloud, labels, Skeleton::Front_Right,
+			Skeleton::X);
+	mean_x_arr.at(current_frame) = mean_x;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == Skeleton::Front_Right && cloud->at(i).x() <= mean_x) {
+			labels[i] = Skeleton::Back_Right;
+		}
+	}
+
+	//Divide the two groups into left and right
+	//Since we are filming the dog from the right side
+	//there are less left points than right, so displace the
+	//mean point a bit to the left
+	//float mean_z_front = get_mean(cloud, Skeleton::Front_Right, Z);
+	//float mean_z_back = get_mean(cloud, Skeleton::Back_Right, Z);
+	float mean_z_front = get_division_val(cloud, labels, Skeleton::Front_Right,
+			Skeleton::Z);
+	mean_z_front_arr.at(current_frame) = mean_z_front;
+	float mean_z_back = get_division_val(cloud, labels, Skeleton::Back_Right,
+			Skeleton::Z);
+	mean_z_back_arr.at(current_frame) = mean_z_back;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == Skeleton::Front_Right
+				&& cloud->at(i).z() >= mean_z_front) {
+			labels[i] = Skeleton::Front_Left;
+		} else if (labels[i] == Skeleton::Back_Right
+				&& cloud->at(i).z() >= mean_z_back) {
+			labels[i] = Skeleton::Back_Left;
+		}
+	}
+}
+
+void CloudClusterer::divide_four_sections_knn(
+		std::vector<Skeleton::Skel_Leg>& labels, int num_invalid) {
+	int num_valid = cloud->size() - num_invalid;
+	int max_clusters = 4;
+	cv::Mat knn_labels;
+
+	if (num_valid > 4) {
+
+		cv::Mat data2(num_valid, 1, CV_32FC3);
+		int j = 0;
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (labels[i] != Skeleton::Not_Limbs) {
+				cv::Point3f ipt(cloud->at(i).x(), cloud->at(i).y(),
+						cloud->at(i).z());
+				data2.at<cv::Point3f>(j) = ipt;
+				j++;
+			}
+		}
+
+		cv::kmeans(data2, max_clusters, knn_labels,
+				cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
+				10, cv::KMEANS_PP_CENTERS);
+
+		j = 0;
+		//TODO This division is arbitrary, does not have to correspond
+		//with the names, also it would probably be faster to use
+		//flann than to use the opencv kmeans method
+		for (unsigned int i = 0; i < cloud->size(); i++) {
+			if (labels[i] != Skeleton::Not_Limbs) {
+				switch (knn_labels.at<int>(j)) {
+				case 0:
+					labels[i] = Skeleton::Front_Left;
+					break;
+				case 1:
+					labels[i] = Skeleton::Front_Right;
+					break;
+				case 2:
+					labels[i] = Skeleton::Back_Left;
+					break;
+				default:
+					labels[i] = Skeleton::Back_Right;
+					break;
+				}
+				j++;
+			}
+		}
 	}
 }
 

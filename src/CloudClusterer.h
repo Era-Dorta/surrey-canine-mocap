@@ -44,6 +44,11 @@ public:
 
 	static bool comp_z(const osg::Vec3& i, const osg::Vec3& j);
 private:
+	void divide_four_sections_simple(std::vector<Skeleton::Skel_Leg>& labels);
+
+	void divide_four_sections_knn(std::vector<Skeleton::Skel_Leg>& labels,
+			int num_invalid);
+
 	void recalculate_front_back_division_side_view(
 			std::vector<Skeleton::Skel_Leg>& labels, int head_index);
 
