@@ -586,6 +586,7 @@ void CloudClusterer::recalculate_right_left_knn(
 	unsigned int num_ex_it = 0;
 	bool bad_division = true;
 
+	//Loop while the current division is not right
 	while (bad_division && num_ex_it < max_ite) {
 
 		if (cloud->size() < num_nn) {
@@ -595,6 +596,7 @@ void CloudClusterer::recalculate_right_left_knn(
 		indices.clear();
 		dists.clear();
 
+		//Calculate the nearest neighbours of all the leg points
 		if (!knn_searcher.knn_search(cloud, num_nn, indices, dists)) {
 			return;
 		}
@@ -605,49 +607,49 @@ void CloudClusterer::recalculate_right_left_knn(
 		do {
 			points_moved = false;
 			for (unsigned int i = 0; i < cloud->size(); i++) {
-				int same_leg_neighbours = 0;
-				int total_valid_neighbours = 0;
+				int same_leg_neighbours[4] = { 0, 0, 0, 0 };
+				int total_valid_neighbours[4] = { 0, 0, 0, 0 };
 				for (unsigned int j = 0; j < num_nn; j++) {
 					switch (labels[i]) {
 					case Skeleton::Front_Right:
 						if (labels[indices[i][j]] == Skeleton::Front_Right
 								&& dists[i][j] < max_distance_threshold) {
-							same_leg_neighbours++;
-							total_valid_neighbours++;
+							same_leg_neighbours[0]++;
+							total_valid_neighbours[0]++;
 						} else if (labels[indices[i][j]] == Skeleton::Front_Left
 								&& dists[i][j] < max_distance_threshold) {
-							total_valid_neighbours++;
+							total_valid_neighbours[0]++;
 						}
 						break;
 					case Skeleton::Front_Left:
 						if (labels[indices[i][j]] == Skeleton::Front_Left
 								&& dists[i][j] < max_distance_threshold) {
-							same_leg_neighbours++;
-							total_valid_neighbours++;
+							same_leg_neighbours[1]++;
+							total_valid_neighbours[1]++;
 						} else if (labels[indices[i][j]]
 								== Skeleton::Front_Right
 								&& dists[i][j] < max_distance_threshold) {
-							total_valid_neighbours++;
+							total_valid_neighbours[1]++;
 						}
 						break;
 					case Skeleton::Back_Right:
 						if (labels[indices[i][j]] == Skeleton::Back_Right
 								&& dists[i][j] < max_distance_threshold) {
-							same_leg_neighbours++;
-							total_valid_neighbours++;
+							same_leg_neighbours[2]++;
+							total_valid_neighbours[2]++;
 						} else if (labels[indices[i][j]] == Skeleton::Back_Left
 								&& dists[i][j] < max_distance_threshold) {
-							total_valid_neighbours++;
+							total_valid_neighbours[2]++;
 						}
 						break;
 					case Skeleton::Back_Left:
 						if (labels[indices[i][j]] == Skeleton::Back_Left
 								&& dists[i][j] < max_distance_threshold) {
-							same_leg_neighbours++;
-							total_valid_neighbours++;
+							same_leg_neighbours[3]++;
+							total_valid_neighbours[3]++;
 						} else if (labels[indices[i][j]] == Skeleton::Back_Right
 								&& dists[i][j] < max_distance_threshold) {
-							total_valid_neighbours++;
+							total_valid_neighbours[3]++;
 						}
 						break;
 					default:
@@ -655,29 +657,43 @@ void CloudClusterer::recalculate_right_left_knn(
 					}
 				}
 
-				if (total_valid_neighbours > 0
-						&& same_leg_neighbours < total_valid_neighbours / 2.0) {
-					switch (labels[i]) {
-					case Skeleton::Front_Right:
+				switch (labels[i]) {
+				case Skeleton::Front_Right:
+					if (total_valid_neighbours[0] > 0
+							&& same_leg_neighbours[0]
+									< total_valid_neighbours[0] / 2.0) {
 						labels_new[i] = Skeleton::Front_Left;
 						points_moved = true;
-						break;
-					case Skeleton::Front_Left:
+					}
+					break;
+				case Skeleton::Front_Left:
+					if (total_valid_neighbours[1] > 0
+							&& same_leg_neighbours[1]
+									< total_valid_neighbours[1] / 2.0) {
 						labels_new[i] = Skeleton::Front_Right;
 						points_moved = true;
-						break;
-					case Skeleton::Back_Right:
+					}
+					break;
+				case Skeleton::Back_Right:
+					if (total_valid_neighbours[2] > 0
+							&& same_leg_neighbours[2]
+									< total_valid_neighbours[2] / 2.0) {
 						labels_new[i] = Skeleton::Back_Left;
 						points_moved = true;
-						break;
-					case Skeleton::Back_Left:
+					}
+					break;
+				case Skeleton::Back_Left:
+					if (total_valid_neighbours[3] > 0
+							&& same_leg_neighbours[3]
+									< total_valid_neighbours[3] / 2.0) {
 						labels_new[i] = Skeleton::Back_Right;
 						points_moved = true;
-						break;
-					default:
-						break;
 					}
+					break;
+				default:
+					break;
 				}
+
 			}
 			labels = labels_new;
 			num_ite++;
