@@ -28,13 +28,21 @@ class IKSolver {
 
 		void start_chain(const float4x4& matrix);
 
+		//rot is a quaternion
 		void add_bone_to_chain(const float3& length, const float4& rot);
+
+		//rot is an ZYX euler rotation
+		void add_bone_to_chain(const float3& length, const float3& rot);
 
 		bool solve_chain(const float3& goal_position);
 
 		unsigned int get_num_joints() const;
 
+		//rot is a quaternion
 		void get_rotation_joint(unsigned int index, float4& rot);
+
+		//rot is an ZYX euler rotation
+		void get_rotation_joint(unsigned int index, float3& rot);
 	private:
 		bool solve_chain_1_segment(const float3& goal_position, float accuracy =
 				1e-4, unsigned int max_ite = 100);

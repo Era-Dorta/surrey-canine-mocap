@@ -30,8 +30,8 @@ void IKSolver::start_chain() {
 void IKSolver::start_chain(const float3& offset, const float4& rot) {
 	start_chain();
 
-	//Adds an offset to the chain start, since it does not have
-	//joints it cannot move
+	//Adds an offset to the chain, since it does not have
+	//joints this segment cannot move
 	KDL::Vector kdl_offset(offset.x, offset.y, offset.z);
 	KDL::Frame frame(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
 			kdl_offset);
@@ -44,6 +44,7 @@ void IKSolver::start_chain(const float3& offset, const float4& rot) {
 void IKSolver::start_chain(const float4x4& matrix) {
 	start_chain();
 
+	//Start the chain with a given transformation matrix
 	KDL::Frame frame;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -58,6 +59,14 @@ void IKSolver::start_chain(const float4x4& matrix) {
 }
 
 void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
+
+	double x, y, z;
+	KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w).GetEulerZYX(x, y, z);
+
+	add_bone_to_chain(length, make_float3(x, y, z));
+}
+
+void IKSolver::add_bone_to_chain(const float3& length, const float3& rot) {
 	//Create a 3DOF joint
 	KDL::Joint kdl_jointx(KDL::Joint::RotZ);
 	KDL::Joint kdl_jointy(KDL::Joint::RotY);
@@ -68,21 +77,21 @@ void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
 
 	//In KDL a 3DOF joint are two 1DOF joints without length
 	//and a third one with with the bone length
-	KDL::Segment segmentx(kdl_jointx);
+	KDL::Segment segmentz(kdl_jointz);
 	KDL::Segment segmenty(kdl_jointy);
-	KDL::Segment segmentz(kdl_jointz, KDL::Frame(kdl_length));
+	KDL::Segment segmentx(kdl_jointx, KDL::Frame(kdl_length));
 
 	//Put the segment in the chain
-	chain.addSegment(segmentx);
-	chain.addSegment(segmenty);
 	chain.addSegment(segmentz);
+	chain.addSegment(segmenty);
+	chain.addSegment(segmentx);
 
 	int index = current_joints.rows();
 	current_joints.resize(current_joints.rows() + 3);
 
-	KDL::Rotation rot_i = KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w);
-	rot_i.GetEulerZYX(current_joints(index), current_joints(index + 1),
-			current_joints(index + 2));
+	current_joints(index) = rot.x;
+	current_joints(index + 1) = rot.y;
+	current_joints(index + 2) = rot.z;
 
 	//For our user only one segment was added
 	num_joints++;
@@ -141,6 +150,16 @@ void IKSolver::get_rotation_joint(unsigned int index, float4& rot) {
 	rot.y = y;
 	rot.z = z;
 	rot.w = w;
+}
+
+void IKSolver::get_rotation_joint(unsigned int index, float3& rot) {
+	//Since we have three joints in the chain for every one the user added
+	index = 3 * index;
+
+	//Rotations angles in every axes
+	rot.x = solved_joints(index);
+	rot.y = solved_joints(index + 1);
+	rot.z = solved_joints(index + 2);
 }
 
 bool IKSolver::solve_chain_1_segment(const float3& goal_position,
@@ -210,5 +229,6 @@ bool IKSolver::solve_chain_several_segments(const float3& goal_position,
 	if (exit_flag >= 0) {
 		current_joints = solved_joints;
 	}
+
 	return exit_flag >= 0;
 }
