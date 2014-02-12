@@ -9,17 +9,17 @@
 #define POINTFUSION_H_
 
 class PointFusion {
-	public:
-		PointFusion();
-		virtual ~PointFusion();
+public:
+	PointFusion();
+	virtual ~PointFusion();
 
-		void render_model_pov();
-		void generate_index_map();
-		void do_registration();
-		void integrate_measurements();
-		void save_model();
+	void render_model_pov();
+	void generate_index_map();
+	void do_registration();
+	void integrate_measurements();
+	void save_model();
 
-	private:
+private:
 
 };
 

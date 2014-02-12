@@ -51,27 +51,27 @@
 typedef std::vector<Node*>::iterator NodeIte;
 
 class MocapData {
-	public:
-		MocapData();
-		virtual ~MocapData();
+public:
+	MocapData();
+	virtual ~MocapData();
 
-		virtual bool import_data(const char* filename) = 0; // Starts the import of the BVH file
-		virtual bool export_data(const char* filename) = 0; // Starts the import of the BVH file
-		Node* get_root();                      // Returns the root node
-		const std::vector<Node*>& get_node_list() const; // Returns an array that holds all the nodes
-		Node* get_node(unsigned int index) const;
-		const char* get_error();
+	virtual bool import_data(const char* filename) = 0; // Starts the import of the BVH file
+	virtual bool export_data(const char* filename) = 0; // Starts the import of the BVH file
+	Node* get_root(); // Returns the root node
+	const std::vector<Node*>& get_node_list() const; // Returns an array that holds all the nodes
+	Node* get_node(unsigned int index) const;
+	const char* get_error();
 
-	protected:
-		NodePtr root;
-		//TODO Instead of Node* use weak pointers
-		//But weak pointers have to be converted to shared_ptr, too complicated
-		std::vector<Node*> nodelist;
-		MocapHeader header;
+protected:
+	NodePtr root;
+	//TODO Instead of Node* use weak pointers
+	//But weak pointers have to be converted to shared_ptr, too complicated
+	std::vector<Node*> nodelist;
+	MocapHeader header;
 
-		char error[255];          // Used to store any errors that occurred
+	char error[255]; // Used to store any errors that occurred
 
-		void reset_state();
+	void reset_state();
 };
 
 #endif

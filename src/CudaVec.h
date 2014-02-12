@@ -105,10 +105,10 @@ CUDA_VEC_HOSTDEVICE float2 make_float2(float s) {
 	return make_float2(s, s);
 }
 CUDA_VEC_HOSTDEVICE float2 make_float2(float3 const & a) {
-	return make_float2(a.x, a.y);  // discards z
+	return make_float2(a.x, a.y); // discards z
 }
 CUDA_VEC_HOSTDEVICE float2 make_float2(float4 const & a) {
-	return make_float2(a.x, a.y);  // discards z, w
+	return make_float2(a.x, a.y); // discards z, w
 }
 CUDA_VEC_HOSTDEVICE float2 make_float2(int2 const & a) {
 	return make_float2(float(a.x), float(a.y));
@@ -292,7 +292,7 @@ CUDA_VEC_HOSTDEVICE float3 make_float3(float2 const & a, float z) {
 	return make_float3(a.x, a.y, z);
 }
 CUDA_VEC_HOSTDEVICE float3 make_float3(float4 const & a) {
-	return make_float3(a.x, a.y, a.z);  // discards w
+	return make_float3(a.x, a.y, a.z); // discards w
 }
 CUDA_VEC_HOSTDEVICE float3 make_float3(int3 const & a) {
 	return make_float3(float(a.x), float(a.y), float(a.z));
@@ -480,8 +480,7 @@ CUDA_VEC_HOSTDEVICE float norm(float3 const & a) {
 }
 
 // print
-CUDA_VEC_HOSTDEVICE void print_v(float3 const & a)
-{
+CUDA_VEC_HOSTDEVICE void print_v(float3 const & a) {
 	printf("------------------------\n");
 	printf("%f	%f %f", a.x, a.y, a.z);
 	printf("\n");
@@ -702,8 +701,7 @@ CUDA_VEC_HOSTDEVICE float norm(float4 const & a) {
 }
 
 // print
-CUDA_VEC_HOSTDEVICE void print_v(float4 const & a)
-{
+CUDA_VEC_HOSTDEVICE void print_v(float4 const & a) {
 	printf("------------------------\n");
 	printf("%f	%f %f %f", a.x, a.y, a.z, a.w);
 	printf("\n");
@@ -868,7 +866,7 @@ CUDA_VEC_HOSTDEVICE int3 make_int3(int2 const & a, int s) {
 	return make_int3(a.x, a.y, s);
 }
 CUDA_VEC_HOSTDEVICE int3 make_int3(int4 const & a) {
-	return make_int3(a.x, a.y, a.z);  // discards w
+	return make_int3(a.x, a.y, a.z); // discards w
 }
 CUDA_VEC_HOSTDEVICE int3 make_int3(float3 const & a) {
 	return make_int3(int(a.x), int(a.y), int(a.z));
@@ -1687,543 +1685,541 @@ CUDA_VEC_HOSTDEVICE int4 clamp(int4 const & v, int4 const & a, int4 const & b) {
 // float3x3 class
 ////////////////////////////////////////////////////////////////////////////////
 class float3x3 {
-		//float val[3*3];
+	//float val[3*3];
 
-	public:
+public:
 
-		//CDM mod: make public:
-		float val[3 * 3];
+	//CDM mod: make public:
+	float val[3 * 3];
 
 #ifndef __CUDACC__ // CUDA doesn't support non-empty constructors
-		/// @name Constructors
-		// @{
-		/// Default constructor
-		float3x3() {
-		}
+	/// @name Constructors
+	// @{
+	/// Default constructor
+	float3x3() {
+	}
 
-		/// Copy constructor
-		float3x3(float3x3 const & m) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] = m[k];
-		}
+	/// Copy constructor
+	float3x3(float3x3 const & m) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] = m[k];
+	}
 
-		/// Copy constructor with a given array (must have a length >= 3*3)
-		float3x3(float const * m) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] = m[k];
-		}
+	/// Copy constructor with a given array (must have a length >= 3*3)
+	float3x3(float const * m) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] = m[k];
+	}
 
-		/// Constructor with an initial value for all elements
-		explicit float3x3(float const & w) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] = w;
-		}
-		// @}
+	/// Constructor with an initial value for all elements
+	explicit float3x3(float const & w) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] = w;
+	}
+	// @}
 
 #endif
 
-		/// @name Array subscripting, matrix access and dereferencing operators
-		// @{
-		/// Array subscripting operator
-		CUDA_VEC_HOSTDEVICE float & operator[](int k) {
-			//CUDA_VEC_ASSERT( (k>=0) && (k<3*3) );
-			return val[k];
-		}
+	/// @name Array subscripting, matrix access and dereferencing operators
+	// @{
+	/// Array subscripting operator
+	CUDA_VEC_HOSTDEVICE float & operator[](int k) {
+		//CUDA_VEC_ASSERT( (k>=0) && (k<3*3) );
+		return val[k];
+	}
 
-		/// Constant array subscripting operator.
-		CUDA_VEC_HOSTDEVICE const float & operator[](int k) const {
-			//CUDA_VEC_ASSERT( (k>=0) && (k<3*3) );
-			return val[k];
-		}
+	/// Constant array subscripting operator.
+	CUDA_VEC_HOSTDEVICE const float & operator[](int k) const {
+		//CUDA_VEC_ASSERT( (k>=0) && (k<3*3) );
+		return val[k];
+	}
 
-		/// Matrix access
-		CUDA_VEC_HOSTDEVICE float & get(int k, int l) {
-			CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 3) && (l < 3));
-			return val[k * 3 + l];
-		}
+	/// Matrix access
+	CUDA_VEC_HOSTDEVICE float & get(int k, int l) {
+		CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 3) && (l < 3));
+		return val[k * 3 + l];
+	}
 
-		/// Matrix access
-		CUDA_VEC_HOSTDEVICE const float & get(int k, int l) const {
-			CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 3) && (l < 3));
-			return val[k * 3 + l];
-		}
+	/// Matrix access
+	CUDA_VEC_HOSTDEVICE const float & get(int k, int l) const {
+		CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 3) && (l < 3));
+		return val[k * 3 + l];
+	}
 
-		/// Matrix access to column vectors
-		CUDA_VEC_HOSTDEVICE float3 getCol(int l) const {
-			CUDA_VEC_ASSERT((l >= 0) && (l < 3));
-			float3 v;
-			for (int k = 0; k < 3; ++k)
-				(&v.x)[k] = val[k * 3 + l];
-			return v;
-		}
+	/// Matrix access to column vectors
+	CUDA_VEC_HOSTDEVICE float3 getCol(int l) const {
+		CUDA_VEC_ASSERT((l >= 0) && (l < 3));
+		float3 v;
+		for (int k = 0; k < 3; ++k)
+			(&v.x)[k] = val[k * 3 + l];
+		return v;
+	}
 
-		/// Matrix access to row vectors
-		CUDA_VEC_HOSTDEVICE float3 getRow(int k) const {
-			CUDA_VEC_ASSERT((k >= 0) && (k < 3));
-			int r = k * 3;
-			return make_float3(val[r], val[r + 1], val[r + 2]);
-		}
+	/// Matrix access to row vectors
+	CUDA_VEC_HOSTDEVICE float3 getRow(int k) const {
+		CUDA_VEC_ASSERT((k >= 0) && (k < 3));
+		int r = k * 3;
+		return make_float3(val[r], val[r + 1], val[r + 2]);
+	}
 
-		/// Dereferencing operator
-		CUDA_VEC_HOSTDEVICE operator float *() {
-			return val;
-		}
+	/// Dereferencing operator
+	CUDA_VEC_HOSTDEVICE operator float *() {
+		return val;
+	}
 
-		/// Constant dereferencing operator
-		CUDA_VEC_HOSTDEVICE operator const float *() const {
-			return val;
-		}
-		// @}
+	/// Constant dereferencing operator
+	CUDA_VEC_HOSTDEVICE operator const float *() const {
+		return val;
+	}
+	// @}
 
-		/// @name Assignment operator and arithmetic assignment operators
-		// @{
-		/// Assignmet operator
-		CUDA_VEC_HOSTDEVICE float3x3 & operator=(float3x3 const & m) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] = m[k];
-			return (*this);
-		}
+	/// @name Assignment operator and arithmetic assignment operators
+	// @{
+	/// Assignmet operator
+	CUDA_VEC_HOSTDEVICE float3x3 & operator=(float3x3 const & m) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] = m[k];
+		return (*this);
+	}
 
-		/// Add and assign
-		CUDA_VEC_HOSTDEVICE float3x3 & operator+=(float3x3 const & m) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] += m[k];
-			return (*this);
-		}
+	/// Add and assign
+	CUDA_VEC_HOSTDEVICE float3x3 & operator+=(float3x3 const & m) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] += m[k];
+		return (*this);
+	}
 
-		/// Subtract and assign
-		CUDA_VEC_HOSTDEVICE float3x3 & operator-=(float3x3 const & m) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] -= m[k];
-			return (*this);
-		}
+	/// Subtract and assign
+	CUDA_VEC_HOSTDEVICE float3x3 & operator-=(float3x3 const & m) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] -= m[k];
+		return (*this);
+	}
 
-		/// Multiply a scalar and assign
-		CUDA_VEC_HOSTDEVICE float3x3 & operator*=(float w) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] *= w;
-			return (*this);
-		}
+	/// Multiply a scalar and assign
+	CUDA_VEC_HOSTDEVICE float3x3 & operator*=(float w) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] *= w;
+		return (*this);
+	}
 
-		/// Multiply a matrix and assign
-		CUDA_VEC_HOSTDEVICE float3x3 & operator*=(float3x3 const & m) {
-			float3x3 result;
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j) {
-					float sum(0);
-					for (int k = 0; k < 3; k++)
-						sum += val[i * 3 + k] * m[k * 3 + j];
-					result[i * 3 + j] = sum;
-				}
-			*this = result;
-			return *this;
-		}
-
-		/// Divide by a scalar and assign
-		CUDA_VEC_HOSTDEVICE float3x3 & operator/=(float w) {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] /= w;
-			return (*this);
-		}
-
-		///// Modulo by a scalar and assign
-		//float3x3 &operator%=(const float &w)
-		//{
-		//	for(int k=0; k<3*3; ++k) val[k] %= w; 
-		//	return (*this);	
-		//}
-
-		/// Sum of two matrices
-		CUDA_VEC_HOSTDEVICE float3x3 operator+(float3x3 const & m) const {
-			float3x3 res;
-			for (int k = 0; k < 3 * 3; ++k)
-				res[k] = val[k] + m[k];
-			return res;
-		}
-
-		/// Difference of two matrices
-		CUDA_VEC_HOSTDEVICE float3x3 operator-(float3x3 const & m) const {
-			float3x3 res;
-			for (int k = 0; k < 3 * 3; ++k)
-				res[k] = val[k] - m[k];
-			return res;
-		}
-
-		/// Multiply matrix by scalar
-		CUDA_VEC_HOSTDEVICE float3x3 operator*(float const & w) const {
-			float3x3 res;
-			for (int k = 0; k < 3 * 3; ++k)
-				res[k] = val[k] * w;
-			return res;
-		}
-
-		/// Product of matrix and vector
-		CUDA_VEC_HOSTDEVICE const float3 operator*(float3 const & v) const {
-			return make_float3(val[0] * v.x + val[1] * v.y + val[2] * v.z,
-					val[3] * v.x + val[4] * v.y + val[5] * v.z,
-					val[6] * v.x + val[7] * v.y + val[8] * v.z);
-		}
-
-		/// Product of two matrices
-		CUDA_VEC_HOSTDEVICE float3x3 operator*(float3x3 const & m) const {
-			float3x3 res;
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j) {
-					float sum(0);
-					for (int k = 0; k < 3; k++)
-						sum += val[i * 3 + k] * m[k * 3 + j];
-					res[i * 3 + j] = sum;
-				}
-			return res;
-		}
-
-		/// Divide matrix by scalar
-		CUDA_VEC_HOSTDEVICE float3x3 operator/(float w) const {
-			float3x3 res;
-			for (int k = 0; k < 3 * 3; ++k)
-				res[k] = val[k] / w;
-			return res;
-		}
-
-		/// Unary -
-		CUDA_VEC_HOSTDEVICE float3x3 operator-() const {
-			float3x3 res;
-			for (int k = 0; k < 3 * 3; ++k)
-				res[k] = -val[k];
-			return res;
-		}
-
-		// @}
-
-		/// @name Matrix functions
-		// @{
-
-		/// Clear the matrix to zero
-		CUDA_VEC_HOSTDEVICE void clear() {
-			for (int k = 0; k < 3 * 3; ++k)
-				val[k] = float(0);
-		}
-
-		/// Multiply with matrix B and store result in result
-		CUDA_VEC_HOSTDEVICE float3x3 & multMat(float3x3 const & B,
-				float3x3 & result) const {
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j) {
-					float sum(0);
-					for (int k = 0; k < 3; k++)
-						sum += val[i * 3 + k] * B[k * 3 + j];
-					result[i * 3 + j] = sum;
-				}
-			return result;
-		}
-
-		/// Multiply with matrix B and accumulate result to matrix result
-		CUDA_VEC_HOSTDEVICE float3x3 & multMatAdd(float3x3 const & B,
-				float3x3 & result) const {
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j) {
-					float sum(0);
-					for (int k = 0; k < 3; k++)
-						sum += val[i * 3 + k] * B[k * 3 + j];
-					result[i * 3 + j] += sum;
-				}
-			return result;
-		}
-
-		/// Multiply with transposed matrix B and store result in result
-		CUDA_VEC_HOSTDEVICE float3x3 & multMatT(float3x3 const & B,
-				float3x3 & result) const {
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j) {
-					float sum(0);
-					for (int k = 0; k < 3; k++)
-						sum += val[i * 3 + k] * B[j * 3 + k];
-					result[i * 3 + j] = sum;
-				}
-			return result;
-		}
-
-		/// Multiply with transposed matrix B and accumulate result to matrix result
-		CUDA_VEC_HOSTDEVICE float3x3 & multMatTAdd(float3x3 const & B,
-				float3x3 & result) const {
-			for (int i = 0; i < 3; ++i)
-				for (int j = 0; j < 3; ++j) {
-					float sum(0);
-					for (int k = 0; k < 3; k++)
-						sum += val[i * 3 + k] * B[j * 3 + k];
-					result[i * 3 + j] += sum;
-				}
-			return result;
-		}
-
-		/// Product of matrix and vector b. Result is written to result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float3 & multVec(float3 const & b,
-				float3 & result) const {
-			return result = make_float3(
-					val[0] * b.x + val[1] * b.y + val[2] * b.z,
-					val[3] * b.x + val[4] * b.y + val[5] * b.z,
-					val[6] * b.x + val[7] * b.y + val[8] * b.z);
-		}
-
-		/// Product of matrix and vector b. Result is added to vector result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float3 & multVecAdd(float3 const & b,
-				float3 & result) const {
-			return result = make_float3(
-					result.x + val[0] * b.x + val[1] * b.y + val[2] * b.z,
-					result.y + val[3] * b.x + val[4] * b.y + val[5] * b.z,
-					result.z + val[6] * b.x + val[7] * b.y + val[8] * b.z);
-		}
-
-		/// Product of transposed matrix and vector b. Result is written to result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float3 & multTVec(float3 const & b,
-				float3 & result) const {
-			return result = make_float3(
-					val[0] * b.x + val[3] * b.y + val[6] * b.z,
-					val[1] * b.x + val[4] * b.y + val[7] * b.z,
-					val[2] * b.x + val[5] * b.y + val[8] * b.z);
-		}
-
-		/// Product of transposed matrix and vector b. Result is added to vector result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float3 & multTVecAdd(float3 const & b,
-				float3 & result) const {
-			return result = make_float3(
-					result.x + val[0] * b.x + val[3] * b.y + val[6] * b.z,
-					result.y + val[1] * b.x + val[4] * b.y + val[7] * b.z,
-					result.z + val[2] * b.x + val[5] * b.y + val[8] * b.z);
-		}
-
-		/// Transpose matrix. Result is written to result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float3x3 & transpose(float3x3 & result) const {
-			for (int i = 0; i < 3; i++)
-				for (int j = 0; j < 3; j++)
-					result[3 * j + i] = val[3 * i + j];
-			return result;
-		}
-
-		/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b. Solution is written to x. 
-		/** WARNING: this matrix and vector b are destroyed
-		 */
-		CUDA_VEC_HOSTDEVICE void gaussElim(float3 & b, float3 & x) {
-			for (int k = 0; k < 3; ++k) {
-				float *row = &val[k * 3];
-				float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
-				for (int l = k + 1; l < 3; ++l) {
-					float *actRow = &val[l * 3];
-					float actFac = fac * actRow[k];
-					for (int ri = k + 1; ri < 3; ++ri)
-						actRow[ri] -= actFac * row[ri];
-					(&b.x)[l] -= actFac * (&b.x)[k];
-				}
+	/// Multiply a matrix and assign
+	CUDA_VEC_HOSTDEVICE float3x3 & operator*=(float3x3 const & m) {
+		float3x3 result;
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) {
+				float sum(0);
+				for (int k = 0; k < 3; k++)
+					sum += val[i * 3 + k] * m[k * 3 + j];
+				result[i * 3 + j] = sum;
 			}
+		*this = result;
+		return *this;
+	}
 
-			// Back substitution
-			for (int k = 3 - 1; k >= 0; --k) {
-				(&x.x)[k] = (&b.x)[k];
-				for (int l = k + 1; l < 3; ++l)
-					(&x.x)[k] -= (&x.x)[l] * val[k * 3 + l];
-				(&x.x)[k] =
-						(val[k * 3 + k] != float(0)) ?
-								(&x.x)[k] / val[k * 3 + k] : float(0);
+	/// Divide by a scalar and assign
+	CUDA_VEC_HOSTDEVICE float3x3 & operator/=(float w) {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] /= w;
+		return (*this);
+	}
+
+	///// Modulo by a scalar and assign
+	//float3x3 &operator%=(const float &w)
+	//{
+	//	for(int k=0; k<3*3; ++k) val[k] %= w; 
+	//	return (*this);	
+	//}
+
+	/// Sum of two matrices
+	CUDA_VEC_HOSTDEVICE float3x3 operator+(float3x3 const & m) const {
+		float3x3 res;
+		for (int k = 0; k < 3 * 3; ++k)
+			res[k] = val[k] + m[k];
+		return res;
+	}
+
+	/// Difference of two matrices
+	CUDA_VEC_HOSTDEVICE float3x3 operator-(float3x3 const & m) const {
+		float3x3 res;
+		for (int k = 0; k < 3 * 3; ++k)
+			res[k] = val[k] - m[k];
+		return res;
+	}
+
+	/// Multiply matrix by scalar
+	CUDA_VEC_HOSTDEVICE float3x3 operator*(float const & w) const {
+		float3x3 res;
+		for (int k = 0; k < 3 * 3; ++k)
+			res[k] = val[k] * w;
+		return res;
+	}
+
+	/// Product of matrix and vector
+	CUDA_VEC_HOSTDEVICE const float3 operator*(float3 const & v) const {
+		return make_float3(val[0] * v.x + val[1] * v.y + val[2] * v.z,
+				val[3] * v.x + val[4] * v.y + val[5] * v.z,
+				val[6] * v.x + val[7] * v.y + val[8] * v.z);
+	}
+
+	/// Product of two matrices
+	CUDA_VEC_HOSTDEVICE float3x3 operator*(float3x3 const & m) const {
+		float3x3 res;
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) {
+				float sum(0);
+				for (int k = 0; k < 3; k++)
+					sum += val[i * 3 + k] * m[k * 3 + j];
+				res[i * 3 + j] = sum;
+			}
+		return res;
+	}
+
+	/// Divide matrix by scalar
+	CUDA_VEC_HOSTDEVICE float3x3 operator/(float w) const {
+		float3x3 res;
+		for (int k = 0; k < 3 * 3; ++k)
+			res[k] = val[k] / w;
+		return res;
+	}
+
+	/// Unary -
+	CUDA_VEC_HOSTDEVICE float3x3 operator-() const {
+		float3x3 res;
+		for (int k = 0; k < 3 * 3; ++k)
+			res[k] = -val[k];
+		return res;
+	}
+
+	// @}
+
+	/// @name Matrix functions
+	// @{
+
+	/// Clear the matrix to zero
+	CUDA_VEC_HOSTDEVICE void clear() {
+		for (int k = 0; k < 3 * 3; ++k)
+			val[k] = float(0);
+	}
+
+	/// Multiply with matrix B and store result in result
+	CUDA_VEC_HOSTDEVICE float3x3 & multMat(float3x3 const & B,
+			float3x3 & result) const {
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) {
+				float sum(0);
+				for (int k = 0; k < 3; k++)
+					sum += val[i * 3 + k] * B[k * 3 + j];
+				result[i * 3 + j] = sum;
+			}
+		return result;
+	}
+
+	/// Multiply with matrix B and accumulate result to matrix result
+	CUDA_VEC_HOSTDEVICE float3x3 & multMatAdd(float3x3 const & B,
+			float3x3 & result) const {
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) {
+				float sum(0);
+				for (int k = 0; k < 3; k++)
+					sum += val[i * 3 + k] * B[k * 3 + j];
+				result[i * 3 + j] += sum;
+			}
+		return result;
+	}
+
+	/// Multiply with transposed matrix B and store result in result
+	CUDA_VEC_HOSTDEVICE float3x3 & multMatT(float3x3 const & B,
+			float3x3 & result) const {
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) {
+				float sum(0);
+				for (int k = 0; k < 3; k++)
+					sum += val[i * 3 + k] * B[j * 3 + k];
+				result[i * 3 + j] = sum;
+			}
+		return result;
+	}
+
+	/// Multiply with transposed matrix B and accumulate result to matrix result
+	CUDA_VEC_HOSTDEVICE float3x3 & multMatTAdd(float3x3 const & B,
+			float3x3 & result) const {
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) {
+				float sum(0);
+				for (int k = 0; k < 3; k++)
+					sum += val[i * 3 + k] * B[j * 3 + k];
+				result[i * 3 + j] += sum;
+			}
+		return result;
+	}
+
+	/// Product of matrix and vector b. Result is written to result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float3 & multVec(float3 const & b,
+			float3 & result) const {
+		return result = make_float3(val[0] * b.x + val[1] * b.y + val[2] * b.z,
+				val[3] * b.x + val[4] * b.y + val[5] * b.z,
+				val[6] * b.x + val[7] * b.y + val[8] * b.z);
+	}
+
+	/// Product of matrix and vector b. Result is added to vector result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float3 & multVecAdd(float3 const & b,
+			float3 & result) const {
+		return result = make_float3(
+				result.x + val[0] * b.x + val[1] * b.y + val[2] * b.z,
+				result.y + val[3] * b.x + val[4] * b.y + val[5] * b.z,
+				result.z + val[6] * b.x + val[7] * b.y + val[8] * b.z);
+	}
+
+	/// Product of transposed matrix and vector b. Result is written to result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float3 & multTVec(float3 const & b,
+			float3 & result) const {
+		return result = make_float3(val[0] * b.x + val[3] * b.y + val[6] * b.z,
+				val[1] * b.x + val[4] * b.y + val[7] * b.z,
+				val[2] * b.x + val[5] * b.y + val[8] * b.z);
+	}
+
+	/// Product of transposed matrix and vector b. Result is added to vector result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float3 & multTVecAdd(float3 const & b,
+			float3 & result) const {
+		return result = make_float3(
+				result.x + val[0] * b.x + val[3] * b.y + val[6] * b.z,
+				result.y + val[1] * b.x + val[4] * b.y + val[7] * b.z,
+				result.z + val[2] * b.x + val[5] * b.y + val[8] * b.z);
+	}
+
+	/// Transpose matrix. Result is written to result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float3x3 & transpose(float3x3 & result) const {
+		for (int i = 0; i < 3; i++)
+			for (int j = 0; j < 3; j++)
+				result[3 * j + i] = val[3 * i + j];
+		return result;
+	}
+
+	/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b. Solution is written to x. 
+	/** WARNING: this matrix and vector b are destroyed
+	 */
+	CUDA_VEC_HOSTDEVICE void gaussElim(float3 & b, float3 & x) {
+		for (int k = 0; k < 3; ++k) {
+			float *row = &val[k * 3];
+			float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
+			for (int l = k + 1; l < 3; ++l) {
+				float *actRow = &val[l * 3];
+				float actFac = fac * actRow[k];
+				for (int ri = k + 1; ri < 3; ++ri)
+					actRow[ri] -= actFac * row[ri];
+				(&b.x)[l] -= actFac * (&b.x)[k];
 			}
 		}
 
-		/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b using row pivoting. Solution is written to x. 
-		/** WARNING: this matrix and vector b are destroyed
-		 */
-		CUDA_VEC_HOSTDEVICE void gaussElimRowPivot(float3 & b, float3 & x) {
-			//float3x3 A(*this);
-			//float3 ba(b);
+		// Back substitution
+		for (int k = 3 - 1; k >= 0; --k) {
+			(&x.x)[k] = (&b.x)[k];
+			for (int l = k + 1; l < 3; ++l)
+				(&x.x)[k] -= (&x.x)[l] * val[k * 3 + l];
+			(&x.x)[k] =
+					(val[k * 3 + k] != float(0)) ?
+							(&x.x)[k] / val[k * 3 + k] : float(0);
+		}
+	}
 
-			int perm[3]; // Store row permutation
-			for (int i = 0; i < 3; ++i)
-				perm[i] = i;
-			for (int k = 0; k < 3; ++k) {
+	/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b using row pivoting. Solution is written to x. 
+	/** WARNING: this matrix and vector b are destroyed
+	 */
+	CUDA_VEC_HOSTDEVICE void gaussElimRowPivot(float3 & b, float3 & x) {
+		//float3x3 A(*this);
+		//float3 ba(b);
 
-				// Find pivot
-				float mx(0);
-				int pi(k); // Default initilization: use current row
-				for (int li = k; li < 3; ++li) {
-					float m = fabs(val[perm[li] * 3 + k]);
-					if (m > mx) {
-						mx = m;
-						pi = li;
-					}
+		int perm[3]; // Store row permutation
+		for (int i = 0; i < 3; ++i)
+			perm[i] = i;
+		for (int k = 0; k < 3; ++k) {
+
+			// Find pivot
+			float mx(0);
+			int pi(k); // Default initilization: use current row
+			for (int li = k; li < 3; ++li) {
+				float m = fabs(val[perm[li] * 3 + k]);
+				if (m > mx) {
+					mx = m;
+					pi = li;
 				}
-
-				int old = perm[k];
-				perm[k] = perm[pi]; // Update permutation
-				perm[pi] = old;
-
-				pi = perm[k]; // pi is row index of current pivot row
-				float *row = &val[pi * 3];
-				float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
-				for (int l = k + 1; l < 3; ++l) {
-					float *actRow = &val[perm[l] * 3];
-					float actFac = fac * actRow[k];
-					for (int ri = k + 1; ri < 3; ++ri)
-						actRow[ri] -= actFac * row[ri];
-					(&b.x)[perm[l]] -= actFac * (&b.x)[pi];
-				}
-
 			}
 
-			// Back substitution
-			for (int k = 3 - 1; k >= 0; --k) {
-				(&x.x)[k] = (&b.x)[perm[k]];
-				for (int l = k + 1; l < 3; ++l)
-					(&x.x)[k] -= (&x.x)[l] * val[perm[k] * 3 + l];
-				(&x.x)[k] =
-						(val[perm[k] * 3 + k] != float(0)) ?
-								(&x.x)[k] / val[perm[k] * 3 + k] : float(1);
+			int old = perm[k];
+			perm[k] = perm[pi]; // Update permutation
+			perm[pi] = old;
+
+			pi = perm[k]; // pi is row index of current pivot row
+			float *row = &val[pi * 3];
+			float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
+			for (int l = k + 1; l < 3; ++l) {
+				float *actRow = &val[perm[l] * 3];
+				float actFac = fac * actRow[k];
+				for (int ri = k + 1; ri < 3; ++ri)
+					actRow[ri] -= actFac * row[ri];
+				(&b.x)[perm[l]] -= actFac * (&b.x)[pi];
 			}
+
 		}
 
-		/// Compute largest eigenvalue (in lambda) and eigenvector (in x). Perform power method. Returns convergence value, that should be close to 1 (positive eigenvalue) or -1 (negative eigenvalue). Optional arguments are the maximum number of iteration steps, and a flag indicates whether x is used as start vector, or a start vector is computed from the matrix. 
-		CUDA_VEC_HOSTDEVICE float largestEigenvec(float & lambda, float3 & x,
-				int maxSteps = 25, bool computeStartVec = true) {
-			float err(0);
-			float3 xold;
-			if (computeStartVec) {
-				float mx(0);
-				int iMax = 0;
-				for (int i = 0; i < 3; ++i) {
-					lambda = norm(getRow(i));
-					if (lambda > mx) {
-						mx = lambda;
-						iMax = i;
-					}
+		// Back substitution
+		for (int k = 3 - 1; k >= 0; --k) {
+			(&x.x)[k] = (&b.x)[perm[k]];
+			for (int l = k + 1; l < 3; ++l)
+				(&x.x)[k] -= (&x.x)[l] * val[perm[k] * 3 + l];
+			(&x.x)[k] =
+					(val[perm[k] * 3 + k] != float(0)) ?
+							(&x.x)[k] / val[perm[k] * 3 + k] : float(1);
+		}
+	}
+
+	/// Compute largest eigenvalue (in lambda) and eigenvector (in x). Perform power method. Returns convergence value, that should be close to 1 (positive eigenvalue) or -1 (negative eigenvalue). Optional arguments are the maximum number of iteration steps, and a flag indicates whether x is used as start vector, or a start vector is computed from the matrix. 
+	CUDA_VEC_HOSTDEVICE float largestEigenvec(float & lambda, float3 & x,
+			int maxSteps = 25, bool computeStartVec = true) {
+		float err(0);
+		float3 xold;
+		if (computeStartVec) {
+			float mx(0);
+			int iMax = 0;
+			for (int i = 0; i < 3; ++i) {
+				lambda = norm(getRow(i));
+				if (lambda > mx) {
+					mx = lambda;
+					iMax = i;
 				}
-				x = getRow(iMax);
 			}
-			// Normalize x
+			x = getRow(iMax);
+		}
+		// Normalize x
+		lambda = norm(x);
+		x *= (lambda != float(0.0)) ? float(1.0) / lambda : float(1.0);
+		int ic(0);
+		do {
+			xold = x;
+			multVec(xold, x);
+
 			lambda = norm(x);
 			x *= (lambda != float(0.0)) ? float(1.0) / lambda : float(1.0);
-			int ic(0);
-			do {
-				xold = x;
-				multVec(xold, x);
 
-				lambda = norm(x);
-				x *= (lambda != float(0.0)) ? float(1.0) / lambda : float(1.0);
+			err = dot(x, xold);
 
-				err = dot(x, xold);
+			++ic;
+		} while ((err * err < float(0.98)) && (ic <= maxSteps));
 
-				++ic;
-			} while ((err * err < float(0.98)) && (ic <= maxSteps));
+		if (err < float(0))
+			lambda = -lambda;
+		return err;
 
-			if (err < float(0))
-				lambda = -lambda;
-			return err;
+	}
 
+	CUDA_VEC_HOSTDEVICE float largestEigenvec2(float & lambda, float3 & x,
+			int maxSteps = 25, bool computeStartVec = true) {
+		float err(0);
+		float fnorm;
+		float3 xold;
+		if (computeStartVec) {
+			float mx(0);
+			int iMax = 0;
+			for (int i = 0; i < 3; ++i) {
+				lambda = norm(getRow(i));
+				if (lambda > mx) {
+					mx = lambda;
+					iMax = i;
+				}
+			}
+			x = getRow(iMax);
 		}
 
-		CUDA_VEC_HOSTDEVICE float largestEigenvec2(float & lambda, float3 & x,
-				int maxSteps = 25, bool computeStartVec = true) {
-			float err(0);
-			float fnorm;
-			float3 xold;
-			if (computeStartVec) {
-				float mx(0);
-				int iMax = 0;
-				for (int i = 0; i < 3; ++i) {
-					lambda = norm(getRow(i));
-					if (lambda > mx) {
-						mx = lambda;
-						iMax = i;
-					}
-				}
-				x = getRow(iMax);
-			}
+		fnorm = norm(x);
+		x *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
 
+		int ic(0);
+		do {
+			multVec(x, xold);
+			lambda = dot(x, xold) / norm_square(x);
+			fnorm = norm(xold);
+			xold *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
+			err = dot(x, xold);
+			if (err * err > float(0.98))
+				break;
+
+			float3x3 tmp(*this);
+			for (int i = 0; i < 3; i++)
+				tmp.get(i, i) -= lambda;
+
+			tmp.gaussElim(x, xold);
+			x = xold;
 			fnorm = norm(x);
 			x *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
 
-			int ic(0);
-			do {
-				multVec(x, xold);
-				lambda = dot(x, xold) / norm_square(x);
-				fnorm = norm(xold);
-				xold *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
-				err = dot(x, xold);
-				if (err * err > float(0.98))
-					break;
+			++ic;
+		} while ((err * err < float(0.98)) && (ic <= maxSteps));
 
-				float3x3 tmp(*this);
-				for (int i = 0; i < 3; i++)
-					tmp.get(i, i) -= lambda;
+		if (err < float(0))
+			lambda = -lambda;
+		return err;
 
-				tmp.gaussElim(x, xold);
-				x = xold;
-				fnorm = norm(x);
-				x *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
+	}
 
-				++ic;
-			} while ((err * err < float(0.98)) && (ic <= maxSteps));
+	//CDM added
+	//-------------------------------------------------------------------
 
-			if (err < float(0))
-				lambda = -lambda;
-			return err;
+	CUDA_VEC_HOSTDEVICE float3x3 inverse() {
+		//(Assumes float3x3 is row-major, (r,c) = [4*r + c])
 
+		//(Manually entered based on result from MATLAB symbolic math toolbox)
+
+		float3x3 result;
+
+		float det = val[3 * 0 + 0]
+				* (val[3 * 1 + 1] * val[3 * 2 + 2]
+						- val[3 * 2 + 1] * val[3 * 1 + 2])
+				+ val[3 * 0 + 1]
+						* (val[3 * 1 + 2] * val[3 * 2 + 0]
+								- val[3 * 1 + 0] * val[3 * 2 + 2])
+				+ val[3 * 0 + 2]
+						* (val[3 * 1 + 0] * val[3 * 2 + 1]
+								- val[3 * 1 + 1] * val[3 * 2 + 0]);
+		float invdet = 1 / det;
+
+		result.val[3 * 0 + 0] = (val[3 * 1 + 1] * val[3 * 2 + 2]
+				- val[3 * 1 + 2] * val[3 * 2 + 1]) * invdet;
+		result.val[3 * 0 + 1] = (val[3 * 0 + 2] * val[3 * 2 + 1]
+				- val[3 * 0 + 1] * val[3 * 2 + 2]) * invdet;
+		result.val[3 * 0 + 2] = (val[3 * 0 + 1] * val[3 * 1 + 2]
+				- val[3 * 0 + 2] * val[3 * 1 + 1]) * invdet;
+		result.val[3 * 1 + 0] = (val[3 * 1 + 2] * val[3 * 2 + 0]
+				- val[3 * 1 + 0] * val[3 * 2 + 2]) * invdet;
+		result.val[3 * 1 + 1] = (val[3 * 0 + 0] * val[3 * 2 + 2]
+				- val[3 * 0 + 2] * val[3 * 2 + 0]) * invdet;
+		result.val[3 * 1 + 2] = (val[3 * 0 + 2] * val[3 * 1 + 0]
+				- val[3 * 0 + 0] * val[3 * 1 + 2]) * invdet;
+		result.val[3 * 2 + 0] = (val[3 * 1 + 0] * val[3 * 2 + 1]
+				- val[3 * 1 + 1] * val[3 * 2 + 0]) * invdet;
+		result.val[3 * 2 + 1] = (val[3 * 0 + 1] * val[3 * 2 + 0]
+				- val[3 * 0 + 0] * val[3 * 2 + 1]) * invdet;
+		result.val[3 * 2 + 2] = (val[3 * 0 + 0] * val[3 * 1 + 1]
+				- val[3 * 0 + 1] * val[3 * 1 + 0]) * invdet;
+
+		return result;
+	}
+
+	CUDA_VEC_HOSTDEVICE void print_mat() const
+	//__host__ void print_mat()
+	{
+		printf("------------------------\n");
+		for (int r = 0; r < 3; r++) {
+			for (int c = 0; c < 3; c++)
+				printf("%f	", val[3 * r + c]);
+			printf("\n");
 		}
+		printf("------------------------\n");
+	}
 
-		//CDM added
-		//-------------------------------------------------------------------
+	//-------------------------------------------------------------------
 
-		CUDA_VEC_HOSTDEVICE float3x3 inverse() {
-			//(Assumes float3x3 is row-major, (r,c) = [4*r + c])
-
-			//(Manually entered based on result from MATLAB symbolic math toolbox)
-
-			float3x3 result;
-
-			float det = val[3 * 0 + 0]
-					* (val[3 * 1 + 1] * val[3 * 2 + 2]
-							- val[3 * 2 + 1] * val[3 * 1 + 2])
-					+ val[3 * 0 + 1]
-							* (val[3 * 1 + 2] * val[3 * 2 + 0]
-									- val[3 * 1 + 0] * val[3 * 2 + 2])
-					+ val[3 * 0 + 2]
-							* (val[3 * 1 + 0] * val[3 * 2 + 1]
-									- val[3 * 1 + 1] * val[3 * 2 + 0]);
-			float invdet = 1 / det;
-
-			result.val[3 * 0 + 0] = (val[3 * 1 + 1] * val[3 * 2 + 2]
-					- val[3 * 1 + 2] * val[3 * 2 + 1]) * invdet;
-			result.val[3 * 0 + 1] = (val[3 * 0 + 2] * val[3 * 2 + 1]
-					- val[3 * 0 + 1] * val[3 * 2 + 2]) * invdet;
-			result.val[3 * 0 + 2] = (val[3 * 0 + 1] * val[3 * 1 + 2]
-					- val[3 * 0 + 2] * val[3 * 1 + 1]) * invdet;
-			result.val[3 * 1 + 0] = (val[3 * 1 + 2] * val[3 * 2 + 0]
-					- val[3 * 1 + 0] * val[3 * 2 + 2]) * invdet;
-			result.val[3 * 1 + 1] = (val[3 * 0 + 0] * val[3 * 2 + 2]
-					- val[3 * 0 + 2] * val[3 * 2 + 0]) * invdet;
-			result.val[3 * 1 + 2] = (val[3 * 0 + 2] * val[3 * 1 + 0]
-					- val[3 * 0 + 0] * val[3 * 1 + 2]) * invdet;
-			result.val[3 * 2 + 0] = (val[3 * 1 + 0] * val[3 * 2 + 1]
-					- val[3 * 1 + 1] * val[3 * 2 + 0]) * invdet;
-			result.val[3 * 2 + 1] = (val[3 * 0 + 1] * val[3 * 2 + 0]
-					- val[3 * 0 + 0] * val[3 * 2 + 1]) * invdet;
-			result.val[3 * 2 + 2] = (val[3 * 0 + 0] * val[3 * 1 + 1]
-					- val[3 * 0 + 1] * val[3 * 1 + 0]) * invdet;
-
-			return result;
-		}
-
-		CUDA_VEC_HOSTDEVICE void print_mat() const
-		//__host__ void print_mat()
-		{
-			printf("------------------------\n");
-			for (int r = 0; r < 3; r++) {
-				for (int c = 0; c < 3; c++)
-					printf("%f	", val[3 * r + c]);
-				printf("\n");
-			}
-			printf("------------------------\n");
-		}
-
-		//-------------------------------------------------------------------
-
-		// @}
+	// @}
 };
 
 CUDA_VEC_HOSTDEVICE float3 operator*(float3 const & v, float3x3 const & m) {
@@ -2236,579 +2232,577 @@ CUDA_VEC_HOSTDEVICE float3 operator*(float3 const & v, float3x3 const & m) {
 ////////////////////////////////////////////////////////////////////////////////
 
 class float4x4 {
-		//float val[4*4];
+	//float val[4*4];
 
-	public:
+public:
 
-		//CDM mod: make public
-		float val[4 * 4];
+	//CDM mod: make public
+	float val[4 * 4];
 
 #ifndef __CUDACC__ // CUDA doesn't support non-empty constructors
-		/// @name Constructors
-		// @{
-		/// Default constructor
-		float4x4() {
-		}
+	/// @name Constructors
+	// @{
+	/// Default constructor
+	float4x4() {
+	}
 
-		/// Copy constructor
-		float4x4(float4x4 const & m) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] = m[k];
-		}
+	/// Copy constructor
+	float4x4(float4x4 const & m) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] = m[k];
+	}
 
-		/// Copy constructor with a given array (must have a length >= 4*4)
-		float4x4(float const * m) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] = m[k];
-		}
+	/// Copy constructor with a given array (must have a length >= 4*4)
+	float4x4(float const * m) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] = m[k];
+	}
 
-		/// Constructor with an initial value for all elements
-		explicit float4x4(float const & w) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] = w;
-		}
-		// @}
+	/// Constructor with an initial value for all elements
+	explicit float4x4(float const & w) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] = w;
+	}
+	// @}
 
-		// DirectX
+	// DirectX
 #ifdef __D3DX9MATH_H__
-		__host__ float4x4( const D3DXMATRIX& other ) {
-			for(int i=0; i<16; i++)
-			val[i] = other[i];
-		}
+	__host__ float4x4( const D3DXMATRIX& other ) {
+		for(int i=0; i<16; i++)
+		val[i] = other[i];
+	}
 
-		D3DXMATRIX toD3DXMAT() const {return D3DXMATRIX(FLOAT(val[0]),FLOAT(val[1]),FLOAT(val[2]),FLOAT(val[3]),
-					FLOAT(val[4]),FLOAT(val[5]),FLOAT(val[6]),FLOAT(val[7]),
-					FLOAT(val[8]),FLOAT(val[9]),FLOAT(val[10]),FLOAT(val[11]),
-					FLOAT(val[12]),FLOAT(val[13]),FLOAT(val[14]),FLOAT(val[15]));}
-		operator D3DXMATRIX() const {return toD3DXMAT();}
+	D3DXMATRIX toD3DXMAT() const {return D3DXMATRIX(FLOAT(val[0]),FLOAT(val[1]),FLOAT(val[2]),FLOAT(val[3]),
+				FLOAT(val[4]),FLOAT(val[5]),FLOAT(val[6]),FLOAT(val[7]),
+				FLOAT(val[8]),FLOAT(val[9]),FLOAT(val[10]),FLOAT(val[11]),
+				FLOAT(val[12]),FLOAT(val[13]),FLOAT(val[14]),FLOAT(val[15]));}
+	operator D3DXMATRIX() const {return toD3DXMAT();}
 #endif
 
 #endif
 
-		/// @name Array subscripting, matrix access and dereferencing operators
-		// @{
-		/// Array subscripting operator
-		CUDA_VEC_HOSTDEVICE float & operator[](int k) {
-			//CUDA_VEC_ASSERT( (k>=0) && (k<4*4) );
-			return val[k];
-		}
+	/// @name Array subscripting, matrix access and dereferencing operators
+	// @{
+	/// Array subscripting operator
+	CUDA_VEC_HOSTDEVICE float & operator[](int k) {
+		//CUDA_VEC_ASSERT( (k>=0) && (k<4*4) );
+		return val[k];
+	}
 
-		/// Constant array subscripting operator.
-		CUDA_VEC_HOSTDEVICE const float & operator[](int k) const {
-			//CUDA_VEC_ASSERT( (k>=0) && (k<4*4) );
-			return val[k];
-		}
+	/// Constant array subscripting operator.
+	CUDA_VEC_HOSTDEVICE const float & operator[](int k) const {
+		//CUDA_VEC_ASSERT( (k>=0) && (k<4*4) );
+		return val[k];
+	}
 
-		/// Matrix access
-		CUDA_VEC_HOSTDEVICE float & get(int k, int l) {
-			CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 4) && (l < 4));
-			return val[k * 4 + l];
-		}
+	/// Matrix access
+	CUDA_VEC_HOSTDEVICE float & get(int k, int l) {
+		CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 4) && (l < 4));
+		return val[k * 4 + l];
+	}
 
-		/// Matrix access
-		CUDA_VEC_HOSTDEVICE const float & get(int k, int l) const {
-			CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 4) && (l < 4));
-			return val[k * 4 + l];
-		}
+	/// Matrix access
+	CUDA_VEC_HOSTDEVICE const float & get(int k, int l) const {
+		CUDA_VEC_ASSERT((k >= 0) && (l >= 0) && (k < 4) && (l < 4));
+		return val[k * 4 + l];
+	}
 
-		/// Matrix access to column vectors
-		CUDA_VEC_HOSTDEVICE float4 getCol(int l) const {
-			CUDA_VEC_ASSERT((l >= 0) && (l < 4));
-			float4 v;
-			for (int k = 0; k < 4; ++k)
-				(&v.x)[k] = val[k * 4 + l];
-			return v;
-		}
+	/// Matrix access to column vectors
+	CUDA_VEC_HOSTDEVICE float4 getCol(int l) const {
+		CUDA_VEC_ASSERT((l >= 0) && (l < 4));
+		float4 v;
+		for (int k = 0; k < 4; ++k)
+			(&v.x)[k] = val[k * 4 + l];
+		return v;
+	}
 
-		/// Matrix access to row vectors
-		CUDA_VEC_HOSTDEVICE float4 getRow(int k) const {
-			CUDA_VEC_ASSERT((k >= 0) && (k < 4));
-			int r = k * 4;
-			return make_float4(val[r], val[r + 1], val[r + 2], val[r + 3]);
-		}
+	/// Matrix access to row vectors
+	CUDA_VEC_HOSTDEVICE float4 getRow(int k) const {
+		CUDA_VEC_ASSERT((k >= 0) && (k < 4));
+		int r = k * 4;
+		return make_float4(val[r], val[r + 1], val[r + 2], val[r + 3]);
+	}
 
-		/// Dereferencing operator
-		CUDA_VEC_HOSTDEVICE operator float *() {
-			return val;
-		}
+	/// Dereferencing operator
+	CUDA_VEC_HOSTDEVICE operator float *() {
+		return val;
+	}
 
-		/// Constant dereferencing operator
-		CUDA_VEC_HOSTDEVICE operator const float *() const {
-			return val;
-		}
-		// @}
+	/// Constant dereferencing operator
+	CUDA_VEC_HOSTDEVICE operator const float *() const {
+		return val;
+	}
+	// @}
 
-		/// @name Assignment operator and arithmetic assignment operators
-		// @{
-		/// Assignmet operator
-		CUDA_VEC_HOSTDEVICE float4x4 & operator=(float4x4 const & m) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] = m[k];
-			return (*this);
-		}
+	/// @name Assignment operator and arithmetic assignment operators
+	// @{
+	/// Assignmet operator
+	CUDA_VEC_HOSTDEVICE float4x4 & operator=(float4x4 const & m) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] = m[k];
+		return (*this);
+	}
 
-		/// Add and assign
-		CUDA_VEC_HOSTDEVICE float4x4 & operator+=(float4x4 const & m) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] += m[k];
-			return (*this);
-		}
+	/// Add and assign
+	CUDA_VEC_HOSTDEVICE float4x4 & operator+=(float4x4 const & m) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] += m[k];
+		return (*this);
+	}
 
-		/// Subtract and assign
-		CUDA_VEC_HOSTDEVICE float4x4 &operator-=(const float4x4 &m) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] -= m[k];
-			return (*this);
-		}
+	/// Subtract and assign
+	CUDA_VEC_HOSTDEVICE float4x4 &operator-=(const float4x4 &m) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] -= m[k];
+		return (*this);
+	}
 
-		/// Multiply a scalar and assign
-		CUDA_VEC_HOSTDEVICE float4x4 & operator*=(float const & w) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] *= w;
-			return (*this);
-		}
+	/// Multiply a scalar and assign
+	CUDA_VEC_HOSTDEVICE float4x4 & operator*=(float const & w) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] *= w;
+		return (*this);
+	}
 
-		/// Multiply a matrix and assign
-		CUDA_VEC_HOSTDEVICE float4x4 & operator*=(float4x4 const & m) {
-			float4x4 result;
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j) {
-					float sum(0);
-					for (int k = 0; k < 4; k++)
-						sum += val[i * 4 + k] * m[k * 4 + j];
-					result[i * 4 + j] = sum;
-				}
-			*this = result;
-			return *this;
-		}
-
-		/// Divide by a scalar and assign
-		CUDA_VEC_HOSTDEVICE float4x4 & operator/=(float const & w) {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] /= w;
-			return (*this);
-		}
-
-		///// Modulo by a scalar and assign
-		//float4x4 &operator%=(const float &w)
-		//{
-		//	for(int k=0; k<4*4; ++k) val[k] %= w; 
-		//	return (*this);	
-		//}
-
-		/// Sum of two matrices
-		CUDA_VEC_HOSTDEVICE float4x4 operator+(float4x4 const & m) const {
-			float4x4 res;
-			for (int k = 0; k < 4 * 4; ++k)
-				res[k] = val[k] + m[k];
-			return res;
-		}
-
-		/// Difference of two matrices
-		CUDA_VEC_HOSTDEVICE float4x4 operator-(float4x4 const & m) const {
-			float4x4 res;
-			for (int k = 0; k < 4 * 4; ++k)
-				res[k] = val[k] - m[k];
-			return res;
-		}
-
-		/// Multiply matrix by scalar
-		CUDA_VEC_HOSTDEVICE float4x4 operator*(float const & w) const {
-			float4x4 res;
-			for (int k = 0; k < 4 * 4; ++k)
-				res[k] = val[k] * w;
-			return res;
-		}
-
-		/// Product of matrix and vector
-		CUDA_VEC_HOSTDEVICE const float4 operator*(float4 const & v) const {
-			return make_float4(
-					val[0] * v.x + val[1] * v.y + val[2] * v.z + val[3] * v.w,
-					val[4] * v.x + val[5] * v.y + val[6] * v.z + val[7] * v.w,
-					val[8] * v.x + val[9] * v.y + val[10] * v.z + val[11] * v.w,
-					val[12] * v.x + val[13] * v.y + val[14] * v.z
-							+ val[15] * v.w);
-		}
-
-		/// Product of two matrices
-		CUDA_VEC_HOSTDEVICE float4x4 operator*(float4x4 const & m) const {
-			float4x4 res;
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j) {
-					float sum(0);
-					for (int k = 0; k < 4; k++)
-						sum += val[i * 4 + k] * m[k * 4 + j];
-					res[i * 4 + j] = sum;
-				}
-			return res;
-		}
-
-		/// Divide matrix by scalar
-		CUDA_VEC_HOSTDEVICE float4x4 operator/(float w) const {
-			float4x4 res;
-			for (int k = 0; k < 4 * 4; ++k)
-				res[k] = val[k] / w;
-			return res;
-		}
-
-		/// Unary -
-		CUDA_VEC_HOSTDEVICE float4x4 operator-() const {
-			float4x4 res;
-			for (int k = 0; k < 4 * 4; ++k)
-				res[k] = -val[k];
-			return res;
-		}
-
-		// @}
-
-		/// @name Matrix functions
-		// @{
-
-		/// Clear the matrix to zero
-		CUDA_VEC_HOSTDEVICE void clear() {
-			for (int k = 0; k < 4 * 4; ++k)
-				val[k] = float(0);
-		}
-
-		/// Multiply with matrix B and store result in result
-		CUDA_VEC_HOSTDEVICE float4x4 & multMat(float4x4 const & B,
-				float4x4 & result) const {
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j) {
-					float sum(0);
-					for (int k = 0; k < 4; k++)
-						sum += val[i * 4 + k] * B[k * 4 + j];
-					result[i * 4 + j] = sum;
-				}
-			return result;
-		}
-
-		/// Multiply with matrix B and accumulate result to matrix result
-		CUDA_VEC_HOSTDEVICE float4x4 & multMatAdd(float4x4 const & B,
-				float4x4 & result) const {
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j) {
-					float sum(0);
-					for (int k = 0; k < 4; k++)
-						sum += val[i * 4 + k] * B[k * 4 + j];
-					result[i * 4 + j] += sum;
-				}
-			return result;
-		}
-
-		/// Multiply with transposed matrix B and store result in result
-		CUDA_VEC_HOSTDEVICE float4x4 & multMatT(float4x4 const & B,
-				float4x4 & result) const {
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j) {
-					float sum(0);
-					for (int k = 0; k < 4; k++)
-						sum += val[i * 4 + k] * B[j * 4 + k];
-					result[i * 4 + j] = sum;
-				}
-			return result;
-		}
-
-		/// Multiply with transposed matrix B and accumulate result to matrix result
-		CUDA_VEC_HOSTDEVICE float4x4 & multMatTAdd(const float4x4 &B,
-				float4x4 &result) const {
-			for (int i = 0; i < 4; ++i)
-				for (int j = 0; j < 4; ++j) {
-					float sum(0);
-					for (int k = 0; k < 4; k++)
-						sum += val[i * 4 + k] * B[j * 4 + k];
-					result[i * 4 + j] += sum;
-				}
-			return result;
-		}
-
-		/// Product of matrix and vector b. Result is written to result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float4 & multVec(float4 const & b,
-				float4 & result) const {
-			return result = make_float4(
-					val[0] * b.x + val[1] * b.y + val[2] * b.z + val[3] * b.w,
-					val[4] * b.x + val[5] * b.y + val[6] * b.z + val[7] * b.w,
-					val[8] * b.x + val[9] * b.y + val[10] * b.z + val[11] * b.w,
-					val[12] * b.x + val[13] * b.y + val[14] * b.z
-							+ val[15] * b.w);
-		}
-
-		/// Product of matrix and vector b. Result is added to vector result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float4 & multVecAdd(float4 const & b,
-				float4 & result) const {
-			return result = make_float4(
-					result.x + val[0] * b.x + val[1] * b.y + val[2] * b.z
-							+ val[3] * b.w,
-					result.y + val[4] * b.x + val[5] * b.y + val[6] * b.z
-							+ val[7] * b.w,
-					result.z + val[8] * b.x + val[9] * b.y + val[10] * b.z
-							+ val[11] * b.w,
-					result.w + val[12] * b.x + val[13] * b.y + val[14] * b.z
-							+ val[15] * b.w);
-		}
-
-		/// Product of transposed matrix and vector b. Result is written to result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float4 & multTVec(float4 const & b,
-				float4 & result) const {
-			return result = make_float4(
-					val[0] * b.x + val[4] * b.y + val[8] * b.z + val[12] * b.w,
-					val[1] * b.x + val[5] * b.y + val[9] * b.z + val[13] * b.w,
-					val[2] * b.x + val[6] * b.y + val[10] * b.z + val[14] * b.w,
-					val[3] * b.x + val[7] * b.y + val[11] * b.z + val[15] * b.w);
-		}
-
-		/// Product of transposed matrix and vector b. Result is added to vector result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float4 & multTVecAdd(float4 const & b,
-				float4 & result) const {
-			return result = make_float4(
-					result.x + val[0] * b.x + val[4] * b.y + val[8] * b.z
-							+ val[12] * b.w,
-					result.y + val[1] * b.x + val[5] * b.y + val[9] * b.z
-							+ val[13] * b.w,
-					result.z + val[2] * b.x + val[6] * b.y + val[10] * b.z
-							+ val[14] * b.w,
-					result.w + val[3] * b.x + val[7] * b.y + val[11] * b.z
-							+ val[15] * b.w);
-		}
-
-		/// Transpose matrix. Result is written to result and its reference is returned.
-		CUDA_VEC_HOSTDEVICE float4x4 & transpose(float4x4 & result) const {
-			for (int i = 0; i < 4; i++)
-				for (int j = 0; j < 4; j++)
-					result[4 * j + i] = val[4 * i + j];
-			return result;
-		}
-
-		/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b. Solution is written to x. 
-		/** WARNING: this matrix and vector b are destroyed
-		 */
-		CUDA_VEC_HOSTDEVICE void gaussElim(float4 & b, float4 & x) {
-			for (int k = 0; k < 4; ++k) {
-				float *row = &val[k * 4];
-				float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
-				for (int l = k + 1; l < 4; ++l) {
-					float *actRow = &val[l * 4];
-					float actFac = fac * actRow[k];
-					for (int ri = k + 1; ri < 4; ++ri)
-						actRow[ri] -= actFac * row[ri];
-					(&b.x)[l] -= actFac * (&b.x)[k];
-				}
+	/// Multiply a matrix and assign
+	CUDA_VEC_HOSTDEVICE float4x4 & operator*=(float4x4 const & m) {
+		float4x4 result;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < 4; ++j) {
+				float sum(0);
+				for (int k = 0; k < 4; k++)
+					sum += val[i * 4 + k] * m[k * 4 + j];
+				result[i * 4 + j] = sum;
 			}
+		*this = result;
+		return *this;
+	}
 
-			// Back substitution
-			for (int k = 4 - 1; k >= 0; --k) {
-				(&x.x)[k] = (&b.x)[k];
-				for (int l = k + 1; l < 4; ++l)
-					(&x.x)[k] -= (&x.x)[l] * val[k * 4 + l];
-				(&x.x)[k] =
-						(val[k * 4 + k] != float(0)) ?
-								(&x.x)[k] / val[k * 4 + k] : float(0);
+	/// Divide by a scalar and assign
+	CUDA_VEC_HOSTDEVICE float4x4 & operator/=(float const & w) {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] /= w;
+		return (*this);
+	}
+
+	///// Modulo by a scalar and assign
+	//float4x4 &operator%=(const float &w)
+	//{
+	//	for(int k=0; k<4*4; ++k) val[k] %= w; 
+	//	return (*this);	
+	//}
+
+	/// Sum of two matrices
+	CUDA_VEC_HOSTDEVICE float4x4 operator+(float4x4 const & m) const {
+		float4x4 res;
+		for (int k = 0; k < 4 * 4; ++k)
+			res[k] = val[k] + m[k];
+		return res;
+	}
+
+	/// Difference of two matrices
+	CUDA_VEC_HOSTDEVICE float4x4 operator-(float4x4 const & m) const {
+		float4x4 res;
+		for (int k = 0; k < 4 * 4; ++k)
+			res[k] = val[k] - m[k];
+		return res;
+	}
+
+	/// Multiply matrix by scalar
+	CUDA_VEC_HOSTDEVICE float4x4 operator*(float const & w) const {
+		float4x4 res;
+		for (int k = 0; k < 4 * 4; ++k)
+			res[k] = val[k] * w;
+		return res;
+	}
+
+	/// Product of matrix and vector
+	CUDA_VEC_HOSTDEVICE const float4 operator*(float4 const & v) const {
+		return make_float4(
+				val[0] * v.x + val[1] * v.y + val[2] * v.z + val[3] * v.w,
+				val[4] * v.x + val[5] * v.y + val[6] * v.z + val[7] * v.w,
+				val[8] * v.x + val[9] * v.y + val[10] * v.z + val[11] * v.w,
+				val[12] * v.x + val[13] * v.y + val[14] * v.z + val[15] * v.w);
+	}
+
+	/// Product of two matrices
+	CUDA_VEC_HOSTDEVICE float4x4 operator*(float4x4 const & m) const {
+		float4x4 res;
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < 4; ++j) {
+				float sum(0);
+				for (int k = 0; k < 4; k++)
+					sum += val[i * 4 + k] * m[k * 4 + j];
+				res[i * 4 + j] = sum;
+			}
+		return res;
+	}
+
+	/// Divide matrix by scalar
+	CUDA_VEC_HOSTDEVICE float4x4 operator/(float w) const {
+		float4x4 res;
+		for (int k = 0; k < 4 * 4; ++k)
+			res[k] = val[k] / w;
+		return res;
+	}
+
+	/// Unary -
+	CUDA_VEC_HOSTDEVICE float4x4 operator-() const {
+		float4x4 res;
+		for (int k = 0; k < 4 * 4; ++k)
+			res[k] = -val[k];
+		return res;
+	}
+
+	// @}
+
+	/// @name Matrix functions
+	// @{
+
+	/// Clear the matrix to zero
+	CUDA_VEC_HOSTDEVICE void clear() {
+		for (int k = 0; k < 4 * 4; ++k)
+			val[k] = float(0);
+	}
+
+	/// Multiply with matrix B and store result in result
+	CUDA_VEC_HOSTDEVICE float4x4 & multMat(float4x4 const & B,
+			float4x4 & result) const {
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < 4; ++j) {
+				float sum(0);
+				for (int k = 0; k < 4; k++)
+					sum += val[i * 4 + k] * B[k * 4 + j];
+				result[i * 4 + j] = sum;
+			}
+		return result;
+	}
+
+	/// Multiply with matrix B and accumulate result to matrix result
+	CUDA_VEC_HOSTDEVICE float4x4 & multMatAdd(float4x4 const & B,
+			float4x4 & result) const {
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < 4; ++j) {
+				float sum(0);
+				for (int k = 0; k < 4; k++)
+					sum += val[i * 4 + k] * B[k * 4 + j];
+				result[i * 4 + j] += sum;
+			}
+		return result;
+	}
+
+	/// Multiply with transposed matrix B and store result in result
+	CUDA_VEC_HOSTDEVICE float4x4 & multMatT(float4x4 const & B,
+			float4x4 & result) const {
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < 4; ++j) {
+				float sum(0);
+				for (int k = 0; k < 4; k++)
+					sum += val[i * 4 + k] * B[j * 4 + k];
+				result[i * 4 + j] = sum;
+			}
+		return result;
+	}
+
+	/// Multiply with transposed matrix B and accumulate result to matrix result
+	CUDA_VEC_HOSTDEVICE float4x4 & multMatTAdd(const float4x4 &B,
+			float4x4 &result) const {
+		for (int i = 0; i < 4; ++i)
+			for (int j = 0; j < 4; ++j) {
+				float sum(0);
+				for (int k = 0; k < 4; k++)
+					sum += val[i * 4 + k] * B[j * 4 + k];
+				result[i * 4 + j] += sum;
+			}
+		return result;
+	}
+
+	/// Product of matrix and vector b. Result is written to result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float4 & multVec(float4 const & b,
+			float4 & result) const {
+		return result = make_float4(
+				val[0] * b.x + val[1] * b.y + val[2] * b.z + val[3] * b.w,
+				val[4] * b.x + val[5] * b.y + val[6] * b.z + val[7] * b.w,
+				val[8] * b.x + val[9] * b.y + val[10] * b.z + val[11] * b.w,
+				val[12] * b.x + val[13] * b.y + val[14] * b.z + val[15] * b.w);
+	}
+
+	/// Product of matrix and vector b. Result is added to vector result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float4 & multVecAdd(float4 const & b,
+			float4 & result) const {
+		return result = make_float4(
+				result.x + val[0] * b.x + val[1] * b.y + val[2] * b.z
+						+ val[3] * b.w,
+				result.y + val[4] * b.x + val[5] * b.y + val[6] * b.z
+						+ val[7] * b.w,
+				result.z + val[8] * b.x + val[9] * b.y + val[10] * b.z
+						+ val[11] * b.w,
+				result.w + val[12] * b.x + val[13] * b.y + val[14] * b.z
+						+ val[15] * b.w);
+	}
+
+	/// Product of transposed matrix and vector b. Result is written to result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float4 & multTVec(float4 const & b,
+			float4 & result) const {
+		return result = make_float4(
+				val[0] * b.x + val[4] * b.y + val[8] * b.z + val[12] * b.w,
+				val[1] * b.x + val[5] * b.y + val[9] * b.z + val[13] * b.w,
+				val[2] * b.x + val[6] * b.y + val[10] * b.z + val[14] * b.w,
+				val[3] * b.x + val[7] * b.y + val[11] * b.z + val[15] * b.w);
+	}
+
+	/// Product of transposed matrix and vector b. Result is added to vector result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float4 & multTVecAdd(float4 const & b,
+			float4 & result) const {
+		return result = make_float4(
+				result.x + val[0] * b.x + val[4] * b.y + val[8] * b.z
+						+ val[12] * b.w,
+				result.y + val[1] * b.x + val[5] * b.y + val[9] * b.z
+						+ val[13] * b.w,
+				result.z + val[2] * b.x + val[6] * b.y + val[10] * b.z
+						+ val[14] * b.w,
+				result.w + val[3] * b.x + val[7] * b.y + val[11] * b.z
+						+ val[15] * b.w);
+	}
+
+	/// Transpose matrix. Result is written to result and its reference is returned.
+	CUDA_VEC_HOSTDEVICE float4x4 & transpose(float4x4 & result) const {
+		for (int i = 0; i < 4; i++)
+			for (int j = 0; j < 4; j++)
+				result[4 * j + i] = val[4 * i + j];
+		return result;
+	}
+
+	/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b. Solution is written to x. 
+	/** WARNING: this matrix and vector b are destroyed
+	 */
+	CUDA_VEC_HOSTDEVICE void gaussElim(float4 & b, float4 & x) {
+		for (int k = 0; k < 4; ++k) {
+			float *row = &val[k * 4];
+			float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
+			for (int l = k + 1; l < 4; ++l) {
+				float *actRow = &val[l * 4];
+				float actFac = fac * actRow[k];
+				for (int ri = k + 1; ri < 4; ++ri)
+					actRow[ri] -= actFac * row[ri];
+				(&b.x)[l] -= actFac * (&b.x)[k];
 			}
 		}
 
-		/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b using row pivoting. Solution is written to x. 
-		/** WARNING: this matrix and vector b are destroyed
-		 */
-		CUDA_VEC_HOSTDEVICE void gaussElimRowPivot(float4 & b, float4 & x) {
-			//float4x4 A(*this);
-			//float4 ba(b);
+		// Back substitution
+		for (int k = 4 - 1; k >= 0; --k) {
+			(&x.x)[k] = (&b.x)[k];
+			for (int l = k + 1; l < 4; ++l)
+				(&x.x)[k] -= (&x.x)[l] * val[k * 4 + l];
+			(&x.x)[k] =
+					(val[k * 4 + k] != float(0)) ?
+							(&x.x)[k] / val[k * 4 + k] : float(0);
+		}
+	}
 
-			int perm[4]; // Store row permutation
-			for (int i = 0; i < 4; ++i)
-				perm[i] = i;
-			for (int k = 0; k < 4; ++k) {
+	/// Gauss Elimination: Perform Gaussian elimination on matrix and given vector b using row pivoting. Solution is written to x. 
+	/** WARNING: this matrix and vector b are destroyed
+	 */
+	CUDA_VEC_HOSTDEVICE void gaussElimRowPivot(float4 & b, float4 & x) {
+		//float4x4 A(*this);
+		//float4 ba(b);
 
-				// Find pivot
-				float mx(0);
-				int pi(k); // Default initilization: use current row
-				for (int li = k; li < 4; ++li) {
-					float m = fabs(val[perm[li] * 4 + k]);
-					if (m > mx) {
-						mx = m;
-						pi = li;
-					}
+		int perm[4]; // Store row permutation
+		for (int i = 0; i < 4; ++i)
+			perm[i] = i;
+		for (int k = 0; k < 4; ++k) {
+
+			// Find pivot
+			float mx(0);
+			int pi(k); // Default initilization: use current row
+			for (int li = k; li < 4; ++li) {
+				float m = fabs(val[perm[li] * 4 + k]);
+				if (m > mx) {
+					mx = m;
+					pi = li;
 				}
-
-				int old = perm[k];
-				perm[k] = perm[pi]; // Update permutation
-				perm[pi] = old;
-
-				pi = perm[k]; // pi is row index of current pivot row
-				float *row = &val[pi * 4];
-				float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
-				for (int l = k + 1; l < 4; ++l) {
-					float *actRow = &val[perm[l] * 4];
-					float actFac = fac * actRow[k];
-					for (int ri = k + 1; ri < 4; ++ri)
-						actRow[ri] -= actFac * row[ri];
-					(&b.x)[perm[l]] -= actFac * (&b.x)[pi];
-				}
-
 			}
 
-			// Back substitution
-			for (int k = 4 - 1; k >= 0; --k) {
-				(&x.x)[k] = (&b.x)[perm[k]];
-				for (int l = k + 1; l < 4; ++l)
-					(&x.x)[k] -= (&x.x)[l] * val[perm[k] * 4 + l];
-				(&x.x)[k] =
-						(val[perm[k] * 4 + k] != float(0)) ?
-								(&x.x)[k] / val[perm[k] * 4 + k] : float(1);
+			int old = perm[k];
+			perm[k] = perm[pi]; // Update permutation
+			perm[pi] = old;
+
+			pi = perm[k]; // pi is row index of current pivot row
+			float *row = &val[pi * 4];
+			float fac = (row[k] != float(0)) ? float(1) / row[k] : float(1);
+			for (int l = k + 1; l < 4; ++l) {
+				float *actRow = &val[perm[l] * 4];
+				float actFac = fac * actRow[k];
+				for (int ri = k + 1; ri < 4; ++ri)
+					actRow[ri] -= actFac * row[ri];
+				(&b.x)[perm[l]] -= actFac * (&b.x)[pi];
 			}
+
 		}
 
-		/// Compute largest eigenvalue (in lambda) and eigenvector (in x). Perform power method. Returns convergence value, that should be close to 1 (positive eigenvalue) or -1 (negative eigenvalue). Optional arguments are the maximum number of iteration steps, and a flag indicates whether x is used as start vector, or a start vector is computed from the matrix. 
-		CUDA_VEC_HOSTDEVICE float largestEigenvec(float & lambda, float4 & x,
-				int maxSteps = 25, bool computeStartVec = true) {
-			float err(0);
-			float4 xold;
-			if (computeStartVec) {
-				float mx(0);
-				int iMax = 0;
-				for (int i = 0; i < 4; ++i) {
-					lambda = norm(getRow(i));
-					if (lambda > mx) {
-						mx = lambda;
-						iMax = i;
-					}
+		// Back substitution
+		for (int k = 4 - 1; k >= 0; --k) {
+			(&x.x)[k] = (&b.x)[perm[k]];
+			for (int l = k + 1; l < 4; ++l)
+				(&x.x)[k] -= (&x.x)[l] * val[perm[k] * 4 + l];
+			(&x.x)[k] =
+					(val[perm[k] * 4 + k] != float(0)) ?
+							(&x.x)[k] / val[perm[k] * 4 + k] : float(1);
+		}
+	}
+
+	/// Compute largest eigenvalue (in lambda) and eigenvector (in x). Perform power method. Returns convergence value, that should be close to 1 (positive eigenvalue) or -1 (negative eigenvalue). Optional arguments are the maximum number of iteration steps, and a flag indicates whether x is used as start vector, or a start vector is computed from the matrix. 
+	CUDA_VEC_HOSTDEVICE float largestEigenvec(float & lambda, float4 & x,
+			int maxSteps = 25, bool computeStartVec = true) {
+		float err(0);
+		float4 xold;
+		if (computeStartVec) {
+			float mx(0);
+			int iMax = 0;
+			for (int i = 0; i < 4; ++i) {
+				lambda = norm(getRow(i));
+				if (lambda > mx) {
+					mx = lambda;
+					iMax = i;
 				}
-				x = getRow(iMax);
 			}
-			// Normalize x
+			x = getRow(iMax);
+		}
+		// Normalize x
+		lambda = norm(x);
+		x *= (lambda != float(0.0)) ? float(1.0) / lambda : float(1.0);
+		int ic(0);
+		do {
+			xold = x;
+			multVec(xold, x);
+
 			lambda = norm(x);
 			x *= (lambda != float(0.0)) ? float(1.0) / lambda : float(1.0);
-			int ic(0);
-			do {
-				xold = x;
-				multVec(xold, x);
 
-				lambda = norm(x);
-				x *= (lambda != float(0.0)) ? float(1.0) / lambda : float(1.0);
+			err = dot(x, xold);
 
-				err = dot(x, xold);
+			++ic;
+		} while ((err * err < float(0.98)) && (ic <= maxSteps));
 
-				++ic;
-			} while ((err * err < float(0.98)) && (ic <= maxSteps));
+		if (err < float(0))
+			lambda = -lambda;
+		return err;
 
-			if (err < float(0))
-				lambda = -lambda;
-			return err;
+	}
 
+	CUDA_VEC_HOSTDEVICE float largestEigenvec2(float & lambda, float4 & x,
+			int maxSteps = 25, bool computeStartVec = true) {
+		float err(0);
+		float fnorm;
+		float4 xold;
+		if (computeStartVec) {
+			float mx(0);
+			int iMax = 0;
+			for (int i = 0; i < 4; ++i) {
+				lambda = norm(getRow(i));
+				if (lambda > mx) {
+					mx = lambda;
+					iMax = i;
+				}
+			}
+			x = getRow(iMax);
 		}
 
-		CUDA_VEC_HOSTDEVICE float largestEigenvec2(float & lambda, float4 & x,
-				int maxSteps = 25, bool computeStartVec = true) {
-			float err(0);
-			float fnorm;
-			float4 xold;
-			if (computeStartVec) {
-				float mx(0);
-				int iMax = 0;
-				for (int i = 0; i < 4; ++i) {
-					lambda = norm(getRow(i));
-					if (lambda > mx) {
-						mx = lambda;
-						iMax = i;
-					}
-				}
-				x = getRow(iMax);
-			}
+		fnorm = norm(x);
+		x *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
 
+		int ic(0);
+		do {
+			multVec(x, xold);
+			lambda = dot(x, xold) / norm_square(x);
+			fnorm = norm(xold);
+			xold *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
+			err = dot(x, xold);
+			if (err * err > float(0.98))
+				break;
+
+			float4x4 tmp(*this);
+			for (int i = 0; i < 4; i++)
+				tmp.get(i, i) -= lambda;
+
+			tmp.gaussElim(x, xold);
+			x = xold;
 			fnorm = norm(x);
 			x *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
 
-			int ic(0);
-			do {
-				multVec(x, xold);
-				lambda = dot(x, xold) / norm_square(x);
-				fnorm = norm(xold);
-				xold *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
-				err = dot(x, xold);
-				if (err * err > float(0.98))
-					break;
+			++ic;
+		} while ((err * err < float(0.98)) && (ic <= maxSteps));
 
-				float4x4 tmp(*this);
-				for (int i = 0; i < 4; i++)
-					tmp.get(i, i) -= lambda;
+		if (err < float(0))
+			lambda = -lambda;
+		return err;
 
-				tmp.gaussElim(x, xold);
-				x = xold;
-				fnorm = norm(x);
-				x *= (fnorm != float(0.0)) ? float(1.0) / fnorm : float(1.0);
+	}
 
-				++ic;
-			} while ((err * err < float(0.98)) && (ic <= maxSteps));
+	//CDM added
+	//-------------------------------------------------------------------
 
-			if (err < float(0))
-				lambda = -lambda;
-			return err;
+	CUDA_VEC_HOSTDEVICE float4x4 invertRigidTransform() {
+		//NB! Only valid for 4x4 rigid body transforms, not general 4x4 matrices
+		//(Assumes float4x4 is row-major, (r,c) = [4*r + c])
 
-		}
+		// T is equivalent to T_trans*T_rot
+		//T^-1 = (T_trans*T_rot)^-1 = (T_rot)^-1*(T_trans)^-1
 
-		//CDM added
-		//-------------------------------------------------------------------
-
-		CUDA_VEC_HOSTDEVICE float4x4 invertRigidTransform() {
-			//NB! Only valid for 4x4 rigid body transforms, not general 4x4 matrices
-			//(Assumes float4x4 is row-major, (r,c) = [4*r + c])
-
-			// T is equivalent to T_trans*T_rot
-			//T^-1 = (T_trans*T_rot)^-1 = (T_rot)^-1*(T_trans)^-1
-
-			float4x4 T_trans_inv;
-			//Identity matrix:
-			for (int r = 0; r < 4; r++) {
-				for (int c = 0; c < 4; c++) {
-					if (r == c) {
-						T_trans_inv.val[4 * r + c] = 1.f;
-					} else {
-						T_trans_inv.val[4 * r + c] = 0.f;
-					}
+		float4x4 T_trans_inv;
+		//Identity matrix:
+		for (int r = 0; r < 4; r++) {
+			for (int c = 0; c < 4; c++) {
+				if (r == c) {
+					T_trans_inv.val[4 * r + c] = 1.f;
+				} else {
+					T_trans_inv.val[4 * r + c] = 0.f;
 				}
 			}
-			//Negated translation components:
-			T_trans_inv.val[4 * 0 + 3] = -val[4 * 0 + 3];
-			T_trans_inv.val[4 * 1 + 3] = -val[4 * 1 + 3];
-			T_trans_inv.val[4 * 2 + 3] = -val[4 * 2 + 3];
+		}
+		//Negated translation components:
+		T_trans_inv.val[4 * 0 + 3] = -val[4 * 0 + 3];
+		T_trans_inv.val[4 * 1 + 3] = -val[4 * 1 + 3];
+		T_trans_inv.val[4 * 2 + 3] = -val[4 * 2 + 3];
 
-			float4x4 T_rot_inv;
-			//Identity matrix:
-			for (int r = 0; r < 4; r++) {
-				for (int c = 0; c < 4; c++) {
-					if (r == c) {
-						T_rot_inv.val[4 * r + c] = 1.f;
-					} else {
-						T_rot_inv.val[4 * r + c] = 0.f;
-					}
+		float4x4 T_rot_inv;
+		//Identity matrix:
+		for (int r = 0; r < 4; r++) {
+			for (int c = 0; c < 4; c++) {
+				if (r == c) {
+					T_rot_inv.val[4 * r + c] = 1.f;
+				} else {
+					T_rot_inv.val[4 * r + c] = 0.f;
 				}
 			}
-			//Transpose of rotation components:
-			for (int r = 0; r < 3; r++) {
-				for (int c = 0; c < 3; c++) {
-					T_rot_inv.val[4 * r + c] = val[4 * c + r];
-				}
+		}
+		//Transpose of rotation components:
+		for (int r = 0; r < 3; r++) {
+			for (int c = 0; c < 3; c++) {
+				T_rot_inv.val[4 * r + c] = val[4 * c + r];
 			}
-
-			float4x4 result = T_rot_inv * T_trans_inv;
-
-			return result;
 		}
 
-		CUDA_VEC_HOSTDEVICE void print_mat() const
-		//__host__ void print_mat()
-		{
-			printf("------------------------\n");
-			for (int r = 0; r < 4; r++) {
-				for (int c = 0; c < 4; c++)
-					printf("%f	", val[4 * r + c]);
-				printf("\n");
-			}
-			printf("------------------------\n");
+		float4x4 result = T_rot_inv * T_trans_inv;
+
+		return result;
+	}
+
+	CUDA_VEC_HOSTDEVICE void print_mat() const
+	//__host__ void print_mat()
+	{
+		printf("------------------------\n");
+		for (int r = 0; r < 4; r++) {
+			for (int c = 0; c < 4; c++)
+				printf("%f	", val[4 * r + c]);
+			printf("\n");
 		}
+		printf("------------------------\n");
+	}
 
-		//-------------------------------------------------------------------
+	//-------------------------------------------------------------------
 
-		// @}
+	// @}
 };
 
 CUDA_VEC_HOSTDEVICE float4 operator*(float4 const & v, float4x4 const & m) {
@@ -2828,61 +2822,61 @@ CUDA_VEC_HOSTDEVICE float4 operator*(float4 const & v, float4x4 const & m) {
 //------------------------------------------------------------------------
 
 class float6x6 {
-	public:
-		float val[6 * 6];
-		/// Sum of two 6x6 matrices
-		CUDA_VEC_HOSTDEVICE float6x6 operator+(float6x6 const & m) const {
-			float6x6 res;
-			for (int k = 0; k < (6 * 6); ++k)
-				res.val[k] = val[k] + m.val[k];
-			return res;
+public:
+	float val[6 * 6];
+	/// Sum of two 6x6 matrices
+	CUDA_VEC_HOSTDEVICE float6x6 operator+(float6x6 const & m) const {
+		float6x6 res;
+		for (int k = 0; k < (6 * 6); ++k)
+			res.val[k] = val[k] + m.val[k];
+		return res;
+	}
+	__host__
+	void print_mat() {
+		printf("\n------------------------\n");
+		for (int r = 0; r < 6; r++) {
+			for (int c = 0; c < 6; c++)
+				printf("%f \t", val[6 * r + c]);
+			printf("\n");
 		}
-		__host__
-		void print_mat() {
-			printf("\n------------------------\n");
-			for (int r = 0; r < 6; r++) {
-				for (int c = 0; c < 6; c++)
-					printf("%f \t", val[6 * r + c]);
-				printf("\n");
-			}
-			printf("------------------------\n");
-		}
+		printf("------------------------\n");
+	}
 };
 
 class float6x3 {
-	public:
-		float val[6 * 3];CUDA_VEC_HOSTDEVICE void set_values(float* val_in) {
-			for (int i = 0; i < (6 * 3); i++)
-				val[i] = val_in[i];
-		}
+public:
+	float val[6 * 3];CUDA_VEC_HOSTDEVICE void set_values(float* val_in) {
+		for (int i = 0; i < (6 * 3); i++)
+			val[i] = val_in[i];
+	}
 };
 
 class float6x1 {
-	public:
-		float val[6 * 1];
-		/// Sum of two 6x1 vectors
-		CUDA_VEC_HOSTDEVICE float6x1 operator+(float6x1 const & m) const {
-			float6x1 res;
-			for (int k = 0; k < (6 * 1); ++k)
-				res.val[k] = val[k] + m.val[k];
-			return res;
+public:
+	float val[6 * 1];
+	/// Sum of two 6x1 vectors
+	CUDA_VEC_HOSTDEVICE float6x1 operator+(float6x1 const & m) const {
+		float6x1 res;
+		for (int k = 0; k < (6 * 1); ++k)
+			res.val[k] = val[k] + m.val[k];
+		return res;
+	}
+	CUDA_VEC_HOSTDEVICE float norm() {
+		float res = 0.f;
+		for (int i = 0; i < 6; i++) {
+			res += val[i] * val[i];
 		}
-		CUDA_VEC_HOSTDEVICE float norm() {
-			float res = 0.f;
-			for (int i = 0; i < 6; i++) {
-				res += val[i] * val[i];
-			}
-			return sqrt(res);
+		return sqrt(res);
+	}
+	__host__
+	void print_mat() {
+		printf("\n");
+		printf("[");
+		for (int r = 0; r < 6; r++) {
+			printf("%f \t", val[r]);
 		}
-		__host__
-		void print_mat() {
-			printf("\n");
-			printf("[");
-			for (int r = 0; r < 6; r++) {
-				printf("%f \t", val[r]);
-			}
-			printf("]^T\n");
-		}
+		printf("]^T\n");
+	}
 
 };
 

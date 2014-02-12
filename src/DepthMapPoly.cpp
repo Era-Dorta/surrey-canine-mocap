@@ -11,7 +11,7 @@ using std::cout;
 using std::endl;
 
 DepthMapPoly::DepthMapPoly() :
-			depth_poly_geode(new osg::Geode) {
+		depth_poly_geode(new osg::Geode) {
 
 }
 
@@ -188,7 +188,7 @@ void DepthMapPoly::polygonise_depth_map(cv::Mat* depth_map, cv::Mat* rgb_image,
 			}
 		}
 		//Turn off lighting:
-		dm_geometry->getOrCreateStateSet()->setMode( GL_LIGHTING,
+		dm_geometry->getOrCreateStateSet()->setMode(GL_LIGHTING,
 				osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 	} else {
 		for (int row = 0; row < rows; row++) {
@@ -197,7 +197,7 @@ void DepthMapPoly::polygonise_depth_map(cv::Mat* depth_map, cv::Mat* rgb_image,
 			}
 		}
 		//Turn on lighting:
-		dm_geometry->getOrCreateStateSet()->setMode( GL_LIGHTING,
+		dm_geometry->getOrCreateStateSet()->setMode(GL_LIGHTING,
 				osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
 	}
 	//----------------------------------------

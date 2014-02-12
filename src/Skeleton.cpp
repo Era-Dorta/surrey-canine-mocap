@@ -8,7 +8,7 @@
 #include "Skeleton.h"
 #include "DebugUtil.h"
 Skeleton::Skeleton() :
-			skel_loaded(false) {
+		skel_loaded(false) {
 }
 
 Skeleton::~Skeleton() {

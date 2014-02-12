@@ -4,7 +4,7 @@ using std::cerr;
 using std::endl;
 
 Timer::Timer(char* description) :
-			_description(description) {
+		_description(description) {
 	start_ticks = 0.0;
 	end_ticks = 0.0;
 	//Automatically start timing:

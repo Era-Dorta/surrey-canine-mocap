@@ -6,7 +6,7 @@ using std::endl;
 const double DepthMapSurfel::inv_sq_2 = 1.0 / sqrt(2.0);
 
 DepthMapSurfel::DepthMapSurfel() :
-			depth_surfel_geode(new osg::Geode) {
+		depth_surfel_geode(new osg::Geode) {
 	rows = 0;
 	cols = 0;
 }
@@ -125,7 +125,7 @@ void DepthMapSurfel::surfelise_depth_map(const cv::Mat* depth_map,
 	float3 vec_hori;
 	float3 vec_vert;
 
-	float depth_thresh = 20e-3;	//20mm//TODO - depth dependent? or better still, use an angle threshold
+	float depth_thresh = 20e-3; //20mm//TODO - depth dependent? or better still, use an angle threshold
 
 	//(Note: doesn't do the first and last row and column)
 	for (int row = 1; row < rows - 1; row++) {
@@ -213,7 +213,7 @@ void DepthMapSurfel::surfelise_depth_map(const cv::Mat* depth_map,
 			}
 		}
 		//Turn off lighting:
-		dm_geometry->getOrCreateStateSet()->setMode( GL_LIGHTING,
+		dm_geometry->getOrCreateStateSet()->setMode(GL_LIGHTING,
 				osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 	} else {
 		for (int row = 0; row < rows; row++) {
@@ -222,7 +222,7 @@ void DepthMapSurfel::surfelise_depth_map(const cv::Mat* depth_map,
 			}
 		}
 		//Turn on lighting:
-		dm_geometry->getOrCreateStateSet()->setMode( GL_LIGHTING,
+		dm_geometry->getOrCreateStateSet()->setMode(GL_LIGHTING,
 				osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
 	}
 	//----------------------------------------
@@ -232,9 +232,9 @@ void DepthMapSurfel::surfelise_depth_map(const cv::Mat* depth_map,
 	for (int row = 0; row < rows; row++) {
 		for (int col = 0; col < cols; col++) {
 
-			float good_measure = 1.2f;//(to avoid small gaps between surfels which caused them to go missing when re-rendered from the same POV)
+			float good_measure = 1.2f; //(to avoid small gaps between surfels which caused them to go missing when re-rendered from the same POV)
 			float r = 0.01;
-			if (fabs((*dm_normals)[row * cols + col].z()) > 0.2588)	//(75 degree angle, Keller2013)
+			if (fabs((*dm_normals)[row * cols + col].z()) > 0.2588) //(75 degree angle, Keller2013)
 					{
 				//Sample spacing-based radius: (From Weise, ICCV 2009):
 				r =

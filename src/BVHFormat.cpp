@@ -104,15 +104,15 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Vec3 &vector) {
 }
 
 BVHFormat::BVHFormat() :
-			MocapData() {
+		MocapData() {
 }
 
 bool BVHFormat::import_data(const char *filename) {
 	int read, i, j, where;
-	int pos[8];      // Used to determine the position of the next char to write
+	int pos[8]; // Used to determine the position of the next char to write
 	char line[8][40]; // Used to store the attribute and the corresponding value
 	char buffer[4097];
-	int section = 0;     // Indicates which section is currently being processed
+	int section = 0; // Indicates which section is currently being processed
 	Node *curnode = 0; // Used to indicate the current node that is being processed
 	int index = 0, channels = 0;
 	bool endsite = false;

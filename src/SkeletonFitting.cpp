@@ -23,7 +23,7 @@ bool comp_z(const osg::Vec3& i, const osg::Vec3& j) {
 SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 		boost::shared_ptr<Skeletonization3D> skeletonization3d,
 		const camVecT& camera_arr_) :
-			camera_arr(camera_arr_) {
+		camera_arr(camera_arr_) {
 	move_joint_max_dist = 0;
 	error_threshold = 0.005;
 	current_frame = -1;

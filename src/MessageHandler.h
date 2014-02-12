@@ -15,14 +15,14 @@
 #include <string>
 
 class MessageHandler: public osg::NotifyHandler {
-	public:
-		MessageHandler();
-		virtual ~MessageHandler();
+public:
+	MessageHandler();
+	virtual ~MessageHandler();
 
-		void notify(osg::NotifySeverity severity, const char *message);
-	private:
-		osg::ref_ptr<osg::NotifyHandler> prev_handler;
-		std::string ignore_msg;
+	void notify(osg::NotifySeverity severity, const char *message);
+private:
+	osg::ref_ptr<osg::NotifyHandler> prev_handler;
+	std::string ignore_msg;
 };
 
 #endif /* MESSAGEHANDLER_H_ */

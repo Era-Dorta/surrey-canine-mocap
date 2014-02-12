@@ -25,41 +25,41 @@ using std::endl;
 //should have methods to access children/parent and other attributes
 
 class Skeleton: public BVHFormat {
-	public:
-		Skeleton();
-		virtual ~Skeleton();
-		void rotate_joint(unsigned int index, osg::Vec3& angle);
-		void rotate_root_all_frames(osg::Vec3& angle);
-		void translate_root(osg::Vec3& translation);
-		void translate_root_all_frames(osg::Vec3& translation);
-		void change_bone_length(unsigned int index, osg::Vec3& translation);
-		void change_bone_length_all_frames(unsigned int index,
-				osg::Vec3& translation);
-		void toggle_color(int index);
+public:
+	Skeleton();
+	virtual ~Skeleton();
+	void rotate_joint(unsigned int index, osg::Vec3& angle);
+	void rotate_root_all_frames(osg::Vec3& angle);
+	void translate_root(osg::Vec3& translation);
+	void translate_root_all_frames(osg::Vec3& translation);
+	void change_bone_length(unsigned int index, osg::Vec3& translation);
+	void change_bone_length_all_frames(unsigned int index,
+			osg::Vec3& translation);
+	void toggle_color(int index);
 
-		unsigned int get_num_bones();
-		void save_to_file(std::string file_name);
-		void load_from_file(std::string file_name);
-		void set_current_frame(int frame_no);
-		MocapHeader& get_header();
-		int get_node_index(osg::MatrixTransform* node_transform);
-		bool isSkelLoaded() const;
-		void reset_state();
+	unsigned int get_num_bones();
+	void save_to_file(std::string file_name);
+	void load_from_file(std::string file_name);
+	void set_current_frame(int frame_no);
+	MocapHeader& get_header();
+	int get_node_index(osg::MatrixTransform* node_transform);
+	bool isSkelLoaded() const;
+	void reset_state();
 
-		//Values correspond to paw Node indices in skeleton
-		enum Skel_Leg {
-			Front_Left = 5,
-			Front_Right = 9,
-			Back_Left = 14,
-			Back_Right = 18,
-			Not_Limbs = 0
-		};
+	//Values correspond to paw Node indices in skeleton
+	enum Skel_Leg {
+		Front_Left = 5,
+		Front_Right = 9,
+		Back_Left = 14,
+		Back_Right = 18,
+		Not_Limbs = 0
+	};
 
-		enum Axis {
-			X, Y, Z
-		};
-	private:
-		bool skel_loaded;
+	enum Axis {
+		X, Y, Z
+	};
+private:
+	bool skel_loaded;
 };
 
 #endif /* SKELETON_H_ */

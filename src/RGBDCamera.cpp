@@ -11,9 +11,9 @@ using std::cout;
 using std::endl;
 
 RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name) :
-			_dataset_path(dataset_path), _cam_name(cam_name),
-			cam_group(new osg::Group), skel_vis_group(new osg::Group),
-			cam_pose_xform(new osg::MatrixTransform) {
+		_dataset_path(dataset_path), _cam_name(cam_name), cam_group(
+				new osg::Group), skel_vis_group(new osg::Group), cam_pose_xform(
+				new osg::MatrixTransform) {
 	cout << "Loading " << _cam_name << endl;
 
 	//Load intrinsic and extrinsic calibration:
@@ -286,7 +286,7 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour) {
 	(*vertices)[3].set(osg::Vec3(0.0561, -0.0421, 0.1));
 	(*vertices)[4].set(osg::Vec3(0.0561, 0.0421, 0.1));
 	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(
-	GL_LINES, 16);
+			GL_LINES, 16);
 	(*indices)[0] = 4;
 	(*indices)[1] = 1;
 	(*indices)[2] = 1;
@@ -318,7 +318,7 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour) {
 	cam_vis->getOrCreateStateSet()->setAttribute(pm.get());
 
 	//Turn off lighting:
-	cam_vis->getOrCreateStateSet()->setMode( GL_LIGHTING,
+	cam_vis->getOrCreateStateSet()->setMode(GL_LIGHTING,
 			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	//Set colour:
@@ -453,7 +453,7 @@ void RGBD_Camera::remove_background(int num_back_frames,
 		//cv::waitKey(0);
 
 		//Convert float image to ushort:
-	cv::Mat background_plate(d_rows, d_cols, CV_16U, 0);
+cv	::Mat background_plate(d_rows, d_cols, CV_16U, 0);
 	background_plate_f.convertTo(background_plate, CV_16U);
 	//--------------------------------
 
@@ -478,7 +478,7 @@ void RGBD_Camera::remove_background(int num_back_frames,
 						(int) background_plate.at<ushort>(row, col)
 								- (int) (*i).second.depth_img.at<ushort>(row,
 										col)) > noise_floor)
-						&& bound_box.contains(glob_osg)	//And bounding box segmentation
+						&& bound_box.contains(glob_osg) //And bounding box segmentation
 				)) {
 					//Point is classifies as background, set it to invalid (zero):
 					(*i).second.depth_img.at<ushort>(row, col) = 0;
@@ -527,7 +527,7 @@ void RGBD_Camera::get_surface_paths(int frame_num,
 		while (col < d_cols) {
 			if (frames[frame_num].depth_img.at<ushort>(row, col) != 0) {
 				int begin_col = col;
-				int thresh = 30;			//30mm - TODO make depth dependent
+				int thresh = 30; //30mm - TODO make depth dependent
 				if (col < d_cols - 1)
 					col++;
 				while (abs(
@@ -540,7 +540,7 @@ void RGBD_Camera::get_surface_paths(int frame_num,
 						break;
 				}
 				int end_col = col;
-				int mid_col = (end_col + begin_col) / 2;//(rounding to integer)
+				int mid_col = (end_col + begin_col) / 2; //(rounding to integer)
 				mid_cols.push_back(mid_col);
 
 				//DEBUG: Show midpoint
@@ -621,7 +621,7 @@ void RGBD_Camera::get_surface_paths(int frame_num,
 
 bool RGBD_Camera::cont_path(cv::Mat& d_img, cv::Point last, cv::Point current) {
 
-	int thresh = 30;	//30mm
+	int thresh = 30; //30mm
 
 	//Does point a come the row below point b?
 	if (last.y != current.y + 1) {
@@ -661,11 +661,11 @@ bool RGBD_Camera::cont_path(cv::Mat& d_img, cv::Point last, cv::Point current) {
 				&& abs(
 						(int) d_img.at<ushort>(left.y, i)
 								- (int) d_img.at<ushort>(left.y, i + 1))
-						< thresh &&		// horizontal consistency
+						< thresh && // horizontal consistency
 				abs(
 						(int) d_img.at<ushort>(right.y, i)
 								- (int) d_img.at<ushort>(right.y, i + 1))
-						< thresh))		// "
+						< thresh)) // "
 		{
 			return false;
 		}
@@ -673,7 +673,7 @@ bool RGBD_Camera::cont_path(cv::Mat& d_img, cv::Point last, cv::Point current) {
 	for (int i = left.x; i < right.x; i++) {
 		if (!(abs(
 				(int) d_img.at<ushort>(left.y, i)
-						- (int) d_img.at<ushort>(right.y, i)) < thresh))//vertical consistency
+						- (int) d_img.at<ushort>(right.y, i)) < thresh)) //vertical consistency
 		{
 			return false;
 		}

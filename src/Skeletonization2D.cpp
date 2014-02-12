@@ -133,7 +133,7 @@ void Skeletonization2D::connectivity_preserving_thinning(const cv::Mat& img_in,
 												if ((s_row + t_d_row >= 0
 														&& s_row + t_d_row < 3
 														&& s_col + t_d_col >= 0
-														&& s_col + t_d_col < 3)	//check bounds
+														&& s_col + t_d_col < 3) //check bounds
 														&& result.at<uchar>(
 																row + s_row
 																		+ t_d_row
@@ -199,7 +199,7 @@ void Skeletonization2D::remove_isolated_short_segments(const cv::Mat& img_in,
 				for (int d_row = -1; d_row <= 1; d_row++) {
 					for (int d_col = -1; d_col <= 1; d_col++) {
 						if (d_row == 0 && d_col == 0) {
-							continue;	//(don't count central pixel)
+							continue; //(don't count central pixel)
 						}
 						if (result.at<uchar>(row + d_row, col + d_col) != 0) {
 							num_neigbours++;
@@ -253,13 +253,13 @@ void Skeletonization2D::remove_isolated_short_segments(const cv::Mat& img_in,
 									path[path.size() - 1]
 											== cv::Point(walk_col + d_col,
 													walk_row + d_row)
-									||		//(don't go where you've just been)
+									|| //(don't go where you've just been)
 									(path.size() > 1
 											&& path[path.size() - 2]
 													== cv::Point(
 															walk_col + d_col,
 															walk_row + d_row))
-									|| next_point_found == true)//(don't keep looking if the next point has already been found)
+									|| next_point_found == true) //(don't keep looking if the next point has already been found)
 											{
 								continue;
 							}
@@ -329,7 +329,7 @@ void Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img,
 		for (int col = 0; col < cols; col++) {
 			//If any of the 4 neighbours are inconsistent with the central pixel,
 			//set it to background to force an edge there:
-			int threshold = 40;			//40mm
+			int threshold = 40; //40mm
 			bool has_consistent_4_neighbours = true;
 			if (row > 0
 					&& abs(
@@ -384,7 +384,7 @@ void Skeletonization2D::dist_transform_skeletonization(const cv::Mat* seg_img,
 	cv::multiply(temp1, temp1, temp2);
 	cv::multiply(res, res, temp1);
 
-	cv::sqrt(temp2 + temp1, res);	//abs(diff_xx) + abs(diff_yy);
+	cv::sqrt(temp2 + temp1, res); //abs(diff_xx) + abs(diff_yy);
 
 	//Threshold
 	//---------------------
@@ -448,7 +448,7 @@ void Skeletonization2D::delete_arm(cv::Mat& img_in) {
 	//If there are not enough points it must be an empty frame -> do nothing
 	if (total_points >= max_clusters) {
 		cv::kmeans(data2, max_clusters, labels,
-				cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
+				cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10, 1.0),
 				3, cv::KMEANS_PP_CENTERS, centers);
 
 		//Find the closer to top cluster

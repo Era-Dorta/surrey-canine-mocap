@@ -51,63 +51,63 @@
 #include "opencv2/gpu/gpu.hpp"
 
 class MultiCamViewer: public osgGA::GUIEventHandler {
-	public:
-		MultiCamViewer(std::string path);
-		virtual ~MultiCamViewer();
-		int run_viewer();
-	private:
-		void setup_scene();
-		void set_window_title(osgViewer::Viewer* viewer, std::string win_name,
-				int x, int y);
-		virtual bool handle(const osgGA::GUIEventAdapter& ea,
-				osgGA::GUIActionAdapter& aa);
-		void update_dynamics();
-		osgText::Text* create_text(const osg::Vec3& pos,
-				const std::string& content, float size);
-		osg::Camera* create_hud_camera(double left, double right, double bottom,
-				double top);
-		void save_image_freeview();
+public:
+	MultiCamViewer(std::string path);
+	virtual ~MultiCamViewer();
+	int run_viewer();
+private:
+	void setup_scene();
+	void set_window_title(osgViewer::Viewer* viewer, std::string win_name,
+			int x, int y);
+	virtual bool handle(const osgGA::GUIEventAdapter& ea,
+			osgGA::GUIActionAdapter& aa);
+	void update_dynamics();
+	osgText::Text* create_text(const osg::Vec3& pos, const std::string& content,
+			float size);
+	osg::Camera* create_hud_camera(double left, double right, double bottom,
+			double top);
+	void save_image_freeview();
 
-		void set_calibration_point(const osgGA::GUIEventAdapter& ea,
-				osgGA::GUIActionAdapter& aa);
+	void set_calibration_point(const osgGA::GUIEventAdapter& ea,
+			osgGA::GUIActionAdapter& aa);
 
-		int win_width;
-		int win_height;
+	int win_width;
+	int win_height;
 
-		int disp_frame_no;
-		int begin_frame_no;
-		int end_frame_no;
-		bool paused;
-		bool with_colour;
-		float frame_period_s;
-		double last_frame_tick_count;
-		bool manual_origin_set;
-		bool manual_axes_rot;
-		bool show_bounding_box;
-		int current_axe_manual;
-		int last_cam_index;
+	int disp_frame_no;
+	int begin_frame_no;
+	int end_frame_no;
+	bool paused;
+	bool with_colour;
+	float frame_period_s;
+	double last_frame_tick_count;
+	bool manual_origin_set;
+	bool manual_axes_rot;
+	bool show_bounding_box;
+	int current_axe_manual;
+	int last_cam_index;
 
-		std::string _dataset_path;
-		camVecT camera_arr;
-		osg::ref_ptr<osg::Group> scene_root;
-		osg::ref_ptr<osg::Image> rgb_render_interactive_view;
-		osgViewer::Viewer viewer;
+	std::string _dataset_path;
+	camVecT camera_arr;
+	osg::ref_ptr<osg::Group> scene_root;
+	osg::ref_ptr<osg::Image> rgb_render_interactive_view;
+	osgViewer::Viewer viewer;
 
-		//Switch to turn camera visualizations on or off:
-		osg::ref_ptr<osg::Switch> cam_vis_switch;
+	//Switch to turn camera visualizations on or off:
+	osg::ref_ptr<osg::Switch> cam_vis_switch;
 
-		//Group for class render skeleton
-		osg::ref_ptr<osg::Group> render_skel_group;
+	//Group for class render skeleton
+	osg::ref_ptr<osg::Group> render_skel_group;
 
-		osg::ref_ptr<osgText::Text> frame_num_text;
-		float alpha;
+	osg::ref_ptr<osgText::Text> frame_num_text;
+	float alpha;
 
-		osg::Vec3 plate_points[4];
-		osg::BoundingBox bounding_box;
-		CameraCalibrator cam_calibrator;
-		int num_plate_points;
+	osg::Vec3 plate_points[4];
+	osg::BoundingBox bounding_box;
+	CameraCalibrator cam_calibrator;
+	int num_plate_points;
 
-		SkeletonController skel_controller;
+	SkeletonController skel_controller;
 
 };
 

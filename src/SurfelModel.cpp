@@ -16,10 +16,10 @@ SurfelModel::SurfelModel() {
 
 	//Allocate arrays:
 	//------------------------
-	surfel_vertices = new osg::Vec3Array;	//(5);
-	surfel_normals = new osg::Vec3Array;	//(5);
-	surfel_colours = new osg::Vec4Array;	//(5);
-	surfel_attributes = new osg::Vec3Array;	//(5);
+	surfel_vertices = new osg::Vec3Array; //(5);
+	surfel_normals = new osg::Vec3Array; //(5);
+	surfel_colours = new osg::Vec4Array; //(5);
+	surfel_attributes = new osg::Vec3Array; //(5);
 	//------------------------
 
 	//Setup geometry node:
@@ -123,9 +123,9 @@ void SurfelModel::remove_invalid_surfels() {
 		//cout << "forward pos: " << forward_pos << ", backward pos: " << backward_pos << endl;
 
 		//If point is invalid
-		if ((*surfel_vertices)[forward_pos].z() == 0)//<--NB set the condition here
+		if ((*surfel_vertices)[forward_pos].z() == 0) //<--NB set the condition here
 				{
-			while ((*surfel_vertices)[backward_pos].z() == 0)	//<-- and here
+			while ((*surfel_vertices)[backward_pos].z() == 0) //<-- and here
 			{
 				backward_pos--;
 			}

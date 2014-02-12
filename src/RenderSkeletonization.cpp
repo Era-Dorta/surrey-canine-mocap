@@ -3,7 +3,7 @@
 
 RenderSkeletonization::RenderSkeletonization(const camVecT& camera_arr_,
 		osg::ref_ptr<osg::Group> render_skel_group) :
-			camera_arr(camera_arr_), display_merged(true) {
+		camera_arr(camera_arr_), display_merged(true) {
 	skel_created = false;
 	text_created = false;
 	skel_vis_switch = new osg::Switch;
@@ -491,19 +491,20 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
 		box->setCenter(points->at(i));
-		switch (group.at(i))case Skeleton::Front_Left: {
+		switch (group.at(i)) {
+		case Skeleton::Front_Left:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0)); //Yellow
 			break;
-			case Skeleton::Front_Right:
-			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0));//Pink
+		case Skeleton::Front_Right:
+			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0)); //Pink
 			break;
-			case Skeleton::Back_Left:
-			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0));//Light Green
+		case Skeleton::Back_Left:
+			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0)); //Light Green
 			break;
-			case Skeleton::Back_Right:
-			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0));// Blue/Green
+		case Skeleton::Back_Right:
+			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0)); // Blue/Green
 			break;
-			case Skeleton::Not_Limbs:
+		case Skeleton::Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
 			break;
 		}
@@ -516,19 +517,20 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
 		box_shape->setShape(
 				new osg::Box(points->at(j), 0.005f, 0.005f, 0.005f));
-		switch (group.at(j))case Skeleton::Front_Left: {
+		switch (group.at(j)) {
+		case Skeleton::Front_Left:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0));
 			break;
-			case Skeleton::Front_Right:
+		case Skeleton::Front_Right:
 			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0));
 			break;
-			case Skeleton::Back_Left:
+		case Skeleton::Back_Left:
 			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0));
 			break;
-			case Skeleton::Back_Right:
+		case Skeleton::Back_Right:
 			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0));
 			break;
-			case Skeleton::Not_Limbs:
+		case Skeleton::Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
 			break;
 		}

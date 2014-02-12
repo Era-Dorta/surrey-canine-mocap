@@ -34,16 +34,16 @@
 #include "opencv2/gpu/gpu.hpp"
 
 class RGBD_Frame {
-	public:
-		RGBD_Frame();
-		virtual ~RGBD_Frame();
-		int frame_num;
-		cv::Mat depth_img;
-		cv::Mat rgb_img;
-		double depth_timestamp_device;
-		double rgb_timestamp_device;
-		double depth_timestamp_global;
-		double rgb_timestamp_global;
+public:
+	RGBD_Frame();
+	virtual ~RGBD_Frame();
+	int frame_num;
+	cv::Mat depth_img;
+	cv::Mat rgb_img;
+	double depth_timestamp_device;
+	double rgb_timestamp_device;
+	double depth_timestamp_global;
+	double rgb_timestamp_global;
 };
 
 #endif /* RGBDFRAME_H_ */

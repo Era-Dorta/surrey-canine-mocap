@@ -3,9 +3,9 @@
 
 Skeletonization3D::Skeletonization3D(const camVecT& camera_arr_,
 		float merge_treshold_, float row_treshold_, float move_distance_) :
-			camera_arr(camera_arr_), n_cameras(0), n_frames(0),
-			merge_treshold(merge_treshold_), row_treshold(row_treshold_),
-			move_distance(move_distance_) {
+		camera_arr(camera_arr_), n_cameras(0), n_frames(0), merge_treshold(
+				merge_treshold_), row_treshold(row_treshold_), move_distance(
+				move_distance_) {
 }
 
 Skeletonization3D::~Skeletonization3D() {

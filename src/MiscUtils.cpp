@@ -147,12 +147,12 @@ osg::Group* MiscUtils::create_3D_label(std::string text, osg::Vec3 offset,
 	osg::ref_ptr<osgText::Font3D> g_font = osgText::readFont3DFile(
 			"FreeSans.ttf");
 	label_text->setFont(g_font.get());
-	label_text->setCharacterSize(0.05);		//5cm
-	label_text->setCharacterDepth(0.0025);		//2.5mm
+	label_text->setCharacterSize(0.05); //5cm
+	label_text->setCharacterDepth(0.0025); //2.5mm
 	label_text->setAxisAlignment(osgText::TextBase::XZ_PLANE);
 	label_text->setPosition(osg::Vec3(0, 0, 0));
 	label_text->setText(text);
-	label_text->setColor(osg::Vec4(colour + osg::Vec3(0.1f, 0.1f, 0.1f), 1.0f));//(Make a little brighter for distinctiveness)
+	label_text->setColor(osg::Vec4(colour + osg::Vec3(0.1f, 0.1f, 0.1f), 1.0f)); //(Make a little brighter for distinctiveness)
 
 	label_billboard->addDrawable(label_text.get());
 
@@ -353,10 +353,10 @@ void MiscUtils::enable_splat_rendering(osg::ref_ptr<osg::Geode> geometry_in) {
 				new osg::Shader(osg::Shader::FRAGMENT, colour_frag));
 	}
 
-	splat_prog->setParameter( GL_GEOMETRY_VERTICES_OUT_EXT,
+	splat_prog->setParameter(GL_GEOMETRY_VERTICES_OUT_EXT,
 			2 * num_segments + 2);
-	splat_prog->setParameter( GL_GEOMETRY_INPUT_TYPE_EXT, GL_POINTS);
-	splat_prog->setParameter( GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+	splat_prog->setParameter(GL_GEOMETRY_INPUT_TYPE_EXT, GL_POINTS);
+	splat_prog->setParameter(GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
 	splat_prog->addBindAttribLocation("vert_attribs", 6);
 	//------------------
 

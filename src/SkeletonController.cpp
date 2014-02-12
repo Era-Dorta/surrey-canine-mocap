@@ -10,12 +10,12 @@
 
 SkeletonController::SkeletonController(const camVecT& camera_arr,
 		osg::ref_ptr<osg::Group> render_skel_group) :
-			skeletonized3D(
-					boost::shared_ptr<Skeletonization3D>(
-							new Skeletonization3D(camera_arr))),
-			skeleton(boost::shared_ptr<Skeleton>(new Skeleton)),
-			skel_renderer(camera_arr, render_skel_group),
-			skel_fitter(skeleton, skeletonized3D, camera_arr) {
+		skeletonized3D(
+				boost::shared_ptr<Skeletonization3D>(
+						new Skeletonization3D(camera_arr))), skeleton(
+				boost::shared_ptr<Skeleton>(new Skeleton)), skel_renderer(
+				camera_arr, render_skel_group), skel_fitter(skeleton,
+				skeletonized3D, camera_arr) {
 	current_frame = 0;
 	last_mouse_pos_x = 0;
 	last_mouse_pos_y = 0;

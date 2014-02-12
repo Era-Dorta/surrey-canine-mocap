@@ -12,17 +12,17 @@
 #include "boost/shared_ptr.hpp"
 
 class SkeletonState {
-	public:
-		SkeletonState();
-		virtual ~SkeletonState();
-		void save_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
-		void restore_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
-	private:
-		void init(unsigned int size);
+public:
+	SkeletonState();
+	virtual ~SkeletonState();
+	void save_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
+	void restore_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
+private:
+	void init(unsigned int size);
 
-		std::vector<osg::Quat> rotations;
-		osg::ref_ptr<osg::Vec3Array> offsets;
-		osg::ref_ptr<osg::Vec3Array> lengths;
+	std::vector<osg::Quat> rotations;
+	osg::ref_ptr<osg::Vec3Array> offsets;
+	osg::ref_ptr<osg::Vec3Array> lengths;
 };
 
 #endif /* SKELETONSTATE_H_ */

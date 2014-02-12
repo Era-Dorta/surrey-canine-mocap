@@ -15,27 +15,17 @@ extern float3x3 Projections::K;
 extern float3x3 Projections::invK;
 
 MultiCamViewer::MultiCamViewer(std::string path) :
-			win_width(1280),
-			win_height(720),
-			paused(true),
-			with_colour(false),
-			frame_period_s(1.0 / 30.0), //30fps
-			last_frame_tick_count(0),
-			manual_origin_set(false),
-			manual_axes_rot(false),
-			show_bounding_box(false),
-			current_axe_manual(0),
-			last_cam_index(0),
-			_dataset_path(path),
-			scene_root(new osg::Group),
-			rgb_render_interactive_view(new osg::Image),
-			cam_vis_switch(new osg::Switch),
-			render_skel_group(new osg::Group),
-			frame_num_text(
-					create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
-							"Frame range XXX-XXX, displaying frame: XXX",
-							18.0f)), alpha(0.f), cam_calibrator(camera_arr),
-			num_plate_points(0), skel_controller(camera_arr, render_skel_group) {
+		win_width(1280), win_height(720), paused(true), with_colour(false), frame_period_s(
+				1.0 / 30.0), //30fps
+		last_frame_tick_count(0), manual_origin_set(false), manual_axes_rot(
+				false), show_bounding_box(false), current_axe_manual(0), last_cam_index(
+				0), _dataset_path(path), scene_root(new osg::Group), rgb_render_interactive_view(
+				new osg::Image), cam_vis_switch(new osg::Switch), render_skel_group(
+				new osg::Group), frame_num_text(
+				create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
+						"Frame range XXX-XXX, displaying frame: XXX", 18.0f)), alpha(
+				0.f), cam_calibrator(camera_arr), num_plate_points(0), skel_controller(
+				camera_arr, render_skel_group) {
 
 	//When manual origin set use camera colour, if not then user normals
 	//for the shader
@@ -125,7 +115,7 @@ int MultiCamViewer::run_viewer() {
 
 	//Free viewpoint rendering:
 	rgb_render_interactive_view->allocateImage(win_width, win_height, 1,
-	GL_RGBA, GL_UNSIGNED_BYTE);
+			GL_RGBA, GL_UNSIGNED_BYTE);
 	viewer.getCamera()->attach(osg::Camera::COLOR_BUFFER,
 			rgb_render_interactive_view.get());
 	return viewer.run();
@@ -180,7 +170,7 @@ void MultiCamViewer::setup_scene() {
 						new osg::Box(bounding_box.center(), lengths.x(),
 								lengths.y(), lengths.z())));
 		osg::StateSet* ss = geode->getOrCreateStateSet();
-		ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
+		ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 		ss->setAttributeAndModes(
 				new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK,
 						osg::PolygonMode::LINE));
@@ -308,7 +298,7 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 
 			//Exit the app, this avoids the clean up errors.
 		case osgGA::GUIEventAdapter::KEY_Escape:
-			exit( EXIT_SUCCESS);
+			exit(EXIT_SUCCESS);
 			break;
 
 			//Toggle playing/pausing
@@ -479,7 +469,7 @@ void MultiCamViewer::update_dynamics() {
 			pm->setMode(osg::PolygonMode::FRONT_AND_BACK,
 					osg::PolygonMode::LINE);
 			path_vis_geode->getOrCreateStateSet()->setAttribute(pm.get());
-			path_vis_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+			path_vis_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
 					osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 			//Set colour:
 			osg::ref_ptr<osg::Vec4Array> colours = new osg::Vec4Array;
@@ -598,7 +588,7 @@ osg::Camera* MultiCamViewer::create_hud_camera(double left, double right,
 		double bottom, double top) {
 	osg::ref_ptr<osg::Camera> camera = new osg::Camera;
 	camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-	camera->setClearMask( GL_DEPTH_BUFFER_BIT);
+	camera->setClearMask(GL_DEPTH_BUFFER_BIT);
 	camera->setRenderOrder(osg::Camera::POST_RENDER);
 	camera->setAllowEventFocus(false);
 	camera->setProjectionMatrix(osg::Matrix::ortho2D(left, right, bottom, top));
@@ -669,7 +659,7 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 						new osg::Sphere(pos, 0.01));
 				sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
 
-				sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+				sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
 						osg::StateAttribute::OFF
 								| osg::StateAttribute::OVERRIDE);
 

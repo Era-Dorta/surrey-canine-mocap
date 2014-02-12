@@ -11,7 +11,7 @@ using std::cout;
 using std::endl;
 
 CameraCalibrator::CameraCalibrator(const camVecT& camera_arr_) :
-			camera_arr(camera_arr_) {
+		camera_arr(camera_arr_) {
 }
 
 CameraCalibrator::~CameraCalibrator() {
