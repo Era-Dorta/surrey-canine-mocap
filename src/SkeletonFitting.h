@@ -23,19 +23,6 @@
 
 #include "boost/shared_ptr.hpp"
 
-//Values correspond to paw Node indices in skeleton
-enum Skel_Leg {
-	Front_Left = 5,
-	Front_Right = 9,
-	Back_Left = 14,
-	Back_Right = 18,
-	Not_Limbs = 0
-};
-
-enum Axis {
-	X, Y, Z
-};
-
 class SkeletonFitting {
 	public:
 		SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
@@ -47,9 +34,9 @@ class SkeletonFitting {
 
 		void fit_skeleton_to_cloud();
 
-		const std::vector<Skel_Leg>& getLabels() const;
+		const std::vector<Skeleton::Skel_Leg>& getLabels() const;
 
-		osg::Vec3 get_paw(Skel_Leg leg);
+		osg::Vec3 get_paw(Skeleton::Skel_Leg leg);
 
 		bool solve_chain(int root_bone, int end_bone,
 				const osg::Vec3& position);
@@ -59,19 +46,19 @@ class SkeletonFitting {
 	private:
 		bool fit_root_position();
 
-		bool fit_leg_position(Skel_Leg leg);
+		bool fit_leg_position(Skeleton::Skel_Leg leg);
 
-		bool fit_leg_position_simple(Skel_Leg leg);
+		bool fit_leg_position_simple(Skeleton::Skel_Leg leg);
 
-		bool fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg);
+		bool fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg);
 
 		bool fit_head_and_back();
 
 		int find_head();
 
-		int find_paw(Skel_Leg leg, std::vector<int>& leg_points_index);
+		int find_paw(Skeleton::Skel_Leg leg, std::vector<int>& leg_points_index);
 
-		int find_leg_upper_end(Skel_Leg leg,
+		int find_leg_upper_end(Skeleton::Skel_Leg leg,
 				std::vector<int>& leg_points_index);
 
 		bool find_first_bone_end_pos(const osg::Vec3& root_pos,
@@ -83,7 +70,7 @@ class SkeletonFitting {
 		bool find_vertebral_end_pos(const osg::Vec3& shoulder_pos,
 				osg::Vec3& vertebral_end_pos);
 
-		bool fit_leg_pos_impl(Skel_Leg leg, const osg::Vec3& paw_position,
+		bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
 				const osg::Vec3& middle_position);
 
 		//From a cloud of points, fill result vector with a label for each point
@@ -92,11 +79,11 @@ class SkeletonFitting {
 
 		void refine_four_sections_division();
 
-		float get_mean(osg::ref_ptr<osg::Vec3Array> points, Skel_Leg use_label,
-				Axis axes);
+		float get_mean(osg::ref_ptr<osg::Vec3Array> points, Skeleton::Skel_Leg use_label,
+				Skeleton::Axis axes);
 
 		float get_division_val(osg::ref_ptr<osg::Vec3Array> points,
-				Skel_Leg use_label, Axis axes);
+				Skeleton::Skel_Leg use_label, Skeleton::Axis axes);
 
 		bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
 
@@ -129,10 +116,10 @@ class SkeletonFitting {
 		bool reclassify_left_right_leg_points(float mean_z_front,
 				float mean_z_back);
 
-		void get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
+		void get_y_z_front_projection(Skeleton::Skel_Leg leg, cv::Mat& out_img,
 				const osg::Vec3& trans = osg::Vec3());
 
-		void get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
+		void get_x_y_side_projection(Skeleton::Skel_Leg leg, cv::Mat& out_img,
 				const osg::Vec3& trans = osg::Vec3());
 
 		//Needed to use std::sort with comp_y
@@ -165,7 +152,7 @@ class SkeletonFitting {
 		std::vector<float> mean_x_arr;
 		float mean_z_front_all_frames;
 		float mean_z_back_all_frames;
-		std::vector<Skel_Leg> labels;
+		std::vector<Skeleton::Skel_Leg> labels;
 		int current_frame;
 		int n_frames;
 		osg::ref_ptr<osg::Vec3Array> cloud;

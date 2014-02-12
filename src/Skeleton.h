@@ -46,6 +46,18 @@ class Skeleton: public BVHFormat {
 		bool isSkelLoaded() const;
 		void reset_state();
 
+		//Values correspond to paw Node indices in skeleton
+		enum Skel_Leg {
+			Front_Left = 5,
+			Front_Right = 9,
+			Back_Left = 14,
+			Back_Right = 18,
+			Not_Limbs = 0
+		};
+
+		enum Axis {
+			X, Y, Z
+		};
 	private:
 		bool skel_loaded;
 };

@@ -21,7 +21,7 @@ SkeletonController::SkeletonController(const camVecT& camera_arr,
 	last_mouse_pos_y = 0;
 	num_bones_chain = 1;
 	delete_skel = false;
-	rotate_axis = X;
+	rotate_axis = Skeleton::X;
 	show_joint_axis = false;
 	manual_mark_up = false;
 	rotate_scale_factor = 0.02;
@@ -149,13 +149,13 @@ void SkeletonController::draw_edit_text() {
 		}
 
 		switch (rotate_axis) {
-		case X:
+		case Skeleton::X:
 			edit_text += "red ";
 			break;
-		case Y:
+		case Skeleton::Y:
 			edit_text += "green ";
 			break;
-		case Z:
+		case Skeleton::Z:
 			edit_text += "blue ";
 			break;
 		}
@@ -380,14 +380,14 @@ bool SkeletonController::handle_keyboard_events(
 		case osgGA::GUIEventAdapter::KEY_N:
 			if (is_point_selected) {
 				switch (rotate_axis) {
-				case X:
-					rotate_axis = Y;
+				case Skeleton::X:
+					rotate_axis = Skeleton::Y;
 					break;
-				case Y:
-					rotate_axis = Z;
+				case Skeleton::Y:
+					rotate_axis = Skeleton::Z;
 					break;
-				case Z:
-					rotate_axis = X;
+				case Skeleton::Z:
+					rotate_axis = Skeleton::X;
 					break;
 				}
 				update_dynamics(current_frame);
@@ -478,13 +478,13 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 	osg::Vec3 mouse_vec;
 
 	switch (rotate_axis) {
-	case X:
+	case Skeleton::X:
 		mouse_vec.set(last_mouse_pos_y - y, 0.0, 0.0);
 		break;
-	case Y:
+	case Skeleton::Y:
 		mouse_vec.set(0.0, last_mouse_pos_y - y, 0.0);
 		break;
-	case Z:
+	case Skeleton::Z:
 		mouse_vec.set(0.0, 0.0, y - last_mouse_pos_y);
 		break;
 	}

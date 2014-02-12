@@ -93,17 +93,17 @@ void SkeletonFitting::fit_skeleton_to_cloud() {
 	fit_root_position();
 	fit_head_and_back();
 
-	if (!fit_leg_position_mid_pos_in_top_leg(Front_Right)) {
-		fit_leg_position_simple(Front_Right);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Right)) {
+		fit_leg_position_simple(Skeleton::Front_Right);
 	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Front_Left)) {
-		fit_leg_position_simple(Front_Left);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Left)) {
+		fit_leg_position_simple(Skeleton::Front_Left);
 	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Back_Right)) {
-		fit_leg_position_simple(Back_Right);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Right)) {
+		fit_leg_position_simple(Skeleton::Back_Right);
 	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Back_Left)) {
-		fit_leg_position_simple(Back_Left);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Left)) {
+		fit_leg_position_simple(Skeleton::Back_Left);
 	}
 }
 
@@ -120,7 +120,7 @@ bool SkeletonFitting::fit_root_position() {
 
 }
 
-bool SkeletonFitting::fit_leg_position(Skel_Leg leg) {
+bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
 	std::vector<int> leg_points_index, joint_positions_index;
 
 	//TODO find_paw initialises leg_points_index, should have another method
@@ -171,7 +171,7 @@ bool SkeletonFitting::fit_leg_position(Skel_Leg leg) {
 
 }
 
-bool SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
+bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg) {
 	std::vector<int> leg_points_index;
 
 	int paw_index = find_paw(leg, leg_points_index);
@@ -188,7 +188,8 @@ bool SkeletonFitting::fit_leg_position_simple(Skel_Leg leg) {
 	return true;
 }
 
-bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg) {
+bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(
+		Skeleton::Skel_Leg leg) {
 	std::vector<int> leg_points_index;
 
 	int paw_index = find_paw(leg, leg_points_index);
@@ -202,7 +203,7 @@ bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(Skel_Leg leg) {
 	return fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
 }
 
-bool SkeletonFitting::fit_leg_pos_impl(Skel_Leg leg,
+bool SkeletonFitting::fit_leg_pos_impl(Skeleton::Skel_Leg leg,
 		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
 	//Solve for "shoulder" two bones
 	if (!solve_chain(leg - 3, leg - 2, middle_position)) {
@@ -270,11 +271,11 @@ bool SkeletonFitting::fit_head_and_back() {
 	return true;
 }
 
-const std::vector<Skel_Leg>& SkeletonFitting::getLabels() const {
+const std::vector<Skeleton::Skel_Leg>& SkeletonFitting::getLabels() const {
 	return labels;
 }
 
-osg::Vec3 SkeletonFitting::get_paw(Skel_Leg leg) {
+osg::Vec3 SkeletonFitting::get_paw(Skeleton::Skel_Leg leg) {
 	std::vector<int> leg_points_index;
 	int index = find_paw(leg, leg_points_index);
 
@@ -291,7 +292,7 @@ int SkeletonFitting::find_head() {
 	if (cloud->size() > 4) {
 		float max_x = -FLT_MAX;
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] == Not_Limbs && max_x < cloud->at(i).x()) {
+			if (labels[i] == Skeleton::Not_Limbs && max_x < cloud->at(i).x()) {
 				max_x = cloud->at(i).x();
 				index = i;
 			}
@@ -300,7 +301,7 @@ int SkeletonFitting::find_head() {
 	return index;
 }
 
-int SkeletonFitting::find_paw(Skel_Leg leg,
+int SkeletonFitting::find_paw(Skeleton::Skel_Leg leg,
 		std::vector<int>& leg_points_index) {
 	leg_points_index.clear();
 
@@ -325,7 +326,7 @@ int SkeletonFitting::find_paw(Skel_Leg leg,
 	}
 }
 
-int SkeletonFitting::find_leg_upper_end(Skel_Leg leg,
+int SkeletonFitting::find_leg_upper_end(Skeleton::Skel_Leg leg,
 		std::vector<int>& leg_points_index) {
 	leg_points_index.clear();
 
@@ -502,10 +503,10 @@ bool SkeletonFitting::find_vertebral_end_pos(const osg::Vec3& shoulder_pos,
 
 void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 	labels.clear();
-	labels.resize(cloud->size(), Front_Right);
+	labels.resize(cloud->size(), Skeleton::Front_Right);
 
 	if (cloud->size() > 4) {
-		float mean_y = get_mean(cloud, Front_Right, Y);
+		float mean_y = get_mean(cloud, Skeleton::Front_Right, Skeleton::Y);
 		int num_invalid = 0;
 
 		//Divide in half vertically, discard all values above
@@ -513,20 +514,22 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 		//so more points are assign to the body
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (cloud->at(i).y() <= mean_y + body_height_extra_threshold) {
-				labels[i] = Not_Limbs;
+				labels[i] = Skeleton::Not_Limbs;
 				num_invalid++;
 			}
 		}
 
 		if (use_simple_division) {
 			//Divide the remaining values in front/back part along x
-			//float mean_x = get_mean(cloud, Front_Right, X);
-			float mean_x = get_division_val(cloud, Front_Right, X);
+			//float mean_x = get_mean(cloud, Skeleton::Front_Right, X);
+			float mean_x = get_division_val(cloud, Skeleton::Front_Right,
+					Skeleton::X);
 			mean_x_arr.at(current_frame) = mean_x;
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
-				if (labels[i] == Front_Right && cloud->at(i).x() <= mean_x) {
-					labels[i] = Back_Right;
+				if (labels[i] == Skeleton::Front_Right
+						&& cloud->at(i).x() <= mean_x) {
+					labels[i] = Skeleton::Back_Right;
 				}
 			}
 
@@ -534,20 +537,22 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 			//Since we are filming the dog from the right side
 			//there are less left points than right, so displace the
 			//mean point a bit to the left
-			//float mean_z_front = get_mean(cloud, Front_Right, Z);
-			//float mean_z_back = get_mean(cloud, Back_Right, Z);
-			float mean_z_front = get_division_val(cloud, Front_Right, Z);
+			//float mean_z_front = get_mean(cloud, Skeleton::Front_Right, Z);
+			//float mean_z_back = get_mean(cloud, Skeleton::Back_Right, Z);
+			float mean_z_front = get_division_val(cloud, Skeleton::Front_Right,
+					Skeleton::Z);
 			mean_z_front_arr.at(current_frame) = mean_z_front;
-			float mean_z_back = get_division_val(cloud, Back_Right, Z);
+			float mean_z_back = get_division_val(cloud, Skeleton::Back_Right,
+					Skeleton::Z);
 			mean_z_back_arr.at(current_frame) = mean_z_back;
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
-				if (labels[i] == Front_Right
+				if (labels[i] == Skeleton::Front_Right
 						&& cloud->at(i).z() >= mean_z_front) {
-					labels[i] = Front_Left;
-				} else if (labels[i] == Back_Right
+					labels[i] = Skeleton::Front_Left;
+				} else if (labels[i] == Skeleton::Back_Right
 						&& cloud->at(i).z() >= mean_z_back) {
-					labels[i] = Back_Left;
+					labels[i] = Skeleton::Back_Left;
 				}
 			}
 		} else {
@@ -560,7 +565,7 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 				cv::Mat data2(num_valid, 1, CV_32FC3);
 				int j = 0;
 				for (unsigned int i = 0; i < cloud->size(); i++) {
-					if (labels[i] != Not_Limbs) {
+					if (labels[i] != Skeleton::Not_Limbs) {
 						cv::Point3f ipt(cloud->at(i).x(), cloud->at(i).y(),
 								cloud->at(i).z());
 						data2.at<cv::Point3f>(j) = ipt;
@@ -569,26 +574,27 @@ void SkeletonFitting::divide_four_sections(bool use_simple_division) {
 				}
 
 				cv::kmeans(data2, max_clusters, knn_labels,
-						cv::TermCriteria( CV_TERMCRIT_EPS + CV_TERMCRIT_ITER,
-								10, 1.0), 10, cv::KMEANS_PP_CENTERS);
+						cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 10,
+								1.0), 10, cv::KMEANS_PP_CENTERS);
 
 				j = 0;
 				//TODO This division is arbitrary, does not have to correspond
 				//with the names
 				for (unsigned int i = 0; i < cloud->size(); i++) {
-					if (labels[i] != Not_Limbs) {
+					if (labels[i] != Skeleton::Not_Limbs) {
 						switch (knn_labels.at<int>(j)) {
 						case 0:
-							labels[i] = Front_Left;
+							labels[i] = Skeleton::Front_Left;
 							break;
 						case 1:
-							labels[i] = Front_Right;
+							labels[i] = Skeleton::Front_Right;
 							break;
 						case 2:
-							labels[i] = Back_Left;
+							labels[i] = Skeleton::Back_Left;
 							break;
 						default:
-							labels[i] = Back_Right;
+							labels[i] = Skeleton::Back_Right;
+							break;
 						}
 						j++;
 					}
@@ -673,7 +679,7 @@ bool SkeletonFitting::solve_chain(int root_bone, int end_bone,
 }
 
 float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
-		Skel_Leg use_label, Axis axes) {
+		Skeleton::Skel_Leg use_label, Skeleton::Axis axes) {
 
 	float mean = 0.0;
 	int num_valid = 0;
@@ -694,7 +700,7 @@ float SkeletonFitting::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 //This method returns the mean value between the two most distant
 //points, it does not solve the problems of the simple division either
 float SkeletonFitting::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
-		Skel_Leg use_label, Axis axes) {
+		Skeleton::Skel_Leg use_label, Skeleton::Axis axes) {
 
 	osg::ref_ptr<osg::Vec3Array> points_copy = new osg::Vec3Array;
 	for (unsigned int i = 0; i < points->size(); i++) {
@@ -706,14 +712,15 @@ float SkeletonFitting::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 	if (points_copy->size() >= 2) {
 		bool (*comp_funct)(const osg::Vec3&, const osg::Vec3&);
 		switch (axes) {
-		case X:
+		case Skeleton::X:
 			comp_funct = comp_x;
 			break;
-		case Y:
+		case Skeleton::Y:
 			comp_funct = comp_y;
 			break;
 		default:
 			comp_funct = comp_z;
+			break;
 		}
 		sortstruct s(this, comp_funct);
 		std::sort(points_copy->begin(), points_copy->end(), s);
@@ -812,7 +819,7 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 		invT[3 * 4 + 3] = 1;
 
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] != Not_Limbs) {
+			if (labels[i] != Skeleton::Not_Limbs) {
 				float3 point2d = Projections::get_2d_projection(cloud->at(i),
 						invT);
 				if (point2d.y >= 0 && point2d.y < projected_img.rows
@@ -859,28 +866,28 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 				mean_x_arr.at(current_frame) = result.x;
 				for (unsigned int i = 0; i < cloud->size(); i++) {
 					switch (labels[i]) {
-					case Front_Right:
+					case Skeleton::Front_Right:
 						if (cloud->at(i).x() <= result.x) {
-							labels[i] = Back_Right;
+							labels[i] = Skeleton::Back_Right;
 						}
 						break;
-					case Front_Left:
+					case Skeleton::Front_Left:
 						if (cloud->at(i).x() <= result.x) {
-							labels[i] = Back_Right;
+							labels[i] = Skeleton::Back_Right;
 						} else {
-							labels[i] = Front_Right;
+							labels[i] = Skeleton::Front_Right;
 						}
 						break;
-					case Back_Right:
+					case Skeleton::Back_Right:
 						if (cloud->at(i).x() > result.x) {
-							labels[i] = Front_Right;
+							labels[i] = Skeleton::Front_Right;
 						}
 						break;
-					case Back_Left:
+					case Skeleton::Back_Left:
 						if (cloud->at(i).x() > result.x) {
-							labels[i] = Front_Right;
+							labels[i] = Skeleton::Front_Right;
 						} else {
-							labels[i] = Back_Right;
+							labels[i] = Skeleton::Back_Right;
 						}
 						break;
 					default:
@@ -890,18 +897,20 @@ void SkeletonFitting::recalculate_front_back_division_side_view() {
 			}
 
 			//Recalculate left and right divisions with new points
-			float mean_z_front = get_division_val(cloud, Front_Right, Z);
+			float mean_z_front = get_division_val(cloud, Skeleton::Front_Right,
+					Skeleton::Z);
 			mean_z_front_arr.at(current_frame) = mean_z_front;
-			float mean_z_back = get_division_val(cloud, Back_Right, Z);
+			float mean_z_back = get_division_val(cloud, Skeleton::Back_Right,
+					Skeleton::Z);
 			mean_z_back_arr.at(current_frame) = mean_z_back;
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
-				if (labels[i] == Front_Right
+				if (labels[i] == Skeleton::Front_Right
 						&& cloud->at(i).z() >= mean_z_front) {
-					labels[i] = Front_Left;
-				} else if (labels[i] == Back_Right
+					labels[i] = Skeleton::Front_Left;
+				} else if (labels[i] == Skeleton::Back_Right
 						&& cloud->at(i).z() >= mean_z_back) {
-					labels[i] = Back_Left;
+					labels[i] = Skeleton::Back_Left;
 				}
 			}
 		}
@@ -952,12 +961,13 @@ void SkeletonFitting::recalculate_right_left_division_mass_center() {
 	bool point_relabeled = true;
 	while (point_relabeled) {
 		point_relabeled = false;
-		float mean_z_front = (get_mean(cloud, Front_Right, Z)
-				+ get_mean(cloud, Front_Left, Z)) * 0.5;
+		float mean_z_front = (get_mean(cloud, Skeleton::Front_Right,
+				Skeleton::Z)
+				+ get_mean(cloud, Skeleton::Front_Left, Skeleton::Z)) * 0.5;
 		mean_z_front_arr.at(current_frame) = mean_z_front;
 
-		float mean_z_back = (get_mean(cloud, Back_Right, Z)
-				+ get_mean(cloud, Back_Left, Z)) * 0.5;
+		float mean_z_back = (get_mean(cloud, Skeleton::Back_Right, Skeleton::Z)
+				+ get_mean(cloud, Skeleton::Back_Left, Skeleton::Z)) * 0.5;
 		mean_z_back_arr.at(current_frame) = mean_z_back;
 
 		point_relabeled = reclassify_left_right_leg_points(mean_z_front,
@@ -992,7 +1002,8 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 		invT[3 * 4 + 3] = 1;
 
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] == Front_Left || labels[i] == Front_Right) {
+			if (labels[i] == Skeleton::Front_Left
+					|| labels[i] == Skeleton::Front_Right) {
 				float3 point2d = Projections::get_2d_projection(cloud->at(i),
 						invT);
 				if (point2d.y >= 0 && point2d.y < projected_img.rows
@@ -1037,14 +1048,14 @@ void SkeletonFitting::recalculate_right_left_division_front_view() {
 				mean_z_front_arr.at(current_frame) = result.z;
 				for (unsigned int i = 0; i < cloud->size(); i++) {
 					switch (labels[i]) {
-					case Front_Right:
+					case Skeleton::Front_Right:
 						if (cloud->at(i).z() > result.z) {
-							labels[i] = Front_Left;
+							labels[i] = Skeleton::Front_Left;
 						}
 						break;
-					case Front_Left:
+					case Skeleton::Front_Left:
 						if (cloud->at(i).z() <= result.z) {
-							labels[i] = Front_Right;
+							labels[i] = Skeleton::Front_Right;
 						}
 						break;
 					default:
@@ -1083,7 +1094,8 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 		invT[3 * 4 + 3] = 1;
 
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] == Back_Left || labels[i] == Back_Right) {
+			if (labels[i] == Skeleton::Back_Left
+					|| labels[i] == Skeleton::Back_Right) {
 				float3 point2d = Projections::get_2d_projection(cloud->at(i),
 						invT);
 				if (point2d.y >= 0 && point2d.y < projected_img.rows
@@ -1129,14 +1141,14 @@ void SkeletonFitting::recalculate_right_left_division_back_view() {
 				mean_z_back_arr.at(current_frame) = result.z;
 				for (unsigned int i = 0; i < cloud->size(); i++) {
 					switch (labels[i]) {
-					case Back_Right:
+					case Skeleton::Back_Right:
 						if (cloud->at(i).z() > result.z) {
-							labels[i] = Back_Left;
+							labels[i] = Skeleton::Back_Left;
 						}
 						break;
-					case Back_Left:
+					case Skeleton::Back_Left:
 						if (cloud->at(i).z() <= result.z) {
-							labels[i] = Back_Right;
+							labels[i] = Skeleton::Back_Right;
 						}
 						break;
 					default:
@@ -1153,27 +1165,27 @@ bool SkeletonFitting::reclassify_left_right_leg_points(float mean_z_front,
 	bool point_relabeled = false;
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		switch (labels[i]) {
-		case Front_Right:
+		case Skeleton::Front_Right:
 			if (cloud->at(i).z() > mean_z_front) {
-				labels[i] = Front_Left;
+				labels[i] = Skeleton::Front_Left;
 				point_relabeled = true;
 			}
 			break;
-		case Front_Left:
+		case Skeleton::Front_Left:
 			if (cloud->at(i).z() <= mean_z_front) {
-				labels[i] = Front_Right;
+				labels[i] = Skeleton::Front_Right;
 				point_relabeled = true;
 			}
 			break;
-		case Back_Right:
+		case Skeleton::Back_Right:
 			if (cloud->at(i).z() > mean_z_back) {
-				labels[i] = Back_Left;
+				labels[i] = Skeleton::Back_Left;
 				point_relabeled = true;
 			}
 			break;
-		case Back_Left:
+		case Skeleton::Back_Left:
 			if (cloud->at(i).z() <= mean_z_back) {
-				labels[i] = Back_Right;
+				labels[i] = Skeleton::Back_Right;
 				point_relabeled = true;
 			}
 			break;
@@ -1205,7 +1217,7 @@ void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 			return;
 		}
 
-		std::vector<Skel_Leg> labels_new(labels);
+		std::vector<Skeleton::Skel_Leg> labels_new(labels);
 		unsigned int num_ite = 0;
 		bool points_moved;
 		do {
@@ -1215,42 +1227,43 @@ void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 				int total_valid_neighbours = 0;
 				for (unsigned int j = 0; j < num_nn; j++) {
 					switch (labels[i]) {
-					case Front_Right:
-						if (labels[indices[i][j]] == Front_Right
+					case Skeleton::Front_Right:
+						if (labels[indices[i][j]] == Skeleton::Front_Right
 								&& dists[i][j] < max_distance_threshold) {
 							same_leg_neighbours++;
 							total_valid_neighbours++;
-						} else if (labels[indices[i][j]] == Front_Left
+						} else if (labels[indices[i][j]] == Skeleton::Front_Left
 								&& dists[i][j] < max_distance_threshold) {
 							total_valid_neighbours++;
 						}
 						break;
-					case Front_Left:
-						if (labels[indices[i][j]] == Front_Left
+					case Skeleton::Front_Left:
+						if (labels[indices[i][j]] == Skeleton::Front_Left
 								&& dists[i][j] < max_distance_threshold) {
 							same_leg_neighbours++;
 							total_valid_neighbours++;
-						} else if (labels[indices[i][j]] == Front_Right
+						} else if (labels[indices[i][j]]
+								== Skeleton::Front_Right
 								&& dists[i][j] < max_distance_threshold) {
 							total_valid_neighbours++;
 						}
 						break;
-					case Back_Right:
-						if (labels[indices[i][j]] == Back_Right
+					case Skeleton::Back_Right:
+						if (labels[indices[i][j]] == Skeleton::Back_Right
 								&& dists[i][j] < max_distance_threshold) {
 							same_leg_neighbours++;
 							total_valid_neighbours++;
-						} else if (labels[indices[i][j]] == Back_Left
+						} else if (labels[indices[i][j]] == Skeleton::Back_Left
 								&& dists[i][j] < max_distance_threshold) {
 							total_valid_neighbours++;
 						}
 						break;
-					case Back_Left:
-						if (labels[indices[i][j]] == Back_Left
+					case Skeleton::Back_Left:
+						if (labels[indices[i][j]] == Skeleton::Back_Left
 								&& dists[i][j] < max_distance_threshold) {
 							same_leg_neighbours++;
 							total_valid_neighbours++;
-						} else if (labels[indices[i][j]] == Back_Right
+						} else if (labels[indices[i][j]] == Skeleton::Back_Right
 								&& dists[i][j] < max_distance_threshold) {
 							total_valid_neighbours++;
 						}
@@ -1263,20 +1276,20 @@ void SkeletonFitting::recalculate_right_left_knn(unsigned int num_nn,
 				if (total_valid_neighbours > 0
 						&& same_leg_neighbours < total_valid_neighbours / 2.0) {
 					switch (labels[i]) {
-					case Front_Right:
-						labels_new[i] = Front_Left;
+					case Skeleton::Front_Right:
+						labels_new[i] = Skeleton::Front_Left;
 						points_moved = true;
 						break;
-					case Front_Left:
-						labels_new[i] = Front_Right;
+					case Skeleton::Front_Left:
+						labels_new[i] = Skeleton::Front_Right;
 						points_moved = true;
 						break;
-					case Back_Right:
-						labels_new[i] = Back_Left;
+					case Skeleton::Back_Right:
+						labels_new[i] = Skeleton::Back_Left;
 						points_moved = true;
 						break;
-					case Back_Left:
-						labels_new[i] = Back_Right;
+					case Skeleton::Back_Left:
+						labels_new[i] = Skeleton::Back_Right;
 						points_moved = true;
 						break;
 					default:
@@ -1305,26 +1318,26 @@ bool SkeletonFitting::knn_division_done(unsigned int num_nn,
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		for (unsigned int j = 0; j < num_nn; j++) {
 			switch (labels[i]) {
-			case Front_Right:
-				if (labels[indices[i][j]] == Front_Left
+			case Skeleton::Front_Right:
+				if (labels[indices[i][j]] == Skeleton::Front_Left
 						&& dists[i][j] < min_distance_treshold) {
 					return false;
 				}
 				break;
-			case Front_Left:
-				if (labels[indices[i][j]] == Front_Right
+			case Skeleton::Front_Left:
+				if (labels[indices[i][j]] == Skeleton::Front_Right
 						&& dists[i][j] < min_distance_treshold) {
 					return false;
 				}
 				break;
-			case Back_Right:
-				if (labels[indices[i][j]] == Back_Left
+			case Skeleton::Back_Right:
+				if (labels[indices[i][j]] == Skeleton::Back_Left
 						&& dists[i][j] < min_distance_treshold) {
 					return false;
 				}
 				break;
-			case Back_Left:
-				if (labels[indices[i][j]] == Back_Right
+			case Skeleton::Back_Left:
+				if (labels[indices[i][j]] == Skeleton::Back_Right
 						&& dists[i][j] < min_distance_treshold) {
 					return false;
 				}
@@ -1338,8 +1351,8 @@ bool SkeletonFitting::knn_division_done(unsigned int num_nn,
 	return true;
 }
 
-void SkeletonFitting::get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
-		const osg::Vec3& trans) {
+void SkeletonFitting::get_y_z_front_projection(Skeleton::Skel_Leg leg,
+		cv::Mat& out_img, const osg::Vec3& trans) {
 	//We want a front view so in world axes is vectors
 	//x = [0,0,1]
 	//y = [0,1,0]
@@ -1366,8 +1379,8 @@ void SkeletonFitting::get_y_z_front_projection(Skel_Leg leg, cv::Mat& out_img,
 	}
 }
 
-void SkeletonFitting::get_x_y_side_projection(Skel_Leg leg, cv::Mat& out_img,
-		const osg::Vec3& trans) {
+void SkeletonFitting::get_x_y_side_projection(Skeleton::Skel_Leg leg,
+		cv::Mat& out_img, const osg::Vec3& trans) {
 	//We want a side view, so no rotation is needed
 	//x = [1,0,0]
 	//y = [0,1,0]

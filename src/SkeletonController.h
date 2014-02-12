@@ -109,7 +109,7 @@ class SkeletonController {
 		std::vector<Node*> ik_chain;
 		bool transforming_skeleton;
 		bool delete_skel;
-		Axis rotate_axis;
+		Skeleton::Axis rotate_axis;
 		bool show_joint_axis;
 		bool manual_mark_up;
 		float rotate_scale_factor;

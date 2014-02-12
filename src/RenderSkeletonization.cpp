@@ -217,8 +217,8 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 		const cv::Mat& cvImg = skeleton->get_2D_bin_frame(i, disp_frame_no);
 
 		osg::ref_ptr<osg::Image> osgImage = new osg::Image;
-		osgImage->setImage(cvImg.cols, cvImg.rows, 3,
-		GL_LUMINANCE, GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg.data,
+		osgImage->setImage(cvImg.cols, cvImg.rows, 3, GL_LUMINANCE,
+				GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg.data,
 				osg::Image::NO_DELETE);
 
 		osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;
@@ -247,7 +247,7 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 	sphere_shape = new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(), radius));
 	sphere_shape->setColor(color);
 
-	sphere_geode->getOrCreateStateSet()->setMode( GL_LIGHTING,
+	sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
 			osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
 	sphere_geode->addDrawable(sphere_shape);
@@ -371,7 +371,7 @@ osg::Camera* RenderSkeletonization::create_hud_camera(double left, double right,
 		double bottom, double top) {
 	osg::ref_ptr<osg::Camera> camera = new osg::Camera;
 	camera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-	camera->setClearMask( GL_DEPTH_BUFFER_BIT);
+	camera->setClearMask(GL_DEPTH_BUFFER_BIT);
 	camera->setRenderOrder(osg::Camera::POST_RENDER);
 	camera->setAllowEventFocus(false);
 	camera->setProjectionMatrix(osg::Matrix::ortho2D(left, right, bottom, top));
@@ -471,7 +471,7 @@ void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
 }
 
 void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
-		std::vector<Skel_Leg> group) {
+		std::vector<Skeleton::Skel_Leg> group) {
 
 	osg::ref_ptr<osg::Geode> skel2d_geode;
 	if (skel_group_div->getNumChildren()) {
@@ -491,23 +491,23 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
 		box->setCenter(points->at(i));
-		switch (group.at(i))
-		case Front_Left: {
+		switch (group.at(i))case Skeleton::Front_Left: {
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0)); //Yellow
 			break;
-			case Front_Right:
-			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0)); //Pink
+			case Skeleton::Front_Right:
+			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0));//Pink
 			break;
-			case Back_Left:
-			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0)); //Light Green
+			case Skeleton::Back_Left:
+			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0));//Light Green
 			break;
-			case Back_Right:
-			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0)); // Blue/Green
+			case Skeleton::Back_Right:
+			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0));// Blue/Green
 			break;
-			case Not_Limbs:
+			case Skeleton::Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
+			break;
 		}
-			//This line makes sure that OSG knows that the geometry has been modified
+		//This line makes sure that OSG knows that the geometry has been modified
 		box_shape->dirtyBound();
 	}
 
@@ -516,25 +516,25 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
 		box_shape->setShape(
 				new osg::Box(points->at(j), 0.005f, 0.005f, 0.005f));
-		switch (group.at(j))
-		case Front_Left: {
+		switch (group.at(j))case Skeleton::Front_Left: {
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0));
 			break;
-			case Front_Right:
+			case Skeleton::Front_Right:
 			box_shape->setColor(osg::Vec4(1.0f, 0.5f, 0.5f, 1.0));
 			break;
-			case Back_Left:
+			case Skeleton::Back_Left:
 			box_shape->setColor(osg::Vec4(0.5f, 1.0f, 0.0f, 1.0));
 			break;
-			case Back_Right:
+			case Skeleton::Back_Right:
 			box_shape->setColor(osg::Vec4(0.0f, 0.5f, 0.5f, 1.0));
 			break;
-			case Not_Limbs:
+			case Skeleton::Not_Limbs:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 1.0f, 1.0));
+			break;
 		}
 
-			//This lines are used to tell OSG that the data in the Geometry is
-			//changing every frame, so it has to update it
+		//This lines are used to tell OSG that the data in the Geometry is
+		//changing every frame, so it has to update it
 		box_shape->setUseDisplayList(false);
 		box_shape->setUseVertexBufferObjects(true);
 		skel2d_geode->addDrawable(box_shape.get());
