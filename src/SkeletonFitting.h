@@ -12,6 +12,7 @@
 #include "Skeletonization3D.h"
 #include "IKSolver.h"
 #include "CloudClusterer.h"
+#include "BonePosFinder.h"
 
 #include "osg/Array"
 #include "opencv2/opencv.hpp"
@@ -48,31 +49,12 @@ private:
 
 	bool fit_head_and_back();
 
-	int find_head();
-
-	int find_paw(Skeleton::Skel_Leg leg, std::vector<int>& leg_points_index);
-
-	int find_leg_upper_end(Skeleton::Skel_Leg leg,
-			std::vector<int>& leg_points_index);
-
-	bool find_first_bone_end_pos(const osg::Vec3& root_pos,
-			osg::Vec3& head_pos);
-
-	bool find_second_bone_end_pos(const osg::Vec3& head_pos,
-			osg::Vec3& shoulder_pos);
-
-	bool find_vertebral_end_pos(const osg::Vec3& shoulder_pos,
-			osg::Vec3& vertebral_end_pos);
-
 	bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
 			const osg::Vec3& middle_position);
 
 	bool are_equal(const osg::Vec3& v0, const osg::Vec3& v1);
 
 	bool check_bone_index(int bone0, int bone1);
-
-	bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col, int &res_row,
-			int &res_col);
 
 	void refine_goal_position(osg::Vec3& end_position,
 			const osg::Vec3& base_position, float length);
@@ -120,6 +102,7 @@ private:
 	IKSolver ik_solver;
 	const camVecT& camera_arr;
 	CloudClusterer cloud_clusterer;
+	BonePosFinder bone_pos_finder;
 };
 
 #endif /* SKELETONFITTING_H_ */
