@@ -79,17 +79,19 @@ void SkeletonFitting::fit_skeleton_to_cloud() {
 	fit_root_position();
 	fit_head_and_back();
 
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Right)) {
-		fit_leg_position_simple(Skeleton::Front_Right);
+	int paw_index;
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Right,
+			paw_index)) {
+		fit_leg_position_simple(Skeleton::Front_Right, paw_index);
 	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Left)) {
-		fit_leg_position_simple(Skeleton::Front_Left);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Left, paw_index)) {
+		fit_leg_position_simple(Skeleton::Front_Left, paw_index);
 	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Right)) {
-		fit_leg_position_simple(Skeleton::Back_Right);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Right, paw_index)) {
+		fit_leg_position_simple(Skeleton::Back_Right, paw_index);
 	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Left)) {
-		fit_leg_position_simple(Skeleton::Back_Left);
+	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Left, paw_index)) {
+		fit_leg_position_simple(Skeleton::Back_Left, paw_index);
 	}
 }
 
@@ -164,6 +166,12 @@ bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg) {
 	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
 			leg_points_index);
 
+	return fit_leg_position_simple(leg, paw_index);
+}
+
+bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg,
+		int paw_index) {
+
 	if (paw_index == -1) {
 		return false;
 	}
@@ -177,11 +185,10 @@ bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg) {
 }
 
 bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(
-		Skeleton::Skel_Leg leg) {
+		Skeleton::Skel_Leg leg, int& paw_index) {
 	std::vector<int> leg_points_index;
 
-	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
-			leg_points_index);
+	paw_index = bone_pos_finder.find_paw(cloud, labels, leg, leg_points_index);
 
 	if (paw_index == -1) {
 		return false;

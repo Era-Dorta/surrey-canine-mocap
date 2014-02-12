@@ -45,7 +45,10 @@ private:
 
 	bool fit_leg_position_simple(Skeleton::Skel_Leg leg);
 
-	bool fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg);
+	bool fit_leg_position_simple(Skeleton::Skel_Leg leg, int paw_index);
+
+	bool fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg,
+			int& paw_index);
 
 	bool fit_head_and_back();
 
