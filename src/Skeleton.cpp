@@ -74,14 +74,8 @@ void Skeleton::rotate_two_bones_keep_end_pos(unsigned int index, float angle) {
 	Node* first_bone = nodelist.at(prev_index);
 	Node* second_bone = nodelist.at(index);
 
-	//TODO Axes calculation could be done only once and saved for next
-	//bone rotations
-	//Calculate the transformation from the beginning of the first bone
-	//to the end of the second bone
-	osg::Matrix m = osg::Matrix::translate(second_bone->length)
-			* osg::Matrix::rotate(second_bone->quat_arr.at(header.currentframe))
-			* osg::Matrix::translate(second_bone->offset)
-			* osg::Matrix::rotate(first_bone->quat_arr.at(header.currentframe));
+	osg::Matrix m;
+	second_bone->get_parent_to_bone_end_matrix(header.currentframe, m);
 
 	//Calculate the end position relative to the first bone
 	osg::Vec3 dir_vec = osg::Vec3() * m;
@@ -94,6 +88,49 @@ void Skeleton::rotate_two_bones_keep_end_pos(unsigned int index, float angle) {
 
 	//Rotate first bone along the previous vector
 	first_bone->quat_arr.at(header.currentframe) *= new_rot;
+	return;
+}
+
+void Skeleton::rotate_two_bones_keep_end_pos_aim(unsigned int index,
+		float angle) {
+	unsigned int prev_index = index - 1;
+
+	if (prev_index < 0) {
+		return;
+	}
+
+	Node* first_bone = nodelist.at(prev_index);
+	Node* second_bone = nodelist.at(index);
+
+	osg::Matrix m;
+
+	//TODO Axes calculation could be done only once and saved for next
+	//bone rotations
+	second_bone->get_parent_to_bone_end_matrix(header.currentframe, m);
+
+	//Calculate the end position relative to the first bone
+	osg::Vec3 dir_vec = osg::Vec3() * m;
+
+	dir_vec.normalize();
+
+	//The rotation that maintains the end position is along the
+	//calculated vector
+	osg::Quat new_rot(angle, dir_vec);
+
+	//Rotate first bone along the previous vector
+	first_bone->quat_arr.at(header.currentframe) *= new_rot;
+
+	//The rotation vector has to be in child coordinate system
+	osg::Vec3 new_vec = dir_vec * osg::Matrix::inverse(m);
+
+	//Rotate all children in the opposite direction so they remain
+	//in the same position
+	new_rot = osg::Quat(-angle, new_vec);
+	for (unsigned int i = 0; i < second_bone->get_num_children(); i++) {
+		second_bone->children.at(i)->quat_arr.at(header.currentframe) *=
+				new_rot;
+	}
+
 	return;
 }
 

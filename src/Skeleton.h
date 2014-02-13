@@ -36,6 +36,7 @@ public:
 	void change_bone_length_all_frames(unsigned int index,
 			const osg::Vec3& translation);
 	void rotate_two_bones_keep_end_pos(unsigned int index, float angle);
+	void rotate_two_bones_keep_end_pos_aim(unsigned int index, float angle);
 	void toggle_color(int index);
 
 	unsigned int get_num_bones();

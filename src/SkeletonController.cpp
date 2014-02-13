@@ -301,7 +301,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 									<< endl;
 						}
 					} else {
-						skeleton->rotate_two_bones_keep_end_pos(
+						skeleton->rotate_two_bones_keep_end_pos_aim(
 								selected_point_index, swivel_angle);
 					}
 				}

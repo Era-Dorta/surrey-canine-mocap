@@ -55,6 +55,8 @@ public:
 
 	void get_global_matrix(int frame_num, osg::Matrix& trans);
 
+	void get_parent_to_bone_end_matrix(int frame_num, osg::Matrix& m);
+
 	//TODO Right now we use quaternions but it might be a good optimisation
 	//to have all the matrices precomputed once there are not going to be
 	//more changes

@@ -110,6 +110,22 @@ void Node::get_global_matrix(int frame_num, osg::Matrix& trans) {
 	calculate_world_matrix(this, trans, frame_num);
 }
 
+void Node::get_parent_to_bone_end_matrix(int frame_num, osg::Matrix& m) {
+
+	m.makeIdentity();
+
+	if (parent == NULL) {
+		return;
+	}
+
+	//Calculate the transformation from the parent
+	//to the end of this bone end position
+	m = osg::Matrix::translate(length)
+			* osg::Matrix::rotate(quat_arr.at(frame_num))
+			* osg::Matrix::translate(parent->length)
+			* osg::Matrix::rotate(parent->quat_arr.at(frame_num));
+}
+
 void Node::calculate_world_matrix(Node* node, osg::Matrix& trans,
 		int frame_num) {
 	trans.makeIdentity();
