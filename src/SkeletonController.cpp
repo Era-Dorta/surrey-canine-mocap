@@ -96,8 +96,10 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 			skeletonized3D->get_merged_3d_projection(current_frame),
 			skel_fitter.getLabels());
 
-	//skel_renderer.display_sphere(skel_fitter.get_paw(Front_Right), 0);
-	//skel_renderer.display_sphere(skel_fitter.get_paw(Front_Left), 1);
+	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Front_Right), 0);
+	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Front_Left), 1);
+	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Back_Right), 2);
+	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Back_Left), 3);
 
 	if (skeleton->isSkelLoaded()) {
 		skel_fitter.fit_skeleton_to_cloud();
