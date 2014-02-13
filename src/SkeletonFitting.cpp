@@ -289,12 +289,25 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 		return false;
 	}
 
+	float max_y = skeleton->get_node(leg)->get_end_bone_global_pos(
+			current_frame).y();
+	float min_y =
+			skeleton->get_node(leg - 1)->get_global_pos(current_frame).y();
+	float half_y = skeleton->get_node(leg - 1)->get_end_bone_global_pos(
+			current_frame).y();
+	max_y = max_y - (max_y - half_y) * 0.5;
+	min_y = min_y + (half_y - min_y) * 0.5;
+
+	std::vector<int> reduced_leg_points_index;
+	reduce_points_with_height(max_y, min_y, leg_points_index,
+			reduced_leg_points_index);
+
 	bool distance_improved;
 	bool change_sign = true;
 	float current_angle = 0.0;
 	float increment = 0.01;
 	float current_distance = calculate_sum_distance2_to_cloud(leg - 1,
-			leg_points_index);
+			reduced_leg_points_index);
 	do {
 		distance_improved = false;
 		current_angle += increment;
@@ -304,7 +317,7 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 		//We only care if the bones are closer or not, so we do not
 		//bother to calculate the actual distance
 		float new_distance = calculate_sum_distance2_to_cloud(leg - 1,
-				leg_points_index);
+				reduced_leg_points_index);
 
 		if (new_distance < current_distance) {
 			distance_improved = true;
@@ -440,4 +453,17 @@ float SkeletonFitting::calculate_sum_distance2_to_cloud(int index,
 		distance += (bone_end_pos - cloud->at(*i)).length2();
 	}
 	return distance;
+}
+
+void SkeletonFitting::reduce_points_with_height(float max_y, float min_y,
+		const std::vector<int>& leg_points_index,
+		std::vector<int>& new_leg_points_index) {
+	new_leg_points_index.clear();
+
+	std::vector<int>::const_iterator i = leg_points_index.begin();
+	for (; i != leg_points_index.end(); ++i) {
+		if (cloud->at(*i).y() < max_y && cloud->at(*i).y() > min_y) {
+			new_leg_points_index.push_back(*i);
+		}
+	}
 }

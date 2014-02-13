@@ -58,8 +58,8 @@ private:
 	bool fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg,
 			int& paw_index, std::vector<int>& leg_points_index);
 
-	bool fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,const int& paw_index,
-			const std::vector<int>& leg_points_index);
+	bool fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
+			const int& paw_index, const std::vector<int>& leg_points_index);
 
 	bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
 			const osg::Vec3& middle_position);
@@ -69,6 +69,10 @@ private:
 
 	float calculate_sum_distance2_to_cloud(int index,
 			const std::vector<int>& leg_points_index);
+
+	void reduce_points_with_height(float max_y, float min_y,
+			const std::vector<int>& leg_points_index,
+			std::vector<int>& new_leg_points_index);
 
 	//Needed to use std::sort with comp_y
 	struct sortstruct {
