@@ -172,14 +172,19 @@ bool SkeletonFitting::fit_leg_position_complete(Skeleton::Skel_Leg leg) {
 	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
 			leg_points_index);
 
+	//Try the fitting methods from the most accurate to the least
 	fit_succes = fit_leg_position_mid_pos_in_top_leg(leg, paw_index,
 			leg_points_index);
+
+	if (!fit_succes) {
+		fit_succes = fit_leg_position_half_way(leg, paw_index);
+	}
 
 	if (!fit_succes) {
 		fit_succes = fit_leg_position_simple(leg, paw_index, leg_points_index);
 	}
 	if (fit_succes) {
-		fix_leg_second_lower_joint(leg, paw_index, leg_points_index);
+		fix_leg_second_lower_joint(leg, leg_points_index);
 	}
 	return fit_succes;
 }
@@ -282,12 +287,42 @@ bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(
 	return fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
 }
 
-bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
-		const int& paw_index, const std::vector<int>& leg_points_index) {
+bool SkeletonFitting::fit_leg_position_half_way(Skeleton::Skel_Leg leg,
+		int paw_index) {
 
 	if (paw_index == -1) {
 		return false;
 	}
+	int prev_bone_index = 0;
+
+	switch (leg) {
+	case Skeleton::Front_Right:
+	case Skeleton::Front_Left:
+		prev_bone_index = 1;
+		break;
+	case Skeleton::Back_Right:
+	case Skeleton::Back_Left:
+		prev_bone_index = 10;
+		break;
+	case Skeleton::Not_Limbs:
+		cout << "Call to fit leg with Not_limbs" << endl;
+		return false;
+	}
+
+	Node* n_bone = skeleton->get_node(prev_bone_index);
+	osg::Vec3 prev_bone_position = n_bone->get_end_bone_global_pos(
+			current_frame);
+
+	//Put the "shoulder" two bones halfway from the previous bones
+	//and the paw
+	osg::Vec3 mid_position = (cloud->at(paw_index) + prev_bone_position) * 0.5;
+
+	return fit_leg_pos_impl(leg, mid_position, cloud->at(paw_index));
+
+}
+
+bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
+		const std::vector<int>& leg_points_index) {
 
 	float max_y = skeleton->get_node(leg)->get_end_bone_global_pos(
 			current_frame).y();
