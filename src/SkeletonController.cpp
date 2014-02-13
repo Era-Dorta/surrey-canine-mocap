@@ -272,31 +272,37 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 				break;
 			case INV_KIN:
 				if (!change_all_frames) {
-					//move_axis.set(0.0, 0.0, 0.15);
-					//osg::Matrix m;
-					//skel_fitter.calculate_bone_world_matrix_origin(m,
-					//		ik_chain.front());
-					//move_axis = move_axis * m;
+					if (!only_root) {
+						//move_axis.set(0.0, 0.0, 0.15);
+						//osg::Matrix m;
+						//skel_fitter.calculate_bone_world_matrix_origin(m,
+						//		ik_chain.front());
+						//move_axis = move_axis * m;
 
-					bool exit_flag = ik_solver.solve_chain(
-							make_float3(move_axis._v));
+						bool exit_flag = ik_solver.solve_chain(
+								make_float3(move_axis._v));
 
-					//With one bone the goal position is not going
-					//to be reachable but we take the result anyway
-					if (ik_chain.size() == 1) {
-						exit_flag = true;
-					}
+						//With one bone the goal position is not going
+						//to be reachable but we take the result anyway
+						if (ik_chain.size() == 1) {
+							exit_flag = true;
+						}
 
-					if (exit_flag) {
-						for (unsigned int i = 0; i < ik_chain.size(); i++) {
-							float4 new_rot;
-							ik_solver.get_rotation_joint(i, new_rot);
-							ik_chain.at(i)->quat_arr.at(current_frame).set(
-									new_rot.x, new_rot.y, new_rot.z, new_rot.w);
+						if (exit_flag) {
+							for (unsigned int i = 0; i < ik_chain.size(); i++) {
+								float4 new_rot;
+								ik_solver.get_rotation_joint(i, new_rot);
+								ik_chain.at(i)->quat_arr.at(current_frame).set(
+										new_rot.x, new_rot.y, new_rot.z,
+										new_rot.w);
+							}
+						} else {
+							cout << "IKSolver cannot put chain goal position"
+									<< endl;
 						}
 					} else {
-						cout << "IKSolver cannot put chain goal position"
-								<< endl;
+						skeleton->rotate_two_bones_keep_end_pos(
+								selected_point_index, swivel_angle);
 					}
 				}
 				break;
@@ -508,17 +514,10 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 			mouse_vec = mouse_vec * m;
 
 		} else {
-			mouse_vec =
-					skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
-							current_frame);
-			osg::Matrix m;
-			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.front());
-			mouse_vec = mouse_vec * m;
-
 			if (last_mouse_pos_y - y > 0) {
-				swivel_angle += 0.01;
+				swivel_angle = 0.02;
 			} else {
-				swivel_angle -= 0.01;
+				swivel_angle = -0.02;
 			}
 		}
 		break;

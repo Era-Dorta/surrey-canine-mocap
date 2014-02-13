@@ -14,14 +14,14 @@ Skeleton::Skeleton() :
 Skeleton::~Skeleton() {
 }
 
-void Skeleton::rotate_joint(unsigned int index, osg::Vec3& angle) {
+void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
 	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
 			header.euler->at(1), angle[2], header.euler->at(2));
 	nodelist[index]->quat_arr.at(header.currentframe) =
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
 }
 
-void Skeleton::rotate_root_all_frames(osg::Vec3& angle) {
+void Skeleton::rotate_root_all_frames(const osg::Vec3& angle) {
 	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
 			header.euler->at(1), angle[2], header.euler->at(2));
 	std::vector<osg::Quat>::iterator i;
@@ -30,15 +30,16 @@ void Skeleton::rotate_root_all_frames(osg::Vec3& angle) {
 	}
 }
 
-void Skeleton::translate_root(osg::Vec3& translation) {
+void Skeleton::translate_root(const osg::Vec3& translation) {
 	root->froset->at(header.currentframe) += translation;
 }
 
-void Skeleton::translate_root_all_frames(osg::Vec3& translation) {
+void Skeleton::translate_root_all_frames(const osg::Vec3& translation) {
 	root->offset += translation;
 }
 
-void Skeleton::change_bone_length(unsigned int index, osg::Vec3& translation) {
+void Skeleton::change_bone_length(unsigned int index,
+		const osg::Vec3& translation) {
 	nodelist[index]->length += translation;
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
 		nodelist[index]->children[i]->froset->at(header.currentframe) +=
@@ -47,7 +48,7 @@ void Skeleton::change_bone_length(unsigned int index, osg::Vec3& translation) {
 }
 
 void Skeleton::change_bone_length_all_frames(unsigned int index,
-		osg::Vec3& translation) {
+		const osg::Vec3& translation) {
 
 	//Bone length is easier along global axes
 	osg::Quat inv_glob_rot = nodelist[index]->get_inv_global_rot(
@@ -57,10 +58,43 @@ void Skeleton::change_bone_length_all_frames(unsigned int index,
 	//Inverse bone rotation and translate in world coordinates
 	nodelist[index]->length += trans_local_coor;
 
-	//Translate also all brothers to maintain skeleton conectivity
+	//Translate also all brothers to maintain skeleton connectivity
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
 		nodelist[index]->children[i]->offset += trans_local_coor;
 	}
+}
+
+void Skeleton::rotate_two_bones_keep_end_pos(unsigned int index, float angle) {
+	unsigned int prev_index = index - 1;
+
+	if (prev_index < 0) {
+		return;
+	}
+
+	Node* first_bone = nodelist.at(prev_index);
+	Node* second_bone = nodelist.at(index);
+
+	//TODO Axes calculation could be done only once and saved for next
+	//bone rotations
+	//Calculate the transformation from the beginning of the first bone
+	//to the end of the second bone
+	osg::Matrix m = osg::Matrix::translate(second_bone->length)
+			* osg::Matrix::rotate(second_bone->quat_arr.at(header.currentframe))
+			* osg::Matrix::translate(second_bone->offset)
+			* osg::Matrix::rotate(first_bone->quat_arr.at(header.currentframe));
+
+	//Calculate the end position relative to the first bone
+	osg::Vec3 dir_vec = osg::Vec3() * m;
+
+	dir_vec.normalize();
+
+	//The rotation that maintains the end position is along the
+	//calculated vector
+	osg::Quat new_rot(angle, dir_vec);
+
+	//Rotate first bone along the previous vector
+	first_bone->quat_arr.at(header.currentframe) *= new_rot;
+	return;
 }
 
 void Skeleton::save_to_file(std::string file_name) {
