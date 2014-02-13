@@ -78,21 +78,10 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 void SkeletonFitting::fit_skeleton_to_cloud() {
 	fit_root_position();
 	fit_head_and_back();
-
-	int paw_index;
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Right,
-			paw_index)) {
-		fit_leg_position_simple(Skeleton::Front_Right, paw_index);
-	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Front_Left, paw_index)) {
-		fit_leg_position_simple(Skeleton::Front_Left, paw_index);
-	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Right, paw_index)) {
-		fit_leg_position_simple(Skeleton::Back_Right, paw_index);
-	}
-	if (!fit_leg_position_mid_pos_in_top_leg(Skeleton::Back_Left, paw_index)) {
-		fit_leg_position_simple(Skeleton::Back_Left, paw_index);
-	}
+	fit_leg_position_complete(Skeleton::Front_Right);
+	fit_leg_position_complete(Skeleton::Front_Left);
+	fit_leg_position_complete(Skeleton::Back_Right);
+	fit_leg_position_complete(Skeleton::Back_Left);
 }
 
 bool SkeletonFitting::fit_root_position() {
@@ -106,114 +95,6 @@ bool SkeletonFitting::fit_root_position() {
 	skeleton->translate_root(translation);
 	return true;
 
-}
-
-bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
-	std::vector<int> leg_points_index, joint_positions_index;
-
-	//TODO find_paw initialises leg_points_index, should have another method
-	//to do this
-
-	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
-			leg_points_index);
-
-	if (paw_index == -1) {
-		return false;
-	}
-
-	//TODO Not sure if this should be here or in some other place
-	//Since we are going to go up the leg better to have all the points ordered
-	//along the y axis
-	sortstruct s(this, CloudClusterer::comp_y);
-	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
-
-	int bones_per_leg = 4;
-	joint_positions_index.resize(bones_per_leg);
-
-	joint_positions_index[0] = paw_index;
-	//TODO Much more efficient to have the iterate backwards
-
-	std::vector<int>::iterator j = leg_points_index.begin();
-	for (int i = 1; i < bones_per_leg; i++) {
-
-		float bone_length = skeleton->get_node(leg - i + 1)->length.length();
-		//Set bone length to paw_index
-		//Go up bone length
-		bool not_bone_length = true;
-
-		while (not_bone_length && j != leg_points_index.end()) {
-
-			float current_length = (cloud->at(joint_positions_index[i - 1])
-					- cloud->at(*j)).length();
-			if (current_length >= bone_length) {
-				not_bone_length = false;
-			} else {
-				j++;
-			}
-		}
-
-		joint_positions_index[i] = *j;
-	}
-
-	return fit_leg_pos_impl(leg, cloud->at(joint_positions_index[2]),
-			cloud->at(joint_positions_index[0]));
-
-}
-
-bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg) {
-	std::vector<int> leg_points_index;
-
-	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
-			leg_points_index);
-
-	return fit_leg_position_simple(leg, paw_index);
-}
-
-bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg,
-		int paw_index) {
-
-	if (paw_index == -1) {
-		return false;
-	}
-
-	//Solve leg
-	if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
-		cout << "Failed leg fitting simple" << endl;
-		return false;
-	}
-	return true;
-}
-
-bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(
-		Skeleton::Skel_Leg leg, int& paw_index) {
-	std::vector<int> leg_points_index;
-
-	paw_index = bone_pos_finder.find_paw(cloud, labels, leg, leg_points_index);
-
-	if (paw_index == -1) {
-		return false;
-	}
-	//Put the "shoulder" at the highest point of the cloud for this leg
-	int mid_position = bone_pos_finder.find_leg_upper_end(cloud, labels, leg,
-			leg_points_index);
-
-	return fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
-}
-
-bool SkeletonFitting::fit_leg_pos_impl(Skeleton::Skel_Leg leg,
-		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
-	//Solve for "shoulder" two bones
-	if (!solve_chain(leg - 3, leg - 2, middle_position)) {
-		cout << "Failed leg fitting the first pair" << endl;
-		return false;
-	}
-
-	//Solve for paw and parent bone
-	if (!solve_chain(leg - 1, leg, paw_position)) {
-		cout << "Failed leg fitting the second pair" << endl;
-		return false;
-	}
-	return true;
 }
 
 bool SkeletonFitting::fit_head_and_back() {
@@ -279,6 +160,185 @@ bool SkeletonFitting::fit_head_and_back() {
 
 	if (!solve_chain(10, 10, vertebral_back_pos)) {
 		cout << "Vertebral back fit fail" << endl;
+		return false;
+	}
+	return true;
+}
+
+bool SkeletonFitting::fit_leg_position_complete(Skeleton::Skel_Leg leg) {
+	std::vector<int> leg_points_index;
+	bool fit_succes;
+
+	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
+			leg_points_index);
+
+	fit_succes = fit_leg_position_mid_pos_in_top_leg(leg, paw_index,
+			leg_points_index);
+
+	if (!fit_succes) {
+		fit_succes = fit_leg_position_simple(leg, paw_index, leg_points_index);
+	}
+	if (fit_succes) {
+		fix_leg_second_lower_joint(leg, paw_index, leg_points_index);
+	}
+	return fit_succes;
+}
+
+bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
+	std::vector<int> leg_points_index, joint_positions_index;
+
+	//TODO find_paw initialises leg_points_index, should have another method
+	//to do this
+
+	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
+			leg_points_index);
+
+	if (paw_index == -1) {
+		return false;
+	}
+
+	//TODO Not sure if this should be here or in some other place
+	//Since we are going to go up the leg better to have all the points ordered
+	//along the y axis
+	sortstruct s(this, CloudClusterer::comp_y);
+	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
+
+	int bones_per_leg = 4;
+	joint_positions_index.resize(bones_per_leg);
+
+	joint_positions_index[0] = paw_index;
+	//TODO Much more efficient to have the iterate backwards
+
+	std::vector<int>::iterator j = leg_points_index.begin();
+	for (int i = 1; i < bones_per_leg; i++) {
+
+		float bone_length = skeleton->get_node(leg - i + 1)->length.length();
+		//Set bone length to paw_index
+		//Go up bone length
+		bool not_bone_length = true;
+
+		while (not_bone_length && j != leg_points_index.end()) {
+
+			float current_length = (cloud->at(joint_positions_index[i - 1])
+					- cloud->at(*j)).length();
+			if (current_length >= bone_length) {
+				not_bone_length = false;
+			} else {
+				j++;
+			}
+		}
+
+		joint_positions_index[i] = *j;
+	}
+
+	return fit_leg_pos_impl(leg, cloud->at(joint_positions_index[2]),
+			cloud->at(joint_positions_index[0]));
+
+}
+
+bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg) {
+	std::vector<int> leg_points_index;
+
+	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
+			leg_points_index);
+
+	return fit_leg_position_simple(leg, paw_index, leg_points_index);
+}
+
+bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg,
+		int paw_index, std::vector<int>& leg_points_index) {
+
+	if (paw_index == -1) {
+		return false;
+	}
+
+	//Solve leg
+	if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
+		cout << "Failed leg fitting simple" << endl;
+		return false;
+	}
+	return true;
+}
+
+bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(
+		Skeleton::Skel_Leg leg, int& paw_index) {
+
+	std::vector<int> leg_points_index;
+	return fit_leg_position_mid_pos_in_top_leg(leg, paw_index, leg_points_index);
+}
+
+bool SkeletonFitting::fit_leg_position_mid_pos_in_top_leg(
+		Skeleton::Skel_Leg leg, int& paw_index,
+		std::vector<int>& leg_points_index) {
+	paw_index = bone_pos_finder.find_paw(cloud, labels, leg, leg_points_index);
+
+	if (paw_index == -1) {
+		return false;
+	}
+	//Put the "shoulder" at the highest point of the cloud for this leg
+	int mid_position = bone_pos_finder.find_leg_upper_end(cloud, labels, leg,
+			leg_points_index);
+
+	return fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
+}
+
+bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
+		const int& paw_index, const std::vector<int>& leg_points_index) {
+
+	if (paw_index == -1) {
+		return false;
+	}
+
+	bool distance_improved;
+	bool change_sign = true;
+	float current_angle = 0.0;
+	float increment = 0.01;
+	float current_distance = calculate_sum_distance2_to_cloud(leg - 1,
+			leg_points_index);
+	do {
+		distance_improved = false;
+		current_angle += increment;
+
+		skeleton->rotate_two_bones_keep_end_pos(leg, increment);
+
+		//We only care if the bones are closer or not, so we do not
+		//bother to calculate the actual distance
+		float new_distance = calculate_sum_distance2_to_cloud(leg - 1,
+				leg_points_index);
+
+		if (new_distance < current_distance) {
+			distance_improved = true;
+			current_distance = new_distance;
+		} else {
+
+			//Try the other way
+			if (change_sign) {
+				skeleton->rotate_two_bones_keep_end_pos(leg, -current_angle);
+				current_angle = 0.0;
+				increment = -increment;
+				distance_improved = true;
+				change_sign = false;
+
+			} else {
+				//This rotation was not for the best, so undo it
+				skeleton->rotate_two_bones_keep_end_pos(leg, -increment);
+			}
+		}
+	} while (distance_improved);
+	return true;
+}
+
+bool SkeletonFitting::fit_leg_pos_impl(Skeleton::Skel_Leg leg,
+		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
+	//Solve for "shoulder" two bones
+	if (!solve_chain(leg - 3, leg - 2, middle_position)) {
+		cout << "Failed leg fitting the first pair" << endl;
+		return false;
+	}
+
+	//Solve for paw and parent bone
+	if (!solve_chain(leg - 1, leg, paw_position)) {
+		cout << "Failed leg fitting the second pair" << endl;
 		return false;
 	}
 	return true;
@@ -366,4 +426,18 @@ void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
 	osg::Vec3 pos_direction = (end_position - base_position);
 	pos_direction.normalize();
 	end_position = base_position + pos_direction * length;
+}
+
+float SkeletonFitting::calculate_sum_distance2_to_cloud(int index,
+		const std::vector<int>& leg_points_index) {
+	float distance = 0.0;
+	osg::Vec3 bone_end_pos = skeleton->get_node(index)->get_end_bone_global_pos(
+			current_frame);
+	//This methods returns the square of the sum of the distances of the
+	//leg points to the bone end position
+	std::vector<int>::const_iterator i = leg_points_index.begin();
+	for (; i != leg_points_index.end(); ++i) {
+		distance += (bone_end_pos - cloud->at(*i)).length2();
+	}
+	return distance;
 }
