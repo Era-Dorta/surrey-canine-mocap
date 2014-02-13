@@ -326,10 +326,10 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 
 	float max_y = skeleton->get_node(leg)->get_end_bone_global_pos(
 			current_frame).y();
+	float half_y = skeleton->get_node(leg)->get_global_pos(current_frame).y();
 	float min_y =
 			skeleton->get_node(leg - 1)->get_global_pos(current_frame).y();
-	float half_y = skeleton->get_node(leg - 1)->get_end_bone_global_pos(
-			current_frame).y();
+
 	max_y = max_y - (max_y - half_y) * 0.5;
 	min_y = min_y + (half_y - min_y) * 0.5;
 
@@ -337,42 +337,32 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 	reduce_points_with_height(max_y, min_y, leg_points_index,
 			reduced_leg_points_index);
 
-	bool distance_improved;
-	bool change_sign = true;
 	float current_angle = 0.0;
+	float best_angle = 0.0;
 	float increment = 0.01;
-	float current_distance = calculate_sum_distance2_to_cloud(leg - 1,
+	float current_distance = calculate_sum_distance2_to_cloud(leg,
 			reduced_leg_points_index);
-	do {
-		distance_improved = false;
+
+	//Rotate the joint 360 degrees to find the best rotation
+	while (current_angle <= osg::PI) {
 		current_angle += increment;
 
 		skeleton->rotate_two_bones_keep_end_pos(leg, increment);
 
 		//We only care if the bones are closer or not, so we do not
 		//bother to calculate the actual distance
-		float new_distance = calculate_sum_distance2_to_cloud(leg - 1,
+		float new_distance = calculate_sum_distance2_to_cloud(leg,
 				reduced_leg_points_index);
 
 		if (new_distance < current_distance) {
-			distance_improved = true;
 			current_distance = new_distance;
-		} else {
-
-			//Try the other way
-			if (change_sign) {
-				skeleton->rotate_two_bones_keep_end_pos(leg, -current_angle);
-				current_angle = 0.0;
-				increment = -increment;
-				distance_improved = true;
-				change_sign = false;
-
-			} else {
-				//This rotation was not for the best, so undo it
-				skeleton->rotate_two_bones_keep_end_pos(leg, -increment);
-			}
+			best_angle = current_angle;
 		}
-	} while (distance_improved);
+	}
+
+	//Since the bones have been rotated current_angle, to put them at
+	//best angle, they have to be rotated best - current
+	skeleton->rotate_two_bones_keep_end_pos(leg, best_angle - current_angle);
 	return true;
 }
 
@@ -479,7 +469,7 @@ void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
 float SkeletonFitting::calculate_sum_distance2_to_cloud(int index,
 		const std::vector<int>& leg_points_index) {
 	float distance = 0.0;
-	osg::Vec3 bone_end_pos = skeleton->get_node(index)->get_end_bone_global_pos(
+	osg::Vec3 bone_end_pos = skeleton->get_node(index)->get_global_pos(
 			current_frame);
 	//This methods returns the square of the sum of the distances of the
 	//leg points to the bone end position
