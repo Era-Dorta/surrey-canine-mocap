@@ -307,9 +307,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	//since this are axis that mark rotation, so we do not want them to rotate
 	//as the bones rotates but to be fixed
 	if (with_axis) {
-		add_axis_to_node(pAddToThisGroup,
-				osg::Matrix::translate(
-						node->offset + node->froset->at(current_frame)));
+		add_axis_to_node(skel_transform, osg::Matrix::translate(node->length));
 	}
 
 	//Continue recursively for the other nodes
@@ -460,13 +458,13 @@ void RenderSkeletonization::toggle_3d_merged_cloud() {
 
 void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
 		const osg::Matrix& trans) {
-	if (!axes.valid()) {
-		axes = MiscUtils::create_axes();
+	if (!axis.valid()) {
+		axis = MiscUtils::create_axis();
 	}
 	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
 	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7) * trans;
 	half_size->setMatrix(half_sz);
-	half_size->addChild(axes);
+	half_size->addChild(axis);
 	to_add->addChild(half_size.get());
 }
 

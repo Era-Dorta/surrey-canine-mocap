@@ -28,7 +28,7 @@ void MocapData::reset_state() {
 	header.noofframes = 0;
 	header.datarate = 0;
 
-	//This matrix indicates the axes in which the rotations take place
+	//This matrix indicates the axis in which the rotations take place
 	//files are going to be read and written as x, y, z rotations
 	header.euler->at(0).set(1, 0, 0);
 	header.euler->at(1).set(0, 1, 0);

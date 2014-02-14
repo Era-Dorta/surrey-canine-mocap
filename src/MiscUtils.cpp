@@ -105,7 +105,7 @@ osgText::Text* MiscUtils::create_text(const osg::Vec3& pos,
 	return text.release();
 }
 
-osg::Geode* MiscUtils::create_axes(float over_length) {
+osg::Geode* MiscUtils::create_axis(float over_length) {
 	osg::ref_ptr<osg::ShapeDrawable> a_x = new osg::ShapeDrawable;
 	a_x->setShape(
 			new osg::Box(osg::Vec3(0.05, 0, 0), 0.1 * over_length, 0.005,
@@ -124,11 +124,11 @@ osg::Geode* MiscUtils::create_axes(float over_length) {
 					0.1 * over_length));
 	a_z->setColor(osg::Vec4(0, 0, 1, 1));
 
-	osg::ref_ptr<osg::Geode> axes = new osg::Geode;
-	axes->addDrawable(a_x.get());
-	axes->addDrawable(a_y.get());
-	axes->addDrawable(a_z.get());
-	return axes.release();
+	osg::ref_ptr<osg::Geode> axis = new osg::Geode;
+	axis->addDrawable(a_x.get());
+	axis->addDrawable(a_y.get());
+	axis->addDrawable(a_z.get());
+	return axis.release();
 }
 
 osg::Group* MiscUtils::create_3D_label(std::string text, osg::Vec3 offset,

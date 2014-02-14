@@ -79,11 +79,11 @@ private:
 
 	float get_mean(osg::ref_ptr<osg::Vec3Array> points,
 			std::vector<Skeleton::Skel_Leg>& labels,
-			Skeleton::Skel_Leg use_label, Skeleton::Axis axes);
+			Skeleton::Skel_Leg use_label, Skeleton::Axis axis);
 
 	float get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 			std::vector<Skeleton::Skel_Leg>& labels,
-			Skeleton::Skel_Leg use_label, Skeleton::Axis axes);
+			Skeleton::Skel_Leg use_label, Skeleton::Axis axis);
 
 	//Needed to use std::sort with comp_y
 	struct sortstruct {

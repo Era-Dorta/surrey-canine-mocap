@@ -133,7 +133,7 @@ void IKSolver::get_rotation_joint(unsigned int index, float4& rot) {
 	//Since we have three joints in the chain for every one the user added
 	index = 3 * index;
 
-	//Rotations angles in every axes
+	//Rotations angles in every axis
 	double angle_z = solved_joints(index);
 	double angle_y = solved_joints(index + 1);
 	double angle_x = solved_joints(index + 2);
@@ -141,7 +141,7 @@ void IKSolver::get_rotation_joint(unsigned int index, float4& rot) {
 	//If there is an extra offset segment then do not use it for the angles
 	index += extra_segment;
 
-	//The total rotation is the product of all the single axes rotations
+	//The total rotation is the product of all the single axis rotations
 	(chain.getSegment(index).getJoint().pose(angle_z).M
 			* chain.getSegment(index + 1).getJoint().pose(angle_y).M
 			* chain.getSegment(index + 2).getJoint().pose(angle_x).M).GetQuaternion(
@@ -156,7 +156,7 @@ void IKSolver::get_rotation_joint(unsigned int index, float3& rot) {
 	//Since we have three joints in the chain for every one the user added
 	index = 3 * index;
 
-	//Rotations angles in every axes
+	//Rotations angles in every axis
 	rot.x = solved_joints(index);
 	rot.y = solved_joints(index + 1);
 	rot.z = solved_joints(index + 2);

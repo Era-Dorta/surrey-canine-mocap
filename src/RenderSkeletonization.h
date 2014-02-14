@@ -129,7 +129,7 @@ private:
 
 	osg::ref_ptr<osgText::Text> skel_edit_text;
 
-	osg::ref_ptr<osg::Geode> axes;
+	osg::ref_ptr<osg::Geode> axis;
 
 	bool display_merged;
 	bool skel_created;

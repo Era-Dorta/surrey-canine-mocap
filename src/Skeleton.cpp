@@ -50,7 +50,7 @@ void Skeleton::change_bone_length(unsigned int index,
 void Skeleton::change_bone_length_all_frames(unsigned int index,
 		const osg::Vec3& translation) {
 
-	//Bone length is easier along global axes
+	//Bone length is easier along global axis
 	osg::Quat inv_glob_rot = nodelist[index]->get_inv_global_rot(
 			header.currentframe);
 

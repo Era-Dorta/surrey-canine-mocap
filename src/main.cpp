@@ -19,8 +19,8 @@ int main(int argc, char** argv) {
 //	SurfelModel sm;
 //
 //	osg::ref_ptr<osg::Group> root = new osg::Group;
-//	osg::ref_ptr<osg::Geode> axes = create_axes();
-//	root->addChild(axes.get());
+//	osg::ref_ptr<osg::Geode> axis = create_axis();
+//	root->addChild(axis.get());
 //
 //	root->addChild(sm.surfel_geode);
 //

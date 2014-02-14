@@ -57,7 +57,7 @@ osg::Matrix3 cvmat3x3_2_osgmat(cv::Mat input);
 osgText::Text* create_text(const osg::Vec3& pos, const std::string& content,
 		float size);
 
-osg::Geode* create_axes(float over_length = 1);
+osg::Geode* create_axis(float over_length = 1);
 
 osg::Group* create_3D_label(std::string text, osg::Vec3 offset,
 		osg::Vec3 colour);

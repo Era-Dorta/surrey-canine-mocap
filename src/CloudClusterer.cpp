@@ -366,7 +366,7 @@ void CloudClusterer::recalculate_right_left_division_front_view(
 		cv::Mat projected_img(img_rows, img_cols, CV_8U, cv::Scalar(0));
 		osg::Vec3 head_pos_trans = -cloud->at(head_index);
 
-		//We want a front view so in world axes is vectors
+		//We want a front view so in world axis is vectors
 		//x = [0,0,1]
 		//y = [0,1,0]
 		//z = [-1,0,0]
@@ -457,7 +457,7 @@ void CloudClusterer::recalculate_right_left_division_back_view(
 		cv::Mat projected_img(img_rows, img_cols, CV_8U, cv::Scalar(0));
 		osg::Vec3 head_pos_trans = -cloud->at(head_index);
 
-		//We want a front view so in world axes is vectors
+		//We want a front view so in world axis is vectors
 		//x = [0,0,1]
 		//y = [0,1,0]
 		//z = [-1,0,0]
@@ -751,13 +751,13 @@ bool CloudClusterer::knn_division_done(std::vector<Skeleton::Skel_Leg>& labels,
 
 float CloudClusterer::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 		std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg use_label,
-		Skeleton::Axis axes) {
+		Skeleton::Axis axis) {
 
 	float mean = 0.0;
 	int num_valid = 0;
 	for (unsigned int i = 0; i < points->size(); i++) {
 		if (labels[i] == use_label) {
-			mean += points->at(i)[axes];
+			mean += points->at(i)[axis];
 			num_valid++;
 		}
 	}
@@ -773,7 +773,7 @@ float CloudClusterer::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 //points, it does not solve the problems of the simple division either
 float CloudClusterer::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 		std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg use_label,
-		Skeleton::Axis axes) {
+		Skeleton::Axis axis) {
 
 	osg::ref_ptr<osg::Vec3Array> points_copy = new osg::Vec3Array;
 	for (unsigned int i = 0; i < points->size(); i++) {
@@ -784,7 +784,7 @@ float CloudClusterer::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 
 	if (points_copy->size() >= 2) {
 		bool (*comp_funct)(const osg::Vec3&, const osg::Vec3&);
-		switch (axes) {
+		switch (axis) {
 		case Skeleton::X:
 			comp_funct = CloudClusterer::comp_x;
 			break;
@@ -797,7 +797,7 @@ float CloudClusterer::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 		}
 		sortstruct s(this, comp_funct);
 		std::sort(points_copy->begin(), points_copy->end(), s);
-		return (points_copy->front()[axes] + points_copy->back()[axes]) * 0.5;
+		return (points_copy->front()[axis] + points_copy->back()[axis]) * 0.5;
 	} else {
 		return 0.0;
 	}

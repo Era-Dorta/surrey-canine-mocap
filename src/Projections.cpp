@@ -13,7 +13,7 @@ float3x3 Projections::invK;
 float3 Projections::get_2d_projection(osg::Vec3 point, const osg::Vec3& trans,
 		float& z_val) {
 
-	//We want a front view so in world axes is vectors
+	//We want a front view so in world axis is vectors
 	//x = [0,0,1]
 	//y = [0,1,0]
 	//z = [-1,0,0]

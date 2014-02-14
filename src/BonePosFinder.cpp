@@ -237,7 +237,7 @@ void BonePosFinder::get_y_z_front_projection(
 		const osg::ref_ptr<osg::Vec3Array>& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
 		cv::Mat& out_img, const osg::Vec3& trans) {
-	//We want a front view so in world axes is vectors
+	//We want a front view so in world axis is vectors
 	//x = [0,0,1]
 	//y = [0,1,0]
 	//z = [-1,0,0]

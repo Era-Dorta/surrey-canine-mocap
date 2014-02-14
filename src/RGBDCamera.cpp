@@ -241,13 +241,13 @@ void RGBD_Camera::create_cam_geom() {
 	cam_pose_xform->addChild(cam_icon);
 	//-----------------
 
-	//Camera axes:
+	//Camera axis:
 	//-----------------
-	osg::ref_ptr<osg::Geode> cam_axes = MiscUtils::create_axes();
+	osg::ref_ptr<osg::Geode> cam_axis = MiscUtils::create_axis();
 	osg::ref_ptr<osg::MatrixTransform> half_size(new osg::MatrixTransform);
 	osg::Matrix half_sz = osg::Matrix::scale(0.7, 0.7, 0.7);
 	half_size->setMatrix(half_sz);
-	half_size->addChild(cam_axes);
+	half_size->addChild(cam_axis);
 	cam_pose_xform->addChild(half_size);
 	//-----------------
 

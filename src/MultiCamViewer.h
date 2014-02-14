@@ -82,9 +82,9 @@ private:
 	float frame_period_s;
 	double last_frame_tick_count;
 	bool manual_origin_set;
-	bool manual_axes_rot;
+	bool manual_axis_rot;
 	bool show_bounding_box;
-	int current_axe_manual;
+	int current_axis_manual;
 	int last_cam_index;
 
 	std::string _dataset_path;

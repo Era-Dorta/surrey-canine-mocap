@@ -35,18 +35,18 @@ public:
 	//Used to move the world coordinates to a given point
 	void recalibrate_center_all_cameras();
 
-	//Used to change axes orientation using given points
+	//Used to change axis orientation using given points
 	//It assumes points are not perfectly align and correct its giving
-	//preference to X axes
-	void recalibrate_axes_camera();
+	//preference to X axis
+	void recalibrate_axis_camera();
 
 	// X, Y, Z (0, 1, 2)
-	void manual_axes_rotation(float angle, int axes);
+	void manual_axis_rotation(float angle, int axis);
 
 	//Save calibration for a single camera, useful for fixing missalignments
 	//between the cameras, though it does not give good results
 	//Better do not use it
-	void save_camera_axes_calibration(int cam_index, std::string path);
+	void save_camera_axis_calibration(int cam_index, std::string path);
 
 	//Save calibration for all the cameras
 	void save_all_cameras(std::string path);
