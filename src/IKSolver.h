@@ -36,6 +36,8 @@ public:
 
 	bool solve_chain(const float3& goal_position);
 
+	bool solve_chain(const float3& goal_position, const float4& rot);
+
 	unsigned int get_num_joints() const;
 
 	//rot is a quaternion
@@ -44,11 +46,12 @@ public:
 	//rot is an ZYX euler rotation
 	void get_rotation_joint(unsigned int index, float3& rot);
 private:
-	bool solve_chain_1_segment(const float3& goal_position, float accuracy =
-			1e-4, unsigned int max_ite = 100);
+	bool solve_chain_1_segment(const float3& goal_position, const float4& rot,
+			float accuracy = 1e-4, unsigned int max_ite = 100);
 
 	bool solve_chain_several_segments(const float3& goal_position,
-			float accuracy = 1e-4, unsigned int max_ite = 500);
+			const float4& rot, float accuracy = 1e-4,
+			unsigned int max_ite = 500);
 
 	KDL::Chain chain;
 	KDL::JntArray solved_joints;

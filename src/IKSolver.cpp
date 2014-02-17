@@ -113,14 +113,17 @@ bool IKSolver::solve_chain(const float3& goal_position) {
 		need_extra_joints = false;
 	}
 
+	return solve_chain(goal_position, make_float4(0, 0, 0, 1));
+}
+
+bool IKSolver::solve_chain(const float3& goal_position, const float4& rot) {
 	if (num_joints == 1) {
 		//If we are solving for only one 3DOF joint this method is better
-		return solve_chain_1_segment(goal_position);
+		return solve_chain_1_segment(goal_position, rot);
 	} else {
 		//For larger chains this method is better
-		return solve_chain_several_segments(goal_position);
+		return solve_chain_several_segments(goal_position, rot);
 	}
-
 }
 
 unsigned int IKSolver::get_num_joints() const {
@@ -163,7 +166,7 @@ void IKSolver::get_rotation_joint(unsigned int index, float3& rot) {
 }
 
 bool IKSolver::solve_chain_1_segment(const float3& goal_position,
-		float accuracy, unsigned int max_ite) {
+		const float4& rot, float accuracy, unsigned int max_ite) {
 
 	//Forward position solver
 	KDL::ChainFkSolverPos_recursive fksolver1(chain);
@@ -178,7 +181,7 @@ bool IKSolver::solve_chain_1_segment(const float3& goal_position,
 
 	//Destination frame has identity matrix for rotation
 	// and goal position for translation
-	KDL::Frame f_goal(
+	KDL::Frame f_goal(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
 			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
 
 	//Call the solver
@@ -205,7 +208,7 @@ bool IKSolver::solve_chain_1_segment(const float3& goal_position,
 }
 
 bool IKSolver::solve_chain_several_segments(const float3& goal_position,
-		float accuracy, unsigned int max_ite) {
+		const float4& rot, float accuracy, unsigned int max_ite) {
 
 	//According to source code this solver is faster and more accurate,
 	//but it is not on the  documentation.
@@ -218,7 +221,7 @@ bool IKSolver::solve_chain_several_segments(const float3& goal_position,
 
 	//Destination frame has identity matrix for rotation
 	// and goal position for translation
-	KDL::Frame f_goal(
+	KDL::Frame f_goal(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
 			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
 
 	//Call the solver
