@@ -86,12 +86,7 @@ void IKSolver::add_bone_to_chain(const float3& length, const float3& rot) {
 	chain.addSegment(segmenty);
 	chain.addSegment(segmentx);
 
-	int index = current_joints.rows();
-	current_joints.resize(current_joints.rows() + 3);
-
-	current_joints(index) = rot.x;
-	current_joints(index + 1) = rot.y;
-	current_joints(index + 2) = rot.z;
+	add_angles_to_array(rot);
 
 	//For our user only one segment was added
 	num_joints++;
@@ -109,7 +104,8 @@ bool IKSolver::solve_chain(const float3& goal_position) {
 		chain.addSegment(extra_joint2);
 		chain.addSegment(extra_joint3);
 
-		current_joints.resize(current_joints.rows() + 3);
+		add_angles_to_array(make_float3(0, 0, 0));
+
 		need_extra_joints = false;
 	}
 
@@ -234,4 +230,21 @@ bool IKSolver::solve_chain_several_segments(const float3& goal_position,
 	}
 
 	return exit_flag >= 0;
+}
+void IKSolver::add_angles_to_array(const float3& angles) {
+	//For some reason JntArray.resize() deletes all the previous
+	//content even it the new size is bigger, so we have to do a
+	//manual resize and copy values
+	int index = current_joints.rows();
+	KDL::JntArray aux_arr(current_joints.rows() + 3);
+
+	for (unsigned int i = 0; i < current_joints.rows(); i++) {
+		aux_arr(i) = current_joints(i);
+	}
+
+	aux_arr(index) = angles.x;
+	aux_arr(index + 1) = angles.y;
+	aux_arr(index + 2) = angles.z;
+
+	current_joints = aux_arr;
 }

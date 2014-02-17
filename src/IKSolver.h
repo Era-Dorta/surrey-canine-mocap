@@ -53,6 +53,8 @@ private:
 			const float4& rot, float accuracy = 1e-4,
 			unsigned int max_ite = 500);
 
+	void add_angles_to_array(const float3& angles);
+
 	KDL::Chain chain;
 	KDL::JntArray solved_joints;
 	KDL::JntArray current_joints;
