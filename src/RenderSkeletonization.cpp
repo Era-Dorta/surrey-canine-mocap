@@ -307,7 +307,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	//since this are axis that mark rotation, so we do not want them to rotate
 	//as the bones rotates but to be fixed
 	if (with_axis) {
-		add_axis_to_node(skel_transform, osg::Matrix::translate(node->length));
+		add_axis_to_node(skel_transform, osg::Matrix::identity());
 	}
 
 	//Continue recursively for the other nodes

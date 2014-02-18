@@ -20,6 +20,9 @@ Node::Node() {
 	freuler = new osg::Vec3Array;
 	DOFs = 0;
 	noofchannels = 0;
+	r_x_axis.set(1, 0, 0);
+	r_y_axis.set(0, 1, 0);
+	r_z_axis.set(0, 0, 1);
 	osg_node = NULL;
 	n_joint_color = joint_color;
 	n_bone_color = bone_color;
@@ -68,6 +71,18 @@ void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 	for (unsigned int i = 0; i < freuler->size(); i++) {
 		quat_arr.at(i) = osg::Quat(freuler->at(i)[2], axis->at(2),
 				freuler->at(i)[1], axis->at(1), freuler->at(i)[0], axis->at(0));
+	}
+}
+
+void Node::calculate_rotation_axis() {
+	//If length is only in x axis then standard axis are already calculated
+	if (length.y() != 0.0 || length.z() != 0.0) {
+		osg::Quat q;
+		//Calculate rotation from x_axis to length position
+		q.makeRotate(osg::Vec3(1, 0, 0), length);
+		r_x_axis = q * r_x_axis;
+		r_y_axis = q * r_y_axis;
+		r_z_axis = q * r_z_axis;
 	}
 }
 

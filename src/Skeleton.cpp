@@ -16,10 +16,13 @@ Skeleton::~Skeleton() {
 
 void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
 
-	osg::Vec3 x_axis(1, 0, 0), y_axis(0, 1, 0), z_axis(0, 0, 1);
-	x_axis = nodelist[index]->quat_arr.at(header.currentframe) * x_axis;
-	y_axis = nodelist[index]->quat_arr.at(header.currentframe) * y_axis;
-	z_axis = nodelist[index]->quat_arr.at(header.currentframe) * z_axis;
+	osg::Vec3 x_axis, y_axis, z_axis;
+	x_axis = nodelist[index]->quat_arr.at(header.currentframe)
+			* nodelist[index]->r_x_axis;
+	y_axis = nodelist[index]->quat_arr.at(header.currentframe)
+			* nodelist[index]->r_y_axis;
+	z_axis = nodelist[index]->quat_arr.at(header.currentframe)
+			* nodelist[index]->r_z_axis;
 
 	osg::Quat new_rot(angle[0], x_axis, angle[1], y_axis, angle[2], z_axis);
 
@@ -158,6 +161,7 @@ void Skeleton::load_from_file(std::string file_name) {
 	NodeIte i;
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
 		(*i)->calculate_quats(header.euler);
+		(*i)->calculate_rotation_axis();
 	}
 	skel_loaded = true;
 }
