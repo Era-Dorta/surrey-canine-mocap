@@ -15,17 +15,27 @@ Skeleton::~Skeleton() {
 }
 
 void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
-	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
-			header.euler->at(1), angle[2], header.euler->at(2));
+
+	osg::Vec3 x_axis(1, 0, 0), y_axis(0, 1, 0), z_axis(0, 0, 1);
+	x_axis = nodelist[index]->quat_arr.at(header.currentframe) * x_axis;
+	y_axis = nodelist[index]->quat_arr.at(header.currentframe) * y_axis;
+	z_axis = nodelist[index]->quat_arr.at(header.currentframe) * z_axis;
+
+	osg::Quat new_rot(angle[0], x_axis, angle[1], y_axis, angle[2], z_axis);
+
 	nodelist[index]->quat_arr.at(header.currentframe) =
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
 }
 
 void Skeleton::rotate_root_all_frames(const osg::Vec3& angle) {
-	osg::Quat new_rot(angle[0], header.euler->at(0), angle[1],
-			header.euler->at(1), angle[2], header.euler->at(2));
 	std::vector<osg::Quat>::iterator i;
 	for (i = root->quat_arr.begin(); i != root->quat_arr.end(); ++i) {
+		osg::Vec3 x_axis(1, 0, 0), y_axis(0, 1, 0), z_axis(0, 0, 1);
+		x_axis = (*i) * x_axis;
+		y_axis = (*i) * y_axis;
+		z_axis = (*i) * z_axis;
+
+		osg::Quat new_rot(angle[0], x_axis, angle[1], y_axis, angle[2], z_axis);
 		(*i) = (*i) * new_rot;
 	}
 }
