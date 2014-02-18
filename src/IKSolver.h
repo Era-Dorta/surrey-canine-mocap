@@ -46,12 +46,19 @@ public:
 	//rot is an ZYX euler rotation
 	void get_rotation_joint(unsigned int index, float3& rot);
 private:
-	bool solve_chain_1_segment(const float3& goal_position, const float4& rot,
-			float accuracy = 1e-4, unsigned int max_ite = 100);
+	bool solve_chain_1_segment(const KDL::Frame& goal, float accuracy = 1e-4,
+			unsigned int max_ite = 100);
 
-	bool solve_chain_several_segments(const float3& goal_position,
-			const float4& rot, float accuracy = 1e-4,
-			unsigned int max_ite = 500);
+	bool solve_chain_several_segments(const KDL::Frame& goal, float accuracy =
+			1e-4, unsigned int max_ite = 500);
+
+	void transform_rotation_to_kdl(KDL::Rotation& rot);
+
+	void transform_rotation_to_osg(KDL::Rotation& rot);
+
+	void vec_to_kdl(KDL::Vector& vec);
+
+	void vec_to_osg(KDL::Vector& vec);
 
 	void add_angles_to_array(const float3& angles);
 
@@ -62,6 +69,8 @@ private:
 	bool need_extra_joints;
 	int extra_segment;
 	Eigen::Matrix<double, 6, 1> L;
+	KDL::Rotation to_kdl;
+	KDL::Rotation to_osg;
 };
 
 #endif /* IKSOLVER_H_ */

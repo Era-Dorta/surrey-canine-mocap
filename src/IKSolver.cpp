@@ -7,7 +7,8 @@
 
 #include "IKSolver.h"
 
-IKSolver::IKSolver() {
+IKSolver::IKSolver() :
+		to_kdl(1, 0, 0, 0, 0, -1, 0, 1, 0), to_osg(1, 0, 0, 0, 0, 1, 0, -1, 0) {
 	num_joints = 0;
 	need_extra_joints = true;
 	extra_segment = 0;
@@ -61,9 +62,14 @@ void IKSolver::start_chain(const float4x4& matrix) {
 void IKSolver::add_bone_to_chain(const float3& length, const float4& rot) {
 
 	double x, y, z;
-	KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w).GetEulerZYX(x, y, z);
+	KDL::Rotation bone_rot = KDL::Rotation::Quaternion(rot.x, rot.y, rot.z,
+			rot.w);
 
-	add_bone_to_chain(length, make_float3(x, y, z));
+	transform_rotation_to_kdl(bone_rot);
+
+	bone_rot.GetEulerZYX(z, y, x);
+
+	add_bone_to_chain(length, make_float3(z, y, x));
 }
 
 void IKSolver::add_bone_to_chain(const float3& length, const float3& rot) {
@@ -77,14 +83,14 @@ void IKSolver::add_bone_to_chain(const float3& length, const float3& rot) {
 
 	//In KDL a 3DOF joint are two 1DOF joints without length
 	//and a third one with with the bone length
-	KDL::Segment segmentz(kdl_jointz);
+	KDL::Segment segmentx(kdl_jointx);
 	KDL::Segment segmenty(kdl_jointy);
-	KDL::Segment segmentx(kdl_jointx, KDL::Frame(kdl_length));
+	KDL::Segment segmentz(kdl_jointz, KDL::Frame(kdl_length));
 
 	//Put the segment in the chain
-	chain.addSegment(segmentz);
-	chain.addSegment(segmenty);
 	chain.addSegment(segmentx);
+	chain.addSegment(segmenty);
+	chain.addSegment(segmentz);
 
 	add_angles_to_array(rot);
 
@@ -113,12 +119,21 @@ bool IKSolver::solve_chain(const float3& goal_position) {
 }
 
 bool IKSolver::solve_chain(const float3& goal_position, const float4& rot) {
+	KDL::Rotation rot_kdl = KDL::Rotation::Quaternion(rot.x, rot.y, rot.z,
+			rot.w);
+	transform_rotation_to_kdl(rot_kdl);
+
+	KDL::Vector goal_kdl(goal_position.x, goal_position.y, goal_position.z);
+	vec_to_kdl(goal_kdl);
+
+	KDL::Frame goal(rot_kdl, goal_kdl);
+
 	if (num_joints == 1) {
 		//If we are solving for only one 3DOF joint this method is better
-		return solve_chain_1_segment(goal_position, rot);
+		return solve_chain_1_segment(goal);
 	} else {
 		//For larger chains this method is better
-		return solve_chain_several_segments(goal_position, rot);
+		return solve_chain_several_segments(goal);
 	}
 }
 
@@ -141,10 +156,14 @@ void IKSolver::get_rotation_joint(unsigned int index, float4& rot) {
 	index += extra_segment;
 
 	//The total rotation is the product of all the single axis rotations
-	(chain.getSegment(index).getJoint().pose(angle_z).M
+	KDL::Rotation quat_rot = (chain.getSegment(index).getJoint().pose(angle_z).M
 			* chain.getSegment(index + 1).getJoint().pose(angle_y).M
-			* chain.getSegment(index + 2).getJoint().pose(angle_x).M).GetQuaternion(
-			x, y, z, w);
+			* chain.getSegment(index + 2).getJoint().pose(angle_x).M);
+
+	transform_rotation_to_osg(quat_rot);
+
+	quat_rot.GetQuaternion(x, y, z, w);
+
 	rot.x = x;
 	rot.y = y;
 	rot.z = z;
@@ -161,8 +180,8 @@ void IKSolver::get_rotation_joint(unsigned int index, float3& rot) {
 	rot.z = solved_joints(index + 2);
 }
 
-bool IKSolver::solve_chain_1_segment(const float3& goal_position,
-		const float4& rot, float accuracy, unsigned int max_ite) {
+bool IKSolver::solve_chain_1_segment(const KDL::Frame& goal, float accuracy,
+		unsigned int max_ite) {
 
 	//Forward position solver
 	KDL::ChainFkSolverPos_recursive fksolver1(chain);
@@ -177,11 +196,11 @@ bool IKSolver::solve_chain_1_segment(const float3& goal_position,
 
 	//Destination frame has identity matrix for rotation
 	// and goal position for translation
-	KDL::Frame f_goal(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
-			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
+	//KDL::Frame f_goal(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
+	//		KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
 
 	//Call the solver
-	int exit_flag = iksolver1.CartToJnt(current_joints, f_goal, solved_joints);
+	int exit_flag = iksolver1.CartToJnt(current_joints, goal, solved_joints);
 
 	//On success update the current position, this helps the solver to converge
 	//faster and produces fluid movements when moving bones manually
@@ -193,7 +212,7 @@ bool IKSolver::solve_chain_1_segment(const float3& goal_position,
 
 		//Manually check how far is from the result, because sometimes
 		//the iksolver will return -3 but the chain will be in a valid position
-		if (KDL::Equal(solved_pos.p, f_goal.p, accuracy)) {
+		if (KDL::Equal(solved_pos.p, goal.p, accuracy)) {
 			current_joints = solved_joints;
 			return true;
 		} else {
@@ -203,8 +222,8 @@ bool IKSolver::solve_chain_1_segment(const float3& goal_position,
 	return exit_flag >= 0;
 }
 
-bool IKSolver::solve_chain_several_segments(const float3& goal_position,
-		const float4& rot, float accuracy, unsigned int max_ite) {
+bool IKSolver::solve_chain_several_segments(const KDL::Frame& goal,
+		float accuracy, unsigned int max_ite) {
 
 	//According to source code this solver is faster and more accurate,
 	//but it is not on the  documentation.
@@ -215,13 +234,8 @@ bool IKSolver::solve_chain_several_segments(const float3& goal_position,
 	//Creation of result array
 	solved_joints = KDL::JntArray(chain.getNrOfJoints());
 
-	//Destination frame has identity matrix for rotation
-	// and goal position for translation
-	KDL::Frame f_goal(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
-			KDL::Vector(goal_position.x, goal_position.y, goal_position.z));
-
 	//Call the solver
-	int exit_flag = iksolver1.CartToJnt(current_joints, f_goal, solved_joints);
+	int exit_flag = iksolver1.CartToJnt(current_joints, goal, solved_joints);
 
 	//On success update the current position, this helps the solver to converge
 	//faster and produces fluid movements when moving bones manually
@@ -231,9 +245,28 @@ bool IKSolver::solve_chain_several_segments(const float3& goal_position,
 
 	return exit_flag >= 0;
 }
+
+void IKSolver::transform_rotation_to_kdl(KDL::Rotation& rot) {
+	//Get the rotation in KDL coordinate system
+	rot = to_kdl * rot * to_osg;
+}
+
+void IKSolver::transform_rotation_to_osg(KDL::Rotation& rot) {
+	//Get the rotation in osg coordinate system
+	rot = to_osg * rot * to_kdl;
+}
+
+void IKSolver::vec_to_kdl(KDL::Vector& vec) {
+	vec = to_kdl * vec;
+}
+
+void IKSolver::vec_to_osg(KDL::Vector& vec) {
+	vec = to_osg * vec;
+}
+
 void IKSolver::add_angles_to_array(const float3& angles) {
 	//For some reason JntArray.resize() deletes all the previous
-	//content even it the new size is bigger, so we have to do a
+	//content even if new size is bigger, so we have to do a
 	//manual resize and copy values
 	int index = current_joints.rows();
 	KDL::JntArray aux_arr(current_joints.rows() + 3);

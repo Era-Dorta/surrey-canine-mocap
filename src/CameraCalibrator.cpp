@@ -73,6 +73,7 @@ void CameraCalibrator::manual_axis_rotation(float angle, int axis) {
 		break;
 	default:
 		axis_vector.set(0.0, 0.0, 1.0);
+		break;
 	}
 	calib_matrix = osg::Matrix::rotate(angle, axis_vector);
 
