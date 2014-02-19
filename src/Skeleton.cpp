@@ -7,6 +7,11 @@
 
 #include "Skeleton.h"
 #include "DebugUtil.h"
+
+const osg::Vec3 Skeleton::x_axis(1, 0, 0);
+const osg::Vec3 Skeleton::y_axis(0, 1, 0);
+const osg::Vec3 Skeleton::z_axis(0, 0, 1);
+
 Skeleton::Skeleton() :
 		skel_loaded(false) {
 }
@@ -16,15 +21,16 @@ Skeleton::~Skeleton() {
 
 void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
 
-	osg::Vec3 x_axis, y_axis, z_axis;
-	x_axis = nodelist[index]->quat_arr.at(header.currentframe)
-			* nodelist[index]->r_x_axis;
-	y_axis = nodelist[index]->quat_arr.at(header.currentframe)
-			* nodelist[index]->r_y_axis;
-	z_axis = nodelist[index]->quat_arr.at(header.currentframe)
-			* nodelist[index]->r_z_axis;
+	//Rotation axis are x, y, z but after the current rotation
+	osg::Vec3 c_x_axis = nodelist[index]->quat_arr.at(header.currentframe)
+			* x_axis;
+	osg::Vec3 c_y_axis = nodelist[index]->quat_arr.at(header.currentframe)
+			* y_axis;
+	osg::Vec3 c_z_axis = nodelist[index]->quat_arr.at(header.currentframe)
+			* z_axis;
 
-	osg::Quat new_rot(angle[0], x_axis, angle[1], y_axis, angle[2], z_axis);
+	osg::Quat new_rot(angle[0], c_x_axis, angle[1], c_y_axis, angle[2],
+			c_z_axis);
 
 	nodelist[index]->quat_arr.at(header.currentframe) =
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
@@ -158,9 +164,15 @@ void Skeleton::save_to_file(std::string file_name) {
 void Skeleton::load_from_file(std::string file_name) {
 	reset_state();
 	import_data(file_name.c_str());
+
+	//Instead of euler angles use quaternions for the rotations
 	NodeIte i;
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
 		(*i)->calculate_quats(header.euler);
+	}
+
+	//Make all bones length to be align with the x axis
+	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
 		(*i)->calculate_rotation_axis();
 	}
 	skel_loaded = true;

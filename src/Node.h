@@ -41,6 +41,7 @@ public:
 
 	void calculate_quats(osg::ref_ptr<osg::Vec3Array> axis);
 
+	//For this method to work first call calculate_quats
 	void calculate_rotation_axis();
 
 	void update_euler_angles();
@@ -72,9 +73,6 @@ public:
 	std::vector<osg::Quat> quat_arr;
 	BYTE DOFs; // Used to determine what DOFs the segment has
 	int noofchannels;
-	osg::Vec3 r_x_axis;
-	osg::Vec3 r_y_axis;
-	osg::Vec3 r_z_axis;
 
 	//MatrixTransform that is drawing this node, this is high coupling
 	//but it simplifies the code

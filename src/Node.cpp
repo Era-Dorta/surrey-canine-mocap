@@ -20,9 +20,6 @@ Node::Node() {
 	freuler = new osg::Vec3Array;
 	DOFs = 0;
 	noofchannels = 0;
-	r_x_axis.set(1, 0, 0);
-	r_y_axis.set(0, 1, 0);
-	r_z_axis.set(0, 0, 1);
 	osg_node = NULL;
 	n_joint_color = joint_color;
 	n_bone_color = bone_color;
@@ -75,14 +72,41 @@ void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 }
 
 void Node::calculate_rotation_axis() {
-	//If length is only in x axis then standard axis are already calculated
+	//If length is only in x axis then bone is already x align with
+	//its length
 	if (length.y() != 0.0 || length.z() != 0.0) {
 		osg::Quat q;
-		//Calculate rotation from x_axis to length position
-		q.makeRotate(osg::Vec3(1, 0, 0), length);
-		r_x_axis = q * r_x_axis;
-		r_y_axis = q * r_y_axis;
-		r_z_axis = q * r_z_axis;
+		//Calculate rotation from to x_axis to length
+		q.makeRotate(osg::Vec3(length.length(), 0, 0), length);
+
+		//new length is only an x value
+		length.set(length.length(), 0, 0);
+
+		//Update all rotations
+		for (unsigned int i = 0; i < quat_arr.size(); i++) {
+			//New rotation is rotation from x to previous and then old rotation
+			osg::Quat new_r_after = quat_arr.at(i).inverse() * q
+					* quat_arr.at(i);
+			quat_arr.at(i) = quat_arr.at(i) * new_r_after;
+			osg::Quat parent_prev_rot = quat_arr.at(i);
+
+			//Update children rotations
+			std::vector<NodePtr>::iterator j = children.begin();
+			for (; j != children.end(); ++j) {
+				(*j)->offset = length;
+
+				//To calculate new child rotation lets call previous parent Q1,
+				// added parent rotation Q1', and index 2 for child rotations
+				// So we have to solve the next equation
+				// Q2 * Q1 = Q2 * Q2' * Q1 *Q1'
+				// Isolating Q2'
+				// Q2' = Q1 * inv(Q1') * inv(Q1)
+				osg::Quat correction_rot = parent_prev_rot
+						* new_r_after.inverse() * parent_prev_rot.inverse();
+
+				(*j)->quat_arr.at(i) = (*j)->quat_arr.at(i) * correction_rot;
+			}
+		}
 	}
 }
 
