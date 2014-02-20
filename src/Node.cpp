@@ -133,8 +133,12 @@ void Node::set_y_rotation_perpendicular_to_next_bone() {
 		//Calculate the vector normal to this bone and its parent bone
 		osg::Vec3 normal_vec = parent_bone_dir ^ bone_dir;
 
+		//If the bone dir and parent dir are the same then use parent y axis
 		if (normal_vec == osg::Vec3(0, 0, 0)) {
-			return;
+			//TODO Sometimes the quaternion will be identity so
+			//nothing should be done, but the renderer will show some x axis
+			//rotation
+			normal_vec.set(0, 1, 0);
 		}
 
 		osg::Quat extra_rot;
