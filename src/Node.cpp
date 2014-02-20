@@ -71,7 +71,7 @@ void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 	}
 }
 
-void Node::calculate_rotation_axis() {
+void Node::set_x_rotation_along_bone_length() {
 	//If length is only in x axis then bone is already x align with
 	//its length
 	if (length.y() != 0.0 || length.z() != 0.0) {

@@ -42,7 +42,7 @@ public:
 	void calculate_quats(osg::ref_ptr<osg::Vec3Array> axis);
 
 	//For this method to work first call calculate_quats
-	void calculate_rotation_axis();
+	void set_x_rotation_along_bone_length();
 
 	void update_euler_angles();
 

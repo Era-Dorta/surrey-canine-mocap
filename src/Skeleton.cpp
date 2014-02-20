@@ -173,7 +173,7 @@ void Skeleton::load_from_file(std::string file_name) {
 
 	//Make all bones length to be align with the x axis
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
-		(*i)->calculate_rotation_axis();
+		(*i)->set_x_rotation_along_bone_length();
 	}
 	skel_loaded = true;
 }
