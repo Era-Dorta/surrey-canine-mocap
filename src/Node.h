@@ -44,6 +44,8 @@ public:
 	//For this method to work first call calculate_quats
 	void set_x_rotation_along_bone_length();
 
+	void set_y_rotation_perpendicular_to_next_bone();
+
 	void update_euler_angles();
 
 	void toggle_color();

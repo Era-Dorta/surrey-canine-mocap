@@ -175,6 +175,13 @@ void Skeleton::load_from_file(std::string file_name) {
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
 		(*i)->set_x_rotation_along_bone_length();
 	}
+
+	//Make all bones y axis to be align with normal between current and
+	//next bone plane
+	int j = 0;
+	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
+		(*i)->set_y_rotation_perpendicular_to_next_bone();
+	}
 	skel_loaded = true;
 }
 

@@ -5,6 +5,7 @@
  *      Author: m04701
  */
 #include "Node.h"
+#include "DebugUtil.h"
 
 const osg::Vec4 Node::joint_color(0.5f, 0.5f, 0.5f, 1.0); //Grey
 const osg::Vec4 Node::joint_second_color(1.0f, 1.0f, 1.0f, 1.0); //White
@@ -76,7 +77,7 @@ void Node::set_x_rotation_along_bone_length() {
 	//its length
 	if (length.y() != 0.0 || length.z() != 0.0) {
 		osg::Quat q;
-		//Calculate rotation from to x_axis to length
+		//Calculate rotation from to new length to previous length
 		q.makeRotate(osg::Vec3(length.length(), 0, 0), length);
 
 		//new length is only an x value
@@ -106,6 +107,53 @@ void Node::set_x_rotation_along_bone_length() {
 
 				(*j)->quat_arr.at(i) = (*j)->quat_arr.at(i) * correction_rot;
 			}
+		}
+	}
+}
+
+void Node::set_y_rotation_perpendicular_to_next_bone() {
+	if (parent == NULL) {
+		cout << "returning " << endl;
+		return;
+	}
+
+	for (unsigned int i = 0; i < quat_arr.size(); i++) {
+		osg::Quat prev_rot = quat_arr.at(i);
+		osg::Vec3 parent_bone_dir, bone_dir, current_y_axis;
+
+		//Since parent is already align its bone direction is the x axis
+		parent_bone_dir = osg::Vec3(1, 0, 0);
+
+		//Current node y axis is after calculated after its rotation
+		current_y_axis = quat_arr.at(i) * osg::Vec3(0, 1, 0);
+
+		//Current bone direction is also already align with x axis
+		bone_dir = quat_arr.at(i) * osg::Vec3(1, 0, 0);
+
+		//Calculate the vector normal to this bone and its parent bone
+		osg::Vec3 normal_vec = parent_bone_dir ^ bone_dir;
+
+		if (normal_vec == osg::Vec3(0, 0, 0)) {
+			return;
+		}
+
+		osg::Quat extra_rot;
+		//Created a rotation from current y axis location to the calculated
+		//normal vector
+		extra_rot.makeRotate(current_y_axis, normal_vec);
+
+		//Updated current rotation
+		quat_arr.at(i) = quat_arr.at(i) * extra_rot;
+
+		//Correct children rotations
+		std::vector<NodePtr>::iterator j = children.begin();
+		for (; j != children.end(); ++j) {
+			//See set_x_rotation_along_bone_length to understand why
+			//correction_rot is calculated like this
+			osg::Quat correction_rot = prev_rot * extra_rot.inverse()
+					* prev_rot.inverse();
+
+			(*j)->quat_arr.at(i) = (*j)->quat_arr.at(i) * correction_rot;
 		}
 	}
 }
