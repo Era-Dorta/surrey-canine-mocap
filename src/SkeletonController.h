@@ -75,6 +75,8 @@ private:
 
 	void fill_chain();
 
+	void update_bones_axis();
+
 	//Class that creates a skeleton from a given set of frames
 	boost::shared_ptr<Skeletonization3D> skeletonized3D;
 

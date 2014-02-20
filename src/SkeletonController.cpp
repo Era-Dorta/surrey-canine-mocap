@@ -73,6 +73,7 @@ void SkeletonController::reset_state() {
 	transforming_skeleton = false;
 	only_root = false;
 	swivel_angle = 0.0;
+	ik_chain.clear();
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -382,6 +383,7 @@ bool SkeletonController::handle_keyboard_events(
 					mod_state = ROTATE;
 					break;
 				}
+				update_bones_axis();
 				update_dynamics(current_frame);
 			}
 			break;
@@ -398,6 +400,7 @@ bool SkeletonController::handle_keyboard_events(
 					rotate_axis = Skeleton::X;
 					break;
 				}
+				update_bones_axis();
 				update_dynamics(current_frame);
 			}
 			break;
@@ -551,6 +554,7 @@ void SkeletonController::mix_skeleton_sizes() {
 }
 
 void SkeletonController::finish_bone_trans() {
+	update_bones_axis();
 	skeleton->toggle_color(selected_point_index);
 	reset_state();
 	skel_renderer.clean_text();
@@ -578,5 +582,14 @@ void SkeletonController::fill_chain() {
 		osg::Quat q = ik_chain.at(i)->quat_arr.at(current_frame);
 		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
 		ik_solver.add_bone_to_chain(offset, rot);
+	}
+}
+
+void SkeletonController::update_bones_axis() {
+	Node* node = skeleton->get_node(selected_point_index);
+	node->set_y_rotation_perpendicular_to_next_bone(current_frame);
+	for (unsigned int i = 0; i < ik_chain.size(); i++) {
+		ik_chain.at(i)->set_y_rotation_perpendicular_to_next_bone(
+				current_frame);
 	}
 }

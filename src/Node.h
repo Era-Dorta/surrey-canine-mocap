@@ -46,6 +46,8 @@ public:
 
 	void set_y_rotation_perpendicular_to_next_bone();
 
+	void set_y_rotation_perpendicular_to_next_bone(int n_frame);
+
 	void update_euler_angles();
 
 	void toggle_color();

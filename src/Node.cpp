@@ -5,7 +5,6 @@
  *      Author: m04701
  */
 #include "Node.h"
-#include "DebugUtil.h"
 
 const osg::Vec4 Node::joint_color(0.5f, 0.5f, 0.5f, 1.0); //Grey
 const osg::Vec4 Node::joint_second_color(1.0f, 1.0f, 1.0f, 1.0); //White
@@ -113,52 +112,60 @@ void Node::set_x_rotation_along_bone_length() {
 
 void Node::set_y_rotation_perpendicular_to_next_bone() {
 	if (parent == NULL) {
-		cout << "returning " << endl;
 		return;
 	}
 
 	for (unsigned int i = 0; i < quat_arr.size(); i++) {
-		osg::Quat prev_rot = quat_arr.at(i);
-		osg::Vec3 parent_bone_dir, bone_dir, current_y_axis;
+		set_y_rotation_perpendicular_to_next_bone(i);
+	}
+}
 
-		//Since parent is already align its bone direction is the x axis
-		parent_bone_dir = osg::Vec3(1, 0, 0);
+void Node::set_y_rotation_perpendicular_to_next_bone(int n_frame) {
+	if (parent == NULL) {
+		return;
+	}
 
-		//Current node y axis is after calculated after its rotation
-		current_y_axis = quat_arr.at(i) * osg::Vec3(0, 1, 0);
+	osg::Quat prev_rot = quat_arr.at(n_frame);
+	osg::Vec3 parent_bone_dir, bone_dir, current_y_axis;
 
-		//Current bone direction is also already align with x axis
-		bone_dir = quat_arr.at(i) * osg::Vec3(1, 0, 0);
+	//Since parent is already align its bone direction is the x axis
+	parent_bone_dir = osg::Vec3(1, 0, 0);
 
-		//Calculate the vector normal to this bone and its parent bone
-		osg::Vec3 normal_vec = parent_bone_dir ^ bone_dir;
+	//Current node y axis is after calculated after its rotation
+	current_y_axis = quat_arr.at(n_frame) * osg::Vec3(0, 1, 0);
 
-		//If the bone dir and parent dir are the same then use parent y axis
-		if (normal_vec == osg::Vec3(0, 0, 0)) {
-			//TODO Sometimes the quaternion will be identity so
-			//nothing should be done, but the renderer will show some x axis
-			//rotation
-			normal_vec.set(0, 1, 0);
-		}
+	//Current bone direction is also already align with x axis
+	bone_dir = quat_arr.at(n_frame) * osg::Vec3(1, 0, 0);
 
-		osg::Quat extra_rot;
-		//Created a rotation from current y axis location to the calculated
-		//normal vector
-		extra_rot.makeRotate(current_y_axis, normal_vec);
+	//Calculate the vector normal to this bone and its parent bone
+	osg::Vec3 normal_vec = parent_bone_dir ^ bone_dir;
 
-		//Updated current rotation
-		quat_arr.at(i) = quat_arr.at(i) * extra_rot;
+	//If the bone dir and parent dir are the same then use parent y axis
+	if (normal_vec == osg::Vec3(0, 0, 0)) {
+		//TODO Sometimes the quaternion will be identity so
+		//nothing should be done, but the renderer will show some x axis
+		//rotation
+		normal_vec.set(0, 1, 0);
+	}
 
-		//Correct children rotations
-		std::vector<NodePtr>::iterator j = children.begin();
-		for (; j != children.end(); ++j) {
-			//See set_x_rotation_along_bone_length to understand why
-			//correction_rot is calculated like this
-			osg::Quat correction_rot = prev_rot * extra_rot.inverse()
-					* prev_rot.inverse();
+	osg::Quat extra_rot;
+	//Created a rotation from current y axis location to the calculated
+	//normal vector
+	extra_rot.makeRotate(current_y_axis, normal_vec);
 
-			(*j)->quat_arr.at(i) = (*j)->quat_arr.at(i) * correction_rot;
-		}
+	//Updated current rotation
+	quat_arr.at(n_frame) = quat_arr.at(n_frame) * extra_rot;
+
+	//Correct children rotations
+	std::vector<NodePtr>::iterator j = children.begin();
+	for (; j != children.end(); ++j) {
+		//See set_x_rotation_along_bone_length to understand why
+		//correction_rot is calculated like this
+		osg::Quat correction_rot = prev_rot * extra_rot.inverse()
+				* prev_rot.inverse();
+
+		(*j)->quat_arr.at(n_frame) = (*j)->quat_arr.at(n_frame)
+				* correction_rot;
 	}
 }
 
