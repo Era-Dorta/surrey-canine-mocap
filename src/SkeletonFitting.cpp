@@ -14,6 +14,8 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 		camera_arr(camera_arr_) {
 	move_joint_max_dist = 0;
 	error_threshold = 0.005;
+	mean_z_front_all_frames = 0.0;
+	mean_z_back_all_frames = 0.0;
 	current_frame = -1;
 	skeleton = skeleton_;
 	skeletonizator = skeletonization3d;
@@ -82,6 +84,11 @@ void SkeletonFitting::fit_skeleton_to_cloud() {
 	fit_leg_position_complete(Skeleton::Front_Left);
 	fit_leg_position_complete(Skeleton::Back_Right);
 	fit_leg_position_complete(Skeleton::Back_Left);
+
+	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
+		skeleton->get_node(i)->set_y_rotation_perpendicular_to_next_bone(
+				current_frame);
+	}
 }
 
 bool SkeletonFitting::fit_root_position() {
