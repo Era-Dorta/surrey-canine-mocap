@@ -93,7 +93,11 @@ void Node::set_x_rotation_along_bone_length() {
 			//Update children rotations
 			std::vector<NodePtr>::iterator j = children.begin();
 			for (; j != children.end(); ++j) {
-				(*j)->offset = length;
+				//TODO Recalculate this in a way that does not break compatibility
+				//This line effectively removes any compatibility with skeletons
+				//that have gaps in them, but we don not care since our dog
+				//skeletons all the bones are connected
+				(*j)->offset.set((*j)->offset.length(), 0, 0);
 
 				//To calculate new child rotation lets call previous parent Q1,
 				// added parent rotation Q1', and index 2 for child rotations
