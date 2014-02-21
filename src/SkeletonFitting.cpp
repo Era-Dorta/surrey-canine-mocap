@@ -154,18 +154,15 @@ bool SkeletonFitting::fit_head_and_back() {
 
 	//Use inverse kinematics to fit bones into positions
 	if (!solve_chain(0, 0, head_pos)) {
-		cout << "Vertebral front fit fail" << endl;
 		return false;
 	}
 
 	//Use inverse kinematics to fit bones into positions
 	if (!solve_chain(1, 1, shoulder_pos)) {
-		cout << "Vertebral front fit fail" << endl;
 		return false;
 	}
 
 	if (!solve_chain(10, 10, vertebral_back_pos)) {
-		cout << "Vertebral back fit fail" << endl;
 		return false;
 	}
 	return true;
@@ -178,20 +175,26 @@ bool SkeletonFitting::fit_leg_position_complete(Skeleton::Skel_Leg leg) {
 	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
 			leg_points_index);
 
-	//Try the fitting methods from the most accurate to the least
-	fit_succes = fit_leg_position_mid_pos_in_top_leg(leg, paw_index,
-			leg_points_index);
+	//THe fitting method is sensible to initialisation, then it is better
+	//to first do a rough approximation
 
-	if (!fit_succes) {
-		fit_succes = fit_leg_position_half_way(leg, paw_index);
+	//Put paw in lower leg point cloud position
+	if (fit_leg_position_simple(leg, paw_index, leg_points_index)) {
+		//Paw same and mid bone in upper leg point cloud position
+		fit_succes = fit_leg_position_mid_pos_in_top_leg(leg, paw_index,
+				leg_points_index);
+		if (!fit_succes) {
+			//Paw same and mid bone in arithmetic middle position
+			fit_succes = fit_leg_position_half_way(leg, paw_index);
+		}
+	} else {
+		return false;
 	}
 
-	if (!fit_succes) {
-		fit_succes = fit_leg_position_simple(leg, paw_index, leg_points_index);
-	}
 	if (fit_succes) {
 		fix_leg_second_lower_joint(leg, leg_points_index);
 	}
+
 	return fit_succes;
 }
 
@@ -265,7 +268,6 @@ bool SkeletonFitting::fit_leg_position_simple(Skeleton::Skel_Leg leg,
 
 	//Solve leg
 	if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
-		cout << "Failed leg fitting simple" << endl;
 		return false;
 	}
 	return true;
@@ -374,15 +376,21 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 
 bool SkeletonFitting::fit_leg_pos_impl(Skeleton::Skel_Leg leg,
 		const osg::Vec3& middle_position, const osg::Vec3& paw_position) {
+	//Save top two bones rotations
+	osg::Quat prev0, prev1;
+	prev0 = skeleton->get_node(leg - 3)->quat_arr.at(current_frame);
+	prev1 = skeleton->get_node(leg - 2)->quat_arr.at(current_frame);
+
 	//Solve for "shoulder" two bones
 	if (!solve_chain(leg - 3, leg - 2, middle_position)) {
-		cout << "Failed leg fitting the first pair" << endl;
 		return false;
 	}
 
 	//Solve for paw and parent bone
 	if (!solve_chain(leg - 1, leg, paw_position)) {
-		cout << "Failed leg fitting the second pair" << endl;
+		//If second pair failed then restore previous rotations
+		skeleton->get_node(leg - 3)->quat_arr.at(current_frame) = prev0;
+		skeleton->get_node(leg - 2)->quat_arr.at(current_frame) = prev1;
 		return false;
 	}
 	return true;
