@@ -22,6 +22,7 @@ void CloudClusterer::init(int n_frames, int img_rows, int img_cols) {
 	mean_z_front_arr.resize(n_frames, 0);
 	mean_z_back_arr.resize(n_frames, 0);
 	mean_x_arr.resize(n_frames, 0);
+	body_height_extra_threshold = 0.045;
 	current_frame = 0;
 }
 

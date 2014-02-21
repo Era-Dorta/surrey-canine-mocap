@@ -100,8 +100,6 @@ private:
 
 	float move_joint_max_dist;
 	float error_threshold;
-	float mean_z_front_all_frames;
-	float mean_z_back_all_frames;
 	std::vector<Skeleton::Skel_Leg> labels;
 	int current_frame;
 	int n_frames;

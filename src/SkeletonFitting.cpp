@@ -14,9 +14,8 @@ SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton_,
 		camera_arr(camera_arr_) {
 	move_joint_max_dist = 0;
 	error_threshold = 0.005;
-	mean_z_front_all_frames = 0.0;
-	mean_z_back_all_frames = 0.0;
 	current_frame = -1;
+	n_frames = 0;
 	skeleton = skeleton_;
 	skeletonizator = skeletonization3d;
 	first_call = true;
