@@ -21,25 +21,7 @@ Node* MocapData::get_node(unsigned int index) const {
 void MocapData::reset_state() {
 	nodelist.clear();
 	root.reset();
-
-	header.callib = 1.0f;
-	header.scalefactor = 1.0f;
-	header.noofsegments = 0;
-	header.noofframes = 0;
-	header.datarate = 0;
-
-	//This matrix indicates the axis in which the rotations take place
-	//files are going to be read and written as x, y, z rotations
-	header.euler->at(0).set(1, 0, 0);
-	header.euler->at(1).set(0, 1, 0);
-	header.euler->at(2).set(0, 0, 1);
-
-	//This calibration to make every model smaller
-	header.callib = 0.3f;
-	header.inv_callib = 1.0 / header.callib;
-	//We convert all values to radians
-	header.degrees = false;
-	header.scalefactor = 1.0f;
+	header = MocapHeader();
 }
 
 MocapData::~MocapData() {
