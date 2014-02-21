@@ -34,8 +34,13 @@ void IKSolver::start_chain(const float3& offset, const float4& rot) {
 	//Adds an offset to the chain, since it does not have
 	//joints this segment cannot move
 	KDL::Vector kdl_offset(offset.x, offset.y, offset.z);
-	KDL::Frame frame(KDL::Rotation::Quaternion(rot.x, rot.y, rot.z, rot.w),
-			kdl_offset);
+	vec_to_kdl(kdl_offset);
+
+	KDL::Rotation kdl_rot = KDL::Rotation::Quaternion(rot.x, rot.y, rot.z,
+			rot.w);
+	transform_rotation_to_kdl(kdl_rot);
+
+	KDL::Frame frame(kdl_rot, kdl_offset);
 
 	KDL::Segment segment(KDL::Joint(KDL::Joint::None), frame);
 	chain.addSegment(segment);
@@ -45,15 +50,21 @@ void IKSolver::start_chain(const float3& offset, const float4& rot) {
 void IKSolver::start_chain(const float4x4& matrix) {
 	start_chain();
 
+	KDL::Vector kdl_offset;
+	KDL::Rotation kdl_rot;
+
 	//Start the chain with a given transformation matrix
-	KDL::Frame frame;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
-			frame.M(i, j) = matrix.get(i, j);
+			kdl_rot(i, j) = matrix.get(i, j);
 		}
-		frame.p[i] = matrix.get(3, i);
+		kdl_offset[i] = matrix.get(3, i);
 	}
 
+	transform_rotation_to_kdl(kdl_rot);
+	vec_to_kdl(kdl_offset);
+
+	KDL::Frame frame(kdl_rot, kdl_offset);
 	KDL::Segment segment(KDL::Joint(KDL::Joint::None), frame);
 	chain.addSegment(segment);
 	extra_segment = 1;

@@ -509,15 +509,12 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		break;
 	case INV_KIN:
 		if (!only_root) {
-			mouse_vec =
-					mouse_vec * inv_kin_scale_factor
-							+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
-									current_frame);
+			mouse_vec = mouse_vec * inv_kin_scale_factor
+					+ ik_chain.back()->get_end_bone_global_pos(current_frame);
 			//Put final position in first bone coordinate system
 			osg::Matrix m;
 			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.front());
 			mouse_vec = mouse_vec * m;
-
 		} else {
 			if (last_mouse_pos_y - y > 0) {
 				swivel_angle = 0.02;
@@ -566,6 +563,7 @@ void SkeletonController::fill_chain() {
 	ik_chain.clear();
 
 	Node* node = skeleton->get_node(selected_point_index);
+
 	unsigned int i = 0;
 	while (i < num_bones_chain && node != NULL) {
 		//Insert in the beginning is not efficient but we are not
@@ -576,6 +574,13 @@ void SkeletonController::fill_chain() {
 	}
 
 	ik_solver.start_chain();
+
+	//It should be enough to do this initialisation and then use global
+	//coordinates, but still does not work
+	//osg::Vec3 aux = ik_chain.front()->get_global_pos(current_frame);
+	//float3 bone_init_pos = make_float3(aux.x(), aux.y(), aux.z());
+	//float4 rot = make_float4(0, 0, 0, 1);
+	//ik_solver.start_chain(bone_init_pos, rot);
 
 	for (unsigned int i = 0; i < ik_chain.size(); i++) {
 		float3 offset = make_float3(ik_chain.at(i)->length._v);
