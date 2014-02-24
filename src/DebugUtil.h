@@ -8,6 +8,7 @@
 #ifndef DEBUGUTIL_HPP_
 #define DEBUGUTIL_HPP_
 
+#include "Skeleton.h"
 #include <osg/Vec3>
 #include <osg/Vec4>
 #include <osg/Matrix>
@@ -42,6 +43,28 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Matrix &m) {
 			out << m(i, j) << ", ";
 		}
 		out << m(i, j) << "]" << endl;
+	}
+	return out;
+}
+
+inline std::ostream& operator<<(std::ostream &out,
+		const Skeleton::Skel_Leg &leg) {
+	switch (leg) {
+	case Skeleton::Front_Left:
+		out << "Front_Left";
+		break;
+	case Skeleton::Front_Right:
+		out << "Front_Right";
+		break;
+	case Skeleton::Back_Left:
+		out << "Back_Left";
+		break;
+	case Skeleton::Back_Right:
+		out << "Back_Right";
+		break;
+	case Skeleton::Not_Limbs:
+		out << "Not_Limbs";
+		break;
 	}
 	return out;
 }

@@ -179,7 +179,14 @@ bool SkeletonFitting::fit_leg_position_complete(Skeleton::Skel_Leg leg) {
 	//to first do a rough approximation
 
 	//Put paw in lower leg point cloud position
-	if (fit_leg_position_simple(leg, paw_index, leg_points_index)) {
+	bool fit_simple = fit_leg_position_simple(leg, paw_index, leg_points_index);
+
+	//Best method
+	//Paw same and mid bone going up the cloud bone length distance
+	fit_succes = fit_leg_position_go_up_y(leg, paw_index, leg_points_index);
+
+	//If it failed try the others
+	if (!fit_succes) {
 		//Paw same and mid bone in upper leg point cloud position
 		fit_succes = fit_leg_position_mid_pos_in_top_leg(leg, paw_index,
 				leg_points_index);
@@ -187,25 +194,21 @@ bool SkeletonFitting::fit_leg_position_complete(Skeleton::Skel_Leg leg) {
 			//Paw same and mid bone in arithmetic middle position
 			fit_succes = fit_leg_position_half_way(leg, paw_index);
 		}
-	} else {
-		return false;
 	}
 
-	if (fit_succes) {
+	//If any of the fitting methods worked then try rotate to a better
+	//position the lower two bones
+	if (fit_simple || fit_succes) {
 		fix_leg_second_lower_joint(leg, leg_points_index);
 	}
 
 	return fit_succes;
 }
 
-bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
-	std::vector<int> leg_points_index, joint_positions_index;
+bool SkeletonFitting::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg,
+		int paw_index, std::vector<int>& leg_points_index) {
 
-	//TODO find_paw initialises leg_points_index, should have another method
-	//to do this
-
-	int paw_index = bone_pos_finder.find_paw(cloud, labels, leg,
-			leg_points_index);
+	std::vector<osg::Vec3> joint_positions_index;
 
 	if (paw_index == -1) {
 		return false;
@@ -217,14 +220,15 @@ bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
 	sortstruct s(this, CloudClusterer::comp_y);
 	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
 
-	int bones_per_leg = 4;
-	joint_positions_index.resize(bones_per_leg);
-
-	joint_positions_index[0] = paw_index;
+	unsigned int bones_per_leg = 3;
+	joint_positions_index.push_back(cloud->at(paw_index));
 	//TODO Much more efficient to have the iterate backwards
 
 	std::vector<int>::iterator j = leg_points_index.begin();
-	for (int i = 1; i < bones_per_leg; i++) {
+	unsigned int i = 1;
+	bool continue_shearch = true;
+	osg::Vec3 bone_start_pos = joint_positions_index[0];
+	while (i < bones_per_leg && continue_shearch) {
 
 		float bone_length = skeleton->get_node(leg - i + 1)->length.length();
 		//Set bone length to paw_index
@@ -233,8 +237,7 @@ bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
 
 		while (not_bone_length && j != leg_points_index.end()) {
 
-			float current_length = (cloud->at(joint_positions_index[i - 1])
-					- cloud->at(*j)).length();
+			float current_length = (bone_start_pos - cloud->at(*j)).length();
 			if (current_length >= bone_length) {
 				not_bone_length = false;
 			} else {
@@ -242,11 +245,31 @@ bool SkeletonFitting::fit_leg_position(Skeleton::Skel_Leg leg) {
 			}
 		}
 
-		joint_positions_index[i] = *j;
+		if (not_bone_length == false) {
+			if (joint_positions_index.size() < 3) {
+				bone_start_pos = cloud->at(*j);
+				//Make sure position is reachable
+				refine_start_position(bone_start_pos,
+						joint_positions_index.back(), bone_length);
+
+				joint_positions_index.push_back(bone_start_pos);
+			} else {
+				//All bones positions have been found
+				continue_shearch = false;
+			}
+		} else {
+			//We run out of points
+			continue_shearch = false;
+		}
+		i++;
 	}
 
-	return fit_leg_pos_impl(leg, cloud->at(joint_positions_index[2]),
-			cloud->at(joint_positions_index[0]));
+	if (joint_positions_index.size() >= bones_per_leg) {
+		return fit_leg_pos_impl(leg, joint_positions_index[2],
+				joint_positions_index[0]);
+	} else {
+		return false;
+	}
 
 }
 
@@ -478,6 +501,15 @@ void SkeletonFitting::refine_goal_position(osg::Vec3& end_position,
 	osg::Vec3 pos_direction = (end_position - base_position);
 	pos_direction.normalize();
 	end_position = base_position + pos_direction * length;
+}
+
+void SkeletonFitting::refine_start_position(osg::Vec3& start_position,
+		const osg::Vec3& end_position, float length) {
+	//Recalculate bone start position using its length so we are sure it can
+	//be reached
+	osg::Vec3 pos_direction = (start_position - end_position);
+	pos_direction.normalize();
+	start_position = end_position + pos_direction * length;
 }
 
 float SkeletonFitting::calculate_sum_distance2_to_cloud(int index,
