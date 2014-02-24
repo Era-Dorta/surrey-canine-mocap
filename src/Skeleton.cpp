@@ -225,3 +225,25 @@ void Skeleton::reset_state() {
 	BVHFormat::reset_state();
 	skel_loaded = false;
 }
+
+void Skeleton::get_matrices_for_rotate_keep_end_pos(unsigned int index,
+		osg::Matrix& first_bone_old_rot, osg::Matrix& first_bone_old_trans,
+		osg::Vec3& dir_vec) {
+
+	int prev_index = index - 1;
+	Node* first_bone = get_node(prev_index);
+	Node* second_bone = get_node(index);
+
+	osg::Matrix m;
+	second_bone->get_parent_to_bone_end_matrix(header.currentframe, m);
+
+	//Calculate the end position relative to the first bone
+	dir_vec = osg::Vec3() * m;
+
+	dir_vec.normalize();
+
+	first_bone_old_rot = osg::Matrix::rotate(
+			first_bone->quat_arr.at(header.currentframe));
+	first_bone_old_trans = osg::Matrix::translate(
+			first_bone->offset + first_bone->froset->at(header.currentframe));
+}

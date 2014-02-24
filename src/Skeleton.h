@@ -48,6 +48,10 @@ public:
 	bool isSkelLoaded() const;
 	void reset_state();
 
+	void get_matrices_for_rotate_keep_end_pos(unsigned int index,
+			osg::Matrix& first_bone_old_rot, osg::Matrix& first_bone_old_trans,
+			osg::Vec3& dir_vec);
+
 	//Values correspond to paw Node indices in skeleton
 	enum Skel_Leg {
 		Front_Left = 5,
