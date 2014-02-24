@@ -90,8 +90,8 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	//skel_renderer.display_2d_skeletons(current_frame, skeletonized3D);
 
 	//skel_renderer.clean_3d_skeleon_cloud();
+	//skel_renderer.display_3d_skeleon_cloud(current_frame, *skeletonized3D);
 
-	//skel_renderer.display_3d_skeleon_cloud(current_frame, skeletonized3D);
 	//skel_renderer.display_3d_merged_skeleon_cloud(current_frame,
 	//		(*skeletonized3D));
 
