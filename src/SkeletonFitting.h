@@ -34,8 +34,6 @@ public:
 
 	osg::Vec3 get_paw(Skeleton::Skel_Leg leg);
 
-	bool solve_chain(int root_bone, int end_bone, const osg::Vec3& position);
-
 	void calculate_bone_world_matrix_origin(osg::Matrix& matrix,
 			const Node* const node);
 private:
@@ -46,7 +44,8 @@ private:
 	bool fit_leg_position_complete(Skeleton::Skel_Leg leg);
 
 	bool fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
-			std::vector<int>& leg_points_index);
+			std::vector<int>& leg_points_index,
+			std::vector<osg::Vec3>& joint_positions);
 
 	bool fit_leg_position_simple(Skeleton::Skel_Leg leg);
 
@@ -64,6 +63,10 @@ private:
 	bool fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 			const std::vector<int>& leg_points_index);
 
+	bool fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
+			const std::vector<int>& leg_points_index,
+			const osg::Vec3& goal_pos);
+
 	bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
 			const osg::Vec3& middle_position);
 
@@ -79,6 +82,12 @@ private:
 	void reduce_points_with_height(float max_y, float min_y,
 			const std::vector<int>& leg_points_index,
 			std::vector<int>& new_leg_points_index);
+
+	bool solve_chain(int root_bone, int end_bone, const osg::Vec3& position);
+
+	//Pos0 is paw position, and pos1 and pos2 of the respective parent bones
+	bool solve_leg_3_pos(Skeleton::Skel_Leg leg, const osg::Vec3& pos0,
+			const osg::Vec3& pos1, const osg::Vec3& pos2);
 
 	//Needed to use std::sort with comp_y
 	struct sortstruct {
