@@ -362,7 +362,7 @@ bool SkeletonFitting::fit_leg_position_half_way(Skeleton::Skel_Leg leg,
 
 bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 		const std::vector<int>& leg_points_index) {
-	//TODO This method sometimes gives strange results, fix
+
 	float max_y = skeleton->get_node(leg)->get_end_bone_global_pos(
 			current_frame).y();
 	float half_y = skeleton->get_node(leg)->get_global_pos(current_frame).y();
@@ -376,68 +376,105 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 	reduce_points_with_height(max_y, min_y, leg_points_index,
 			reduced_leg_points_index);
 
-	float current_angle = 0.0;
 	float best_angle = 0.0;
-	float increment = 0.01;
-	float current_distance = calculate_sum_distance2_to_cloud(leg,
+	int steps = 314;
+	float increment = osg::PI / steps;
+
+	osg::Matrix first_bone_old_rot, first_bone_old_trans;
+	osg::Vec3 dir_vec;
+	skeleton->get_matrices_for_rotate_keep_end_pos(leg, first_bone_old_rot,
+			first_bone_old_trans, dir_vec);
+
+	osg::Matrix m;
+	Node* parent = skeleton->get_node(leg - 1);
+	osg::Vec3 length = parent->length;
+	if (parent->parent) {
+		parent->parent->get_global_matrix(current_frame, m);
+	} else {
+		m.makeIdentity();
+	}
+
+	osg::Matrix current_m = first_bone_old_rot * first_bone_old_trans * m;
+	osg::Vec3 bone_end_pos = length * current_m;
+
+	float current_distance = calculate_sum_distance2_to_cloud(bone_end_pos,
 			reduced_leg_points_index);
 
-	//Rotate the joint 360 degrees to find the best rotation
-	while (current_angle <= osg::PI) {
-		current_angle += increment;
+	//Try several rotations to find the best
+	for (float angle = 0; angle < steps; angle += increment) {
 
-		skeleton->rotate_two_bones_keep_end_pos(leg, increment);
+		osg::Quat new_rot(angle, dir_vec);
+
+		osg::Matrix new_m = first_bone_old_rot * osg::Matrix::rotate(new_rot)
+				* first_bone_old_trans * m;
+		//We only care if the bones are closer or not, so we do not
+		//bother to calculate the actual distance
+		bone_end_pos = length * new_m;
 
 		//We only care if the bones are closer or not, so we do not
 		//bother to calculate the actual distance
-		float new_distance = calculate_sum_distance2_to_cloud(leg,
+		float new_distance = calculate_sum_distance2_to_cloud(bone_end_pos,
 				reduced_leg_points_index);
 
 		if (new_distance < current_distance) {
 			current_distance = new_distance;
-			best_angle = current_angle;
+			best_angle = angle;
 		}
 	}
 
 	//Since the bones have been rotated current_angle, to put them at
 	//best angle, they have to be rotated best - current
-	skeleton->rotate_two_bones_keep_end_pos(leg, best_angle - current_angle);
+	skeleton->rotate_two_bones_keep_end_pos(leg, best_angle);
 	return true;
 }
 
 bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
-		const std::vector<int>& leg_points_index, const osg::Vec3& goal_pos) {
+		const osg::Vec3& goal_pos) {
 
-	float current_angle = 0.0;
 	float best_angle = 0.0;
-	float increment = 0.01;
-	osg::Vec3 bone_end_pos = skeleton->get_node(leg)->get_global_pos(
-			current_frame);
-	float current_distance = (bone_end_pos - goal_pos).length();
+	int steps = 314;
+	float increment = osg::PI / steps;
 
-	float new_distance;
-	//Rotate the joint 360 degrees to find the best rotation
-	while (current_angle <= osg::PI) {
-		current_angle += increment;
+	osg::Matrix first_bone_old_rot, first_bone_old_trans;
+	osg::Vec3 dir_vec;
+	skeleton->get_matrices_for_rotate_keep_end_pos(leg, first_bone_old_rot,
+			first_bone_old_trans, dir_vec);
 
-		skeleton->rotate_two_bones_keep_end_pos(leg, increment);
+	osg::Matrix m;
+	Node* parent = skeleton->get_node(leg - 1);
+	osg::Vec3 length = parent->length;
+	if (parent->parent) {
+		parent->parent->get_global_matrix(current_frame, m);
+	} else {
+		m.makeIdentity();
+	}
 
+	osg::Matrix current_m = first_bone_old_rot * first_bone_old_trans * m;
+	osg::Vec3 bone_end_pos = length * current_m;
+
+	float current_distance = (bone_end_pos - goal_pos).length2();
+
+	//Try several rotations to find the best
+	for (float angle = 0; angle < steps; angle += increment) {
+
+		osg::Quat new_rot(angle, dir_vec);
+
+		osg::Matrix new_m = first_bone_old_rot * osg::Matrix::rotate(new_rot)
+				* first_bone_old_trans * m;
 		//We only care if the bones are closer or not, so we do not
 		//bother to calculate the actual distance
-		//TODO Having parent rotation, new pos can be calculated as
-		//old_pos * new_rotation, this would be more efficient
-		bone_end_pos = skeleton->get_node(leg)->get_global_pos(current_frame);
-		new_distance = (bone_end_pos - goal_pos).length();
+		bone_end_pos = length * new_m;
+		float new_distance = (bone_end_pos - goal_pos).length2();
 
 		if (new_distance < current_distance) {
 			current_distance = new_distance;
-			best_angle = current_angle;
+			best_angle = angle;
 		}
 	}
 
-	//Since the bones have been rotated current_angle, to put them at
-	//best angle, they have to be rotated best - current
-	skeleton->rotate_two_bones_keep_end_pos(leg, best_angle - current_angle);
+	if (best_angle != 0.0) {
+		skeleton->rotate_two_bones_keep_end_pos(leg, best_angle);
+	}
 	return true;
 }
 
@@ -556,11 +593,10 @@ void SkeletonFitting::refine_start_position(osg::Vec3& start_position,
 	start_position = end_position + pos_direction * length;
 }
 
-float SkeletonFitting::calculate_sum_distance2_to_cloud(int index,
+float SkeletonFitting::calculate_sum_distance2_to_cloud(
+		const osg::Vec3& bone_end_pos,
 		const std::vector<int>& leg_points_index) {
 	float distance = 0.0;
-	osg::Vec3 bone_end_pos = skeleton->get_node(index)->get_global_pos(
-			current_frame);
 	//This methods returns the square of the sum of the distances of the
 	//leg points to the bone end position
 	std::vector<int>::const_iterator i = leg_points_index.begin();

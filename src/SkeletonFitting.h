@@ -64,7 +64,6 @@ private:
 			const std::vector<int>& leg_points_index);
 
 	bool fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
-			const std::vector<int>& leg_points_index,
 			const osg::Vec3& goal_pos);
 
 	bool fit_leg_pos_impl(Skeleton::Skel_Leg leg, const osg::Vec3& paw_position,
@@ -76,7 +75,7 @@ private:
 	void refine_start_position(osg::Vec3& start_position,
 			const osg::Vec3& end_position, float length);
 
-	float calculate_sum_distance2_to_cloud(int index,
+	float calculate_sum_distance2_to_cloud(const osg::Vec3& bone_end_pos,
 			const std::vector<int>& leg_points_index);
 
 	void reduce_points_with_height(float max_y, float min_y,
