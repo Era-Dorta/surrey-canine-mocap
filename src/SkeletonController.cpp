@@ -55,6 +55,8 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 	skeleton->load_from_file(file_name);
 
 	reset_state();
+	//Reset the fitting vector
+	fitting_pending.assign(fitting_pending.size(), true);
 
 	update_dynamics(current_frame);
 }
@@ -103,7 +105,12 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Back_Left), 3);
 
 	if (skeleton->isSkelLoaded()) {
-		skel_fitter.fit_skeleton_to_cloud();
+		//Do the fitting only once per frame, then let the user modify the
+		//fitted skeleton if it wishes to do so
+		if (fitting_pending.at(current_frame)) {
+			skel_fitter.fit_skeleton_to_cloud();
+			fitting_pending.at(current_frame) = false;
+		}
 
 		if (delete_skel) {
 			skel_renderer.clean_skeleton();
@@ -116,6 +123,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 
 void SkeletonController::generate_skeletonization() {
 	skeletonized3D->generate_skeletonization();
+	fitting_pending.resize(skeletonized3D->get_n_frames(), true);
 }
 
 void SkeletonController::setup_scene() {
