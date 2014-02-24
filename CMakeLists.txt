@@ -1,8 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8) 
 
-SET( PROJECT_NAME MultiCamViewer ) 
-PROJECT( ${PROJECT_NAME} ) 
-SET( PROJECT_EXE "${PROJECT_NAME}_exe" ) 
+SET(PROJECT_NAME MultiCamViewer) 
+PROJECT(${PROJECT_NAME}) 
+SET(PROJECT_EXE "${PROJECT_NAME}_exe") 
 
 #Set build to Release is none is given
 if (NOT CMAKE_BUILD_TYPE)
@@ -13,48 +13,50 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmakeModules")
 
 #Boost
-FIND_PACKAGE( Boost 1.46 REQUIRED COMPONENTS filesystem system )
-INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
+FIND_PACKAGE(Boost 1.46 REQUIRED COMPONENTS filesystem system)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 #CUDA
-SET( CUDA_INCLUDE_DIRS "dependencies/CUDA")
-INCLUDE_DIRECTORIES( ${CUDA_INCLUDE_DIRS} )
+SET(CUDA_INCLUDE_DIRS "dependencies/CUDA")
+INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
 
 #OpenCV
-FIND_PACKAGE( OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs" ) 
-INCLUDE_DIRECTORIES( ${OpenCV_INCLUDE_DIRS} )
+FIND_PACKAGE(OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs") 
+INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
 MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
 MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
 
 #Custom path to compiled by hand libraries, thanks to not having permision to install software
 #If you have installation permisions remove this line
-SET( CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs" )
+SET(CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs")
 
 #FLANN
-FIND_PACKAGE( Flann )
-INCLUDE_DIRECTORIES( ${FLANN_INCLUDE_DIRS} )
+FIND_PACKAGE(Flann)
+INCLUDE_DIRECTORIES(${FLANN_INCLUDE_DIRS})
 
 #KDL
-FIND_PACKAGE( KDL )
+FIND_PACKAGE(KDL)
 MESSAGE(STATUS "KDL DIR ${KDL_INCLUDE_DIRS}")
 MESSAGE(STATUS "KDL LIB ${KDL_LIBS}")
 INCLUDE_DIRECTORIES( ${KDL_INCLUDE_DIRS} )
 
 #TODO HINT does not work with osg, not sure why
 #OSG
-FIND_PACKAGE(OpenThreads )
+FIND_PACKAGE(OpenThreads)
 FIND_PACKAGE(osg)
-FIND_PACKAGE(osgDB )
-FIND_PACKAGE(osgUtil )
-FIND_PACKAGE(osgViewer )
-FIND_PACKAGE(osgGA )
-FIND_PACKAGE(osgText )
-FIND_PACKAGE(osgAnimation )
+FIND_PACKAGE(osgDB)
+FIND_PACKAGE(osgUtil)
+FIND_PACKAGE(osgViewer)
+FIND_PACKAGE(osgGA)
+FIND_PACKAGE(osgText)
+FIND_PACKAGE(osgAnimation)
 
 #Source and header files: 
-SET(SOURCE 
+SET(SOURCE
+src/BonePosFinder.cpp
 src/BVHFormat.cpp
 src/CameraCalibrator.cpp
+src/CloudClusterer.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
 src/IKSolver.cpp
@@ -85,8 +87,10 @@ src/SurfelModel.cpp
 ) 
 
 SET(HEADERS 
+src/BonePosFinder.h
 src/BVHFormat.h
 src/CameraCalibrator.h
+src/CloudClusterer.h
 src/CudaVec.h
 src/DebugUtil.h
 src/DepthMapPoly.h
@@ -118,34 +122,35 @@ src/SurfelModel.h
 ) 
 
 
-MACRO( config_project PROJNAME LIBNAME )
-	INCLUDE_DIRECTORIES( ${${LIBNAME}_INCLUDE_DIR} )
-	TARGET_LINK_LIBRARIES( ${PROJNAME} ${${LIBNAME}_LIBRARY} )
+MACRO(config_project PROJNAME LIBNAME)
+	INCLUDE_DIRECTORIES(${${LIBNAME}_INCLUDE_DIR})
+	TARGET_LINK_LIBRARIES(${PROJNAME} ${${LIBNAME}_LIBRARY})
 ENDMACRO()
 
 #Create the executable
-ADD_EXECUTABLE( ${PROJECT_EXE} ${SOURCE} ${HEADERS} ) 
+ADD_EXECUTABLE(${PROJECT_EXE} ${SOURCE} ${HEADERS}) 
 
 #Boost linking
-TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${Boost_LIBRARIES} )
+TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${Boost_LIBRARIES})
 
 #FLANN linking
-TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${FLANN_LIBRARIES} )
+TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${FLANN_LIBRARIES})
 
 #KDL linking
-TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${KDL_LIBS} )
+TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${KDL_LIBS})
 
 #OpenCV linking
-TARGET_LINK_LIBRARIES( ${PROJECT_EXE} ${OpenCV_LIBS} )
+TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${OpenCV_LIBS})
 
 #OSG linking
-config_project( ${PROJECT_EXE} OPENTHREADS )
-config_project( ${PROJECT_EXE} OSG )
-config_project( ${PROJECT_EXE} OSGDB )
-config_project( ${PROJECT_EXE} OSGUTIL )
-config_project( ${PROJECT_EXE} OSGVIEWER )
-config_project( ${PROJECT_EXE} OSGGA )
-config_project( ${PROJECT_EXE} OSGSIM )
-config_project( ${PROJECT_EXE} OSGWIDGET )
-config_project( ${PROJECT_EXE} OSGANIMATION )
-config_project( ${PROJECT_EXE} OSGTEXT )
+config_project(${PROJECT_EXE} OPENTHREADS)
+config_project(${PROJECT_EXE} OSG)
+config_project(${PROJECT_EXE} OSGDB)
+config_project(${PROJECT_EXE} OSGUTIL)
+config_project(${PROJECT_EXE} OSGVIEWER)
+config_project(${PROJECT_EXE} OSGGA)
+config_project(${PROJECT_EXE} OSGSIM)
+config_project(${PROJECT_EXE} OSGWIDGET)
+config_project(${PROJECT_EXE} OSGANIMATION)
+config_project(${PROJECT_EXE} OSGTEXT)
+
