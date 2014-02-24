@@ -197,19 +197,19 @@ osg::Quat Node::get_inv_global_rot(int frame_num) {
 
 osg::Vec3 Node::get_global_pos(int frame_num) {
 	osg::Matrix aux;
-	calculate_world_matrix(this, aux, frame_num);
+	calculate_world_matrix(aux, frame_num);
 
 	return osg::Vec3() * aux;
 }
 
 osg::Vec3 Node::get_end_bone_global_pos(int frame_num) {
 	osg::Matrix aux;
-	calculate_world_matrix(this, aux, frame_num);
+	calculate_world_matrix(aux, frame_num);
 	return length * aux;
 }
 
 void Node::get_global_matrix(int frame_num, osg::Matrix& trans) {
-	calculate_world_matrix(this, trans, frame_num);
+	calculate_world_matrix(trans, frame_num);
 }
 
 void Node::get_parent_to_bone_end_matrix(int frame_num, osg::Matrix& m) {
@@ -228,8 +228,8 @@ void Node::get_parent_to_bone_end_matrix(int frame_num, osg::Matrix& m) {
 			* osg::Matrix::rotate(parent->quat_arr.at(frame_num));
 }
 
-void Node::calculate_world_matrix(Node* node, osg::Matrix& trans,
-		int frame_num) {
+void Node::calculate_world_matrix(osg::Matrix& trans, int frame_num) {
+	Node* node = this;
 	trans.makeIdentity();
 	while (node != NULL) {
 		trans = trans * osg::Matrix::rotate(node->quat_arr.at(frame_num))
