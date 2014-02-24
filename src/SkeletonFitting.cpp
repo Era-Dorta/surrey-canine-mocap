@@ -401,7 +401,7 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 			reduced_leg_points_index);
 
 	//Try several rotations to find the best
-	for (float angle = 0; angle < steps; angle += increment) {
+	for (float angle = increment; angle < steps; angle += increment) {
 
 		osg::Quat new_rot(angle, dir_vec);
 
@@ -455,7 +455,7 @@ bool SkeletonFitting::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 	float current_distance = (bone_end_pos - goal_pos).length2();
 
 	//Try several rotations to find the best
-	for (float angle = 0; angle < steps; angle += increment) {
+	for (float angle = increment; angle < steps; angle += increment) {
 
 		osg::Quat new_rot(angle, dir_vec);
 
