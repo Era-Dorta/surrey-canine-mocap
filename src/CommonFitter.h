@@ -10,7 +10,7 @@
 
 #include "Skeleton.h"
 #include "Skeletonization3D.h"
-#include "IKSolver.h"
+#include "EnhancedIKSolver.h"
 #include "BonePosFinder.h"
 
 #include "osg/Array"
@@ -22,7 +22,7 @@ class CommonFitter {
 public:
 	void set_current_frame(int current_frame);
 protected:
-	CommonFitter(boost::shared_ptr<Skeleton> skeleton_,
+	CommonFitter(boost::shared_ptr<Skeleton> skeleton,
 			boost::shared_ptr<Skeletonization3D> skeletonization3d,
 			const camVecT& camera_arr);
 
@@ -42,7 +42,7 @@ protected:
 	boost::shared_ptr<Skeletonization3D> skeletonizator;
 	boost::shared_ptr<Skeleton> skeleton;
 
-	IKSolver ik_solver;
+	EnhancedIKSolver enh_ik_solver;
 	const camVecT& camera_arr;
 	BonePosFinder bone_pos_finder;
 };

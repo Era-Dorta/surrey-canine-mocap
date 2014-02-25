@@ -61,6 +61,7 @@ src/CloudClusterer.cpp
 src/CommonFitter.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
+src/EnhancedIKSolver.cpp
 src/IKSolver.cpp
 src/KNNSearch.cpp
 src/LegFitter.cpp
@@ -101,6 +102,7 @@ src/CudaVec.h
 src/DebugUtil.h
 src/DepthMapPoly.h
 src/DepthMapSurfel.h
+src/EnhancedIKSolver.h
 src/IKSolver.h
 src/KNNSearch.h
 src/LegFitter.h
