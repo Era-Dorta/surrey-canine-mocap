@@ -2,7 +2,7 @@
 build/*
 Debug
 Release
-cmakeRelease
+testCmakeRelease
 #Hidden file copies
 *~
 #Resources
