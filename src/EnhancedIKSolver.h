@@ -22,10 +22,13 @@ public:
 	bool solve_chain(int root_bone, int end_bone, const float3& position,
 			int current_frame);
 
-	bool solve_chain_keep_next_bone_pos(unsigned int start_bone_index,
-			unsigned int end_bone_index, const float3& goal_position,
+	bool solve_chain_keep_next_bone_pos(unsigned int root_bone,
+			unsigned int end_bone, const float3& goal_position,
 			int current_frame);
 private:
+	void fill_chain(int root_bone,
+			int end_bone, int current_frame, std::vector<int>& indices);
+
 	IKSolver ik_solver;
 	boost::shared_ptr<Skeleton> skeleton;
 };

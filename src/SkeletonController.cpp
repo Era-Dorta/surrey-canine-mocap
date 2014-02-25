@@ -15,7 +15,7 @@ SkeletonController::SkeletonController(const camVecT& camera_arr,
 						new Skeletonization3D(camera_arr))), skeleton(
 				boost::shared_ptr<Skeleton>(new Skeleton)), skel_renderer(
 				camera_arr, render_skel_group), skel_fitter(skeleton,
-				skeletonized3D, camera_arr) {
+				skeletonized3D, camera_arr), enh_ik_solver(skeleton) {
 	current_frame = 0;
 	last_mouse_pos_x = 0;
 	last_mouse_pos_y = 0;
@@ -75,7 +75,6 @@ void SkeletonController::reset_state() {
 	transforming_skeleton = false;
 	only_root = false;
 	swivel_angle = 0.0;
-	ik_chain.clear();
 }
 
 void SkeletonController::update_dynamics(int disp_frame_no) {
@@ -226,11 +225,11 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 							transforming_skeleton = true;
 							selected_point_index = skeleton->get_node_index(
 									selected_point);
+							chain_top_index = selected_point_index
+									- num_bones_chain;
 							skeleton->toggle_color(selected_point_index);
 							delete_skel = true;
 							skel_state.save_state(skeleton, current_frame);
-
-							fill_chain();
 							update_dynamics(current_frame);
 						}
 					}
@@ -284,33 +283,16 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 			case INV_KIN:
 				if (!change_all_frames) {
 					if (!only_root) {
-						//move_axis.set(0.0, 0.0, 0.15);
-						//osg::Matrix m;
-						//skel_fitter.calculate_bone_world_matrix_origin(m,
-						//		ik_chain.front());
-						//move_axis = move_axis * m;
-
-						bool exit_flag = ik_solver.solve_chain(
-								make_float3(move_axis._v));
-
-						//With one bone the goal position is not going
-						//to be reachable but we take the result anyway
-						if (ik_chain.size() == 1) {
-							exit_flag = true;
-						}
-
-						if (exit_flag) {
-							for (unsigned int i = 0; i < ik_chain.size(); i++) {
-								float4 new_rot;
-								ik_solver.get_rotation_joint(i, new_rot);
-								ik_chain.at(i)->quat_arr.at(current_frame).set(
-										new_rot.x, new_rot.y, new_rot.z,
-										new_rot.w);
-							}
-						} else {
-							cout << "IKSolver cannot put chain goal position"
-									<< endl;
-						}
+						//Simple solver
+						//enh_ik_solver.solve_chain(
+						//		selected_point_index - num_bones_chain,
+						//		selected_point_index, make_float3(move_axis._v),
+						//		current_frame)) {
+						//
+						enh_ik_solver.solve_chain_keep_next_bone_pos(
+								selected_point_index - num_bones_chain,
+								selected_point_index, make_float3(move_axis._v),
+								current_frame);
 					} else {
 						skeleton->rotate_two_bones_keep_end_pos_aim(
 								selected_point_index, swivel_angle);
@@ -517,12 +499,10 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 		break;
 	case INV_KIN:
 		if (!only_root) {
-			mouse_vec = mouse_vec * inv_kin_scale_factor
-					+ ik_chain.back()->get_end_bone_global_pos(current_frame);
-			//Put final position in first bone coordinate system
-			osg::Matrix m;
-			ik_chain.front()->get_node_world_matrix_origin(current_frame, m);
-			mouse_vec = mouse_vec * m;
+			mouse_vec =
+					mouse_vec * inv_kin_scale_factor
+							+ skeleton->get_node(selected_point_index)->get_end_bone_global_pos(
+									current_frame);
 		} else {
 			if (last_mouse_pos_y - y > 0) {
 				swivel_angle = 0.02;
@@ -567,42 +547,11 @@ void SkeletonController::finish_bone_trans() {
 	delete_skel = false;
 }
 
-void SkeletonController::fill_chain() {
-	ik_chain.clear();
-
-	Node* node = skeleton->get_node(selected_point_index);
-
-	unsigned int i = 0;
-	while (i < num_bones_chain && node != NULL) {
-		//Insert in the beginning is not efficient but we are not
-		//going to insert a lot of them
-		ik_chain.insert(ik_chain.begin(), node);
-		node = node->parent;
-		i++;
-	}
-
-	ik_solver.start_chain();
-
-	//It should be enough to do this initialisation and then use global
-	//coordinates, but still does not work
-	//osg::Vec3 aux = ik_chain.front()->get_global_pos(current_frame);
-	//float3 bone_init_pos = make_float3(aux.x(), aux.y(), aux.z());
-	//float4 rot = make_float4(0, 0, 0, 1);
-	//ik_solver.start_chain(bone_init_pos, rot);
-
-	for (unsigned int i = 0; i < ik_chain.size(); i++) {
-		float3 offset = make_float3(ik_chain.at(i)->length._v);
-		osg::Quat q = ik_chain.at(i)->quat_arr.at(current_frame);
-		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
-		ik_solver.add_bone_to_chain(offset, rot);
-	}
-}
-
 void SkeletonController::update_bones_axis() {
 	Node* node = skeleton->get_node(selected_point_index);
 	node->set_y_rotation_perpendicular_to_next_bone(current_frame);
-	for (unsigned int i = 0; i < ik_chain.size(); i++) {
-		ik_chain.at(i)->set_y_rotation_perpendicular_to_next_bone(
+	for (int i = chain_top_index; i <= selected_point_index; i++) {
+		skeleton->get_node(i)->set_y_rotation_perpendicular_to_next_bone(
 				current_frame);
 	}
 }

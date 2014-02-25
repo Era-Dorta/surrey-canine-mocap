@@ -15,7 +15,7 @@
 #include "SkeletonMixer.h"
 #include "MessageHandler.h"
 #include "SkeletonState.h"
-#include "IKSolver.h"
+#include "EnhancedIKSolver.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>
@@ -73,8 +73,6 @@ private:
 
 	void finish_bone_trans();
 
-	void fill_chain();
-
 	void update_bones_axis();
 
 	//Class that creates a skeleton from a given set of frames
@@ -99,6 +97,7 @@ private:
 
 	bool is_point_selected;
 	int selected_point_index;
+	int chain_top_index;
 	osg::ref_ptr<osg::MatrixTransform> selected_point;
 	int last_mouse_pos_x;
 	int last_mouse_pos_y;
@@ -107,7 +106,6 @@ private:
 	bool change_all_frames;
 	bool only_root;
 	unsigned int num_bones_chain;
-	std::vector<Node*> ik_chain;
 	bool transforming_skeleton;
 	bool delete_skel;
 	Skeleton::Axis rotate_axis;
@@ -121,7 +119,7 @@ private:
 
 	MessageHandler msg_handler;
 
-	IKSolver ik_solver;
+	EnhancedIKSolver enh_ik_solver;
 };
 
 #endif /* SKELETONCONTROLLER_H_ */
