@@ -64,6 +64,8 @@ public:
 
 	void get_parent_to_bone_end_matrix(int frame_num, osg::Matrix& m);
 
+	void get_node_world_matrix_origin(int frame_num, osg::Matrix& matrix);
+
 	//TODO Right now we use quaternions but it might be a good optimisation
 	//to have all the matrices precomputed once there are not going to be
 	//more changes

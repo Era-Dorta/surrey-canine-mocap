@@ -12,6 +12,8 @@
 #include "Skeleton.h"
 #include "Projections.h"
 #include "PixelSearch.h"
+#include "BonePosFinder.h"
+#include "CompMethods.h"
 
 #include "CudaVec.h"
 
@@ -33,11 +35,6 @@ public:
 			std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
 			bool use_simple_division = true);
 
-	void refine_four_sections_division(
-			const osg::ref_ptr<osg::Vec3Array>& point_cloud,
-			std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
-			int head_index);
-
 	static bool comp_x(const osg::Vec3& i, const osg::Vec3& j);
 
 	static bool comp_y(const osg::Vec3& i, const osg::Vec3& j);
@@ -48,6 +45,11 @@ private:
 
 	void divide_four_sections_knn(std::vector<Skeleton::Skel_Leg>& labels,
 			int num_invalid);
+
+	void refine_four_sections_division(
+			const osg::ref_ptr<osg::Vec3Array>& point_cloud,
+			std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
+			int head_index);
 
 	void recalculate_front_back_division_side_view(
 			std::vector<Skeleton::Skel_Leg>& labels, int head_index);
@@ -117,6 +119,7 @@ private:
 	std::vector<float> mean_x_arr;
 	float body_height_extra_threshold;
 	KNNSearch knn_searcher;
+	BonePosFinder bone_pos_finder;
 };
 
 #endif /* CLOUDCLUSTERER_H_ */

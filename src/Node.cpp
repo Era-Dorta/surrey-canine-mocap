@@ -263,3 +263,13 @@ void Node::toggle_color() {
 		n_bone_color = bone_second_color;
 	}
 }
+
+void Node::get_node_world_matrix_origin(int frame_num, osg::Matrix& matrix) {
+
+	if (parent) {
+		parent->get_global_matrix(frame_num, matrix);
+	}
+
+	matrix = osg::Matrix::translate(offset + froset->at(frame_num)) * matrix;
+	matrix = osg::Matrix::inverse(matrix);
+}

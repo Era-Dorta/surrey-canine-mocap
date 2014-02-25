@@ -56,31 +56,8 @@ void CloudClusterer::divide_four_sections(
 		} else {
 			divide_four_sections_knn(labels, num_invalid);
 		}
-	}
-}
-
-void CloudClusterer::refine_four_sections_division(
-		const osg::ref_ptr<osg::Vec3Array>& point_cloud,
-		std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
-		int head_index) {
-
-	if (cloud->size() > 10) {
-
-		recalculate_front_back_division_side_view(labels, head_index);
-
-		recalculate_right_left_division_mass_center(labels);
-
-		recalculate_right_left_division_front_view(labels, head_index);
-
-		recalculate_right_left_division_back_view(labels, head_index);
-
-		//TODO If knn deletes all the labels of a certain leg then
-		//reset the labels vector to its previous state
-		recalculate_right_left_knn(labels);
-
-		//Attempt to do some time coherence between frames, code works but
-		//the result is the same
-		//recalculate_z_division_with_time_coherence();
+		int head_index = bone_pos_finder.find_head(cloud, labels);
+		refine_four_sections_division(cloud, labels, frame_num, head_index);
 	}
 }
 
@@ -168,6 +145,31 @@ void CloudClusterer::divide_four_sections_knn(
 				j++;
 			}
 		}
+	}
+}
+
+void CloudClusterer::refine_four_sections_division(
+		const osg::ref_ptr<osg::Vec3Array>& point_cloud,
+		std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
+		int head_index) {
+
+	if (cloud->size() > 10) {
+
+		recalculate_front_back_division_side_view(labels, head_index);
+
+		recalculate_right_left_division_mass_center(labels);
+
+		recalculate_right_left_division_front_view(labels, head_index);
+
+		recalculate_right_left_division_back_view(labels, head_index);
+
+		//TODO If knn deletes all the labels of a certain leg then
+		//reset the labels vector to its previous state
+		recalculate_right_left_knn(labels);
+
+		//Attempt to do some time coherence between frames, code works but
+		//the result is the same
+		//recalculate_z_division_with_time_coherence();
 	}
 }
 
@@ -787,13 +789,13 @@ float CloudClusterer::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 		bool (*comp_funct)(const osg::Vec3&, const osg::Vec3&);
 		switch (axis) {
 		case Skeleton::X:
-			comp_funct = CloudClusterer::comp_x;
+			comp_funct = CompMethods::comp_x;
 			break;
 		case Skeleton::Y:
-			comp_funct = CloudClusterer::comp_y;
+			comp_funct = CompMethods::comp_y;
 			break;
 		default:
-			comp_funct = CloudClusterer::comp_z;
+			comp_funct = CompMethods::comp_z;
 			break;
 		}
 		sortstruct s(this, comp_funct);
@@ -802,16 +804,4 @@ float CloudClusterer::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
 	} else {
 		return 0.0;
 	}
-}
-
-bool CloudClusterer::comp_x(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.x() < j.x());
-}
-
-bool CloudClusterer::comp_y(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.y() < j.y());
-}
-
-bool CloudClusterer::comp_z(const osg::Vec3& i, const osg::Vec3& j) {
-	return (i.z() < j.z());
 }

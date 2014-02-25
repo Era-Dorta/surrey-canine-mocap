@@ -521,7 +521,7 @@ osg::Vec3 SkeletonController::get_mouse_vec(int x, int y) {
 					+ ik_chain.back()->get_end_bone_global_pos(current_frame);
 			//Put final position in first bone coordinate system
 			osg::Matrix m;
-			skel_fitter.calculate_bone_world_matrix_origin(m, ik_chain.front());
+			ik_chain.front()->get_node_world_matrix_origin(current_frame, m);
 			mouse_vec = mouse_vec * m;
 		} else {
 			if (last_mouse_pos_y - y > 0) {

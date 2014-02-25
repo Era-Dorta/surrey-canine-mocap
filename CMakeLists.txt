@@ -53,14 +53,17 @@ FIND_PACKAGE(osgAnimation)
 
 #Source and header files: 
 SET(SOURCE
+src/BodyFitter.cpp
 src/BonePosFinder.cpp
 src/BVHFormat.cpp
 src/CameraCalibrator.cpp
 src/CloudClusterer.cpp
+src/CommonFitter.cpp
 src/DepthMapPoly.cpp
 src/DepthMapSurfel.cpp
 src/IKSolver.cpp
 src/KNNSearch.cpp
+src/LegFitter.cpp
 src/main.cpp
 src/MessageHandler.cpp
 src/MiscUtils.cpp
@@ -86,17 +89,21 @@ src/SkeletonState.cpp
 src/SurfelModel.cpp
 ) 
 
-SET(HEADERS 
+SET(HEADERS
+src/BodyFitter.h
 src/BonePosFinder.h
 src/BVHFormat.h
 src/CameraCalibrator.h
 src/CloudClusterer.h
+src/CommonFitter.h
+src/CompMethods.h
 src/CudaVec.h
 src/DebugUtil.h
 src/DepthMapPoly.h
 src/DepthMapSurfel.h
 src/IKSolver.h
 src/KNNSearch.h
+src/LegFitter.h
 src/MessageHandler.h
 src/MiscUtils.h
 src/MocapData.h
