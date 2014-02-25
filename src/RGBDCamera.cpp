@@ -286,7 +286,7 @@ osg::Geode* RGBD_Camera::create_cam_icon(osg::Vec3 vis_colour) {
 	(*vertices)[3].set(osg::Vec3(0.0561, -0.0421, 0.1));
 	(*vertices)[4].set(osg::Vec3(0.0561, 0.0421, 0.1));
 	osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(
-			GL_LINES, 16);
+	GL_LINES, 16);
 	(*indices)[0] = 4;
 	(*indices)[1] = 1;
 	(*indices)[2] = 1;
@@ -453,7 +453,7 @@ void RGBD_Camera::remove_background(int num_back_frames,
 		//cv::waitKey(0);
 
 		//Convert float image to ushort:
-cv	::Mat background_plate(d_rows, d_cols, CV_16U, 0);
+	cv::Mat background_plate(d_rows, d_cols, CV_16U, 0);
 	background_plate_f.convertTo(background_plate, CV_16U);
 	//--------------------------------
 

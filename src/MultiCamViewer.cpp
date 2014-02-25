@@ -115,7 +115,7 @@ int MultiCamViewer::run_viewer() {
 
 	//Free viewpoint rendering:
 	rgb_render_interactive_view->allocateImage(win_width, win_height, 1,
-			GL_RGBA, GL_UNSIGNED_BYTE);
+	GL_RGBA, GL_UNSIGNED_BYTE);
 	viewer.getCamera()->attach(osg::Camera::COLOR_BUFFER,
 			rgb_render_interactive_view.get());
 	return viewer.run();
@@ -340,7 +340,8 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 			break;
 		case osgGA::GUIEventAdapter::KEY_B:
 			if (manual_origin_set && manual_axis_rot) {
-				cam_calibrator.manual_axis_rotation(-0.001, current_axis_manual);
+				cam_calibrator.manual_axis_rotation(-0.001,
+						current_axis_manual);
 				update_dynamics();
 			}
 			break;

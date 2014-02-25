@@ -218,8 +218,7 @@ void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
 
 		osg::ref_ptr<osg::Image> osgImage = new osg::Image;
 		osgImage->setImage(cvImg.cols, cvImg.rows, 3, GL_LUMINANCE,
-				GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg.data,
-				osg::Image::NO_DELETE);
+		GL_LUMINANCE, GL_UNSIGNED_BYTE, cvImg.data, osg::Image::NO_DELETE);
 
 		osg::ref_ptr<osg::Texture2D> tex = new osg::Texture2D;
 		tex->setImage(osgImage.get());
