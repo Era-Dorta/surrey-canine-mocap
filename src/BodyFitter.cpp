@@ -51,7 +51,6 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 			cam_ite, current_frame, root_pos, head_pos)) {
 		return false;
 	}
-	refine_goal_position(head_pos, root_pos, bone_length);
 
 	//Second bone
 	osg::Vec3 shoulder_pos;
@@ -66,18 +65,14 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 		return false;
 	}
 
-	refine_goal_position(shoulder_pos, head_pos, bone_length);
-
 	//Third bone
-	osg::Vec3 vertebral_back_pos;
+	osg::Vec3 vertebral_end_pos;
 	bone_length = skeleton->get_node(10)->length.length();
 
 	if (!bone_pos_finder.find_vertebral_end_pos(cam1_bin_img, bone_length,
-			cam_ite, current_frame, shoulder_pos, vertebral_back_pos)) {
+			cam_ite, current_frame, shoulder_pos, vertebral_end_pos)) {
 		return false;
 	}
-
-	refine_goal_position(vertebral_back_pos, shoulder_pos, bone_length);
 
 	//Use inverse kinematics to fit bones into positions
 	if (!solve_chain(0, 0, head_pos)) {
@@ -89,7 +84,7 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 		return false;
 	}
 
-	if (!solve_chain(10, 10, vertebral_back_pos)) {
+	if (!solve_chain(10, 10, vertebral_end_pos)) {
 		return false;
 	}
 	return true;

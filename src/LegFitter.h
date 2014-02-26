@@ -21,21 +21,15 @@ public:
 			const osg::ref_ptr<osg::Vec3Array> cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 private:
-	bool fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
+	bool fit_leg_position_initialise(Skeleton::Skel_Leg leg, int& paw_index,
 			std::vector<int>& leg_points_index,
-			std::vector<osg::Vec3>& joint_positions);
-
-	bool fit_leg_position_simple(Skeleton::Skel_Leg leg,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 
-	bool fit_leg_position_simple(Skeleton::Skel_Leg leg, int paw_index,
-			std::vector<int>& leg_points_index);
+	bool fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
+			const std::vector<int>& leg_points_index);
 
 	bool fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg,
-			int& paw_index, const std::vector<Skeleton::Skel_Leg>& labels);
-
-	bool fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg,
-			int paw_index, std::vector<int>& leg_points_index,
+			int paw_index, const std::vector<int>& leg_points_index,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 
 	bool fit_leg_position_half_way(Skeleton::Skel_Leg leg, int paw_index);

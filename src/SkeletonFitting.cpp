@@ -73,12 +73,15 @@ void SkeletonFitting::calculate_for_frame(int frame_num) {
 }
 
 void SkeletonFitting::fit_skeleton_to_cloud() {
+
 	body_fitter.fit_root_position(cloud, labels);
 	body_fitter.fit_head_and_back(cloud, labels);
+
 	leg_fitter.fit_leg_position_complete(Skeleton::Front_Right, cloud, labels);
 	leg_fitter.fit_leg_position_complete(Skeleton::Front_Left, cloud, labels);
 	leg_fitter.fit_leg_position_complete(Skeleton::Back_Right, cloud, labels);
 	leg_fitter.fit_leg_position_complete(Skeleton::Back_Left, cloud, labels);
+
 
 	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
 		skeleton->get_node(i)->set_y_rotation_perpendicular_to_next_bone(

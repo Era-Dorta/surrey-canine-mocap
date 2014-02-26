@@ -54,6 +54,15 @@ int BonePosFinder::find_paw(const osg::ref_ptr<osg::Vec3Array>& cloud,
 	}
 }
 
+int BonePosFinder::find_paw_fast(const std::vector<int>& leg_points_index) {
+
+	if (leg_points_index.size() > 0) {
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
 int BonePosFinder::find_leg_upper_end(const osg::ref_ptr<osg::Vec3Array>& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
 		std::vector<int>& leg_points_index) {
@@ -75,6 +84,16 @@ int BonePosFinder::find_leg_upper_end(const osg::ref_ptr<osg::Vec3Array>& cloud,
 			}
 		}
 		return index;
+	} else {
+		return -1;
+	}
+}
+
+int BonePosFinder::find_leg_upper_end_fast(
+		const std::vector<int>& leg_points_index) {
+
+	if (leg_points_index.size() > 0) {
+		return leg_points_index.size() - 1;
 	} else {
 		return -1;
 	}
@@ -297,6 +316,62 @@ void BonePosFinder::get_x_y_side_projection(
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;
 		}
 	}
+}
+
+int BonePosFinder::find_leg_lower_3_joints_simple(
+		const osg::ref_ptr<osg::Vec3Array>& cloud,
+		const std::vector<int>& leg_points_index, const float bone_lengths[3],
+		osg::Vec3 bone_positions[3]) {
+
+	if (leg_points_index.size() == 0) {
+		return 0;
+	}
+
+	unsigned int bones_per_leg = 3;
+	//Start at paw position
+	bone_positions[0] = cloud->at(leg_points_index[0]);
+
+	std::vector<int>::const_iterator j = leg_points_index.begin();
+	unsigned int i = 1, valid_pos = 1;
+	bool continue_shearch = true;
+	osg::Vec3 bone_start_pos = bone_positions[0];
+	//For each bone
+	while (i < bones_per_leg && continue_shearch) {
+
+		bool not_bone_length = true;
+		//Go up in the cloud until we reach bone length
+		//or there are no more points in the cloud
+		while (not_bone_length && j != leg_points_index.end()) {
+
+			float current_length = (bone_start_pos - cloud->at(*j)).length();
+			if (current_length >= bone_lengths[i - 1]) {
+				not_bone_length = false;
+			} else {
+				j++;
+			}
+		}
+
+		if (not_bone_length == false) {
+			if (i < 3) {
+				bone_start_pos = cloud->at(*j);
+				//Make sure position is exactly at bone length
+				refine_start_position(bone_start_pos, bone_positions[i - 1],
+						bone_lengths[i - 1]);
+
+				bone_positions[i] = bone_start_pos;
+				valid_pos++;
+			} else {
+				//All bones positions have been found
+				continue_shearch = false;
+			}
+		} else {
+			//We run out of points
+			continue_shearch = false;
+		}
+		i++;
+	}
+
+	return valid_pos;
 }
 
 void BonePosFinder::refine_goal_position(osg::Vec3& end_position,

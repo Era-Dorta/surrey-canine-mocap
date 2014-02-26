@@ -23,9 +23,15 @@ public:
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, std::vector<int>& leg_points_index);
 
+	//Only call fast methods with an initialised and ordered leg_point_index
+	int find_paw_fast(const std::vector<int>& leg_points_index);
+
 	int find_leg_upper_end(const osg::ref_ptr<osg::Vec3Array>& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, std::vector<int>& leg_points_index);
+
+	//Only call fast methods with an initialised and ordered leg_point_index
+	int find_leg_upper_end_fast(const std::vector<int>& leg_points_index);
 
 	bool find_first_bone_end_pos(const cv::Mat& cam2_bin_img, float bone_length,
 			constCamVecIte& cam, int current_frame, const osg::Vec3& root_pos,
@@ -39,6 +45,10 @@ public:
 			constCamVecIte& cam, int current_frame,
 			const osg::Vec3& shoulder_pos, osg::Vec3& vertebral_end_pos);
 
+	int find_leg_lower_3_joints_simple(
+			const osg::ref_ptr<osg::Vec3Array>& cloud,
+			const std::vector<int>& leg_points_index,
+			const float bone_lengths[3], osg::Vec3 bone_positions[3]);
 
 	void refine_goal_position(osg::Vec3& end_position,
 			const osg::Vec3& base_position, float length);
