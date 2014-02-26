@@ -36,15 +36,14 @@ protected:
 
 	const std::vector<Skeleton::Skel_Leg>& getLabels() const;
 
-	float move_joint_max_dist;
-	float error_threshold;
 	int current_frame;
 	boost::shared_ptr<Skeletonization3D> skeletonizator;
 	boost::shared_ptr<Skeleton> skeleton;
 
-	EnhancedIKSolver enh_ik_solver;
 	const camVecT& camera_arr;
 	BonePosFinder bone_pos_finder;
+private:
+	EnhancedIKSolver enh_ik_solver;
 };
 
 #endif /* COMMONFITTER_H_ */

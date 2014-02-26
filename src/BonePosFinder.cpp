@@ -128,6 +128,8 @@ bool BonePosFinder::find_first_bone_end_pos(const cv::Mat& cam2_bin_img,
 		}
 	}
 	head_pos.set(aux_point.x, aux_point.y, aux_point.z);
+
+	refine_goal_position(head_pos, root_pos, bone_length);
 	return true;
 }
 
@@ -169,6 +171,8 @@ bool BonePosFinder::find_second_bone_end_pos(const cv::Mat& cam1_bin_img,
 		}
 	}
 	shoulder_pos.set(aux_point.x, aux_point.y, aux_point.z);
+
+	refine_goal_position(shoulder_pos, head_pos, bone_length);
 	return true;
 }
 
@@ -210,6 +214,8 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 		}
 	}
 	vertebral_end_pos.set(aux_point.x, aux_point.y, aux_point.z);
+
+	refine_goal_position(vertebral_end_pos, shoulder_pos, bone_length);
 	return true;
 }
 
@@ -291,4 +297,22 @@ void BonePosFinder::get_x_y_side_projection(
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;
 		}
 	}
+}
+
+void BonePosFinder::refine_goal_position(osg::Vec3& end_position,
+		const osg::Vec3& base_position, float length) {
+	//Recalculate bone goal position using its length so we are sure it can
+	//be reached
+	osg::Vec3 pos_direction = (end_position - base_position);
+	pos_direction.normalize();
+	end_position = base_position + pos_direction * length;
+}
+
+void BonePosFinder::refine_start_position(osg::Vec3& start_position,
+		const osg::Vec3& end_position, float length) {
+	//Recalculate bone start position using its length so we are sure it can
+	//be reached
+	osg::Vec3 pos_direction = (start_position - end_position);
+	pos_direction.normalize();
+	start_position = end_position + pos_direction * length;
 }

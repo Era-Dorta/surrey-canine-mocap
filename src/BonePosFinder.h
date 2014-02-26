@@ -39,6 +39,13 @@ public:
 			constCamVecIte& cam, int current_frame,
 			const osg::Vec3& shoulder_pos, osg::Vec3& vertebral_end_pos);
 
+
+	void refine_goal_position(osg::Vec3& end_position,
+			const osg::Vec3& base_position, float length);
+
+	void refine_start_position(osg::Vec3& start_position,
+			const osg::Vec3& end_position, float length);
+
 private:
 	bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col, int &res_row,
 			int &res_col);
