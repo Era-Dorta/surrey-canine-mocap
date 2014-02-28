@@ -34,7 +34,11 @@ protected:
 
 	bool solve_chain(int root_bone, int end_bone, const osg::Vec3& position);
 
-	const std::vector<Skeleton::Skel_Leg>& getLabels() const;
+	bool solve_chain_keep_next_pos(int root_bone, int end_bone,
+			const osg::Vec3& position);
+
+	bool solve_chain_keep_next_pos_ignore_res(int root_bone, int end_bone,
+			const osg::Vec3& position);
 
 	int current_frame;
 	boost::shared_ptr<Skeletonization3D> skeletonizator;

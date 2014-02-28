@@ -47,15 +47,14 @@ bool EnhancedIKSolver::solve_chain(int root_bone, int end_bone,
 	}
 }
 
-bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(
-		unsigned int root_bone, unsigned int end_bone,
-		const float3& goal_position, int current_frame) {
+bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(unsigned int root_bone,
+		unsigned int end_bone, const float3& goal_position, int current_frame,
+		bool force_position) {
 
 	//If the end bone does not have child call the simpler method
 	//this one is for keep the chain after end_bone in the same state
 	if (skeleton->get_node(end_bone)->get_num_children() == 0) {
-		return solve_chain(root_bone, end_bone, goal_position,
-				current_frame);
+		return solve_chain(root_bone, end_bone, goal_position, current_frame);
 	}
 
 	std::vector<int> indices;
@@ -84,13 +83,15 @@ bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(
 
 	//Calculate in root_bone coordinate system where is the goal position
 	osg::Matrix m;
-	skeleton->get_node(root_bone)->get_node_world_matrix_origin(
-			current_frame, m);
+	skeleton->get_node(root_bone)->get_node_world_matrix_origin(current_frame,
+			m);
 
 	osg::Vec3 goal_position_start_bone = goal_pos * m;
 
 	//Solve and update the rotations
-	if (ik_solver.solve_chain(make_float3(goal_position_start_bone._v))) {
+	bool solve_succes = ik_solver.solve_chain(
+			make_float3(goal_position_start_bone._v));
+	if (solve_succes || force_position) {
 		int j = 0;
 		for (unsigned int i = 0; i < indices.size(); i++) {
 			Node * node = skeleton->get_node(indices[i]);
@@ -103,8 +104,11 @@ bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(
 
 		//Put next bone back to where it was
 		float3 next_bone_pos_f3 = make_float3(next_bone_pos._v);
-		solve_chain(end_bone + 1, end_bone + 1, next_bone_pos_f3,
-				current_frame);
+		if (!solve_chain(end_bone + 1, end_bone + 1, next_bone_pos_f3,
+				current_frame)) {
+			undo_rotations(indices, current_frame);
+			return false;
+		}
 
 		//Correct next bone child rotation
 		//If child previous global rotation was
@@ -125,8 +129,9 @@ bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(
 	}
 }
 
-void EnhancedIKSolver::fill_chain(int root_bone,
-		int end_bone, int current_frame, std::vector<int>& indices){
+void EnhancedIKSolver::fill_chain(int root_bone, int end_bone,
+		int current_frame, std::vector<int>& indices) {
+	previous_rotations.clear();
 	ik_solver.start_chain();
 
 	//Create vector of indices since root_bone can be bigger than end_bone
@@ -147,5 +152,14 @@ void EnhancedIKSolver::fill_chain(int root_bone,
 		osg::Quat q = node->quat_arr.at(current_frame);
 		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
 		ik_solver.add_bone_to_chain(offset, rot);
+		previous_rotations.push_back(q);
+	}
+}
+
+void EnhancedIKSolver::undo_rotations(const std::vector<int>& indices,
+		int current_frame) {
+	for (unsigned int i = 0; i < indices.size(); i++) {
+		Node * node = skeleton->get_node(indices[i]);
+		node->quat_arr.at(current_frame) = previous_rotations.at(i);
 	}
 }

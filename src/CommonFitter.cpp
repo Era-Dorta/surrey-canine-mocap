@@ -32,7 +32,18 @@ void CommonFitter::refine_start_position(osg::Vec3& start_position,
 
 bool CommonFitter::solve_chain(int root_bone, int end_bone,
 		const osg::Vec3& position) {
-	float3 position_f3 = make_float3(position._v);
-	return enh_ik_solver.solve_chain(root_bone, end_bone, position_f3,
-			current_frame);
+	return enh_ik_solver.solve_chain(root_bone, end_bone,
+			make_float3(position._v), current_frame);
+}
+
+bool CommonFitter::solve_chain_keep_next_pos(int root_bone, int end_bone,
+		const osg::Vec3& position) {
+	return enh_ik_solver.solve_chain_keep_next_bone_pos(root_bone, end_bone,
+			make_float3(position._v), current_frame);
+}
+
+bool CommonFitter::solve_chain_keep_next_pos_ignore_res(int root_bone,
+		int end_bone, const osg::Vec3& position) {
+	return enh_ik_solver.solve_chain_keep_next_bone_pos(root_bone, end_bone,
+			make_float3(position._v), current_frame, true);
 }
