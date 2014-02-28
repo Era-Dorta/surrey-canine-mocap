@@ -54,6 +54,12 @@ private:
 	bool solve_leg_3_pos(Skeleton::Skel_Leg leg, const osg::Vec3& pos0,
 			const osg::Vec3& pos1, const osg::Vec3& pos2);
 
+	int solve_leg_2_pos_approx(Skeleton::Skel_Leg leg, const osg::Vec3& pos1,
+			const osg::Vec3& pos2);
+
+	bool solve_leg_upper_pos_approx(Skeleton::Skel_Leg leg,
+			const osg::Vec3& pos);
+
 	//Needed to use std::sort with comp_y
 	struct sortstruct {
 		// sortstruct needs to know its containing object

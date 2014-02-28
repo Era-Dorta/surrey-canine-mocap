@@ -82,7 +82,6 @@ void SkeletonFitting::fit_skeleton_to_cloud() {
 	leg_fitter.fit_leg_position_complete(Skeleton::Back_Right, cloud, labels);
 	leg_fitter.fit_leg_position_complete(Skeleton::Back_Left, cloud, labels);
 
-
 	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
 		skeleton->get_node(i)->set_y_rotation_perpendicular_to_next_bone(
 				current_frame);

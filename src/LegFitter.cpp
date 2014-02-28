@@ -98,15 +98,33 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 	bone_lengths[2] = skeleton->get_node(leg - 2)->length.length();
 
 	osg::Vec3 bone_pos[3];
-
 	int num_valid = bone_pos_finder.find_leg_lower_3_joints_simple(cloud,
 			leg_points_index, bone_lengths, bone_pos);
 
-	if (num_valid == 3) {
-		return solve_leg_3_pos(leg, bone_pos[0], bone_pos[1], bone_pos[2]);
-	} else {
+	if (num_valid != 3) {
 		return false;
 	}
+
+	//Try put all the bones in their positions
+	if (solve_leg_3_pos(leg, bone_pos[0], bone_pos[1], bone_pos[2])) {
+		return true;
+	}
+
+	//Try an approximate position method
+	int solved_bones = solve_leg_2_pos_approx(leg, bone_pos[1], bone_pos[2]);
+
+	//Approximate method worked
+	if (solved_bones == 2) {
+		return true;
+	}
+
+	//Approximate method worked for the wrist bone
+	//Try a constant gradient method
+	if (solved_bones == 1) {
+		return true;
+	}
+
+	return false;
 }
 
 bool LegFitter::fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg,
@@ -354,5 +372,44 @@ bool LegFitter::solve_leg_3_pos(Skeleton::Skel_Leg leg, const osg::Vec3& pos0,
 		skeleton->get_node(leg - 3)->quat_arr.at(current_frame) = prev3;
 		return false;
 	}
+	return true;
+}
+
+int LegFitter::solve_leg_2_pos_approx(Skeleton::Skel_Leg leg,
+		const osg::Vec3& pos1, const osg::Vec3& pos2) {
+	osg::Quat prev1, prev2, prev3;
+	prev1 = skeleton->get_node(leg - 1)->quat_arr.at(current_frame);
+	prev2 = skeleton->get_node(leg - 2)->quat_arr.at(current_frame);
+	prev3 = skeleton->get_node(leg - 3)->quat_arr.at(current_frame);
+
+	//Wrist
+	if (!solve_chain_keep_next_pos(leg - 3, leg - 1, pos1)) {
+		skeleton->get_node(leg - 1)->quat_arr.at(current_frame) = prev1;
+		skeleton->get_node(leg - 2)->quat_arr.at(current_frame) = prev2;
+		skeleton->get_node(leg - 3)->quat_arr.at(current_frame) = prev3;
+		return 0;
+	}
+
+	//Shoulder and elbow
+	if (!solve_chain_keep_next_pos(leg - 3, leg - 2, pos2)) {
+		return 1;
+	}
+
+	return 2;
+}
+
+bool LegFitter::solve_leg_upper_pos_approx(Skeleton::Skel_Leg leg,
+		const osg::Vec3& pos) {
+	osg::Quat prev2, prev3;
+	prev2 = skeleton->get_node(leg - 2)->quat_arr.at(current_frame);
+	prev3 = skeleton->get_node(leg - 3)->quat_arr.at(current_frame);
+
+	//Shoulder and elbow
+	if (!solve_chain_keep_next_pos_ignore_res(leg - 3, leg - 1, pos)) {
+		skeleton->get_node(leg - 2)->quat_arr.at(current_frame) = prev2;
+		skeleton->get_node(leg - 3)->quat_arr.at(current_frame) = prev3;
+		return false;
+	}
+
 	return true;
 }
