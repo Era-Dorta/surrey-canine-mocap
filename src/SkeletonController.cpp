@@ -227,6 +227,9 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 									selected_point);
 							chain_top_index = selected_point_index
 									- num_bones_chain;
+							if (chain_top_index < 0) {
+								chain_top_index = 0;
+							}
 							skeleton->toggle_color(selected_point_index);
 							delete_skel = true;
 							skel_state.save_state(skeleton, current_frame);
@@ -283,6 +286,7 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 			case INV_KIN:
 				if (!change_all_frames) {
 					if (!only_root) {
+						//move_axis.set(0, 0.15, -0.15);
 						//Simple solver
 						//enh_ik_solver.solve_chain(
 						//		selected_point_index - num_bones_chain,
@@ -290,9 +294,8 @@ bool SkeletonController::handle_mouse_events(const osgGA::GUIEventAdapter& ea,
 						//		current_frame)) {
 						//
 						enh_ik_solver.solve_chain_keep_next_bone_pos(
-								selected_point_index - num_bones_chain,
-								selected_point_index, make_float3(move_axis._v),
-								current_frame);
+								chain_top_index, selected_point_index,
+								make_float3(move_axis._v), current_frame);
 					} else {
 						skeleton->rotate_two_bones_keep_end_pos_aim(
 								selected_point_index, swivel_angle);
@@ -403,6 +406,7 @@ bool SkeletonController::handle_keyboard_events(
 		case osgGA::GUIEventAdapter::KEY_Comma:
 			if (is_point_selected) {
 				only_root = !only_root;
+				update_bones_axis();
 				update_dynamics(current_frame);
 			}
 			break;
