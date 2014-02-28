@@ -47,3 +47,10 @@ bool CommonFitter::solve_chain_keep_next_pos_ignore_res(int root_bone,
 	return enh_ik_solver.solve_chain_keep_next_bone_pos(root_bone, end_bone,
 			make_float3(position._v), current_frame, true);
 }
+
+bool CommonFitter::solve_chain_keep_next_pos_gradient(int root_bone,
+		int end_bone, const osg::Vec3& position) {
+
+	return enh_ik_solver.solve_chain_keep_next_pos_gradient(root_bone, end_bone,
+			position, current_frame);
+}

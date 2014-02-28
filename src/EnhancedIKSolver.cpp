@@ -129,6 +129,39 @@ bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(unsigned int root_bone,
 	}
 }
 
+bool EnhancedIKSolver::solve_chain_keep_next_pos_gradient(int root_bone,
+		int end_bone, const osg::Vec3& position, int current_frame) {
+
+	Node* end_bone_n = skeleton->get_node(end_bone);
+	float3 goal_position = make_float3(position._v);
+	float3 current_position = make_float3(
+			end_bone_n->get_end_bone_global_pos(current_frame)._v);
+	bool exit_flag = false;
+	float current_distance = 1;
+	int num_ite = 0, max_ite = 10;
+
+	do {
+		//First we tried to do half the step but a quarter is much
+		//more effective
+		float3 new_goal_pos = goal_position * 0.25 + current_position * 0.75;
+		current_distance = length(current_position - new_goal_pos);
+
+		exit_flag = solve_chain_keep_next_bone_pos(root_bone, end_bone,
+				new_goal_pos, current_frame);
+
+		if (exit_flag) {
+			current_distance = length(current_position - new_goal_pos);
+		}
+
+		current_position = new_goal_pos;
+		num_ite++;
+	} while (exit_flag && current_distance > 0.01 && num_ite < max_ite);
+
+	//If close enough to the desired position lets
+	//call this a solved chain
+	return current_distance <= 0.01;
+}
+
 void EnhancedIKSolver::fill_chain(int root_bone, int end_bone,
 		int current_frame, std::vector<int>& indices) {
 	previous_rotations.clear();

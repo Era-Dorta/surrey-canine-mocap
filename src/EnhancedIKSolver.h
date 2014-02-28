@@ -26,6 +26,9 @@ public:
 			unsigned int end_bone, const float3& goal_position,
 			int current_frame, bool force_position = false);
 
+	bool solve_chain_keep_next_pos_gradient(int root_bone, int end_bone,
+			const osg::Vec3& position, int current_frame);
+
 private:
 	void fill_chain(int root_bone, int end_bone, int current_frame,
 			std::vector<int>& indices);

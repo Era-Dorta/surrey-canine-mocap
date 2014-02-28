@@ -118,12 +118,23 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 		return true;
 	}
 
-	//Approximate method worked for the wrist bone
-	//TODO Try a constant gradient method
-	if (solved_bones == 1) {
-		return true;
+	if (solved_bones == 0) {
+		//Try the gradient method on the wrist bone
+		if (solve_chain_keep_next_pos_gradient(leg - 3, leg - 1, bone_pos[1])) {
+			solved_bones = 1;
+		}
 	}
 
+	//Some method worked for the wrist bone
+	//Try a constant gradient method to put the elbow bone as close to the
+	//calculated position as possible
+	if (solved_bones == 1) {
+		solve_chain_keep_next_pos_gradient(leg - 3, leg - 2, bone_pos[2]);
+
+		//If it fails at least we got the wrist bone is a good position
+		//so return true to avoid that being undone by the other methods
+		return true;
+	}
 	return false;
 }
 

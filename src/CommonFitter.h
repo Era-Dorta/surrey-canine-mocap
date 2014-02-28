@@ -40,6 +40,9 @@ protected:
 	bool solve_chain_keep_next_pos_ignore_res(int root_bone, int end_bone,
 			const osg::Vec3& position);
 
+	bool solve_chain_keep_next_pos_gradient(int root_bone, int end_bone,
+			const osg::Vec3& position);
+
 	int current_frame;
 	boost::shared_ptr<Skeletonization3D> skeletonizator;
 	boost::shared_ptr<Skeleton> skeleton;
