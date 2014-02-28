@@ -119,7 +119,7 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 	}
 
 	//Approximate method worked for the wrist bone
-	//Try a constant gradient method
+	//TODO Try a constant gradient method
 	if (solved_bones == 1) {
 		return true;
 	}

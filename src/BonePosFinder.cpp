@@ -331,19 +331,22 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 	//Start at paw position
 	bone_positions[0] = cloud->at(leg_points_index[0]);
 
-	std::vector<int>::const_iterator j = leg_points_index.begin();
+	unsigned int j = 0;
 	unsigned int i = 1, valid_pos = 1;
 	bool continue_shearch = true;
 	osg::Vec3 bone_start_pos = bone_positions[0];
+	int bone_pos_index[3] = { 0, 0, 0 };
 	//For each bone
 	while (i < bones_per_leg && continue_shearch) {
 
 		bool not_bone_length = true;
+		int index;
 		//Go up in the cloud until we reach bone length
 		//or there are no more points in the cloud
-		while (not_bone_length && j != leg_points_index.end()) {
+		while (not_bone_length && j < leg_points_index.size()) {
+			index = leg_points_index[j];
 
-			float current_length = (bone_start_pos - cloud->at(*j)).length();
+			float current_length = (bone_start_pos - cloud->at(index)).length();
 			if (current_length >= bone_lengths[i - 1]) {
 				not_bone_length = false;
 			} else {
@@ -353,12 +356,13 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 
 		if (not_bone_length == false) {
 			if (i < 3) {
-				bone_start_pos = cloud->at(*j);
+				bone_start_pos = cloud->at(index);
 				//Make sure position is exactly at bone length
 				refine_start_position(bone_start_pos, bone_positions[i - 1],
 						bone_lengths[i - 1]);
 
 				bone_positions[i] = bone_start_pos;
+				bone_pos_index[i] = j;
 				valid_pos++;
 			} else {
 				//All bones positions have been found
@@ -372,9 +376,17 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 	}
 
 	if (valid_pos == 2) {
-		//Set temp position as higher point in cloud
-		bone_positions[2] = cloud->at(leg_points_index.back());
-		//Use the vector from higher point in cloud to next bone start position
+		//Set temp position as the mean of all the points above the bone
+		//end position
+		int num_points = 0;
+		for (unsigned int i = bone_pos_index[1]; i < leg_points_index.size();
+				i++) {
+			bone_positions[2] += cloud->at(leg_points_index[i]);
+			num_points++;
+		}
+		bone_positions[2] = bone_positions[2] / num_points;
+
+		//Use the vector from the mean to next bone start position
 		//to project a plausible position for this bone
 		refine_start_position(bone_positions[2], bone_positions[1],
 				bone_lengths[2]);
