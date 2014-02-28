@@ -371,6 +371,16 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 		i++;
 	}
 
+	if (valid_pos == 2) {
+		//Set temp position as higher point in cloud
+		bone_positions[2] = cloud->at(leg_points_index.back());
+		//Use the vector from higher point in cloud to next bone start position
+		//to project a plausible position for this bone
+		refine_start_position(bone_positions[2], bone_positions[1],
+				bone_lengths[2]);
+		valid_pos++;
+	}
+
 	return valid_pos;
 }
 
