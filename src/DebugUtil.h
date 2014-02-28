@@ -9,6 +9,7 @@
 #define DEBUGUTIL_HPP_
 
 #include "Skeleton.h"
+#include "CudaVec.h"
 #include <osg/Vec3>
 #include <osg/Vec4>
 #include <osg/Matrix>
@@ -25,6 +26,17 @@ inline std::ostream& operator<<(std::ostream &out, const osg::Vec3 &vector) {
 inline std::ostream& operator<<(std::ostream &out, const osg::Vec4 &vector) {
 	out << "[" << vector.x() << ", " << vector.y() << ", " << vector.z() << ", "
 			<< vector.w() << "]";
+	return out;
+}
+
+inline std::ostream& operator<<(std::ostream &out, const float3 &vector) {
+	out << "[" << vector.x << ", " << vector.y << ", " << vector.z << "]";
+	return out;
+}
+
+inline std::ostream& operator<<(std::ostream &out, const float4 &vector) {
+	out << "[" << vector.x << ", " << vector.y << ", " << vector.z << ", "
+			<< vector.w << "]";
 	return out;
 }
 

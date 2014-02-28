@@ -479,14 +479,6 @@ CUDA_VEC_HOSTDEVICE float norm(float3 const & a) {
 	return sqrt(norm_square(a));
 }
 
-// print
-CUDA_VEC_HOSTDEVICE void print_v(float3 const & a) {
-	printf("------------------------\n");
-	printf("%f	%f %f", a.x, a.y, a.z);
-	printf("\n");
-	printf("------------------------\n");
-}
-
 // float4 functions
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -698,14 +690,6 @@ CUDA_VEC_HOSTDEVICE float norm_square(float4 const & a) {
 // norm 
 CUDA_VEC_HOSTDEVICE float norm(float4 const & a) {
 	return sqrt(norm_square(a));
-}
-
-// print
-CUDA_VEC_HOSTDEVICE void print_v(float4 const & a) {
-	printf("------------------------\n");
-	printf("%f	%f %f %f", a.x, a.y, a.z, a.w);
-	printf("\n");
-	printf("------------------------\n");
 }
 
 // int2 functions
