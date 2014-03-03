@@ -76,7 +76,7 @@ void Node::set_x_rotation_along_bone_length() {
 	//its length
 	if (length.y() != 0.0 || length.z() != 0.0) {
 		osg::Quat q;
-		//Calculate rotation from to new length to previous length
+		//Calculate rotation from new length to previous length
 		q.makeRotate(osg::Vec3(length.length(), 0, 0), length);
 
 		//new length is only an x value
@@ -102,7 +102,7 @@ void Node::set_x_rotation_along_bone_length() {
 				//To calculate new child rotation lets call previous parent Q1,
 				// added parent rotation Q1', and index 2 for child rotations
 				// So we have to solve the next equation
-				// Q2 * Q1 = Q2 * Q2' * Q1 *Q1'
+				// Q2 * Q1 = Q2 * Q2' * Q1 * Q1'
 				// Isolating Q2'
 				// Q2' = Q1 * inv(Q1') * inv(Q1)
 				osg::Quat correction_rot = parent_prev_rot
@@ -154,7 +154,8 @@ void Node::set_y_rotation_perpendicular_to_next_bone(int n_frame) {
 
 	osg::Quat extra_rot;
 	//Created a rotation from current y axis location to the calculated
-	//normal vector
+	//normal vector, this code gives the shortest rotation between the
+	//two vectors
 	extra_rot.makeRotate(current_y_axis, normal_vec);
 
 	//Updated current rotation
