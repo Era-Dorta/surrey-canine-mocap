@@ -1,8 +1,8 @@
 #ifndef CUDA_VEC_CUH
 #define CUDA_VEC_CUH
 
-#include "vector_types.h"
-#include "cuda_runtime.h"
+#include "CUDA/vector_types.h"
+#include "CUDA/cuda_runtime.h"
 #include <stdio.h>
 #include <fstream>
 #include <iomanip>
