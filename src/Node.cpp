@@ -144,23 +144,46 @@ void Node::set_y_rotation_perpendicular_to_next_bone(int n_frame) {
 	//Calculate the vector normal to this bone and its parent bone
 	osg::Vec3 normal_vec = parent_bone_dir ^ bone_dir;
 
+	//Parent y axis is (0, 1, 0) so if the calculated normal has
+	//negative y then used the opposite normal to have a y axis
+	//as close as possible to the parent
+	if (normal_vec.y() < 0) {
+		normal_vec = -normal_vec;
+	}
+
 	//If the bone dir and parent dir are the same then use parent y axis
 	if (normal_vec == osg::Vec3(0, 0, 0)) {
-		//TODO Sometimes the quaternion will be identity so
-		//nothing should be done, but the renderer will show some x axis
-		//rotation
 		normal_vec.set(0, 1, 0);
 	}
 
 	normal_vec.normalize();
 
 	double dot_prod = current_y_axis * normal_vec;
+
+	//1 is 0 rotation and -1 is 360 degrees rotation
 	if (dot_prod >= 1.0 || dot_prod <= -1.0) {
 		return;
 	}
 
+	// A dot B = norm(A) * norm(B) * cos(angle)
 	double angle = acos(current_y_axis * normal_vec);
-	osg::Quat extra_rot(angle, bone_dir);
+
+	//TODO There should be a way to calculate the angle sign
+	//We know the angle but not the rotation direction so calculate
+	//with both and then use the one closer to the solution
+	osg::Quat extra_rot0(angle, bone_dir);
+	osg::Quat extra_rot1(-angle, bone_dir);
+
+	osg::Vec3 next_y0 = quat_arr.at(n_frame) * extra_rot0 * osg::Vec3(0, 1, 0);
+	osg::Vec3 next_y1 = quat_arr.at(n_frame) * extra_rot1 * osg::Vec3(0, 1, 0);
+
+	osg::Quat extra_rot;
+	if (abs((next_y0 - normal_vec).length2())
+			<= abs((next_y1 - normal_vec).length2())) {
+		extra_rot = extra_rot0;
+	} else {
+		extra_rot = extra_rot1;
+	}
 
 	//Updated current rotation
 	quat_arr.at(n_frame) = quat_arr.at(n_frame) * extra_rot;
@@ -277,4 +300,10 @@ void Node::get_node_world_matrix_origin(int frame_num, osg::Matrix& matrix) {
 
 	matrix = osg::Matrix::translate(offset + froset->at(frame_num)) * matrix;
 	matrix = osg::Matrix::inverse(matrix);
+}
+
+bool Node::equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1) {
+	return osg::equivalent(vec0.x(), vec1.x(), (float) 1e-4)
+			&& osg::equivalent(vec0.y(), vec1.y(), (float) 1e-4)
+			&& osg::equivalent(vec0.z(), vec1.z(), (float) 1e-4);
 }

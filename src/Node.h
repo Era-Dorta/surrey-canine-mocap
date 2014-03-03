@@ -93,6 +93,8 @@ public:
 private:
 	void calculate_world_matrix(osg::Matrix& trans, int frame_num);
 
+	bool equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1);
+
 	const static osg::Vec4 joint_second_color;
 	const static osg::Vec4 bone_color;
 	const static osg::Vec4 bone_second_color;
