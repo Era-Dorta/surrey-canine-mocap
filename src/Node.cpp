@@ -152,11 +152,15 @@ void Node::set_y_rotation_perpendicular_to_next_bone(int n_frame) {
 		normal_vec.set(0, 1, 0);
 	}
 
-	osg::Quat extra_rot;
-	//Created a rotation from current y axis location to the calculated
-	//normal vector, this code gives the shortest rotation between the
-	//two vectors
-	extra_rot.makeRotate(current_y_axis, normal_vec);
+	normal_vec.normalize();
+
+	double dot_prod = current_y_axis * normal_vec;
+	if (dot_prod >= 1.0 || dot_prod <= -1.0) {
+		return;
+	}
+
+	double angle = acos(current_y_axis * normal_vec);
+	osg::Quat extra_rot(angle, bone_dir);
 
 	//Updated current rotation
 	quat_arr.at(n_frame) = quat_arr.at(n_frame) * extra_rot;
