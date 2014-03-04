@@ -32,18 +32,6 @@ SkeletonFitting::~SkeletonFitting() {
 //How to get the points???
 //Segment in boxes first???
 
-//Call fitLine with those points and the line formed by the joints
-//New joints shall be the closest points of the new line to the previous
-//joints
-
-//fitLine(InputArray points, OutputArray line, int distType, double param, double reps, double aeps)
-//points – Input vector of 2D or 3D points, stored in std::vector<> or Mat.
-//line – Output line parameters. In case of 2D fitting, it should be a vector of 4 elements (like Vec4f) - (vx, vy, x0, y0), where (vx, vy) is a normalized vector collinear to the line and (x0, y0) is a point on the line. In case of 3D fitting, it should be a vector of 6 elements (like Vec6f) - (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a normalized vector collinear to the line and (x0, y0, z0) is a point on the line.
-//distType – Distance used by the M-estimator (see the discussion below).
-//param – Numerical parameter ( C ) for some types of distances. If it is 0, an optimal value is chosen.
-//reps – Sufficient accuracy for the radius (distance between the coordinate origin and the line).
-//aeps – Sufficient accuracy for the angle. 0.01 would be a good default value for reps and aeps.
-
 //}
 
 //void SkeletonFitting::fit_skeleton_with_prev_nex_frame(Skeleton& skeleton,
