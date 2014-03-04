@@ -72,6 +72,9 @@ public:
 
 	void display_text(std::string text, osg::Vec3 pos);
 
+	void display_line(const osg::Vec3& from, const osg::Vec3& to,
+			unsigned int index);
+
 	osg::MatrixTransform* is_obj_bone(osg::Drawable* selected_obj);
 
 	//Toggle cam_num cloud point
@@ -83,7 +86,6 @@ public:
 	void toggle_3d_merged_cloud();
 
 	void toggle_group_div();
-protected:
 private:
 	osg::ref_ptr<osg::MatrixTransform> create_sphere(float radius,
 			osg::Vec4 color);

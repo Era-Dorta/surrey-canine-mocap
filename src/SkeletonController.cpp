@@ -102,6 +102,13 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Front_Left), 1);
 	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Back_Right), 2);
 	//skel_renderer.display_sphere(skel_fitter.get_paw(Skeleton::Back_Left), 3);
+	//skel_renderer.display_sphere(skel_fitter.get_new_pos()[0], 0);
+	//skel_renderer.display_sphere(skel_fitter.get_new_pos()[1], 1);
+	//skel_renderer.display_sphere(skel_fitter.get_new_pos()[2], 2);
+	//skel_renderer.display_line(osg::Vec3(0,0,0) * current_frame, osg::Vec3(1,1,1), 3);
+	//skel_renderer.display_line(osg::Vec3(1,1,1) * current_frame, osg::Vec3(2,0,1), 4);
+	//skel_renderer.display_line(skel_fitter.get_new_lines()[0], skel_fitter.get_new_lines()[1], 3);
+	//skel_renderer.display_line(skel_fitter.get_new_lines()[2], skel_fitter.get_new_lines()[3], 4);
 
 	if (skeleton->isSkelLoaded()) {
 		//Do the fitting only once per frame, then let the user modify the

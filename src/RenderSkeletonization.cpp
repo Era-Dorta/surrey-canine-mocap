@@ -393,6 +393,44 @@ void RenderSkeletonization::display_text(std::string text, osg::Vec3 pos) {
 	}
 }
 
+void RenderSkeletonization::display_line(const osg::Vec3& from,
+		const osg::Vec3& to, unsigned int index) {
+
+	if (index + 1 >= skel_group_div->getNumChildren()) {
+		osg::Geometry* linesGeom = new osg::Geometry;
+		osg::DrawArrays* drawArrayLines = new osg::DrawArrays(
+				osg::PrimitiveSet::LINE_STRIP);
+		linesGeom->addPrimitiveSet(drawArrayLines);
+
+		osg::Vec3Array* vertexData = new osg::Vec3Array;
+		linesGeom->setVertexArray(vertexData);
+
+		osg::ref_ptr<osg::Geode> tmp_geode(new osg::Geode);
+		tmp_geode->addDrawable(linesGeom);
+
+		vertexData->push_back(from);
+		vertexData->push_back(to);
+
+		drawArrayLines->setFirst(0);
+		drawArrayLines->setCount(vertexData->size());
+
+		osg::LineWidth* linewidth = new osg::LineWidth();
+		linewidth->setWidth(4.0f);
+		linesGeom->getOrCreateStateSet()->setAttributeAndModes(linewidth,
+				osg::StateAttribute::ON);
+
+		skel_group_div->addChild(tmp_geode);
+	} else {
+		osg::Geometry* linesGeom =
+				skel_group_div->getChild(index + 1)->asGeode()->getDrawable(0)->asGeometry();
+		osg::Vec3Array* vertexData =
+				(osg::Vec3Array*) (linesGeom->getVertexArray());
+		vertexData->at(0) = from;
+		vertexData->at(1) = to;
+		linesGeom->setVertexArray(vertexData);
+	}
+}
+
 void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,
 		osg::Vec3 EndPoint, float radius, osg::Vec4 CylinderColor,
 		osg::Group *pAddToThisGroup) {
