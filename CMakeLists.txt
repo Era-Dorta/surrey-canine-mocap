@@ -4,6 +4,8 @@ SET(PROJECT_NAME MultiCamViewer)
 PROJECT(${PROJECT_NAME}) 
 SET(PROJECT_EXE "${PROJECT_NAME}_exe") 
 
+set(VERBOSE "FALSE")
+
 #Set build to Release is none is given
 if (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
@@ -16,15 +18,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmakeModules")
 FIND_PACKAGE(Boost 1.46 REQUIRED COMPONENTS filesystem system)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
-#Other .h files, currently CUDA
-SET(DEPENDENCIES_DIRS "dependencies")
-INCLUDE_DIRECTORIES(${DEPENDENCIES_DIRS})
+#TODO Put verbose check and message in a function
+if (VERBOSE)
+	MESSAGE(STATUS "Found Boost include: ${Boost_INCLUDE_DIR}") 
+endif()
 
 #OpenCV
 FIND_PACKAGE(OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs") 
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
-MESSAGE(STATUS "OpenCV include dir found at ${OpenCV_INCLUDE_DIRS}") 
-MESSAGE(STATUS "OpenCV lib dir found at ${OpenCV_LIB_DIR}")
+
+if (VERBOSE)
+	MESSAGE(STATUS "Found OpenCV include: ${OpenCV_INCLUDE_DIRS}") 
+	MESSAGE(STATUS "Found OpenCV lib: ${OpenCV_LIB_DIR}")
+endif()
 
 #Custom path to compiled by hand libraries, thanks to not having permision to install software
 #If you have installation permisions remove this line
@@ -34,11 +40,19 @@ SET(CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs")
 FIND_PACKAGE(Flann)
 INCLUDE_DIRECTORIES(${FLANN_INCLUDE_DIRS})
 
+if (VERBOSE)
+	MESSAGE(STATUS "Found Flann include: ${FLANN_INCLUDE_DIRS}")
+endif()
+
 #KDL
 FIND_PACKAGE(KDL)
-MESSAGE(STATUS "KDL DIR ${KDL_INCLUDE_DIRS}")
-MESSAGE(STATUS "KDL LIB ${KDL_LIBS}")
 INCLUDE_DIRECTORIES( ${KDL_INCLUDE_DIRS} )
+
+if (VERBOSE)
+	MESSAGE(STATUS "Found KDL include: ${KDL_INCLUDE_DIRS}")
+	MESSAGE(STATUS "Found KDL lib: ${KDL_LIBS}")
+endif()	
+
 
 #TODO HINT does not work with osg, not sure why
 #OSG
@@ -50,6 +64,10 @@ FIND_PACKAGE(osgViewer)
 FIND_PACKAGE(osgGA)
 FIND_PACKAGE(osgText)
 FIND_PACKAGE(osgAnimation)
+
+#Other .h files, currently CUDA
+SET(DEPENDENCIES_DIRS "dependencies")
+INCLUDE_DIRECTORIES(${DEPENDENCIES_DIRS})
 
 #Source and header files: 
 SET(SOURCE
