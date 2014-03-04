@@ -238,86 +238,6 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 	return true;
 }
 
-bool BonePosFinder::unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
-		int &res_row, int &res_col) {
-	i_col--;
-	if (i_col < 0) {
-		return false;
-	}
-
-	while (i_row < img.rows && (int) img.at<uchar>(i_row, i_col) != 255) {
-		i_row++;
-	}
-
-	if (i_row < img.rows && (int) img.at<uchar>(i_row, i_col) == 255) {
-		res_row = i_row;
-		res_col = i_col;
-		return true;
-	}
-
-	return false;
-}
-
-void BonePosFinder::get_y_z_front_projection(
-		const osg::ref_ptr<osg::Vec3Array>& cloud,
-		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
-		cv::Mat& out_img, const osg::Vec3& trans) {
-	//We want a front view so in world axis is vectors
-	//x = [0,0,1]
-	//y = [0,1,0]
-	//z = [-1,0,0]
-	//For the projection position the head position is used,
-	//but for the legs to be the centre of the projection
-	//an offset is needed
-	float4x4 invT(0.0);
-	invT[0 * 4 + 2] = -1;
-	invT[1 * 4 + 1] = 1;
-	invT[2 * 4 + 0] = 1;
-	invT[3 * 4 + 0] = trans.z() + 0.05;
-	invT[3 * 4 + 1] = trans.y() + 0.0;
-	invT[3 * 4 + 2] = -(trans.x() - 0.3);
-	invT[3 * 4 + 3] = 1;
-
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == leg) {
-			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
-			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
-					&& point2d.x < out_img.cols)
-				out_img.at<uchar>(point2d.y, point2d.x) = 255;
-		}
-	}
-}
-
-void BonePosFinder::get_x_y_side_projection(
-		const osg::ref_ptr<osg::Vec3Array>& cloud,
-		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
-		cv::Mat& out_img, const osg::Vec3& trans) {
-	//We want a side view, so no rotation is needed
-	//x = [1,0,0]
-	//y = [0,1,0]
-	//z = [0,0,1]
-	//For the projection position the head position is used,
-	//but for the legs to be the centre of the projection
-	//an offset is needed
-	float4x4 invT(0.0);
-	invT[0 * 4 + 0] = 1;
-	invT[1 * 4 + 1] = 1;
-	invT[2 * 4 + 2] = 1;
-	invT[3 * 4 + 0] = trans.x() + 0.5;
-	invT[3 * 4 + 1] = trans.y() - 0.05;
-	invT[3 * 4 + 2] = trans.z() + 1.5;
-	invT[3 * 4 + 3] = 1;
-
-	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == leg) {
-			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
-			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
-					&& point2d.x < out_img.cols)
-				out_img.at<uchar>(point2d.y, point2d.x) = 255;
-		}
-	}
-}
-
 int BonePosFinder::find_leg_lower_3_joints_simple(
 		const osg::ref_ptr<osg::Vec3Array>& cloud,
 		const std::vector<int>& leg_points_index, const float bone_lengths[3],
@@ -396,6 +316,124 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 	return valid_pos;
 }
 
+int BonePosFinder::find_leg_lower_3_joints_line_fitting(
+		const osg::ref_ptr<osg::Vec3Array>& cloud,
+		const std::vector<int>& leg_points_index, const float bone_lengths[2],
+		const osg::Vec3 prev_bone_positions[3],
+		osg::Vec3 new_bone_positions[3]) {
+
+	std::vector<cv::Point3f> bone_points;
+	unsigned int i = 0;
+	bool go_higher = true;
+	while (i < leg_points_index.size() && go_higher) {
+		osg::Vec3 current = cloud->at(leg_points_index[i]);
+		cv::Point3f ipt(current.x(), current.y(), current.z());
+		bone_points.push_back(ipt);
+
+		if (current.y() < prev_bone_positions[1].y()) {
+			go_higher = false;
+		}
+		i++;
+	}
+
+	if (bone_points.size() == 0) {
+		return 0;
+	}
+
+	cv::Vec6f out_line;
+
+	// fitLine(InputArray points, OutputArray line, int distType,
+	// double param, double reps, double aeps)
+	// - line -> is (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a
+	// normalized vector collinear to the line and (x0, y0, z0) is a point
+	// on the line.
+	// - distType -> type of distance, euclidean is simple and good
+	// - param -> Numerical parameter ( C ) for some types of distances.
+	// If it is 0, an optimal value is chosen.
+	// - reps –> Sufficient accuracy for the radius, 0.01 is good default
+	// - aeps –> Sufficient accuracy for the angle, 0.01 is good default
+	cv::fitLine(bone_points, out_line, CV_DIST_L2, 0, 0.01, 0.01);
+
+	osg::Vec3 line_vec0(out_line.val[0], out_line.val[1], out_line.val[2]);
+	osg::Vec3 line_point0(out_line.val[3], out_line.val[4], out_line.val[5]);
+
+	osg::Vec3 paw_point(prev_bone_positions[0]);
+
+	//Calculate point in line to paw point vector
+	osg::Vec3 point_to_paw = paw_point - line_point0;
+
+	//Project point to paw vector into line vector
+	float t = point_to_paw * line_vec0;
+
+	//Point in the line at projection, this will be new paw position
+	new_bone_positions[0] = line_point0 + line_vec0 * t;
+
+	//We want line vector going upwards
+	if (line_vec0.y() > 0) {
+		line_vec0 = -line_vec0;
+	}
+
+	//Wrist position is going along the line bone length from paw position
+	new_bone_positions[1] = new_bone_positions[0] + line_vec0 * bone_lengths[0];
+	refine_start_position(new_bone_positions[1], new_bone_positions[0],
+			bone_lengths[0]);
+
+	bone_points.clear();
+	while (i < leg_points_index.size()) {
+		osg::Vec3 current = cloud->at(leg_points_index[i]);
+		cv::Point3f ipt(current.x(), current.y(), current.z());
+		bone_points.push_back(ipt);
+		i++;
+	}
+
+	if (bone_points.size() == 0) {
+		return 2;
+	}
+
+	cv::fitLine(bone_points, out_line, CV_DIST_L2, 0, 0.01, 0.01);
+
+	osg::Vec3 line_vec1(out_line.val[0], out_line.val[1], out_line.val[2]);
+	osg::Vec3 line_point1(out_line.val[3], out_line.val[4], out_line.val[5]);
+
+	//Now we want the point on the second line at distance bone length of the
+	//previous point, for that we calculate the intersection between the
+	//sphere of radius bone length and the line we just calculated
+	//http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+
+	osg::Vec3 sphe_to_line = line_point1 - new_bone_positions[1];
+	float first_val = (line_vec1 - sphe_to_line) * (line_vec1 - sphe_to_line);
+	float second_val = sphe_to_line * sphe_to_line;
+	float length2 = bone_lengths[1] * bone_lengths[1];
+	float sq = first_val - second_val + length2;
+
+	//Inside of square root is negative, so there are no solutions
+	if (sq < 0) {
+		return 2;
+	}
+
+	sq = sqrt(sq);
+
+	float first_half = -(line_vec1 * sphe_to_line);
+
+	//Calculate the two solutions
+	t = first_half + sq;
+	osg::Vec3 point0 = line_point1 + line_vec1 * t;
+
+	t = first_half - sq;
+	osg::Vec3 point1 = line_point1 + line_vec1 * t;
+
+	//Take the one that goes higher
+	if (point0.y() < point1.y()) {
+		new_bone_positions[2] = point0;
+	} else {
+		new_bone_positions[2] = point1;
+	}
+
+	refine_start_position(new_bone_positions[2], new_bone_positions[1],
+			bone_lengths[1]);
+	return 3;
+}
+
 void BonePosFinder::refine_goal_position(osg::Vec3& end_position,
 		const osg::Vec3& base_position, float length) {
 	//Recalculate bone goal position using its length so we are sure it can
@@ -412,4 +450,84 @@ void BonePosFinder::refine_start_position(osg::Vec3& start_position,
 	osg::Vec3 pos_direction = (start_position - end_position);
 	pos_direction.normalize();
 	start_position = end_position + pos_direction * length;
+}
+
+bool BonePosFinder::unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
+		int &res_row, int &res_col) {
+	i_col--;
+	if (i_col < 0) {
+		return false;
+	}
+
+	while (i_row < img.rows && (int) img.at<uchar>(i_row, i_col) != 255) {
+		i_row++;
+	}
+
+	if (i_row < img.rows && (int) img.at<uchar>(i_row, i_col) == 255) {
+		res_row = i_row;
+		res_col = i_col;
+		return true;
+	}
+
+	return false;
+}
+
+void BonePosFinder::get_y_z_front_projection(
+		const osg::ref_ptr<osg::Vec3Array>& cloud,
+		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
+		cv::Mat& out_img, const osg::Vec3& trans) {
+	//We want a front view so in world axis is vectors
+	//x = [0,0,1]
+	//y = [0,1,0]
+	//z = [-1,0,0]
+	//For the projection position the head position is used,
+	//but for the legs to be the centre of the projection
+	//an offset is needed
+	float4x4 invT(0.0);
+	invT[0 * 4 + 2] = -1;
+	invT[1 * 4 + 1] = 1;
+	invT[2 * 4 + 0] = 1;
+	invT[3 * 4 + 0] = trans.z() + 0.05;
+	invT[3 * 4 + 1] = trans.y() + 0.0;
+	invT[3 * 4 + 2] = -(trans.x() - 0.3);
+	invT[3 * 4 + 3] = 1;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == leg) {
+			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
+			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
+					&& point2d.x < out_img.cols)
+				out_img.at<uchar>(point2d.y, point2d.x) = 255;
+		}
+	}
+}
+
+void BonePosFinder::get_x_y_side_projection(
+		const osg::ref_ptr<osg::Vec3Array>& cloud,
+		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
+		cv::Mat& out_img, const osg::Vec3& trans) {
+	//We want a side view, so no rotation is needed
+	//x = [1,0,0]
+	//y = [0,1,0]
+	//z = [0,0,1]
+	//For the projection position the head position is used,
+	//but for the legs to be the centre of the projection
+	//an offset is needed
+	float4x4 invT(0.0);
+	invT[0 * 4 + 0] = 1;
+	invT[1 * 4 + 1] = 1;
+	invT[2 * 4 + 2] = 1;
+	invT[3 * 4 + 0] = trans.x() + 0.5;
+	invT[3 * 4 + 1] = trans.y() - 0.05;
+	invT[3 * 4 + 2] = trans.z() + 1.5;
+	invT[3 * 4 + 3] = 1;
+
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		if (labels[i] == leg) {
+			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
+			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
+					&& point2d.x < out_img.cols)
+				out_img.at<uchar>(point2d.y, point2d.x) = 255;
+		}
+	}
 }
