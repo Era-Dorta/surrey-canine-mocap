@@ -26,12 +26,6 @@ protected:
 			boost::shared_ptr<Skeletonization3D> skeletonization3d,
 			const camVecT& camera_arr);
 
-	void refine_goal_position(osg::Vec3& end_position,
-			const osg::Vec3& base_position, float length);
-
-	void refine_start_position(osg::Vec3& start_position,
-			const osg::Vec3& end_position, float length);
-
 	bool solve_chain(int root_bone, int end_bone, const osg::Vec3& position);
 
 	bool solve_chain_keep_next_pos(int root_bone, int end_bone,

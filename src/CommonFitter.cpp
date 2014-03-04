@@ -20,16 +20,6 @@ void CommonFitter::set_current_frame(int current_frame) {
 	this->current_frame = current_frame;
 }
 
-void CommonFitter::refine_goal_position(osg::Vec3& end_position,
-		const osg::Vec3& base_position, float length) {
-	bone_pos_finder.refine_goal_position(end_position, base_position, length);
-}
-
-void CommonFitter::refine_start_position(osg::Vec3& start_position,
-		const osg::Vec3& end_position, float length) {
-	bone_pos_finder.refine_start_position(start_position, end_position, length);
-}
-
 bool CommonFitter::solve_chain(int root_bone, int end_bone,
 		const osg::Vec3& position) {
 	return enh_ik_solver.solve_chain(root_bone, end_bone,
