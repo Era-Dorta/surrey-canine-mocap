@@ -48,7 +48,7 @@ public:
 	int find_leg_lower_3_joints_simple(
 			const osg::ref_ptr<osg::Vec3Array>& cloud,
 			const std::vector<int>& leg_points_index,
-			const float bone_lengths[3], osg::Vec3 bone_positions[3]);
+			const float bone_lengths[2], osg::Vec3 bone_positions[3]);
 
 	void refine_goal_position(osg::Vec3& end_position,
 			const osg::Vec3& base_position, float length);

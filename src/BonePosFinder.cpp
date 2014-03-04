@@ -321,13 +321,13 @@ void BonePosFinder::get_x_y_side_projection(
 int BonePosFinder::find_leg_lower_3_joints_simple(
 		const osg::ref_ptr<osg::Vec3Array>& cloud,
 		const std::vector<int>& leg_points_index, const float bone_lengths[3],
-		osg::Vec3 bone_positions[3]) {
+		osg::Vec3 bone_positions[2]) {
 
 	if (leg_points_index.size() == 0) {
 		return 0;
 	}
 
-	unsigned int bones_per_leg = 3;
+	unsigned int num_joints = 3;
 	//Start at paw position
 	bone_positions[0] = cloud->at(leg_points_index[0]);
 
@@ -337,7 +337,7 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 	osg::Vec3 bone_start_pos = bone_positions[0];
 	int bone_pos_index[3] = { 0, 0, 0 };
 	//For each bone
-	while (i < bones_per_leg && continue_shearch) {
+	while (i < num_joints && continue_shearch) {
 
 		bool not_bone_length = true;
 		int index;
@@ -389,7 +389,7 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 		//Use the vector from the mean to next bone start position
 		//to project a plausible position for this bone
 		refine_start_position(bone_positions[2], bone_positions[1],
-				bone_lengths[2]);
+				bone_lengths[1]);
 		valid_pos++;
 	}
 

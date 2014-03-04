@@ -92,10 +92,9 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 		return false;
 	}
 
-	float bone_lengths[3];
+	float bone_lengths[2];
 	bone_lengths[0] = skeleton->get_node(leg)->length.length();
 	bone_lengths[1] = skeleton->get_node(leg - 1)->length.length();
-	bone_lengths[2] = skeleton->get_node(leg - 2)->length.length();
 
 	osg::Vec3 bone_pos[3];
 	int num_valid = bone_pos_finder.find_leg_lower_3_joints_simple(cloud,
