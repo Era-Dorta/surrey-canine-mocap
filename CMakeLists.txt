@@ -6,10 +6,16 @@ SET(PROJECT_EXE "${PROJECT_NAME}_exe")
 
 set(VERBOSE "FALSE")
 
+MACRO(PRINT LIBNAME LIBFOLDER)
+	if (VERBOSE)
+		MESSAGE(STATUS "Found ${LIBNAME}: ${LIBFOLDER}")
+	endif()
+ENDMACRO()
+
 #Set build to Release is none is given
 if (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
-endif()    
+endif()
 
 #Add custom .cmake files located in this folder
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmakeModules")
@@ -17,20 +23,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmakeModules")
 #Boost
 FIND_PACKAGE(Boost 1.46 REQUIRED COMPONENTS filesystem system)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
-
-#TODO Put verbose check and message in a function
-if (VERBOSE)
-	MESSAGE(STATUS "Found Boost include: ${Boost_INCLUDE_DIR}") 
-endif()
+PRINT("Boost include:" ${Boost_INCLUDE_DIR})
 
 #OpenCV
 FIND_PACKAGE(OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs") 
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
+PRINT("OpenCV include" ${OpenCV_INCLUDE_DIRS}) 
+PRINT("OpenCV lib" ${OpenCV_LIB_DIR})
 
-if (VERBOSE)
-	MESSAGE(STATUS "Found OpenCV include: ${OpenCV_INCLUDE_DIRS}") 
-	MESSAGE(STATUS "Found OpenCV lib: ${OpenCV_LIB_DIR}")
-endif()
 
 #Custom path to compiled by hand libraries, thanks to not having permision to install software
 #If you have installation permisions remove this line
@@ -39,19 +39,14 @@ SET(CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs")
 #FLANN
 FIND_PACKAGE(Flann)
 INCLUDE_DIRECTORIES(${FLANN_INCLUDE_DIRS})
+PRINT("Flann include" ${FLANN_INCLUDE_DIRS})
 
-if (VERBOSE)
-	MESSAGE(STATUS "Found Flann include: ${FLANN_INCLUDE_DIRS}")
-endif()
 
 #KDL
 FIND_PACKAGE(KDL)
 INCLUDE_DIRECTORIES( ${KDL_INCLUDE_DIRS} )
-
-if (VERBOSE)
-	MESSAGE(STATUS "Found KDL include: ${KDL_INCLUDE_DIRS}")
-	MESSAGE(STATUS "Found KDL lib: ${KDL_LIBS}")
-endif()	
+PRINT("KDL include" ${KDL_INCLUDE_DIRS})
+PRINT("KDL lib" ${KDL_LIBS})	
 
 
 #TODO HINT does not work with osg, not sure why
@@ -149,7 +144,7 @@ src/View/SurfelModel.h
 ) 
 
 
-MACRO(config_project PROJNAME LIBNAME)
+MACRO(CONFIG_PROJECT PROJNAME LIBNAME)
 	INCLUDE_DIRECTORIES(${${LIBNAME}_INCLUDE_DIR})
 	TARGET_LINK_LIBRARIES(${PROJNAME} ${${LIBNAME}_LIBRARY})
 ENDMACRO()
@@ -170,14 +165,14 @@ TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${KDL_LIBS})
 TARGET_LINK_LIBRARIES(${PROJECT_EXE} ${OpenCV_LIBS})
 
 #OSG linking
-config_project(${PROJECT_EXE} OPENTHREADS)
-config_project(${PROJECT_EXE} OSG)
-config_project(${PROJECT_EXE} OSGDB)
-config_project(${PROJECT_EXE} OSGUTIL)
-config_project(${PROJECT_EXE} OSGVIEWER)
-config_project(${PROJECT_EXE} OSGGA)
-config_project(${PROJECT_EXE} OSGSIM)
-config_project(${PROJECT_EXE} OSGWIDGET)
-config_project(${PROJECT_EXE} OSGANIMATION)
-config_project(${PROJECT_EXE} OSGTEXT)
+CONFIG_PROJECT(${PROJECT_EXE} OPENTHREADS)
+CONFIG_PROJECT(${PROJECT_EXE} OSG)
+CONFIG_PROJECT(${PROJECT_EXE} OSGDB)
+CONFIG_PROJECT(${PROJECT_EXE} OSGUTIL)
+CONFIG_PROJECT(${PROJECT_EXE} OSGVIEWER)
+CONFIG_PROJECT(${PROJECT_EXE} OSGGA)
+CONFIG_PROJECT(${PROJECT_EXE} OSGSIM)
+CONFIG_PROJECT(${PROJECT_EXE} OSGWIDGET)
+CONFIG_PROJECT(${PROJECT_EXE} OSGANIMATION)
+CONFIG_PROJECT(${PROJECT_EXE} OSGTEXT)
 
