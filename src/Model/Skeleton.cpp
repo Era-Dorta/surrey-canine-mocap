@@ -6,7 +6,6 @@
  */
 
 #include "Skeleton.h"
-#include "DebugUtil.h"
 
 const osg::Vec3 Skeleton::x_axis(1, 0, 0);
 const osg::Vec3 Skeleton::y_axis(0, 1, 0);

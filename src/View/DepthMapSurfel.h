@@ -21,13 +21,13 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/gpu/gpu.hpp"
 
-#include "SimpleTimer.h"
+#include "../Misc/SimpleTimer.h"
 
-#include "CudaVec.h"
+#include "../Misc/CudaVec.h"
 
 //For surfelization of depth map
 
-#include "MiscUtils.h"
+#include "../Misc/MiscUtils.h"
 
 class DepthMapSurfel {
 public:

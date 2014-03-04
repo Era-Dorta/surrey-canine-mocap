@@ -8,8 +8,8 @@
 #ifndef PROJECTIONS_H_
 #define PROJECTIONS_H_
 
-#include "CudaVec.h"
-#include "RGBDCamera.h"
+#include "../Misc/CudaVec.h"
+#include "../View/RGBDCamera.h"
 #include <osg/Vec3>
 
 namespace Projections {

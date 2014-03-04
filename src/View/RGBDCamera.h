@@ -8,11 +8,11 @@
 #ifndef RGBDCAMERA_H_
 #define RGBDCAMERA_H_
 
-#include "MiscUtils.h"
+#include "../Misc/MiscUtils.h"
 #include "RGBDFrame.h"
 //#include "DepthMapPoly.h"
 #include "DepthMapSurfel.h"
-#include "SimpleTimer.h"
+#include "../Misc/SimpleTimer.h"
 #include "RenderPOV.h"
 
 #include <string>

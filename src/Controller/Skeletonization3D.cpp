@@ -1,5 +1,4 @@
 #include "Skeletonization3D.h"
-#include "DebugUtil.h"
 
 Skeletonization3D::Skeletonization3D(const camVecT& camera_arr_,
 		float merge_treshold_, float row_treshold_, float move_distance_) :

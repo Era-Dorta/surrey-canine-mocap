@@ -8,14 +8,14 @@
 #ifndef SKELETONCONTROLLER_H_
 #define SKELETONCONTROLLER_H_
 
-#include "Skeleton.h"
-#include "RenderSkeletonization.h"
+#include "../Model/Skeleton.h"
+#include "../View/RenderSkeletonization.h"
 #include "Skeletonization3D.h"
-#include "SkeletonFitting.h"
+#include "Fitting/SkeletonFitting.h"
 #include "SkeletonMixer.h"
-#include "MessageHandler.h"
+#include "../Misc/MessageHandler.h"
 #include "SkeletonState.h"
-#include "EnhancedIKSolver.h"
+#include "Fitting/EnhancedIKSolver.h"
 
 #include <osgUtil/LineSegmentIntersector>
 #include <osg/MatrixTransform>

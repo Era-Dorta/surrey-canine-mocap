@@ -8,7 +8,7 @@
 #ifndef SKELETONMIXER_H_
 #define SKELETONMIXER_H_
 
-#include "Skeleton.h"
+#include "../Model/Skeleton.h"
 #include "vector"
 
 class SkeletonMixer {

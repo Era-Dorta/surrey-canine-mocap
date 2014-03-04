@@ -8,9 +8,9 @@
 #ifndef BONEPOSFINDER_H_
 #define BONEPOSFINDER_H_
 
-#include "PixelSearch.h"
-#include "Projections.h"
-#include "Skeleton.h"
+#include "../PixelSearch.h"
+#include "../Projections.h"
+#include "../../Model/Skeleton.h"
 
 #include "opencv2/opencv.hpp"
 

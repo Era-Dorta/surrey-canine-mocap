@@ -1,5 +1,4 @@
 #include "RenderSkeletonization.h"
-#include "DebugUtil.h"
 
 RenderSkeletonization::RenderSkeletonization(const camVecT& camera_arr_,
 		osg::ref_ptr<osg::Group> render_skel_group) :

@@ -28,11 +28,11 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/gpu/gpu.hpp"
 
-#include "SimpleTimer.h"
+#include "../Misc/SimpleTimer.h"
 
-#include "CudaVec.h"
+#include "../Misc/CudaVec.h"
 
-#include "MiscUtils.h"
+#include "../Misc/MiscUtils.h"
 
 //inline float3 osgvec_2_float3(osg::Vec3 vec)
 //{

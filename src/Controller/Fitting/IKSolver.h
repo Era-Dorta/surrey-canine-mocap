@@ -8,7 +8,7 @@
 #ifndef IKSOLVER_H_
 #define IKSOLVER_H_
 
-#include "CudaVec.h"
+#include "../../Misc/CudaVec.h"
 
 #include <kdl/chain.hpp>
 #include <kdl/chainfksolver.hpp>

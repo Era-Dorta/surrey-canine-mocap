@@ -1,12 +1,12 @@
 #ifndef RENDERSKELETONIZATION_H
 #define RENDERSKELETONIZATION_H
 
-#include "Skeletonization3D.h"
-#include "RGBDCamera.h"
-#include "Node.h"
-#include "MocapHeader.h"
-#include "MiscUtils.h"
-#include "SkeletonFitting.h"
+#include "../Controller/Skeletonization3D.h"
+#include "../View/RGBDCamera.h"
+#include "../Model/Node.h"
+#include "../Model/MocapHeader.h"
+#include "../Misc/MiscUtils.h"
+#include "../Controller/Fitting/SkeletonFitting.h"
 
 #include <vector>
 

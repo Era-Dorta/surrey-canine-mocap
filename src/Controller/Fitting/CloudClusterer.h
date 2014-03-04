@@ -9,13 +9,13 @@
 #define CLOUDCLUSTERER_H_
 
 #include "KNNSearch.h"
-#include "Skeleton.h"
-#include "Projections.h"
-#include "PixelSearch.h"
+#include "../../Model/Skeleton.h"
+#include "../Projections.h"
+#include "../PixelSearch.h"
 #include "BonePosFinder.h"
 #include "CompMethods.h"
 
-#include "CudaVec.h"
+#include "../../Misc/CudaVec.h"
 
 #include <vector>
 #include <algorithm>

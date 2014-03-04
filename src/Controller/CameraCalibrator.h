@@ -11,7 +11,7 @@
 #include <osg/Vec3>
 #include <osg/Matrix>
 
-#include "RGBDCamera.h"
+#include "../View/RGBDCamera.h"
 #include <fstream>
 
 class CameraCalibrator {

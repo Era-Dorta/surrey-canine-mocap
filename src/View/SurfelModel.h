@@ -28,13 +28,13 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/gpu/gpu.hpp"
 
-#include "SimpleTimer.h"
+#include "../Misc/SimpleTimer.h"
 
-#include "CudaVec.h"
+#include "../Misc/CudaVec.h"
 
 //For containing (unstructured) surfel models
 
-#include "MiscUtils.h"
+#include "../Misc/MiscUtils.h"
 
 class SurfelModel {
 public:

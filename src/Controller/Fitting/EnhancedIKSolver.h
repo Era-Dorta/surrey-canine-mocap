@@ -9,7 +9,7 @@
 #define ENHANCEDIKSOLVER_H_
 
 #include "IKSolver.h"
-#include "Skeleton.h"
+#include "../../Model/Skeleton.h"
 
 class EnhancedIKSolver {
 public:

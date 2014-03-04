@@ -8,8 +8,8 @@
 #ifndef COMMONFITTER_H_
 #define COMMONFITTER_H_
 
-#include "Skeleton.h"
-#include "Skeletonization3D.h"
+#include "../../Model/Skeleton.h"
+#include "../Skeletonization3D.h"
 #include "EnhancedIKSolver.h"
 #include "BonePosFinder.h"
 

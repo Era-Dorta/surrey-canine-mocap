@@ -22,7 +22,7 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/gpu/gpu.hpp"
 
-#include "CudaVec.h"
+#include "../Misc/CudaVec.h"
 
 //Conversion between OSG and CUDAVEC types:
 extern float3x3 osgmat_2_float3x3(osg::Matrix3 input);

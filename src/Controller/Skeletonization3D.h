@@ -2,7 +2,7 @@
 #define SKELETONIZATION3D_H
 
 #include "Skeletonization2D.h"
-#include "RGBDCamera.h"
+#include "../View/RGBDCamera.h"
 #include "PixelSearch.h"
 
 #include <vector>

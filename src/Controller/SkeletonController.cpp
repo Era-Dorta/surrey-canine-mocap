@@ -6,7 +6,6 @@
  */
 
 #include "SkeletonController.h"
-#include "DebugUtil.h"
 
 SkeletonController::SkeletonController(const camVecT& camera_arr,
 		osg::ref_ptr<osg::Group> render_skel_group) :

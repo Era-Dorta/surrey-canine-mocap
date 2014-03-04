@@ -8,7 +8,7 @@
 #ifndef SKELETONSTATE_H_
 #define SKELETONSTATE_H_
 
-#include "Skeleton.h"
+#include "../Model/Skeleton.h"
 #include "boost/shared_ptr.hpp"
 
 class SkeletonState {

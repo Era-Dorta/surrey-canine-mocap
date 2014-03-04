@@ -6,7 +6,7 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include "MultiCamViewer.h"
+#include "Controller/MultiCamViewer.h"
 
 #include <iostream>
 using namespace std;
