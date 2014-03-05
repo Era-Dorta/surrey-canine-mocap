@@ -168,9 +168,10 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 
 	osg::ref_ptr<osg::Vec3Array> result;
 
+	//result = take_all_points_2D_merge(projection3d_array);
 	//result = simple_2D_merge(projection3d_array);
 	result = follow_path_2D_merge(visited_pixels, projection3d_array);
-	return result.get();
+	return result;
 }
 
 osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
@@ -363,6 +364,25 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 		}
 	}
 
+	return result.get();
+}
+
+osg::ref_ptr<osg::Vec3Array> Skeletonization3D::take_all_points_2D_merge(
+		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
+	//Return vector
+	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
+
+	//For each projection
+	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
+	projection3d = projection3d_array.begin();
+	for (; projection3d != projection3d_array.end(); ++projection3d) {
+		//For each point
+		std::map<osg::Vec2, osg::Vec3>::iterator point;
+		for (point = projection3d->begin(); point != projection3d->end();
+				++point) {
+			result->push_back(point->second);
+		}
+	}
 	return result.get();
 }
 

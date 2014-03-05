@@ -14,7 +14,7 @@ public:
 	//Merge bone which are 5 cm apart from each other
 	//Move bones inside the skin 2.5 cm since cameras indicate where is the
 	//skin but not the bones.
-	Skeletonization3D(const camVecT& camera_arr_, float merge_treshold_ = 0.05,
+	Skeletonization3D(const camVecT& camera_arr_, float merge_treshold_ = 0.02,
 			float row_treshold_ = 0.01, float move_distance_ = 0.025);
 
 	virtual ~Skeletonization3D();
@@ -75,6 +75,10 @@ private:
 	//merge_treshold, it does a mean of the points.
 	osg::ref_ptr<osg::Vec3Array> follow_path_2D_merge(
 			std::vector<cv::Mat>& visited_pixels,
+			std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array);
+
+	//Do not merge, just take all the points
+	osg::ref_ptr<osg::Vec3Array> take_all_points_2D_merge(
 			std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array);
 
 	//Vector of Skeletonization class, there is one instance

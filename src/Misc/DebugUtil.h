@@ -8,7 +8,7 @@
 #ifndef DEBUGUTIL_HPP_
 #define DEBUGUTIL_HPP_
 
-#include "Skeleton.h"
+#include "../Model/Skeleton.h"
 #include "CudaVec.h"
 #include <osg/Vec3>
 #include <osg/Vec4>
