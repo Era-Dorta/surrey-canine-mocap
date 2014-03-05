@@ -67,8 +67,8 @@ INCLUDE_DIRECTORIES(${DEPENDENCIES_DIRS})
 #Source and header files: 
 SET(SOURCE
 src/main.cpp
+src/MultiCamViewer.cpp
 src/Controller/CameraCalibrator.cpp
-src/Controller/MultiCamViewer.cpp
 src/Controller/PixelSearch.cpp
 src/Controller/Projections.cpp
 src/Controller/SkeletonController.cpp
@@ -104,8 +104,8 @@ src/View/SurfelModel.cpp
 ) 
 
 SET(HEADERS
+src/MultiCamViewer.h
 src/Controller/CameraCalibrator.h
-src/Controller/MultiCamViewer.h
 src/Controller/PixelSearch.h
 src/Controller/Projections.h
 src/Controller/SkeletonController.h

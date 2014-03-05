@@ -8,14 +8,14 @@
 #ifndef MULTICAMVIEWER_H_
 #define MULTICAMVIEWER_H_
 
-#include "../Misc/MiscUtils.h"
-#include "../View/RGBDCamera.h"
-#include "../View/DepthMapPoly.h"
-#include "../View/SurfelModel.h"
-#include "../Misc/SimpleTimer.h"
-#include "SkeletonController.h"
-#include "CameraCalibrator.h"
-#include "Projections.h"
+#include "Misc/MiscUtils.h"
+#include "View/RGBDCamera.h"
+#include "View/DepthMapPoly.h"
+#include "View/SurfelModel.h"
+#include "Misc/SimpleTimer.h"
+#include "Controller/SkeletonController.h"
+#include "Controller/CameraCalibrator.h"
+#include "Controller/Projections.h"
 
 #include <string>
 #include <vector>
