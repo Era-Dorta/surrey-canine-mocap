@@ -322,6 +322,8 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 		const osg::Vec3 prev_bone_positions[3],
 		osg::Vec3 new_bone_positions[3]) {
 
+	//Get all points from paw bone end until paw bone start,
+	//since points are ordered along Y only use that axis to check
 	std::vector<cv::Point3f> bone_points;
 	unsigned int i = 0;
 	bool go_higher = true;
@@ -336,39 +338,16 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 		i++;
 	}
 
-	if (bone_points.size() == 0) {
+	osg::Vec3 line_vec0, line_point0;
+	if (!fit_line_to_cloud(bone_points, line_vec0, line_point0)) {
 		return 0;
 	}
 
-	cv::Vec6f out_line;
+	//New paw position is closest point in line to previous paw position
+	closest_point_in_line_from_point(prev_bone_positions[0], line_vec0,
+			line_point0, new_bone_positions[0]);
 
-	// fitLine(InputArray points, OutputArray line, int distType,
-	// double param, double reps, double aeps)
-	// - line -> is (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a
-	// normalized vector collinear to the line and (x0, y0, z0) is a point
-	// on the line.
-	// - distType -> type of distance, euclidean is simple and good
-	// - param -> Numerical parameter ( C ) for some types of distances.
-	// If it is 0, an optimal value is chosen.
-	// - reps –> Sufficient accuracy for the radius, 0.01 is good default
-	// - aeps –> Sufficient accuracy for the angle, 0.01 is good default
-	cv::fitLine(bone_points, out_line, CV_DIST_L2, 0, 0.01, 0.01);
-
-	osg::Vec3 line_vec0(out_line.val[0], out_line.val[1], out_line.val[2]);
-	osg::Vec3 line_point0(out_line.val[3], out_line.val[4], out_line.val[5]);
-
-	osg::Vec3 paw_point(prev_bone_positions[0]);
-
-	//Calculate point in line to paw point vector
-	osg::Vec3 point_to_paw = paw_point - line_point0;
-
-	//Project point to paw vector into line vector
-	float t = point_to_paw * line_vec0;
-
-	//Point in the line at projection, this will be new paw position
-	new_bone_positions[0] = line_point0 + line_vec0 * t;
-
-	//We want line vector going upwards
+	//Make sure line_vec goes points to the body (is going upwards)
 	if (line_vec0.y() > 0) {
 		line_vec0 = -line_vec0;
 	}
@@ -378,6 +357,7 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 	refine_start_position(new_bone_positions[1], new_bone_positions[0],
 			bone_lengths[0]);
 
+	//Get the rest of the points for then next bone
 	bone_points.clear();
 	while (i < leg_points_index.size()) {
 		osg::Vec3 current = cloud->at(leg_points_index[i]);
@@ -386,47 +366,16 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 		i++;
 	}
 
-	if (bone_points.size() == 0) {
+	osg::Vec3 line_vec1, line_point1;
+	if (!fit_line_to_cloud(bone_points, line_vec1, line_point1)) {
 		return 2;
 	}
-
-	cv::fitLine(bone_points, out_line, CV_DIST_L2, 0, 0.01, 0.01);
-
-	osg::Vec3 line_vec1(out_line.val[0], out_line.val[1], out_line.val[2]);
-	osg::Vec3 line_point1(out_line.val[3], out_line.val[4], out_line.val[5]);
 
 	//Now we want the point on the second line at distance bone length of the
-	//previous point, for that we calculate the intersection between the
-	//sphere of radius bone length and the line we just calculated
-	//http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
-
-	osg::Vec3 sphe_to_line = line_point1 - new_bone_positions[1];
-	float first_val = (line_vec1 - sphe_to_line) * (line_vec1 - sphe_to_line);
-	float second_val = sphe_to_line * sphe_to_line;
-	float length2 = bone_lengths[1] * bone_lengths[1];
-	float sq = first_val - second_val + length2;
-
-	//Inside of square root is negative, so there are no solutions
-	if (sq < 0) {
+	//previous point
+	if (!point_in_line_given_distance_highest_y(new_bone_positions[1],
+			bone_lengths[1], line_vec1, line_point1, new_bone_positions[2])) {
 		return 2;
-	}
-
-	sq = sqrt(sq);
-
-	float first_half = -(line_vec1 * sphe_to_line);
-
-	//Calculate the two solutions
-	t = first_half + sq;
-	osg::Vec3 point0 = line_point1 + line_vec1 * t;
-
-	t = first_half - sq;
-	osg::Vec3 point1 = line_point1 + line_vec1 * t;
-
-	//Take the one that goes higher
-	if (point0.y() < point1.y()) {
-		new_bone_positions[2] = point0;
-	} else {
-		new_bone_positions[2] = point1;
 	}
 
 	refine_start_position(new_bone_positions[2], new_bone_positions[1],
@@ -530,4 +479,90 @@ void BonePosFinder::get_x_y_side_projection(
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;
 		}
 	}
+}
+
+bool BonePosFinder::fit_line_to_cloud(
+		const std::vector<cv::Point3f>& bone_points, osg::Vec3& line_vec,
+		osg::Vec3& line_point) {
+	if (bone_points.size() == 0) {
+		return false;
+	}
+
+	cv::Vec6f out_line;
+
+	// fitLine(InputArray points, OutputArray line, int distType,
+	// double param, double reps, double aeps)
+	// - line -> is (vx, vy, vz, x0, y0, z0), where (vx, vy, vz) is a
+	// normalized vector collinear to the line and (x0, y0, z0) is a point
+	// on the line.
+	// - distType -> type of distance, euclidean is simple and good
+	// - param -> Numerical parameter ( C ) for some types of distances.
+	// If it is 0, an optimal value is chosen.
+	// - reps –> Sufficient accuracy for the radius, 0.01 is good default
+	// - aeps –> Sufficient accuracy for the angle, 0.01 is good default
+	cv::fitLine(bone_points, out_line, CV_DIST_L2, 0, 0.01, 0.01);
+
+	line_vec.set(out_line.val[0], out_line.val[1], out_line.val[2]);
+	line_point.set(out_line.val[3], out_line.val[4], out_line.val[5]);
+
+	return true;
+}
+
+void BonePosFinder::closest_point_in_line_from_point(
+		const osg::Vec3& from_point, const osg::Vec3& line_vec,
+		const osg::Vec3& line_point, osg::Vec3& res_point) {
+
+	//Calculate vector from point in line to user point
+	osg::Vec3 line_point_to_from_point = from_point - line_point;
+
+	//Project calculated vector into line vector
+	float t = line_point_to_from_point * line_vec;
+
+	//Get position using projection
+	res_point = line_point + line_vec * t;
+}
+
+bool BonePosFinder::point_in_line_given_distance_highest_y(
+		const osg::Vec3& from_point, float distance, const osg::Vec3& line_vec,
+		const osg::Vec3& line_point, osg::Vec3& res_point) {
+	osg::Vec3 aux0, aux1;
+	if (!sphere_line_intersection(from_point, distance, line_vec, line_point,
+			aux0, aux1)) {
+		return false;
+	}
+	if (aux0.y() < aux1.y()) {
+		res_point = aux0;
+	} else {
+		res_point = aux1;
+	}
+	return true;
+}
+
+bool BonePosFinder::sphere_line_intersection(const osg::Vec3& sphe_centre,
+		float radius, const osg::Vec3& line_vec, const osg::Vec3& line_point,
+		osg::Vec3& res_point0, osg::Vec3& res_point1) {
+	//http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+
+	osg::Vec3 sphe_to_line = line_point - sphe_centre;
+	float first_val = (line_vec - sphe_to_line) * (line_vec - sphe_to_line);
+	float sphe_to_line2 = sphe_to_line * sphe_to_line;
+	float radius2 = radius * radius;
+	float sq = first_val - sphe_to_line2 + radius2;
+
+	//Inside of square root is negative, so there are no solutions
+	if (sq < 0) {
+		return false;
+	}
+
+	sq = sqrt(sq);
+
+	float first_half = -(line_vec * sphe_to_line);
+
+	//Calculate the two solutions
+	float t = first_half + sq;
+	res_point0 = line_point + line_vec * t;
+
+	t = first_half - sq;
+	res_point1 = line_point + line_vec * t;
+	return true;
 }

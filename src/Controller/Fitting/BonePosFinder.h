@@ -77,6 +77,24 @@ private:
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, cv::Mat& out_img, const osg::Vec3& trans =
 					osg::Vec3());
+
+	bool fit_line_to_cloud(const std::vector<cv::Point3f>& bone_points,
+			osg::Vec3& line_vec, osg::Vec3& line_point);
+
+	//Returns in res_point the closest point in line from from_point
+	void closest_point_in_line_from_point(const osg::Vec3& from_point,
+			const osg::Vec3& line_vec, const osg::Vec3& line_point,
+			osg::Vec3& res_point);
+
+	//Returns the point with highest Y (lowest in osg) value in line
+	//at distance from from_point
+	bool point_in_line_given_distance_highest_y(const osg::Vec3& from_point,
+			float distance, const osg::Vec3& line_vec,
+			const osg::Vec3& line_point, osg::Vec3& res_point);
+
+	bool sphere_line_intersection(const osg::Vec3& sphe_centre, float radius,
+			const osg::Vec3& line_vec, const osg::Vec3& line_point,
+			osg::Vec3& res_point0, osg::Vec3& res_point1);
 };
 
 #endif /* BONEPOSFINDER_H_ */
