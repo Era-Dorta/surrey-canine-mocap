@@ -74,7 +74,7 @@ bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(unsigned int root_bone,
 	osg::Vec3 dir_vec = goal_pos - next_bone_pos;
 	dir_vec.normalize();
 
-	float next_bone_length = next_bone->get_length().length();
+	float next_bone_length = next_bone->get_length();
 
 	//Closest point in the sphere of movement is
 	//centre of the sphere (next_bone_pos) plus its radius ( next_bone_length )
@@ -181,7 +181,7 @@ void EnhancedIKSolver::fill_chain(int root_bone, int end_bone,
 	//Insert bones in ik_solver
 	for (unsigned int i = 0; i < indices.size(); i++) {
 		Node * node = skeleton->get_node(indices[i]);
-		float3 offset = make_float3(node->get_length()._v);
+		float3 offset = make_float3(node->get_local_end()._v);
 		osg::Quat q = node->quat_arr.at(current_frame);
 		float4 rot = make_float4(q.x(), q.y(), q.z(), q.w());
 		ik_solver.add_bone_to_chain(offset, rot);

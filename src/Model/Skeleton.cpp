@@ -58,7 +58,8 @@ void Skeleton::translate_root_all_frames(const osg::Vec3& translation) {
 
 void Skeleton::change_bone_length(unsigned int index,
 		const osg::Vec3& translation) {
-	nodelist[index]->set_length(nodelist[index]->get_length() + translation);
+	nodelist[index]->set_local_end(
+			nodelist[index]->get_local_end() + translation);
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
 		nodelist[index]->children[i]->froset->at(header.currentframe) +=
 				translation;
@@ -74,8 +75,8 @@ void Skeleton::change_bone_length_all_frames(unsigned int index,
 
 	osg::Vec3 trans_local_coor = inv_glob_rot * translation;
 	//Inverse bone rotation and translate in world coordinates
-	nodelist[index]->set_length(
-			nodelist[index]->get_length() + trans_local_coor);
+	nodelist[index]->set_local_end(
+			nodelist[index]->get_local_end() + trans_local_coor);
 
 	//Translate also all brothers to maintain skeleton connectivity
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
@@ -174,7 +175,7 @@ void Skeleton::load_from_file(std::string file_name) {
 
 	//Make all bones length to be align with the x axis
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
-		(*i)->set_x_rotation_along_bone_length();
+		(*i)->set_x_rotation_along_bone_local_end();
 	}
 
 	//Make all bones y axis to be align with normal between current and

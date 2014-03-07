@@ -45,7 +45,7 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 	//Use the third camera since it gives the best head view
 	const cv::Mat& cam2_bin_img = skeletonizator->get_2D_bin_frame(2,
 			current_frame);
-	float bone_length = skeleton->get_node(0)->get_length().length();
+	float bone_length = skeleton->get_node(0)->get_length();
 	constCamVecIte cam_ite = camera_arr.begin() + 2;
 
 	if (!bone_pos_finder.find_first_bone_end_pos(cam2_bin_img, bone_length,
@@ -58,7 +58,7 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 	//Use the second camera for a side view
 	const cv::Mat& cam1_bin_img = skeletonizator->get_2D_bin_frame(1,
 			current_frame);
-	bone_length = skeleton->get_node(1)->get_length().length();
+	bone_length = skeleton->get_node(1)->get_length();
 	cam_ite = camera_arr.begin() + 1;
 
 	if (!bone_pos_finder.find_second_bone_end_pos(cam1_bin_img, bone_length,
@@ -68,7 +68,7 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 
 	//Third bone
 	osg::Vec3 vertebral_end_pos;
-	bone_length = skeleton->get_node(10)->get_length().length();
+	bone_length = skeleton->get_node(10)->get_length();
 
 	if (!bone_pos_finder.find_vertebral_end_pos(cam1_bin_img, bone_length,
 			cam_ite, current_frame, shoulder_pos, vertebral_end_pos)) {

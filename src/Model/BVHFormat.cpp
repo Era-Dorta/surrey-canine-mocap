@@ -170,13 +170,13 @@ bool BVHFormat::import_data(const char *filename) {
 							if (!endsite) {
 								curnode->set_offset(osg::Vec3(x, y, z));
 								if (curnode != root.get()
-										&& (curnode->parent->get_length()
-												== osg::Vec3(0, 0, 0))) {
-									curnode->parent->set_length(
+										&& (curnode->parent->get_local_end()
+												== osg::Vec3(0.0, 0.0, 0.0))) {
+									curnode->parent->set_local_end(
 											osg::Vec3(x, y, z));
 								}
 							} else {
-								curnode->set_length(osg::Vec3(x, y, z));
+								curnode->set_local_end(osg::Vec3(x, y, z));
 							}
 						} else if (strcompEx(line[0], "CHANNELS") && !endsite) {
 							channels += atoi(line[1]);
@@ -418,7 +418,7 @@ void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 	out_file << tabs_str << "End Site" << endl;
 	out_file << tabs_str << "{" << endl;
 	out_file << tabs_str + "\t" << "OFFSET "
-			<< joint->get_length() * header.inv_callib << endl;
+			<< joint->get_local_end() * header.inv_callib << endl;
 	out_file << tabs_str << "}" << endl;
 }
 

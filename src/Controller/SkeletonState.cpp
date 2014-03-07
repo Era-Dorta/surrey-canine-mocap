@@ -27,7 +27,7 @@ void SkeletonState::save_state(boost::shared_ptr<Skeleton> skeleton,
 		Node* node = skeleton->get_node(i);
 		rotations.at(i) = node->quat_arr.at(frame_num);
 		offsets->at(i) = node->get_offset();
-		lengths->at(i) = node->get_length();
+		lengths->at(i) = node->get_local_end();
 	}
 }
 
@@ -37,7 +37,7 @@ void SkeletonState::restore_state(boost::shared_ptr<Skeleton> skeleton,
 		Node* node = skeleton->get_node(i);
 		node->quat_arr.at(frame_num) = rotations.at(i);
 		node->set_offset(offsets->at(i));
-		node->set_length(lengths->at(i));
+		node->set_local_end(lengths->at(i));
 	}
 }
 

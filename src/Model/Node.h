@@ -40,7 +40,7 @@ public:
 	void calculate_quats(osg::ref_ptr<osg::Vec3Array> axis);
 
 	//For this method to work first call calculate_quats
-	void set_x_rotation_along_bone_length();
+	void set_x_rotation_along_bone_local_end();
 
 	void set_y_rotation_perpendicular_to_next_bone();
 
@@ -64,10 +64,15 @@ public:
 
 	void get_node_world_matrix_origin(int frame_num, osg::Matrix& matrix);
 
-	const osg::Vec3f& get_length() const;
-	void set_length(const osg::Vec3f& length);
+
+	const osg::Vec3f& get_local_end() const;
+	void set_local_end(const osg::Vec3f& local_end);
+
 	const osg::Vec3f& get_offset() const;
 	void set_offset(const osg::Vec3f& offset);
+
+	float get_length() const;
+	float get_length2() const;
 
 	//TODO Right now we use quaternions but it might be a good optimisation
 	//to have all the matrices precomputed once there are not going to be
@@ -96,8 +101,10 @@ private:
 
 	bool equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1);
 
-	osg::Vec3f length; // length of segment
+	osg::Vec3f local_end; // length of segment
 	osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
+	float length;
+	float length2;
 
 	const static osg::Vec4 joint_second_color;
 	const static osg::Vec4 bone_color;

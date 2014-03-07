@@ -282,7 +282,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	colors->push_back(node->n_joint_color);
 
 	//Create cylinder from 0,0,0 to bone final position
-	create_cylinder(osg::Vec3(), node->get_length(), Node::bone_radius,
+	create_cylinder(osg::Vec3(), node->get_local_end(), Node::bone_radius,
 			node->n_bone_color, skel_transform->asGroup());
 
 	//Create sphere at the beginning of the bone
@@ -297,7 +297,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	//sphere at the end
 	if (node->get_num_children() == 0) {
 		add_sphere_to_node(Node::joint_radius, node->n_joint_color,
-				skel_transform, osg::Matrix::translate(node->get_length()));
+				skel_transform, osg::Matrix::translate(node->get_local_end()));
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());

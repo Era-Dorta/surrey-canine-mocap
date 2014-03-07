@@ -23,6 +23,8 @@ Node::Node() {
 	osg_node = NULL;
 	n_joint_color = joint_color;
 	n_bone_color = bone_color;
+	length = 0;
+	length2 = 0;
 }
 
 Node::~Node() {
@@ -65,16 +67,16 @@ void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 	}
 }
 
-void Node::set_x_rotation_along_bone_length() {
-	//If length is only in x axis then bone is already x align with
-	//its length
-	if (length.y() != 0.0 || length.z() != 0.0) {
+void Node::set_x_rotation_along_bone_local_end() {
+	//If local_end is only in x axis then bone is already x align with
+	//its local_end
+	if (local_end.y() != 0.0 || local_end.z() != 0.0) {
 		osg::Quat q;
-		//Calculate rotation from new length to previous length
-		q.makeRotate(osg::Vec3(length.length(), 0, 0), length);
+		//Calculate rotation from new local_end to previous local_end
+		q.makeRotate(osg::Vec3(length, 0, 0), local_end);
 
-		//new length is only an x value
-		length.set(length.length(), 0, 0);
+		//new local_end is only an x value
+		local_end.set(local_end.length(), 0, 0);
 
 		//Update all rotations
 		for (unsigned int i = 0; i < quat_arr.size(); i++) {
@@ -185,7 +187,7 @@ void Node::set_y_rotation_perpendicular_to_next_bone(int n_frame) {
 	//Correct children rotations
 	std::vector<NodePtr>::iterator j = children.begin();
 	for (; j != children.end(); ++j) {
-		//See set_x_rotation_along_bone_length to understand why
+		//See set_x_rotation_along_bone_local_end to understand why
 		//correction_rot is calculated like this
 		osg::Quat correction_rot = prev_rot * extra_rot.inverse()
 				* prev_rot.inverse();
@@ -227,7 +229,7 @@ osg::Vec3 Node::get_global_pos(int frame_num) {
 osg::Vec3 Node::get_end_bone_global_pos(int frame_num) {
 	osg::Matrix aux;
 	calculate_world_matrix(aux, frame_num);
-	return length * aux;
+	return local_end * aux;
 }
 
 void Node::get_global_matrix(int frame_num, osg::Matrix& trans) {
@@ -244,9 +246,9 @@ void Node::get_parent_to_bone_end_matrix(int frame_num, osg::Matrix& m) {
 
 	//Calculate the transformation from the parent
 	//to the end of this bone end position
-	m = osg::Matrix::translate(length)
+	m = osg::Matrix::translate(local_end)
 			* osg::Matrix::rotate(quat_arr.at(frame_num))
-			* osg::Matrix::translate(parent->length)
+			* osg::Matrix::translate(parent->local_end)
 			* osg::Matrix::rotate(parent->quat_arr.at(frame_num));
 }
 
@@ -302,12 +304,17 @@ bool Node::equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1) {
 			&& osg::equivalent(vec0.z(), vec1.z(), (float) 1e-4);
 }
 
-const osg::Vec3f& Node::get_length() const {
-	return length;
 }
 
-void Node::set_length(const osg::Vec3f& length) {
-	this->length = length;
+
+const osg::Vec3f& Node::get_local_end() const {
+	return local_end;
+}
+
+void Node::set_local_end(const osg::Vec3f& local_end) {
+	this->local_end = local_end;
+	length = local_end.length();
+	length2 = length * length;
 }
 
 const osg::Vec3f& Node::get_offset() const {
@@ -316,4 +323,14 @@ const osg::Vec3f& Node::get_offset() const {
 
 void Node::set_offset(const osg::Vec3f& offset) {
 	this->offset = offset;
+	length = local_end.length();
+	length2 = length * length;
+}
+
+float Node::get_length() const {
+	return length;
+}
+
+float Node::get_length2() const {
+	return length2;
 }
