@@ -53,12 +53,12 @@ void Skeleton::translate_root(const osg::Vec3& translation) {
 }
 
 void Skeleton::translate_root_all_frames(const osg::Vec3& translation) {
-	root->offset += translation;
+	root->set_offset(root->get_offset() + translation);
 }
 
 void Skeleton::change_bone_length(unsigned int index,
 		const osg::Vec3& translation) {
-	nodelist[index]->length += translation;
+	nodelist[index]->set_length(nodelist[index]->get_length() + translation);
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
 		nodelist[index]->children[i]->froset->at(header.currentframe) +=
 				translation;
@@ -74,11 +74,13 @@ void Skeleton::change_bone_length_all_frames(unsigned int index,
 
 	osg::Vec3 trans_local_coor = inv_glob_rot * translation;
 	//Inverse bone rotation and translate in world coordinates
-	nodelist[index]->length += trans_local_coor;
+	nodelist[index]->set_length(
+			nodelist[index]->get_length() + trans_local_coor);
 
 	//Translate also all brothers to maintain skeleton connectivity
 	for (unsigned int i = 0; i < nodelist[index]->get_num_children(); i++) {
-		nodelist[index]->children[i]->offset += trans_local_coor;
+		nodelist[index]->children[i]->set_offset(
+				nodelist[index]->children[i]->get_offset() + trans_local_coor);
 	}
 }
 
@@ -244,5 +246,6 @@ void Skeleton::get_matrices_for_rotate_keep_end_pos(unsigned int index,
 	first_bone_old_rot = osg::Matrix::rotate(
 			first_bone->quat_arr.at(header.currentframe));
 	first_bone_old_trans = osg::Matrix::translate(
-			first_bone->offset + first_bone->froset->at(header.currentframe));
+			first_bone->get_offset()
+					+ first_bone->froset->at(header.currentframe));
 }

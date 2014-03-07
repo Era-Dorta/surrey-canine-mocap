@@ -40,7 +40,7 @@ void SkeletonMixer::mix() {
 		std::vector<Skeleton>::iterator skeleton = skel_arr.begin();
 		for (; skeleton != skel_arr.end(); ++skeleton) {
 			Node* other_bone = skeleton->get_node(i);
-			new_dist += other_bone->length.length2();
+			new_dist += other_bone->get_length().length2();
 		}
 
 		//Better to calculate the square root only once in the end that for
@@ -55,13 +55,14 @@ void SkeletonMixer::mix() {
 		//New position is solving euclidean distance, but we want a factor
 		//that multiplies all the values to grow/decrease along the bone direction
 		// sqrt( (x*new_prop)^2 + (x*new_prop)^2 + (x*new_prop)^2 ) = new_dist
-		double new_prop = new_dist / (double) bone->length.length();
+		double new_prop = new_dist / (double) bone->get_length().length();
 
 		//If the node is not a leaf the update all its children positions
 		for (unsigned int j = 0; j < bone->get_num_children(); j++) {
-			bone->children[j]->offset *= new_prop;
+			bone->children[j]->set_offset(
+					bone->children[j]->get_offset() * new_prop);
 		}
-		bone->length *= new_prop;
+		bone->set_length(bone->get_length() * new_prop);
 	}
 }
 

@@ -28,12 +28,6 @@ Node::Node() {
 Node::~Node() {
 }
 
-void Node::setup_offset(float x, float y, float z) {
-	offset[0] = x;
-	offset[1] = y;
-	offset[2] = z;
-}
-
 void Node::increase_no_children() {
 	children.push_back(NodePtr(new Node));
 	children.back()->parent = this;
@@ -306,4 +300,20 @@ bool Node::equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1) {
 	return osg::equivalent(vec0.x(), vec1.x(), (float) 1e-4)
 			&& osg::equivalent(vec0.y(), vec1.y(), (float) 1e-4)
 			&& osg::equivalent(vec0.z(), vec1.z(), (float) 1e-4);
+}
+
+const osg::Vec3f& Node::get_length() const {
+	return length;
+}
+
+void Node::set_length(const osg::Vec3f& length) {
+	this->length = length;
+}
+
+const osg::Vec3f& Node::get_offset() const {
+	return offset;
+}
+
+void Node::set_offset(const osg::Vec3f& offset) {
+	this->offset = offset;
 }

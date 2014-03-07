@@ -31,8 +31,6 @@ public:
 
 	void increase_no_children();
 
-	void setup_offset(float x = 0.0f, float y = 0.0f, float z = 0.0f);
-
 	void resize_frame_no(long frames);
 
 	unsigned int get_num_children();
@@ -66,12 +64,15 @@ public:
 
 	void get_node_world_matrix_origin(int frame_num, osg::Matrix& matrix);
 
+	const osg::Vec3f& get_length() const;
+	void set_length(const osg::Vec3f& length);
+	const osg::Vec3f& get_offset() const;
+	void set_offset(const osg::Vec3f& offset);
+
 	//TODO Right now we use quaternions but it might be a good optimisation
 	//to have all the matrices precomputed once there are not going to be
 	//more changes
 	std::string name;
-	osg::Vec3f length; // length of segment
-	osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
 	std::vector<NodePtr> children; // Array of pointers to child nodes
 	Node *parent; // Back pointer to parent node
 	osg::ref_ptr<osg::Vec3Array> froset; // Array of offsets for each frame
@@ -94,6 +95,9 @@ private:
 	void calculate_world_matrix(osg::Matrix& trans, int frame_num);
 
 	bool equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1);
+
+	osg::Vec3f length; // length of segment
+	osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
 
 	const static osg::Vec4 joint_second_color;
 	const static osg::Vec4 bone_color;

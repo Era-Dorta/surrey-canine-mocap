@@ -92,8 +92,8 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 	}
 
 	float bone_lengths[2];
-	bone_lengths[0] = skeleton->get_node(leg)->length.length();
-	bone_lengths[1] = skeleton->get_node(leg - 1)->length.length();
+	bone_lengths[0] = skeleton->get_node(leg)->get_length().length();
+	bone_lengths[1] = skeleton->get_node(leg - 1)->get_length().length();
 
 	osg::Vec3 bone_pos[3];
 	//Get naive bone positions
@@ -228,7 +228,7 @@ bool LegFitter::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 
 	osg::Matrix m;
 	Node* parent = skeleton->get_node(leg - 1);
-	osg::Vec3 length = parent->length;
+	osg::Vec3 length = parent->get_length();
 	if (parent->parent) {
 		parent->parent->get_global_matrix(current_frame, m);
 	} else {
@@ -283,7 +283,7 @@ bool LegFitter::fix_leg_second_lower_joint(Skeleton::Skel_Leg leg,
 
 	osg::Matrix m;
 	Node* parent = skeleton->get_node(leg - 1);
-	osg::Vec3 length = parent->length;
+	osg::Vec3 length = parent->get_length();
 	if (parent->parent) {
 		parent->parent->get_global_matrix(current_frame, m);
 	} else {

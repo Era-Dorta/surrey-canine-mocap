@@ -275,13 +275,14 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(node->quat_arr.at(current_frame))
 					* osg::Matrix::translate(
-							node->offset + node->froset->at(current_frame)));
+							node->get_offset()
+									+ node->froset->at(current_frame)));
 
 	osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array;
 	colors->push_back(node->n_joint_color);
 
 	//Create cylinder from 0,0,0 to bone final position
-	create_cylinder(osg::Vec3(), node->length, Node::bone_radius,
+	create_cylinder(osg::Vec3(), node->get_length(), Node::bone_radius,
 			node->n_bone_color, skel_transform->asGroup());
 
 	//Create sphere at the beginning of the bone
@@ -296,7 +297,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	//sphere at the end
 	if (node->get_num_children() == 0) {
 		add_sphere_to_node(Node::joint_radius, node->n_joint_color,
-				skel_transform, osg::Matrix::translate(node->length));
+				skel_transform, osg::Matrix::translate(node->get_length()));
 	}
 
 	pAddToThisGroup->addChild(skel_transform.get());
@@ -323,7 +324,8 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 	skel_transform->setMatrix(
 			osg::Matrix::rotate(node->quat_arr.at(current_frame))
 					* osg::Matrix::translate(
-							node->offset + node->froset->at(current_frame)));
+							node->get_offset()
+									+ node->froset->at(current_frame)));
 
 	//Continue for all the other nodes in the list
 	for (unsigned int i = 0; i < node->get_num_children(); i++)

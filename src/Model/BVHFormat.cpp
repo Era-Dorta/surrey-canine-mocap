@@ -168,17 +168,15 @@ bool BVHFormat::import_data(const char *filename) {
 							y = (float) atof(line[2]) * header.callib;
 							z = (float) atof(line[3]) * header.callib;
 							if (!endsite) {
-								curnode->setup_offset(x, y, z);
+								curnode->set_offset(osg::Vec3(x, y, z));
 								if (curnode != root.get()
-										&& (curnode->parent->length[0] == 0.0f
-												&& curnode->parent->length[1]
-														== 0.0f
-												&& curnode->parent->length[2]
-														== 0.0f)) {
-									curnode->parent->length.set(x, y, z);
+										&& (curnode->parent->get_length()
+												== osg::Vec3(0, 0, 0))) {
+									curnode->parent->set_length(
+											osg::Vec3(x, y, z));
 								}
 							} else {
-								curnode->length.set(x, y, z);
+								curnode->set_length(osg::Vec3(x, y, z));
 							}
 						} else if (strcompEx(line[0], "CHANNELS") && !endsite) {
 							channels += atoi(line[1]);
@@ -375,8 +373,8 @@ void BVHFormat::export_motion(std::ofstream& out_file) {
 void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 		Node* joint, std::string& tabs_str, bool print_parent) {
 	if (print_parent) {
-		out_file << tabs_str << "OFFSET " << parent->offset * header.inv_callib
-				<< endl;
+		out_file << tabs_str << "OFFSET "
+				<< parent->get_offset() * header.inv_callib << endl;
 		out_file << tabs_str << "CHANNELS " << parent->noofchannels;
 		if (parent->noofchannels == 3) {
 			out_file << " Xrotation Yrotation Zrotation" << endl;
@@ -407,7 +405,7 @@ void BVHFormat::export_data_joint(std::ofstream& out_file, Node* parent,
 void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 		std::string& tabs_str) {
 
-	out_file << tabs_str << "OFFSET " << joint->offset * header.inv_callib
+	out_file << tabs_str << "OFFSET " << joint->get_offset() * header.inv_callib
 			<< endl;
 	out_file << tabs_str << "CHANNELS " << joint->noofchannels;
 	if (joint->noofchannels == 3) {
@@ -420,7 +418,7 @@ void BVHFormat::export_end_site(std::ofstream& out_file, Node* joint,
 	out_file << tabs_str << "End Site" << endl;
 	out_file << tabs_str << "{" << endl;
 	out_file << tabs_str + "\t" << "OFFSET "
-			<< joint->length * header.inv_callib << endl;
+			<< joint->get_length() * header.inv_callib << endl;
 	out_file << tabs_str << "}" << endl;
 }
 

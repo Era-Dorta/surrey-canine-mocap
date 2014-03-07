@@ -26,8 +26,8 @@ void SkeletonState::save_state(boost::shared_ptr<Skeleton> skeleton,
 	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
 		Node* node = skeleton->get_node(i);
 		rotations.at(i) = node->quat_arr.at(frame_num);
-		offsets->at(i) = node->offset;
-		lengths->at(i) = node->length;
+		offsets->at(i) = node->get_offset();
+		lengths->at(i) = node->get_length();
 	}
 }
 
@@ -36,8 +36,8 @@ void SkeletonState::restore_state(boost::shared_ptr<Skeleton> skeleton,
 	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
 		Node* node = skeleton->get_node(i);
 		node->quat_arr.at(frame_num) = rotations.at(i);
-		node->offset = offsets->at(i);
-		node->length = lengths->at(i);
+		node->set_offset(offsets->at(i));
+		node->set_length(lengths->at(i));
 	}
 }
 
