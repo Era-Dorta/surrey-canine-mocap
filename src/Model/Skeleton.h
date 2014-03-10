@@ -66,9 +66,6 @@ public:
 	};
 private:
 	bool skel_loaded;
-	static const osg::Vec3 x_axis;
-	static const osg::Vec3 y_axis;
-	static const osg::Vec3 z_axis;
 };
 
 #endif /* SKELETON_H_ */

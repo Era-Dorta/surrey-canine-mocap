@@ -16,15 +16,19 @@ const float Node::joint_radius = 0.01;
 
 Node::Node() {
 	parent = NULL;
-	froset = new osg::Vec3Array;
-	freuler = new osg::Vec3Array;
+	froset = new osg::Vec3Array();
+	freuler = new osg::Vec3Array();
 	DOFs = 0;
 	noofchannels = 0;
 	osg_node = NULL;
+	osg_axis = NULL;
 	n_joint_color = joint_color;
 	n_bone_color = bone_color;
 	length = 0;
 	length2 = 0;
+	x_axis = new osg::Vec3Array();
+	y_axis = new osg::Vec3Array();
+	z_axis = new osg::Vec3Array();
 }
 
 Node::~Node() {
@@ -42,10 +46,16 @@ void Node::resize_frame_no(long frames) {
 		freuler->resize(frames, freuler->back());
 		froset->resize(frames, froset->back());
 		quat_arr.resize(frames, quat_arr.back());
+		x_axis->resize(frames, x_axis->back());
+		y_axis->resize(frames, y_axis->back());
+		z_axis->resize(frames, z_axis->back());
 	} else {
 		freuler->resize(frames);
 		froset->resize(frames);
 		quat_arr.resize(frames);
+		x_axis->resize(frames);
+		y_axis->resize(frames);
+		z_axis->resize(frames);
 	}
 }
 
@@ -67,134 +77,79 @@ void Node::calculate_quats(osg::ref_ptr<osg::Vec3Array> axis) {
 	}
 }
 
-void Node::set_x_rotation_along_bone_local_end() {
-	//If local_end is only in x axis then bone is already x align with
-	//its local_end
-	if (local_end.y() != 0.0 || local_end.z() != 0.0) {
-		osg::Quat q;
-		//Calculate rotation from new local_end to previous local_end
-		q.makeRotate(osg::Vec3(length, 0, 0), local_end);
-
-		//new local_end is only an x value
-		local_end.set(local_end.length(), 0, 0);
-
-		//Update all rotations
-		for (unsigned int i = 0; i < quat_arr.size(); i++) {
-			//New rotation is rotation from x to previous and then old rotation
-			osg::Quat new_r_after = quat_arr.at(i).inverse() * q
-					* quat_arr.at(i);
-			quat_arr.at(i) = quat_arr.at(i) * new_r_after;
-			osg::Quat parent_prev_rot = quat_arr.at(i);
-
-			//Update children rotations
-			std::vector<NodePtr>::iterator j = children.begin();
-			for (; j != children.end(); ++j) {
-				//TODO Recalculate this in a way that does not break compatibility
-				//This line effectively removes any compatibility with skeletons
-				//that have gaps in them, but we don not care since our dog
-				//skeletons all the bones are connected
-				(*j)->offset.set((*j)->offset.length(), 0, 0);
-
-				//To calculate new child rotation lets call previous parent Q1,
-				// added parent rotation Q1', and index 2 for child rotations
-				// So we have to solve the next equation
-				// Q2 * Q1 = Q2 * Q2' * Q1 * Q1'
-				// Isolating Q2'
-				// Q2' = Q1 * inv(Q1') * inv(Q1)
-				osg::Quat correction_rot = parent_prev_rot
-						* new_r_after.inverse() * parent_prev_rot.inverse();
-
-				(*j)->quat_arr.at(i) = (*j)->quat_arr.at(i) * correction_rot;
-			}
-		}
-	}
-}
-
-void Node::set_y_rotation_perpendicular_to_next_bone() {
-	if (parent == NULL) {
-		return;
-	}
-
+void Node::optimize_rotations_all_frames() {
 	for (unsigned int i = 0; i < quat_arr.size(); i++) {
-		set_y_rotation_perpendicular_to_next_bone(i);
+		optimize_rotation(i);
 	}
 }
 
-void Node::set_y_rotation_perpendicular_to_next_bone(int n_frame) {
-	if (parent == NULL) {
-		return;
-	}
+void Node::optimize_rotation(int n_frame) {
+
+	osg::Vec3 frame_end_pos = quat_arr.at(n_frame) * local_end;
+	osg::Quat new_rot;
+	//Calculate rotation from local_end without rotation to
+	//where local_end should be for this frame,
+	//makeRotate gives the fastest and simplest rotation
+	new_rot.makeRotate(local_end, frame_end_pos);
 
 	osg::Quat prev_rot = quat_arr.at(n_frame);
-	osg::Vec3 parent_bone_dir, bone_dir, current_y_axis;
+	//New rotation is the fastest one
+	quat_arr.at(n_frame) = new_rot;
 
-	//Since parent is already align its bone direction is the x axis
-	parent_bone_dir = osg::Vec3(1, 0, 0);
+	//Update children rotations to avoid a change in the skeleton position
+	osg::Quat new_rot_inv(new_rot.inverse());
+	std::vector<NodePtr>::iterator j = children.begin();
+	for (; j != children.end(); ++j) {
+		// To calculate new child rotation lets call previous parent rotation
+		// Q1, new parent rotation Q1' and lets use index 2 for child rotations
+		// So we previous state is describe by:
+		// Q2 * Q1 = QT -> Where QT is total rotation at child end position
+		// New rotation will be
+		// Q2' * Q1' = QT
+		// Isolating Q2'
+		// Q2' = Q2 * Q1 * inv(Q1')
+		(*j)->quat_arr.at(n_frame) = (*j)->quat_arr.at(n_frame) * prev_rot
+				* new_rot_inv;
+	}
 
-	//Current node y axis is after calculated after its rotation
-	current_y_axis = quat_arr.at(n_frame) * osg::Vec3(0, 1, 0);
+	set_rotation_axis(n_frame);
+}
 
-	//Current bone direction is also already align with x axis
-	bone_dir = quat_arr.at(n_frame) * osg::Vec3(1, 0, 0);
+void Node::set_rotation_axis(int n_frame) {
+	if (parent == NULL) {
+		x_axis->at(n_frame) = quat_arr.at(n_frame) * local_end;
+		x_axis->at(n_frame).normalize();
+		y_axis->at(n_frame).set(x_axis->at(n_frame).x(), -x_axis->at(n_frame).y(),
+				-x_axis->at(n_frame).z());
+		y_axis->at(n_frame).normalize();
+		z_axis->at(n_frame) = x_axis->at(n_frame) ^ y_axis->at(n_frame);
+		z_axis->at(n_frame).normalize();
+		return;
+	}
+
+	//x_axis is the vector that goes to local_end position for this frame
+	x_axis->at(n_frame) = quat_arr.at(n_frame) * local_end;
+	x_axis->at(n_frame).normalize();
 
 	//Calculate the vector normal to this bone and its parent bone
-	osg::Vec3 normal_vec = parent_bone_dir ^ bone_dir;
+	osg::Vec3 normal_vec = parent->local_end ^ x_axis->at(n_frame);
+	normal_vec.normalize();
 
-	//Parent y axis is (0, 1, 0) so if the calculated normal has
-	//negative y then used the opposite normal to have a y axis
-	//as close as possible to the parent
-	if (normal_vec.y() < 0) {
+	//To have a common criteria lets prefer normal vectors with positive z
+	if (normal_vec.z() < 0) {
 		normal_vec = -normal_vec;
 	}
 
-	//If the bone dir and parent dir are the same then use parent y axis
+	//If the bone dir and parent dir are the parallel then use parent y axis
 	if (normal_vec == osg::Vec3(0, 0, 0)) {
-		normal_vec.set(0, 1, 0);
+		normal_vec = parent->y_axis->at(n_frame);
 	}
 
-	normal_vec.normalize();
+	y_axis->at(n_frame) = normal_vec;
 
-	double dot_prod = current_y_axis * normal_vec;
-
-	//1 is 0 rotation and -1 is 360 degrees rotation
-	if (dot_prod >= 1.0 || dot_prod <= -1.0) {
-		return;
-	}
-
-	// A dot B = norm(A) * norm(B) * cos(angle)
-	double angle = acos(current_y_axis * normal_vec);
-
-	//TODO There should be a way to calculate the angle sign
-	//We know the angle but not the rotation direction so calculate
-	//with both and then use the one closer to the solution
-	osg::Quat extra_rot0(angle, bone_dir);
-	osg::Quat extra_rot1(-angle, bone_dir);
-
-	osg::Vec3 next_y0 = quat_arr.at(n_frame) * extra_rot0 * osg::Vec3(0, 1, 0);
-	osg::Vec3 next_y1 = quat_arr.at(n_frame) * extra_rot1 * osg::Vec3(0, 1, 0);
-
-	osg::Quat extra_rot;
-	if (abs((next_y0 - normal_vec).length2())
-			<= abs((next_y1 - normal_vec).length2())) {
-		extra_rot = extra_rot0;
-	} else {
-		extra_rot = extra_rot1;
-	}
-
-	//Updated current rotation
-	quat_arr.at(n_frame) = quat_arr.at(n_frame) * extra_rot;
-
-	//Correct children rotations
-	std::vector<NodePtr>::iterator j = children.begin();
-	for (; j != children.end(); ++j) {
-		//See set_x_rotation_along_bone_local_end to understand why
-		//correction_rot is calculated like this
-		osg::Quat correction_rot = prev_rot * extra_rot.inverse()
-				* prev_rot.inverse();
-
-		(*j)->quat_arr.at(n_frame) = (*j)->quat_arr.at(n_frame)
-				* correction_rot;
-	}
+	// z axis is one normal axis to x and y axis
+	z_axis->at(n_frame) = x_axis->at(n_frame) ^ y_axis->at(n_frame);
+	z_axis->at(n_frame).normalize();
 }
 
 void Node::update_euler_angles() {
@@ -304,8 +259,29 @@ bool Node::equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1) {
 			&& osg::equivalent(vec0.z(), vec1.z(), (float) 1e-4);
 }
 
+const osg::Vec3& Node::get_x_axis(int n_frame) const {
+	return x_axis->at(n_frame);
 }
 
+void Node::set_x_axis(int n_frame, const osg::Vec3& new_axis) {
+	x_axis->at(n_frame) = new_axis;
+}
+
+const osg::Vec3& Node::get_y_axis(int n_frame) const {
+	return y_axis->at(n_frame);
+}
+
+void Node::set_y_axis(int n_frame, const osg::Vec3& new_axis) {
+	y_axis->at(n_frame) = new_axis;
+}
+
+const osg::Vec3& Node::get_z_axis(int n_frame) const {
+	return z_axis->at(n_frame);
+}
+
+void Node::set_z_axis(int n_frame, const osg::Vec3& new_axis) {
+	z_axis->at(n_frame) = new_axis;
+}
 
 const osg::Vec3f& Node::get_local_end() const {
 	return local_end;

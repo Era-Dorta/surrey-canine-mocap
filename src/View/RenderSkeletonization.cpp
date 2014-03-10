@@ -259,7 +259,7 @@ osg::ref_ptr<osg::MatrixTransform> RenderSkeletonization::create_sphere(
 void RenderSkeletonization::display_skeleton(Node* node, MocapHeader& header,
 		int current_frame, bool with_axis) {
 	if (skel_created) {
-		update_skeleton(node, header, current_frame);
+		update_skeleton(node, header, current_frame, with_axis);
 	} else {
 		create_skeleton(node, header, skel_fitting_switch, current_frame,
 				with_axis);
@@ -306,7 +306,21 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 	//since this are axis that mark rotation, so we do not want them to rotate
 	//as the bones rotates but to be fixed
 	if (with_axis) {
-		add_axis_to_node(skel_transform, osg::Matrix::identity());
+		osg::Vec3 point0;
+		osg::ref_ptr<osg::MatrixTransform> trans_m = new osg::MatrixTransform;
+		trans_m->setMatrix(
+				osg::Matrix::translate(
+						node->get_offset() + node->froset->at(current_frame)));
+
+		create_cylinder(point0, node->get_x_axis(current_frame) * 0.1, 0.002,
+				osg::Vec4(1.0, 0.0, 0.0, 1.0), trans_m);
+		create_cylinder(point0, node->get_y_axis(current_frame) * 0.1, 0.002,
+				osg::Vec4(0.0, 1.0, 0.0, 1.0), trans_m);
+		create_cylinder(point0, node->get_z_axis(current_frame) * 0.1, 0.002,
+				osg::Vec4(0.0, 0.0, 1.0, 1.0), trans_m);
+
+		pAddToThisGroup->addChild(trans_m);
+		node->osg_axis = trans_m;
 	}
 
 	//Continue recursively for the other nodes
@@ -318,7 +332,7 @@ void RenderSkeletonization::create_skeleton(Node* node, MocapHeader& header,
 }
 
 void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
-		int current_frame) {
+		int current_frame, bool with_axis) {
 	osg::ref_ptr<osg::MatrixTransform> skel_transform = node->osg_node;
 	//Update the position of the bone for this frame
 	skel_transform->setMatrix(
@@ -327,9 +341,35 @@ void RenderSkeletonization::update_skeleton(Node* node, MocapHeader& header,
 							node->get_offset()
 									+ node->froset->at(current_frame)));
 
+	if (with_axis) {
+		osg::Vec3 point0;
+		osg::Geode* axis_geo;
+
+		axis_geo = node->osg_axis->getChild(0)->asGeode();
+		update_cylinder(point0, node->get_x_axis(current_frame) * 0.1, 0.002,
+				osg::Vec4(1.0, 0.0, 0.0, 1.0), axis_geo);
+
+		axis_geo = node->osg_axis->getChild(1)->asGeode();
+		update_cylinder(point0, node->get_y_axis(current_frame) * 0.1, 0.002,
+				osg::Vec4(0.0, 1.0, 0.0, 1.0), axis_geo);
+
+		axis_geo = node->osg_axis->getChild(2)->asGeode();
+		update_cylinder(point0, node->get_z_axis(current_frame) * 0.1, 0.002,
+				osg::Vec4(0.0, 0.0, 1.0, 1.0), axis_geo);
+
+		//If node is root also update global position
+		if (node->parent == NULL) {
+			node->osg_axis->setMatrix(
+					osg::Matrix::translate(
+							node->get_offset()
+									+ node->froset->at(current_frame)));
+		}
+	}
+
 	//Continue for all the other nodes in the list
 	for (unsigned int i = 0; i < node->get_num_children(); i++)
-		update_skeleton(node->children[i].get(), header, current_frame);
+		update_skeleton(node->children[i].get(), header, current_frame,
+				with_axis);
 }
 
 osg::MatrixTransform* RenderSkeletonization::is_obj_bone(
@@ -476,8 +516,43 @@ void RenderSkeletonization::create_cylinder(osg::Vec3 StartPoint,
 	geode->getOrCreateStateSet()->setAttribute(pMaterial,
 			osg::StateAttribute::OVERRIDE);
 
+	cylinderDrawable->setUseDisplayList(false);
+	cylinderDrawable->setUseVertexBufferObjects(true);
+
 	//   Add the cylinder between the two points to an existing group
 	pAddToThisGroup->addChild(geode);
+}
+
+void RenderSkeletonization::update_cylinder(osg::Vec3 StartPoint,
+		osg::Vec3 EndPoint, float radius, osg::Vec4 CylinderColor,
+		osg::Geode *cylinder_geode) {
+	float height = (StartPoint - EndPoint).length();
+	osg::Vec3 center = osg::Vec3((StartPoint.x() + EndPoint.x()) / 2,
+			(StartPoint.y() + EndPoint.y()) / 2,
+			(StartPoint.z() + EndPoint.z()) / 2);
+
+	// This is the default direction for the cylinders to face in OpenGL
+	osg::Vec3 z = osg::Vec3(0, 0, 1);
+
+	// Get diff between two points you want cylinder along
+	osg::Vec3 p = (StartPoint - EndPoint);
+
+	// Get CROSS product (the axis of rotation)
+	osg::Vec3 t = z ^ p;
+
+	// Get angle. length is magnitude of the vector
+	double angle = acos((z * p) / p.length());
+
+	//   Create a cylinder between the two points with the given radius
+	osg::ShapeDrawable* cylinder_shape =
+			static_cast<osg::ShapeDrawable*>(cylinder_geode->getDrawable(0));
+	osg::Cylinder* cylinder =
+			static_cast<osg::Cylinder*>(cylinder_shape->getShape());
+
+	cylinder->set(center, radius, height);
+	cylinder->setRotation(osg::Quat(angle, osg::Vec3(t.x(), t.y(), t.z())));
+	//This line makes sure that OSG knows that the geometry has been modified
+	cylinder_shape->dirtyBound();
 }
 
 void RenderSkeletonization::toggle_3d_cloud(int cam_num) {

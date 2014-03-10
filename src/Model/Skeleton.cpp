@@ -7,10 +7,6 @@
 
 #include "Skeleton.h"
 
-const osg::Vec3 Skeleton::x_axis(1, 0, 0);
-const osg::Vec3 Skeleton::y_axis(0, 1, 0);
-const osg::Vec3 Skeleton::z_axis(0, 0, 1);
-
 Skeleton::Skeleton() :
 		skel_loaded(false) {
 }
@@ -21,18 +17,18 @@ Skeleton::~Skeleton() {
 void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
 
 	//Rotation axis are x, y, z but after the current rotation
-	osg::Vec3 c_x_axis = nodelist[index]->quat_arr.at(header.currentframe)
-			* x_axis;
-	osg::Vec3 c_y_axis = nodelist[index]->quat_arr.at(header.currentframe)
-			* y_axis;
-	osg::Vec3 c_z_axis = nodelist[index]->quat_arr.at(header.currentframe)
-			* z_axis;
+	const osg::Vec3& c_x_axis = nodelist[index]->get_x_axis(header.currentframe);
+	const osg::Vec3& c_y_axis = nodelist[index]->get_y_axis(header.currentframe);
+	const osg::Vec3& c_z_axis = nodelist[index]->get_z_axis(header.currentframe);
 
 	osg::Quat new_rot(angle[0], c_x_axis, angle[1], c_y_axis, angle[2],
 			c_z_axis);
 
 	nodelist[index]->quat_arr.at(header.currentframe) =
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
+	nodelist[index]->set_x_axis(header.currentframe, new_rot * c_x_axis);
+	nodelist[index]->set_y_axis(header.currentframe, new_rot * c_y_axis);
+	nodelist[index]->set_z_axis(header.currentframe, new_rot * c_z_axis);
 }
 
 void Skeleton::rotate_root_all_frames(const osg::Vec3& angle) {
@@ -166,23 +162,17 @@ void Skeleton::save_to_file(std::string file_name) {
 void Skeleton::load_from_file(std::string file_name) {
 	reset_state();
 	import_data(file_name.c_str());
-
 	//Instead of euler angles use quaternions for the rotations
 	NodeIte i;
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
 		(*i)->calculate_quats(header.euler);
 	}
 
-	//Make all bones length to be align with the x axis
+	//Recalculate the rotations to avoid unnecessary ones
 	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
-		(*i)->set_x_rotation_along_bone_local_end();
+		(*i)->optimize_rotations_all_frames();
 	}
 
-	//Make all bones y axis to be align with normal between current and
-	//next bone plane
-	for (i = nodelist.begin(); i != nodelist.end(); ++i) {
-		(*i)->set_y_rotation_perpendicular_to_next_bone();
-	}
 	skel_loaded = true;
 }
 

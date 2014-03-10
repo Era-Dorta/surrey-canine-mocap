@@ -39,12 +39,10 @@ public:
 
 	void calculate_quats(osg::ref_ptr<osg::Vec3Array> axis);
 
+	void optimize_rotations_all_frames();
+
 	//For this method to work first call calculate_quats
-	void set_x_rotation_along_bone_local_end();
-
-	void set_y_rotation_perpendicular_to_next_bone();
-
-	void set_y_rotation_perpendicular_to_next_bone(int n_frame);
+	void optimize_rotation(int n_frame);
 
 	void update_euler_angles();
 
@@ -64,6 +62,12 @@ public:
 
 	void get_node_world_matrix_origin(int frame_num, osg::Matrix& matrix);
 
+	const osg::Vec3& get_x_axis(int n_frame) const;
+	void set_x_axis(int n_frame, const osg::Vec3& new_axis);
+	const osg::Vec3& get_y_axis(int n_frame) const;
+	void set_y_axis(int n_frame, const osg::Vec3& new_axis);
+	const osg::Vec3& get_z_axis(int n_frame) const;
+	void set_z_axis(int n_frame, const osg::Vec3& new_axis);
 
 	const osg::Vec3f& get_local_end() const;
 	void set_local_end(const osg::Vec3f& local_end);
@@ -89,6 +93,8 @@ public:
 	//MatrixTransform that is drawing this node, this is high coupling
 	//but it simplifies the code
 	osg::MatrixTransform* osg_node;
+	//Matrix that points to the rendered axis for this node, more code coupling
+	osg::MatrixTransform* osg_axis;
 
 	osg::Vec4 n_joint_color;
 	osg::Vec4 n_bone_color;
@@ -101,6 +107,10 @@ private:
 
 	bool equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1);
 
+	void set_rotation_axis(int n_frame);
+
+	void quat_to_euler(osg::Quat& q, osg::Vec3& euler);
+
 	osg::Vec3f local_end; // length of segment
 	osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
 	float length;
@@ -110,6 +120,10 @@ private:
 	const static osg::Vec4 bone_color;
 	const static osg::Vec4 bone_second_color;
 
-	void quat_to_euler(osg::Quat& q, osg::Vec3& euler);
+	//Custom rotation axis to give a more intuitive
+	//user rotations
+	osg::ref_ptr<osg::Vec3Array> x_axis;
+	osg::ref_ptr<osg::Vec3Array> y_axis;
+	osg::ref_ptr<osg::Vec3Array> z_axis;
 };
 #endif /* NODE_H_ */

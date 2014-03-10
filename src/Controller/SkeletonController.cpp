@@ -68,6 +68,7 @@ void SkeletonController::reset_state() {
 	state = MOVE_POINTS;
 	is_point_selected = false;
 	selected_point_index = 0;
+	chain_top_index = 0;
 	move_on_z = false;
 	mod_state = INV_KIN;
 	change_all_frames = false;
@@ -443,7 +444,7 @@ bool SkeletonController::handle_keyboard_events(
 			break;
 			//Load skeleton from a file:
 		case osgGA::GUIEventAdapter::KEY_L:
-			cout << "loading" << endl;
+			cout << "loading skeleton file" << endl;
 			load_skeleton_from_file(
 			//		"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
@@ -558,10 +559,9 @@ void SkeletonController::finish_bone_trans() {
 }
 
 void SkeletonController::update_bones_axis() {
-	Node* node = skeleton->get_node(selected_point_index);
-	node->set_y_rotation_perpendicular_to_next_bone(current_frame);
 	for (int i = chain_top_index; i <= selected_point_index; i++) {
-		skeleton->get_node(i)->set_y_rotation_perpendicular_to_next_bone(
-				current_frame);
+		skeleton->get_node(i)->optimize_rotation(current_frame);
 	}
+	Node* node = skeleton->get_node(selected_point_index);
+	node->optimize_rotation(current_frame);
 }

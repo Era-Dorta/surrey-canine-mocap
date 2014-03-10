@@ -99,10 +99,14 @@ private:
 	void create_skeleton(Node* node, MocapHeader& header,
 			osg::Group *pAddToThisGroup, int current_frame, bool with_axis);
 
-	void update_skeleton(Node* node, MocapHeader& header, int current_frame);
+	void update_skeleton(Node* node, MocapHeader& header, int current_frame,
+			bool with_axis);
 
 	void create_cylinder(osg::Vec3 StartPoint, osg::Vec3 EndPoint, float radius,
 			osg::Vec4 CylinderColor, osg::Group *pAddToThisGroup);
+
+	void update_cylinder(osg::Vec3 StartPoint, osg::Vec3 EndPoint, float radius,
+			osg::Vec4 CylinderColor, osg::Geode *cylinder_geode);
 
 	void add_axis_to_node(osg::Group* to_add, const osg::Matrix& trans);
 
