@@ -91,6 +91,7 @@ void IKSolver::add_bone_to_chain(const float3& length, const float3& rot) {
 
 	//Set bone length
 	KDL::Vector kdl_length(length.x, length.y, length.z);
+	vec_to_kdl(kdl_length);
 
 	//In KDL a 3DOF joint are two 1DOF joints without length
 	//and a third one with with the bone length
