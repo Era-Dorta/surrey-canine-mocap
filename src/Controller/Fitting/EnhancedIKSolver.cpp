@@ -104,8 +104,12 @@ bool EnhancedIKSolver::solve_chain_keep_next_bone_pos(unsigned int root_bone,
 
 		//Put next bone back to where it was
 		float3 next_bone_pos_f3 = make_float3(next_bone_pos._v);
+		//Prev rotations will be overwritten by solve_chain so
+		//make a copy in case of failure
+		std::vector<osg::Quat> copy_prev_rots(previous_rotations);
 		if (!solve_chain(end_bone + 1, end_bone + 1, next_bone_pos_f3,
 				current_frame)) {
+			previous_rotations = copy_prev_rots;
 			undo_rotations(indices, current_frame);
 			return false;
 		}
