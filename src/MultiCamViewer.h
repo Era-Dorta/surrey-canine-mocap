@@ -71,6 +71,9 @@ private:
 	void set_calibration_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
 
+	bool get_user_point(const osgGA::GUIEventAdapter& ea,
+			osgGA::GUIActionAdapter& aa, osg::Vec3& point);
+
 	int win_width;
 	int win_height;
 

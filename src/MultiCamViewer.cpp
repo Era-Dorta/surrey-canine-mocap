@@ -614,8 +614,43 @@ void MultiCamViewer::save_image_freeview() {
 
 void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
-	osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 
+	osg::Vec3 pos;
+	if (get_user_point(ea, aa, pos)) {
+		if (num_plate_points < 4) {
+			plate_points[num_plate_points] = pos;
+			num_plate_points++;
+
+			//Draw a sphere to give user feedback
+			osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
+			osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+			sphere_shape = new osg::ShapeDrawable(new osg::Sphere(pos, 0.01));
+			sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
+
+			sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
+					osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+			sphere_geode->addDrawable(sphere_shape);
+			scene_root->addChild(sphere_geode.get());
+
+		} else {
+			cam_calibrator.set_plate_points(plate_points[0], plate_points[1],
+					plate_points[2], plate_points[3]);
+			//cam_cal.recalibrate_center_all_cameras();
+			cam_calibrator.recalibrate_axis_camera();
+			cam_calibrator.save_all_cameras(_dataset_path);
+
+			//Code to calibrate each camera axis separately
+			//cam_cal.recalibrate_axis_camera();
+			//cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
+		}
+	}
+}
+
+bool MultiCamViewer::get_user_point(const osgGA::GUIEventAdapter& ea,
+		osgGA::GUIActionAdapter& aa, osg::Vec3& point) {
+
+	osgViewer::Viewer* viewer = dynamic_cast<osgViewer::Viewer*>(&aa);
 	if (viewer) {
 		double SELECTION_SENSITIVITY = 2;
 		osg::ref_ptr<osg::Viewport> viewport =
@@ -647,37 +682,9 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 			osg::MatrixList::iterator itr = worldMatrices.begin();
 			osg::Matrix& matrix = *itr;
 			//Get global coordinates of the picked point
-			osg::Vec3 pos = result->localIntersectionPoint * matrix;
-
-			if (num_plate_points < 4) {
-				plate_points[num_plate_points] = pos;
-				num_plate_points++;
-
-				//Draw a sphere to give user feedback
-				osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
-				osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
-				sphere_shape = new osg::ShapeDrawable(
-						new osg::Sphere(pos, 0.01));
-				sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
-
-				sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
-						osg::StateAttribute::OFF
-								| osg::StateAttribute::OVERRIDE);
-
-				sphere_geode->addDrawable(sphere_shape);
-				scene_root->addChild(sphere_geode.get());
-
-			} else {
-				cam_calibrator.set_plate_points(plate_points[0],
-						plate_points[1], plate_points[2], plate_points[3]);
-				//cam_cal.recalibrate_center_all_cameras();
-				cam_calibrator.recalibrate_axis_camera();
-				cam_calibrator.save_all_cameras(_dataset_path);
-
-				//Code to calibrate each camera axis separately
-				//cam_cal.recalibrate_axis_camera();
-				//cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
-			}
+			point = result->localIntersectionPoint * matrix;
+			return true;
 		}
 	}
+	return false;
 }
