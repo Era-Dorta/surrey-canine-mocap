@@ -92,12 +92,16 @@ void Node::optimize_rotation(int n_frame) {
 	//makeRotate gives the fastest and simplest rotation
 	new_rot.makeRotate(local_end, frame_end_pos);
 
+	if (new_rot == quat_arr.at(n_frame)) {
+		return;
+	}
+
 	osg::Quat prev_rot = quat_arr.at(n_frame);
 	//New rotation is the fastest one
 	quat_arr.at(n_frame) = new_rot;
 
 	//Update children rotations to avoid a change in the skeleton position
-	osg::Quat new_rot_inv(new_rot.inverse());
+	osg::Quat correction_rot = prev_rot * new_rot.inverse();
 	std::vector<NodePtr>::iterator j = children.begin();
 	for (; j != children.end(); ++j) {
 		// To calculate new child rotation lets call previous parent rotation
@@ -108,8 +112,8 @@ void Node::optimize_rotation(int n_frame) {
 		// Q2' * Q1' = QT
 		// Isolating Q2'
 		// Q2' = Q2 * Q1 * inv(Q1')
-		(*j)->quat_arr.at(n_frame) = (*j)->quat_arr.at(n_frame) * prev_rot
-				* new_rot_inv;
+		(*j)->quat_arr.at(n_frame) = (*j)->quat_arr.at(n_frame)
+				* correction_rot;
 	}
 
 	set_rotation_axis(n_frame);
@@ -119,8 +123,8 @@ void Node::set_rotation_axis(int n_frame) {
 	if (parent == NULL) {
 		x_axis->at(n_frame) = quat_arr.at(n_frame) * local_end;
 		x_axis->at(n_frame).normalize();
-		y_axis->at(n_frame).set(x_axis->at(n_frame).x(), -x_axis->at(n_frame).y(),
-				-x_axis->at(n_frame).z());
+		y_axis->at(n_frame).set(x_axis->at(n_frame).x(),
+				-x_axis->at(n_frame).y(), -x_axis->at(n_frame).z());
 		y_axis->at(n_frame).normalize();
 		z_axis->at(n_frame) = x_axis->at(n_frame) ^ y_axis->at(n_frame);
 		z_axis->at(n_frame).normalize();
