@@ -20,14 +20,16 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		last_frame_tick_count(0), manual_origin_set(false), manual_axis_rot(
 				false), set_ground_truth(true), show_bounding_box(false), current_axis_manual(
 				0), last_cam_index(0), _dataset_path(path), scene_root(
-				new osg::Group), rgb_render_interactive_view(new osg::Image), cam_vis_switch(
-				new osg::Switch), render_skel_group(new osg::Group), frame_num_text(
+				new osg::Group()), rgb_render_interactive_view(new osg::Image), cam_vis_switch(
+				new osg::Switch), render_skel_group(new osg::Group()), ground_truth_group(
+				new osg::Group()), frame_num_text(
 				create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 						"Frame range XXX-XXX, displaying frame: XXX", 18.0f)), alpha(
-				0.f), cam_calibrator(camera_arr), num_user_points(0), skel_controller(
-				camera_arr, render_skel_group) {
+				0.f), cam_calibrator(camera_arr), num_user_points(0), max_user_points(
+				16), skel_controller(camera_arr, render_skel_group), ground_truth(
+				max_user_points + 4) {
 
-	user_points.resize(15);
+	user_points.resize(max_user_points);
 	//When manual origin set use camera colour, if not then user normals
 	//for the shader
 	MiscUtils::use_normal_shader = !manual_origin_set;
@@ -70,6 +72,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		}
 		skel_controller.generate_skeletonization();
 	}
+
 	//DEBUG:
 	//cout << "begin_frame_no: " << begin_frame_no << " end_frame_no: " << end_frame_no << endl;
 
@@ -177,17 +180,20 @@ void MultiCamViewer::setup_scene() {
 		scene_root->addChild(geode);
 	}
 
-	//Shows box centred in origin to help the user select points for
-	//camera calibration
-	/*osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-	 geode->addDrawable(
-	 new osg::ShapeDrawable(new osg::Box(osg::Vec3(), 1.8, 1, 1)));
-	 osg::StateSet* ss = geode->getOrCreateStateSet();
-	 ss->setMode( GL_LIGHTING, osg::StateAttribute::OFF);
-	 ss->setAttributeAndModes(
-	 new osg::PolygonMode(osg::PolygonMode::FRONT_AND_BACK,
-	 osg::PolygonMode::LINE));
-	 scene_root->addChild(geode.get());*/
+	scene_root->addChild(ground_truth_group);
+
+	if (ground_truth.is_data_loaded()) {
+		int index_offset = 0;
+		for (unsigned int i = 0; i < max_user_points; i++) {
+			display_sphere(
+					ground_truth.get_point(i + index_offset, disp_frame_no),
+					ground_truth_group, i);
+
+			if (i == 1 || i == 4 || i == 8 || i == 11) {
+				index_offset++;
+			}
+		}
+	}
 }
 
 void MultiCamViewer::set_window_title(osgViewer::Viewer* viewer,
@@ -541,6 +547,22 @@ void MultiCamViewer::update_dynamics() {
 	if (!manual_origin_set) {
 		skel_controller.update_dynamics(disp_frame_no);
 	}
+
+	if (set_ground_truth) {
+		int index_offset = 0;
+		for (unsigned int i = 0; i < ground_truth_group->getNumChildren();
+				i++) {
+			display_sphere(
+					ground_truth.get_point(i + index_offset, disp_frame_no),
+					ground_truth_group, i);
+
+			if (i == 1 || i == 4 || i == 8 || i == 11) {
+				index_offset++;
+			}
+		}
+	}
+
+	num_user_points = 0;
 	//------------------------------------------
 
 //	//DEBUG TEST: Render POV
@@ -657,28 +679,17 @@ void MultiCamViewer::set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 	osg::Vec3 pos;
 	if (get_user_point(ea, aa, pos)) {
-		if (num_user_points < 15) {
+		if (num_user_points < max_user_points) {
 			user_points[num_user_points] = pos;
+			display_sphere(pos, ground_truth_group, num_user_points);
 			num_user_points++;
-
-			//Draw a sphere to give user feedback
-			osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
-			osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
-			sphere_shape = new osg::ShapeDrawable(new osg::Sphere(pos, 0.01));
-			sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
-
-			sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
-					osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-			sphere_geode->addDrawable(sphere_shape);
-			//TODO Create group for user selected points and delete/hide the
-			//points when user finished
-			scene_root->addChild(sphere_geode.get());
 		} else {
 			ground_truth.set_ground_truth_frame(user_points, disp_frame_no);
+
 			//std::string path(
-			//		"/home/cvssp/misc/m04701/workspace/data/groundTruth/test2.txt");
+			//		"/home/cvssp/misc/m04701/workspace/data/groundTruth/test.txt");
 			//ground_truth.save_data(path);
+			num_user_points = 0;
 		}
 	}
 }
@@ -723,4 +734,32 @@ bool MultiCamViewer::get_user_point(const osgGA::GUIEventAdapter& ea,
 		}
 	}
 	return false;
+}
+
+void MultiCamViewer::display_sphere(const osg::Vec3& pos,
+		osg::Group* add_to_group, unsigned int num_sphere) {
+	if (num_sphere < add_to_group->getNumChildren()) {
+		osg::Geode* sphe_geo = add_to_group->getChild(num_sphere)->asGeode();
+		osg::ShapeDrawable* sphe_shape =
+				static_cast<osg::ShapeDrawable*>(sphe_geo->getDrawable(0));
+		osg::Sphere* sphere = static_cast<osg::Sphere*>(sphe_shape->getShape());
+		sphere->setCenter(pos);
+		sphe_shape->dirtyBound();
+	} else {
+		//Draw a sphere to give user feedback
+		osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
+		osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+		sphere_shape = new osg::ShapeDrawable(new osg::Sphere(pos, 0.01));
+		sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
+
+		sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
+				osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+		sphere_geode->addDrawable(sphere_shape);
+
+		sphere_shape->setUseDisplayList(false);
+		sphere_shape->setUseVertexBufferObjects(true);
+
+		add_to_group->addChild(sphere_geode.get());
+	}
 }

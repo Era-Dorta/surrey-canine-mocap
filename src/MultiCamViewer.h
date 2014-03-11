@@ -78,6 +78,9 @@ private:
 	bool get_user_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa, osg::Vec3& point);
 
+	void display_sphere(const osg::Vec3& pos, osg::Group* add_to_group,
+			unsigned int num_sphere);
+
 	int win_width;
 	int win_height;
 
@@ -107,13 +110,17 @@ private:
 	//Group for class render skeleton
 	osg::ref_ptr<osg::Group> render_skel_group;
 
+	//Group for sphere and other ground truth related rendering
+	osg::ref_ptr<osg::Group> ground_truth_group;
+
 	osg::ref_ptr<osgText::Text> frame_num_text;
 	float alpha;
 
 	std::vector<osg::Vec3> user_points;
 	osg::BoundingBox bounding_box;
 	CameraCalibrator cam_calibrator;
-	int num_user_points;
+	unsigned int num_user_points;
+	unsigned int max_user_points;
 
 	SkeletonController skel_controller;
 
