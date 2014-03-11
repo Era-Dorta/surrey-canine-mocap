@@ -69,6 +69,7 @@ SET(SOURCE
 src/main.cpp
 src/MultiCamViewer.cpp
 src/Controller/CameraCalibrator.cpp
+src/Controller/GroundTruth.cpp
 src/Controller/PixelSearch.cpp
 src/Controller/Projections.cpp
 src/Controller/SkeletonController.cpp
@@ -106,6 +107,7 @@ src/View/SurfelModel.cpp
 SET(HEADERS
 src/MultiCamViewer.h
 src/Controller/CameraCalibrator.h
+src/Controller/GroundTruth.h
 src/Controller/PixelSearch.h
 src/Controller/Projections.h
 src/Controller/SkeletonController.h
