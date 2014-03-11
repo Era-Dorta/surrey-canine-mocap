@@ -83,7 +83,7 @@ private:
 
 	//Vector of Skeletonization class, there is one instance
 	//for each camera
-	std::vector<boost::shared_ptr<Skeletonization2D> > skel_arr;
+	std::vector<Skeletonization2DPtr> skel_arr;
 
 	//Each Vec3Array is a cloud of points that represent a skeleton
 	//in a given frame, viewed from a different camera
@@ -103,5 +103,7 @@ private:
 	float row_treshold;
 	float move_distance;
 };
+
+typedef boost::shared_ptr<Skeletonization3D> Skeletonization3DPtr;
 
 #endif // SKELETONIZATION3D_H

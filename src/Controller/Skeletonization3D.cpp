@@ -19,7 +19,7 @@ void Skeletonization3D::generate_skeletonization() {
 
 	//Create a Skeleton2D for each camera
 	for (constCamVecIte i = camera_arr.begin(); i != camera_arr.end(); ++i) {
-		boost::shared_ptr<Skeletonization2D> skel(new Skeletonization2D(*i));
+		Skeletonization2DPtr skel(new Skeletonization2D(*i));
 		skel->generate_skeletonization();
 		skel_arr.push_back(skel);
 	}

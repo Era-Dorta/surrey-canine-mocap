@@ -9,12 +9,10 @@
 
 SkeletonController::SkeletonController(const camVecT& camera_arr,
 		osg::ref_ptr<osg::Group> render_skel_group) :
-		skeletonized3D(
-				boost::shared_ptr<Skeletonization3D>(
-						new Skeletonization3D(camera_arr))), skeleton(
-				boost::shared_ptr<Skeleton>(new Skeleton)), skel_renderer(
-				camera_arr, render_skel_group), skel_fitter(skeleton,
-				skeletonized3D, camera_arr), enh_ik_solver(skeleton) {
+		skeletonized3D(Skeletonization3DPtr(new Skeletonization3D(camera_arr))), skeleton(
+				SkeletonPtr(new Skeleton)), skel_renderer(camera_arr,
+				render_skel_group), skel_fitter(skeleton, skeletonized3D,
+				camera_arr), enh_ik_solver(skeleton) {
 	current_frame = 0;
 	last_mouse_pos_x = 0;
 	last_mouse_pos_y = 0;
@@ -114,7 +112,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 		//Do the fitting only once per frame, then let the user modify the
 		//fitted skeleton if it wishes to do so
 		if (fitting_pending.at(current_frame)) {
-			skel_fitter.fit_skeleton_to_cloud();
+			//skel_fitter.fit_skeleton_to_cloud();
 			fitting_pending.at(current_frame) = false;
 		}
 
@@ -449,7 +447,7 @@ bool SkeletonController::handle_keyboard_events(
 			//		"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueB.bvh");
+			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueBLong.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
 			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
 					"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");

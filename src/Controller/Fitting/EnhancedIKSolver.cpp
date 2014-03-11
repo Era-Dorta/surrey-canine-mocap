@@ -10,11 +10,11 @@
 EnhancedIKSolver::EnhancedIKSolver() {
 }
 
-EnhancedIKSolver::EnhancedIKSolver(boost::shared_ptr<Skeleton> skeleton) {
+EnhancedIKSolver::EnhancedIKSolver(SkeletonPtr skeleton) {
 	init(skeleton);
 }
 
-void EnhancedIKSolver::init(boost::shared_ptr<Skeleton> skeleton) {
+void EnhancedIKSolver::init(SkeletonPtr skeleton) {
 	this->skeleton = skeleton;
 }
 

@@ -16,8 +16,7 @@ SkeletonState::~SkeletonState() {
 	// TODO Auto-generated destructor stub
 }
 
-void SkeletonState::save_state(boost::shared_ptr<Skeleton> skeleton,
-		int frame_num) {
+void SkeletonState::save_state(SkeletonPtr skeleton, int frame_num) {
 
 	if (skeleton->get_num_bones() != rotations.size()) {
 		init(skeleton->get_num_bones());
@@ -31,8 +30,7 @@ void SkeletonState::save_state(boost::shared_ptr<Skeleton> skeleton,
 	}
 }
 
-void SkeletonState::restore_state(boost::shared_ptr<Skeleton> skeleton,
-		int frame_num) {
+void SkeletonState::restore_state(SkeletonPtr skeleton, int frame_num) {
 	for (unsigned int i = 0; i < skeleton->get_num_bones(); i++) {
 		Node* node = skeleton->get_node(i);
 		node->quat_arr.at(frame_num) = rotations.at(i);

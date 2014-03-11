@@ -172,7 +172,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 }
 
 void RenderSkeletonization::display_2d_skeletons(int disp_frame_no,
-		boost::shared_ptr<Skeletonization3D> skeleton) {
+		Skeletonization3DPtr skeleton) {
 	int rows = camera_arr[0]->get_d_rows();
 	int cols = camera_arr[0]->get_d_cols();
 	float ratio_x = cols / (float) rows;

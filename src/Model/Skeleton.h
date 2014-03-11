@@ -68,4 +68,6 @@ private:
 	bool skel_loaded;
 };
 
+typedef boost::shared_ptr<Skeleton> SkeletonPtr;
+
 #endif /* SKELETON_H_ */

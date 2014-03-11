@@ -76,9 +76,9 @@ private:
 	void update_bones_axis();
 
 	//Class that creates a skeleton from a given set of frames
-	boost::shared_ptr<Skeletonization3D> skeletonized3D;
+	Skeletonization3DPtr skeletonized3D;
 
-	boost::shared_ptr<Skeleton> skeleton;
+	SkeletonPtr skeleton;
 
 	//Class that renders all skeleton related objects
 	RenderSkeletonization skel_renderer;

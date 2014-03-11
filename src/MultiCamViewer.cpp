@@ -35,7 +35,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	std::vector<std::string> cam_names;
 	MiscUtils::get_dir_names(path, &cam_names);
 	for (unsigned int i = 0; i < cam_names.size(); i++) {
-		boost::shared_ptr<RGBD_Camera> cam(
+		RGBD_CameraPtr cam(
 				new RGBD_Camera(_dataset_path, cam_names[i]));
 		camera_arr.push_back(cam);
 	}

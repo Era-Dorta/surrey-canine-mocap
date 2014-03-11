@@ -15,8 +15,8 @@ class SkeletonState {
 public:
 	SkeletonState();
 	virtual ~SkeletonState();
-	void save_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
-	void restore_state(boost::shared_ptr<Skeleton> skeleton, int frame_num);
+	void save_state(SkeletonPtr skeleton, int frame_num);
+	void restore_state(SkeletonPtr skeleton, int frame_num);
 private:
 	void init(unsigned int size);
 

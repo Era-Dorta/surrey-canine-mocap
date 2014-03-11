@@ -48,8 +48,7 @@ public:
 	//TODO Should not give Skeletonization3D as argument, still much
 	//coupling in the code
 	//Show the 2D skeleton images of each camera given a frame number
-	void display_2d_skeletons(int disp_frame_no,
-			boost::shared_ptr<Skeletonization3D> skeleton);
+	void display_2d_skeletons(int disp_frame_no, Skeletonization3DPtr skeleton);
 
 	//Show a 3D skeleton projection given a frame number
 	void display_3d_skeleon_cloud(int disp_frame_no,

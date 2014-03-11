@@ -84,7 +84,7 @@ void CameraCalibrator::manual_axis_rotation(float angle, int axis) {
 }
 
 void CameraCalibrator::save_camera_axis_calibration(int cam_index,
-		std::string path) {
+		const std::string& path) {
 
 	constCamVecIte cam = camera_arr.begin() + cam_index;
 	std::string T_fn(
@@ -112,7 +112,7 @@ void CameraCalibrator::save_camera_axis_calibration(int cam_index,
 	}
 }
 
-void CameraCalibrator::save_all_cameras(std::string path) {
+void CameraCalibrator::save_all_cameras(const std::string& path) {
 	for (unsigned int i = 0; i < camera_arr.size(); i++) {
 		save_camera_axis_calibration(i, path);
 	}

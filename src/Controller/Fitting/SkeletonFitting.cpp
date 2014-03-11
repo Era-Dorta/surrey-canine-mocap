@@ -7,9 +7,8 @@
 
 #include "SkeletonFitting.h"
 
-SkeletonFitting::SkeletonFitting(boost::shared_ptr<Skeleton> skeleton,
-		boost::shared_ptr<Skeletonization3D> skeletonization3d,
-		const camVecT& camera_arr) :
+SkeletonFitting::SkeletonFitting(SkeletonPtr skeleton,
+		Skeletonization3DPtr skeletonization3d, const camVecT& camera_arr) :
 		leg_fitter(skeleton, skeletonization3d, camera_arr), body_fitter(
 				skeleton, skeletonization3d, camera_arr) {
 	current_frame = -1;

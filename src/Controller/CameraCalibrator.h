@@ -46,10 +46,10 @@ public:
 	//Save calibration for a single camera, useful for fixing missalignments
 	//between the cameras, though it does not give good results
 	//Better do not use it
-	void save_camera_axis_calibration(int cam_index, std::string path);
+	void save_camera_axis_calibration(int cam_index, const std::string& path);
 
 	//Save calibration for all the cameras
-	void save_all_cameras(std::string path);
+	void save_all_cameras(const std::string& path);
 
 private:
 	osg::Vec3 p0, p1, p2, p3;

@@ -7,9 +7,8 @@
 
 #include "CommonFitter.h"
 
-CommonFitter::CommonFitter(boost::shared_ptr<Skeleton> skeleton,
-		boost::shared_ptr<Skeletonization3D> skeletonization3d,
-		const camVecT& camera_arr) :
+CommonFitter::CommonFitter(SkeletonPtr skeleton,
+		Skeletonization3DPtr skeletonization3d, const camVecT& camera_arr) :
 		camera_arr(camera_arr), enh_ik_solver(skeleton) {
 	current_frame = 0;
 	this->skeleton = skeleton;

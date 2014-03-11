@@ -12,8 +12,7 @@
 
 class BodyFitter: public CommonFitter {
 public:
-	BodyFitter(boost::shared_ptr<Skeleton> skeleton,
-			boost::shared_ptr<Skeletonization3D> skeletonization3d,
+	BodyFitter(SkeletonPtr skeleton, Skeletonization3DPtr skeletonization3d,
 			const camVecT& camera_arr);
 
 	bool fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,

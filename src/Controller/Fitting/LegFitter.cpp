@@ -7,9 +7,8 @@
 
 #include "LegFitter.h"
 
-LegFitter::LegFitter(boost::shared_ptr<Skeleton> skeleton,
-		boost::shared_ptr<Skeletonization3D> skeletonization3d,
-		const camVecT& camera_arr) :
+LegFitter::LegFitter(SkeletonPtr skeleton,
+		Skeletonization3DPtr skeletonization3d, const camVecT& camera_arr) :
 		CommonFitter(skeleton, skeletonization3d, camera_arr) {
 	current_frame = 0;
 }

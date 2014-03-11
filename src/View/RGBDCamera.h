@@ -114,8 +114,9 @@ private:
 	float4x4 inv_T_float4x4;
 };
 
-typedef std::vector<boost::shared_ptr<RGBD_Camera> > camVecT;
-typedef std::vector<boost::shared_ptr<RGBD_Camera> >::iterator camVecIte;
-typedef std::vector<boost::shared_ptr<RGBD_Camera> >::const_iterator constCamVecIte;
+typedef boost::shared_ptr<RGBD_Camera> RGBD_CameraPtr;
+typedef std::vector<RGBD_CameraPtr> camVecT;
+typedef std::vector<RGBD_CameraPtr>::iterator camVecIte;
+typedef std::vector<RGBD_CameraPtr>::const_iterator constCamVecIte;
 
 #endif /* RGBDCAMERA_H_ */

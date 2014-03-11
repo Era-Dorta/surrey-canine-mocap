@@ -7,9 +7,8 @@
 
 #include "BodyFitter.h"
 
-BodyFitter::BodyFitter(boost::shared_ptr<Skeleton> skeleton,
-		boost::shared_ptr<Skeletonization3D> skeletonization3d,
-		const camVecT& camera_arr) :
+BodyFitter::BodyFitter(SkeletonPtr skeleton,
+		Skeletonization3DPtr skeletonization3d, const camVecT& camera_arr) :
 		CommonFitter(skeleton, skeletonization3d, camera_arr) {
 }
 

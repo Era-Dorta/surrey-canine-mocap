@@ -13,8 +13,7 @@
 
 class LegFitter: public CommonFitter {
 public:
-	LegFitter(boost::shared_ptr<Skeleton> skeleton,
-			boost::shared_ptr<Skeletonization3D> skeletonization3d,
+	LegFitter(SkeletonPtr skeleton, Skeletonization3DPtr skeletonization3d,
 			const camVecT& camera_arr);
 
 	bool fit_leg_position_complete(Skeleton::Skel_Leg leg,

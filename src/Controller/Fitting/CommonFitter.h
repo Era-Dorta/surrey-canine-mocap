@@ -22,8 +22,7 @@ class CommonFitter {
 public:
 	void set_current_frame(int current_frame);
 protected:
-	CommonFitter(boost::shared_ptr<Skeleton> skeleton,
-			boost::shared_ptr<Skeletonization3D> skeletonization3d,
+	CommonFitter(SkeletonPtr skeleton, Skeletonization3DPtr skeletonization3d,
 			const camVecT& camera_arr);
 
 	bool solve_chain(int root_bone, int end_bone, const osg::Vec3& position);
@@ -38,8 +37,8 @@ protected:
 			const osg::Vec3& position);
 
 	int current_frame;
-	boost::shared_ptr<Skeletonization3D> skeletonizator;
-	boost::shared_ptr<Skeleton> skeleton;
+	Skeletonization3DPtr skeletonizator;
+	SkeletonPtr skeleton;
 
 	const camVecT& camera_arr;
 	BonePosFinder bone_pos_finder;

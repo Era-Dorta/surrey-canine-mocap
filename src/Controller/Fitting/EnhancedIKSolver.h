@@ -15,9 +15,9 @@ class EnhancedIKSolver {
 public:
 	EnhancedIKSolver();
 
-	EnhancedIKSolver(boost::shared_ptr<Skeleton> skeleton);
+	EnhancedIKSolver(SkeletonPtr skeleton);
 
-	void init(boost::shared_ptr<Skeleton> skeleton);
+	void init(SkeletonPtr skeleton);
 
 	bool solve_chain(int root_bone, int end_bone, const float3& position,
 			int current_frame);
@@ -37,7 +37,7 @@ private:
 
 	IKSolver ik_solver;
 	std::vector<osg::Quat> previous_rotations;
-	boost::shared_ptr<Skeleton> skeleton;
+	SkeletonPtr skeleton;
 };
 
 #endif /* ENHANCEDIKSOLVER_H_ */

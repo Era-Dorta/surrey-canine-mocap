@@ -12,8 +12,7 @@ using std::endl;
 
 class Skeletonization2D {
 public:
-	Skeletonization2D(const boost::shared_ptr<RGBD_Camera> camera_,
-			int max_clusters_ = 6);
+	Skeletonization2D(const RGBD_CameraPtr camera_, int max_clusters_ = 6);
 	virtual ~Skeletonization2D();
 	const cv::Mat& get_frame(int frame_num) const;
 	const cv::Mat& get_bin_frame(int frame_num) const;
@@ -37,9 +36,11 @@ private:
 	std::vector<cv::Mat> skeletonized_frames;
 	std::vector<cv::Mat> bin_frames;
 
-	boost::shared_ptr<RGBD_Camera> camera;
+	RGBD_CameraPtr camera;
 
 	int max_clusters;
 };
+
+typedef boost::shared_ptr<Skeletonization2D> Skeletonization2DPtr;
 
 #endif // SKELETONIZATION2D_H

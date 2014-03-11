@@ -17,9 +17,12 @@ Skeleton::~Skeleton() {
 void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
 
 	//Rotation axis are x, y, z but after the current rotation
-	const osg::Vec3& c_x_axis = nodelist[index]->get_x_axis(header.currentframe);
-	const osg::Vec3& c_y_axis = nodelist[index]->get_y_axis(header.currentframe);
-	const osg::Vec3& c_z_axis = nodelist[index]->get_z_axis(header.currentframe);
+	const osg::Vec3& c_x_axis = nodelist[index]->get_x_axis(
+			header.currentframe);
+	const osg::Vec3& c_y_axis = nodelist[index]->get_y_axis(
+			header.currentframe);
+	const osg::Vec3& c_z_axis = nodelist[index]->get_z_axis(
+			header.currentframe);
 
 	osg::Quat new_rot(angle[0], c_x_axis, angle[1], c_y_axis, angle[2],
 			c_z_axis);

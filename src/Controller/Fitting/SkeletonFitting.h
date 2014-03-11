@@ -19,9 +19,8 @@
 
 class SkeletonFitting {
 public:
-	SkeletonFitting(boost::shared_ptr<Skeleton> skeleton,
-			boost::shared_ptr<Skeletonization3D> skeletonization3d,
-			const camVecT& camera_arr);
+	SkeletonFitting(SkeletonPtr skeleton,
+			Skeletonization3DPtr skeletonization3d, const camVecT& camera_arr);
 	virtual ~SkeletonFitting();
 
 	void calculate_for_frame(int frame_num);
@@ -30,8 +29,8 @@ public:
 
 	const std::vector<Skeleton::Skel_Leg>& getLabels() const;
 private:
-	boost::shared_ptr<Skeletonization3D> skeletonizator;
-	boost::shared_ptr<Skeleton> skeleton;
+	Skeletonization3DPtr skeletonizator;
+	SkeletonPtr skeleton;
 	LegFitter leg_fitter;
 	BodyFitter body_fitter;
 	CloudClusterer cloud_clusterer;
