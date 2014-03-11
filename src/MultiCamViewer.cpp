@@ -18,15 +18,16 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		win_width(1280), win_height(720), paused(true), with_colour(false), frame_period_s(
 				1.0 / 30.0), //30fps
 		last_frame_tick_count(0), manual_origin_set(false), manual_axis_rot(
-				false), show_bounding_box(false), current_axis_manual(0), last_cam_index(
-				0), _dataset_path(path), scene_root(new osg::Group), rgb_render_interactive_view(
-				new osg::Image), cam_vis_switch(new osg::Switch), render_skel_group(
-				new osg::Group), frame_num_text(
+				false), set_ground_truth(true), show_bounding_box(false), current_axis_manual(
+				0), last_cam_index(0), _dataset_path(path), scene_root(
+				new osg::Group), rgb_render_interactive_view(new osg::Image), cam_vis_switch(
+				new osg::Switch), render_skel_group(new osg::Group), frame_num_text(
 				create_text(osg::Vec3(20.0f, 20.0f, 0.0f),
 						"Frame range XXX-XXX, displaying frame: XXX", 18.0f)), alpha(
-				0.f), cam_calibrator(camera_arr), num_plate_points(0), skel_controller(
+				0.f), cam_calibrator(camera_arr), num_user_points(0), skel_controller(
 				camera_arr, render_skel_group) {
 
+	user_points.resize(15);
 	//When manual origin set use camera colour, if not then user normals
 	//for the shader
 	MiscUtils::use_normal_shader = !manual_origin_set;
@@ -35,8 +36,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	std::vector<std::string> cam_names;
 	MiscUtils::get_dir_names(path, &cam_names);
 	for (unsigned int i = 0; i < cam_names.size(); i++) {
-		RGBD_CameraPtr cam(
-				new RGBD_Camera(_dataset_path, cam_names[i]));
+		RGBD_CameraPtr cam(new RGBD_Camera(_dataset_path, cam_names[i]));
 		camera_arr.push_back(cam);
 	}
 
@@ -374,6 +374,12 @@ bool MultiCamViewer::handle(const osgGA::GUIEventAdapter& ea,
 		set_calibration_point(ea, aa);
 	}
 
+	if (set_ground_truth && ea.getEventType() == osgGA::GUIEventAdapter::RELEASE
+			&& ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON
+			&& (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_CTRL)) {
+		set_ground_truth_point(ea, aa);
+	}
+
 	//Play the sequence:
 	if (!paused) {
 		if (disp_frame_no < end_frame_no) {
@@ -617,9 +623,9 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 
 	osg::Vec3 pos;
 	if (get_user_point(ea, aa, pos)) {
-		if (num_plate_points < 4) {
-			plate_points[num_plate_points] = pos;
-			num_plate_points++;
+		if (num_user_points < 4) {
+			user_points[num_user_points] = pos;
+			num_user_points++;
 
 			//Draw a sphere to give user feedback
 			osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
@@ -634,8 +640,8 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 			scene_root->addChild(sphere_geode.get());
 
 		} else {
-			cam_calibrator.set_plate_points(plate_points[0], plate_points[1],
-					plate_points[2], plate_points[3]);
+			cam_calibrator.set_plate_points(user_points[0], user_points[1],
+					user_points[2], user_points[3]);
 			//cam_cal.recalibrate_center_all_cameras();
 			cam_calibrator.recalibrate_axis_camera();
 			cam_calibrator.save_all_cameras(_dataset_path);
@@ -643,6 +649,36 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 			//Code to calibrate each camera axis separately
 			//cam_cal.recalibrate_axis_camera();
 			//cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
+		}
+	}
+}
+
+void MultiCamViewer::set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
+		osgGA::GUIActionAdapter& aa) {
+	osg::Vec3 pos;
+	if (get_user_point(ea, aa, pos)) {
+		if (num_user_points < 15) {
+			user_points[num_user_points] = pos;
+			num_user_points++;
+
+			//Draw a sphere to give user feedback
+			osg::ref_ptr<osg::Geode> sphere_geode = new osg::Geode;
+			osg::ref_ptr<osg::ShapeDrawable> sphere_shape;
+			sphere_shape = new osg::ShapeDrawable(new osg::Sphere(pos, 0.01));
+			sphere_shape->setColor(osg::Vec4(1.0, 0.0, 0.0, 0.0));
+
+			sphere_geode->getOrCreateStateSet()->setMode(GL_LIGHTING,
+					osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+			sphere_geode->addDrawable(sphere_shape);
+			//TODO Create group for user selected points and delete/hide the
+			//points when user finished
+			scene_root->addChild(sphere_geode.get());
+		} else {
+			ground_truth.set_ground_truth_frame(user_points, disp_frame_no);
+			//std::string path(
+			//		"/home/cvssp/misc/m04701/workspace/data/groundTruth/test2.txt");
+			//ground_truth.save_data(path);
 		}
 	}
 }

@@ -16,6 +16,7 @@
 #include "Controller/SkeletonController.h"
 #include "Controller/CameraCalibrator.h"
 #include "Controller/Projections.h"
+#include "Controller/GroundTruth.h"
 
 #include <string>
 #include <vector>
@@ -71,6 +72,9 @@ private:
 	void set_calibration_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
 
+	void set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
+			osgGA::GUIActionAdapter& aa);
+
 	bool get_user_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa, osg::Vec3& point);
 
@@ -86,6 +90,7 @@ private:
 	double last_frame_tick_count;
 	bool manual_origin_set;
 	bool manual_axis_rot;
+	bool set_ground_truth;
 	bool show_bounding_box;
 	int current_axis_manual;
 	int last_cam_index;
@@ -105,12 +110,14 @@ private:
 	osg::ref_ptr<osgText::Text> frame_num_text;
 	float alpha;
 
-	osg::Vec3 plate_points[4];
+	std::vector<osg::Vec3> user_points;
 	osg::BoundingBox bounding_box;
 	CameraCalibrator cam_calibrator;
-	int num_plate_points;
+	int num_user_points;
 
 	SkeletonController skel_controller;
+
+	GroundTruth ground_truth;
 
 };
 

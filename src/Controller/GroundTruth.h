@@ -9,17 +9,19 @@
 #define GROUNDTRUTH_H_
 
 #include "../Model/Skeleton.h"
+#include <fstream>
+#include <iostream>
 
 class GroundTruth {
 public:
 	GroundTruth();
 
 	void set_ground_truth_frame(const std::vector<osg::Vec3>& points,
-			int frame_num);
+			unsigned int frame_num);
 
-	void save_data(const std::string& path);
+	bool save_data(const std::string& path);
 
-	void load_data(const std::string& path);
+	bool load_data(const std::string& path);
 
 	float calculate_total_error_skeleton(const SkeletonPtr skeleton);
 
@@ -28,9 +30,20 @@ public:
 
 	float calculate_frame_bone_error(const SkeletonPtr skeleton,
 			unsigned int bone_index, int frame);
+
+	bool is_data_loaded() const;
+
 private:
+	void save_points(std::ofstream& out_file);
+
+	void load_points(std::ifstream& in_file, int num_frames,
+			int num_points_frame);
+
+	float read_float(std::stringstream& ss);
+
 	typedef std::vector<osg::Vec3> Vec3Vec;
 	std::vector<Vec3Vec> points_vec;
+	bool data_loaded;
 };
 
 #endif /* GROUNDTRUTH_H_ */
