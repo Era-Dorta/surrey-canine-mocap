@@ -562,4 +562,12 @@ void SkeletonController::update_bones_axis() {
 	}
 	Node* node = skeleton->get_node(selected_point_index);
 	node->optimize_rotation(current_frame);
+
+	for (unsigned int i = 0; i < node->get_num_children(); i++) {
+		Node* child = node->children[i].get();
+		child->optimize_rotation(current_frame);
+		for (unsigned int j = 0; j < child->get_num_children(); j++) {
+			child->children[j]->optimize_rotation(current_frame);
+		}
+	}
 }

@@ -140,7 +140,8 @@ void Node::set_rotation_axis(int n_frame) {
 	normal_vec.normalize();
 
 	//To have a common criteria lets prefer normal vectors with positive z
-	if (normal_vec.z() < 0) {
+	osg::Vec3 normal_vec_glob = get_global_rot(n_frame) * normal_vec;
+	if (normal_vec_glob.z() < 0) {
 		normal_vec = -normal_vec;
 	}
 
