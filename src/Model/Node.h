@@ -107,6 +107,8 @@ private:
 
 	bool equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1);
 
+	bool equivalent(const osg::Quat& q0, const osg::Quat& q1);
+
 	void set_rotation_axis(int n_frame);
 
 	void quat_to_euler(osg::Quat& q, osg::Vec3& euler);

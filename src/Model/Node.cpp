@@ -264,6 +264,13 @@ bool Node::equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1) {
 			&& osg::equivalent(vec0.z(), vec1.z(), (float) 1e-4);
 }
 
+bool Node::equivalent(const osg::Quat& q0, const osg::Quat& q1){
+	return osg::equivalent(q0.x(), q1.x(), 1e-4)
+			&& osg::equivalent(q0.y(), q1.y(), 1e-4)
+			&& osg::equivalent(q0.z(), q1.z(), 1e-4)
+			&& osg::equivalent(q0.w(), q1.w(), 1e-4);
+}
+
 const osg::Vec3& Node::get_x_axis(int n_frame) const {
 	return x_axis->at(n_frame);
 }

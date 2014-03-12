@@ -32,6 +32,7 @@ public:
 	void save_file(std::string& file_name);
 
 private:
+	//TODO Implement method to get right and left legs to be the same size
 	std::vector<Skeleton> skel_arr;
 	Skeleton skel_result;
 };
