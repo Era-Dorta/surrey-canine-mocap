@@ -14,7 +14,6 @@
 class SkeletonState {
 public:
 	SkeletonState();
-	virtual ~SkeletonState();
 	void save_state(SkeletonPtr skeleton, int frame_num);
 	void restore_state(SkeletonPtr skeleton, int frame_num);
 private:
@@ -22,7 +21,7 @@ private:
 
 	std::vector<osg::Quat> rotations;
 	osg::ref_ptr<osg::Vec3Array> offsets;
-	osg::ref_ptr<osg::Vec3Array> lengths;
+	osg::ref_ptr<osg::Vec3Array> local_ends;
 };
 
 #endif /* SKELETONSTATE_H_ */
