@@ -20,7 +20,7 @@ MocapHeader::MocapHeader() {
 	euler->at(1).set(0, 1, 0);
 	euler->at(2).set(0, 0, 1);
 
-	callib = 0.3f;
+	callib = 0.6f;
 	inv_callib = 1.0 / callib;
 	degrees = false;
 	scalefactor = 1.0;
