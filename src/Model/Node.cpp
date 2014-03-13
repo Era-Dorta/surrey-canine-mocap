@@ -124,8 +124,9 @@ void Node::set_rotation_axis(int n_frame) {
 	if (parent == NULL) {
 		x_axis->at(n_frame) = quat_arr.at(n_frame) * local_end;
 		x_axis->at(n_frame).normalize();
-		y_axis->at(n_frame).set(x_axis->at(n_frame).x(),
-				-x_axis->at(n_frame).y(), -x_axis->at(n_frame).z());
+		y_axis->at(n_frame).set(
+				x_axis->at(n_frame).y() - x_axis->at(n_frame).z(),
+				-x_axis->at(n_frame).x(), x_axis->at(n_frame).x());
 		y_axis->at(n_frame).normalize();
 		z_axis->at(n_frame) = x_axis->at(n_frame) ^ y_axis->at(n_frame);
 		z_axis->at(n_frame).normalize();
@@ -272,7 +273,7 @@ bool Node::equivalent(const osg::Quat& q0, const osg::Quat& q1) {
 			&& osg::equivalent(q0.w(), q1.w(), 1e-4);
 }
 
-void Node::correct_descendants_axis(int frame_num){
+void Node::correct_descendants_axis(int frame_num) {
 	set_rotation_axis(frame_num);
 	for (unsigned int i = 0; i < children.size(); i++) {
 		children[i]->correct_descendants_axis(frame_num);

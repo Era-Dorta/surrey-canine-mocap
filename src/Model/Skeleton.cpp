@@ -27,23 +27,34 @@ void Skeleton::rotate_joint(unsigned int index, const osg::Vec3& angle) {
 	osg::Quat new_rot(angle[0], c_x_axis, angle[1], c_y_axis, angle[2],
 			c_z_axis);
 
+	//Update rotation
 	nodelist[index]->quat_arr.at(header.currentframe) =
 			nodelist[index]->quat_arr.at(header.currentframe) * new_rot;
+
+	//Update rotation axis
 	nodelist[index]->set_x_axis(header.currentframe, new_rot * c_x_axis);
 	nodelist[index]->set_y_axis(header.currentframe, new_rot * c_y_axis);
 	nodelist[index]->set_z_axis(header.currentframe, new_rot * c_z_axis);
 }
 
 void Skeleton::rotate_root_all_frames(const osg::Vec3& angle) {
-	std::vector<osg::Quat>::iterator i;
-	for (i = root->quat_arr.begin(); i != root->quat_arr.end(); ++i) {
-		osg::Vec3 x_axis(1, 0, 0), y_axis(0, 1, 0), z_axis(0, 0, 1);
-		x_axis = (*i) * x_axis;
-		y_axis = (*i) * y_axis;
-		z_axis = (*i) * z_axis;
 
-		osg::Quat new_rot(angle[0], x_axis, angle[1], y_axis, angle[2], z_axis);
-		(*i) = (*i) * new_rot;
+	for (unsigned int i = 0; i < root->quat_arr.size(); i++) {
+		//Rotation axis are x, y, z but after the current rotation
+		const osg::Vec3& c_x_axis = root->get_x_axis(i);
+		const osg::Vec3& c_y_axis = root->get_y_axis(i);
+		const osg::Vec3& c_z_axis = root->get_z_axis(i);
+
+		osg::Quat new_rot(angle[0], c_x_axis, angle[1], c_y_axis, angle[2],
+				c_z_axis);
+
+		//Update rotation
+		root->quat_arr.at(i) = root->quat_arr.at(i) * new_rot;
+
+		//Update rotation axis
+		root->set_x_axis(i, new_rot * c_x_axis);
+		root->set_y_axis(i, new_rot * c_y_axis);
+		root->set_z_axis(i, new_rot * c_z_axis);
 	}
 }
 

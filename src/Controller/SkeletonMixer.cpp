@@ -36,6 +36,12 @@ void SkeletonMixer::init(std::string& model, std::vector<std::string>& to_mix) {
 			node->quat_arr.at(j).set(0, 0, 0, 1);
 		}
 	}
+
+	//Also set all per frame translations to 0
+	Node* root = skel_result.get_root();
+	for (unsigned int i = 0; i < root->froset->size(); i++) {
+		root->froset->at(i).set(0, 0, 0);
+	}
 }
 
 void SkeletonMixer::mix() {
