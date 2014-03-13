@@ -50,16 +50,12 @@ void SkeletonMixer::mix() {
 	for (unsigned int i = 0; i < skel_result.get_num_bones(); i++) {
 		float new_dist = 0.0;
 
-		//Accumulate the square distance of all the other bone samples
+		//Accumulate the distance of all the other bone samples
 		std::vector<Skeleton>::iterator skeleton = skel_arr.begin();
 		for (; skeleton != skel_arr.end(); ++skeleton) {
 			Node* other_bone = skeleton->get_node(i);
-			new_dist += other_bone->get_length2();
+			new_dist += other_bone->get_length();
 		}
-
-		//Better to calculate the square root only once in the end that for
-		//every other bone sample
-		new_dist = std::sqrt(new_dist);
 
 		//Divide by number of samples
 		new_dist *= inv_size;
@@ -90,23 +86,18 @@ void SkeletonMixer::mix_right_left_leg(unsigned int start_right,
 		unsigned int end_right, unsigned int start_left,
 		unsigned int end_left) {
 
-	float inv_size = 1.0 / skel_arr.size();
 	unsigned int right_index = start_right;
 	for (unsigned int left_index = start_left; left_index <= end_left;
 			left_index++) {
 		float new_dist = 0.0;
-		//Accumulate the square distance of right and left leg current bone
+		//Accumulate the distance of right and left leg current bone
 		Node* other_bone = skel_result.get_node(left_index);
-		new_dist += other_bone->get_length2();
+		new_dist += other_bone->get_length();
 		other_bone = skel_result.get_node(right_index);
-		new_dist += other_bone->get_length2();
+		new_dist += other_bone->get_length();
 
-		//Better to calculate the square root only once in the end that for
-		//every other bone sample
-		new_dist = std::sqrt(new_dist);
-
-		//Divide by number of samples
-		new_dist *= inv_size;
+		//Get the mean
+		new_dist *= 0.5;
 
 		//Update the to bones lengths
 		update_bone_length(right_index, new_dist);
