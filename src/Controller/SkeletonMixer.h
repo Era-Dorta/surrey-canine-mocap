@@ -21,7 +21,7 @@ public:
 
 	virtual ~SkeletonMixer();
 
-	void set_data(std::string& model, std::vector<std::string>& to_mix);
+	void init(std::string& model, std::vector<std::string>& to_mix);
 
 	//Mix all the data. Bones sizes of model are the mean size of to_mix
 	//skeletons. If empty constructor was called and set data
@@ -32,7 +32,11 @@ public:
 	void save_file(std::string& file_name);
 
 private:
-	//TODO Implement method to get right and left legs to be the same size
+	void mix_right_left_leg(unsigned int start_right, unsigned int end_right,
+			unsigned int start_left, unsigned int end_left);
+
+	void update_bone_length(unsigned int index, double distance);
+
 	std::vector<Skeleton> skel_arr;
 	Skeleton skel_result;
 };

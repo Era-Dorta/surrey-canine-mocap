@@ -26,6 +26,9 @@ SkeletonController::SkeletonController(const camVecT& camera_arr,
 	inv_kin_scale_factor = 0.0005;
 
 	reset_state();
+
+	//Uncomment to take the manual marked up frames
+	//and mix those bone lengths to produce a averaged skeleton
 	//mix_skeleton_sizes();
 }
 
@@ -540,10 +543,10 @@ void SkeletonController::mix_skeleton_sizes() {
 
 	std::string file_name =
 			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh";
-	skel_mixer.set_data(file_name, file_names);
+	skel_mixer.init(file_name, file_names);
 	skel_mixer.mix();
 	file_name =
-			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed.bvh";
+			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed_legs_impr.bvh";
 	skel_mixer.save_file(file_name);
 }
 
