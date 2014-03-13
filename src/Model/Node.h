@@ -113,6 +113,8 @@ private:
 
 	void quat_to_euler(osg::Quat& q, osg::Vec3& euler);
 
+	void correct_descendants_axis(int frame_num);
+
 	osg::Vec3f local_end; // length of segment
 	osg::Vec3f offset; // Transitional offset with respect to the end of the parent link
 	float length;

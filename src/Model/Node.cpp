@@ -84,38 +84,39 @@ void Node::optimize_rotations_all_frames() {
 }
 
 void Node::optimize_rotation(int n_frame) {
+	//If the node has more than one child then a rotation would inevitably
+	//change the position of second, third, ... , children since they are an
+	//fixed offset with respect to parent local coordinate system
+	if (children.size() <= 1) {
+		osg::Vec3 frame_end_pos = quat_arr.at(n_frame) * local_end;
+		osg::Quat new_rot;
+		//Calculate rotation from local_end without rotation to
+		//where local_end should be for this frame,
+		//makeRotate gives the fastest and simplest rotation
+		new_rot.makeRotate(local_end, frame_end_pos);
 
-	osg::Vec3 frame_end_pos = quat_arr.at(n_frame) * local_end;
-	osg::Quat new_rot;
-	//Calculate rotation from local_end without rotation to
-	//where local_end should be for this frame,
-	//makeRotate gives the fastest and simplest rotation
-	new_rot.makeRotate(local_end, frame_end_pos);
+		//If the rotation is already the fastest one do not anything
+		if (new_rot != quat_arr.at(n_frame)) {
+			osg::Quat prev_rot = quat_arr.at(n_frame);
+			//New rotation is the fastest one
+			quat_arr.at(n_frame) = new_rot;
 
-	if (new_rot == quat_arr.at(n_frame)) {
-		return;
+			//Update child rotation to avoid a change in the skeleton position
+			if (children.size() == 1) {
+				// To calculate new child rotation lets call previous parent rotation
+				// Q1, new parent rotation Q1' and lets use index 2 for child rotations
+				// So we previous state is describe by:
+				// Q2 * Q1 = QT -> Where QT is total rotation at child end position
+				// New rotation will be
+				// Q2' * Q1' = QT
+				// Isolating Q2'
+				// Q2' = Q2 * Q1 * inv(Q1')
+				children[0]->quat_arr.at(n_frame) = children[0]->quat_arr.at(
+						n_frame) * prev_rot * new_rot.inverse();
+				correct_descendants_axis(n_frame);
+			}
+		}
 	}
-
-	osg::Quat prev_rot = quat_arr.at(n_frame);
-	//New rotation is the fastest one
-	quat_arr.at(n_frame) = new_rot;
-
-	//Update children rotations to avoid a change in the skeleton position
-	osg::Quat correction_rot = prev_rot * new_rot.inverse();
-	std::vector<NodePtr>::iterator j = children.begin();
-	for (; j != children.end(); ++j) {
-		// To calculate new child rotation lets call previous parent rotation
-		// Q1, new parent rotation Q1' and lets use index 2 for child rotations
-		// So we previous state is describe by:
-		// Q2 * Q1 = QT -> Where QT is total rotation at child end position
-		// New rotation will be
-		// Q2' * Q1' = QT
-		// Isolating Q2'
-		// Q2' = Q2 * Q1 * inv(Q1')
-		(*j)->quat_arr.at(n_frame) = (*j)->quat_arr.at(n_frame)
-				* correction_rot;
-	}
-
 	set_rotation_axis(n_frame);
 }
 
@@ -264,11 +265,18 @@ bool Node::equivalent(const osg::Vec3& vec0, const osg::Vec3& vec1) {
 			&& osg::equivalent(vec0.z(), vec1.z(), (float) 1e-4);
 }
 
-bool Node::equivalent(const osg::Quat& q0, const osg::Quat& q1){
+bool Node::equivalent(const osg::Quat& q0, const osg::Quat& q1) {
 	return osg::equivalent(q0.x(), q1.x(), 1e-4)
 			&& osg::equivalent(q0.y(), q1.y(), 1e-4)
 			&& osg::equivalent(q0.z(), q1.z(), 1e-4)
 			&& osg::equivalent(q0.w(), q1.w(), 1e-4);
+}
+
+void Node::correct_descendants_axis(int frame_num){
+	set_rotation_axis(frame_num);
+	for (unsigned int i = 0; i < children.size(); i++) {
+		children[i]->correct_descendants_axis(frame_num);
+	}
 }
 
 const osg::Vec3& Node::get_x_axis(int n_frame) const {
