@@ -18,7 +18,7 @@ public:
 	bool fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 
-	bool fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
+	int fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 };
 

@@ -30,12 +30,13 @@ bool BodyFitter::fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,
 	return true;
 }
 
-bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
+int BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels) {
 	int head_index = bone_pos_finder.find_head(cloud, labels);
+	unsigned int bones_found = 0;
 
 	if (head_index == -1) {
-		return false;
+		return 0;
 	}
 
 	//Calculate positions
@@ -49,8 +50,9 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 
 	if (!bone_pos_finder.find_first_bone_end_pos(cam2_bin_img, bone_length,
 			cam_ite, current_frame, root_pos, head_pos)) {
-		return false;
+		return 0;
 	}
+	bones_found++;
 
 	//Second bone
 	osg::Vec3 shoulder_pos;
@@ -60,32 +62,41 @@ bool BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 	bone_length = skeleton->get_node(1)->get_length();
 	cam_ite = camera_arr.begin() + 1;
 
-	if (!bone_pos_finder.find_second_bone_end_pos(cam1_bin_img, bone_length,
+	//TODO If the bone finder was on looking for the position but there were
+	//not enough points then infer the position using the current
+	//points like how it is done with the legs
+	if (bone_pos_finder.find_second_bone_end_pos(cam1_bin_img, bone_length,
 			cam_ite, current_frame, head_pos, shoulder_pos)) {
-		return false;
+		bones_found++;
 	}
 
 	//Third bone
 	osg::Vec3 vertebral_end_pos;
 	bone_length = skeleton->get_node(10)->get_length();
 
-	if (!bone_pos_finder.find_vertebral_end_pos(cam1_bin_img, bone_length,
-			cam_ite, current_frame, shoulder_pos, vertebral_end_pos)) {
-		return false;
+	if (bones_found == 2
+			&& bone_pos_finder.find_vertebral_end_pos(cam1_bin_img, bone_length,
+					cam_ite, current_frame, shoulder_pos, vertebral_end_pos)) {
+		bones_found++;
 	}
 
-	//Use inverse kinematics to fit bones into positions
+	//IMPORTANT NOTICE
+	//Do not put the solve chain after each bone pos finder or the finding
+	//will fail
+	//TODO Fix above
+
+	//Put the three bones in the calculated positions
 	if (!solve_chain(0, 0, head_pos)) {
-		return false;
+		return 0;
 	}
 
-	//Use inverse kinematics to fit bones into positions
-	if (!solve_chain(1, 1, shoulder_pos)) {
-		return false;
+	if (bones_found >= 2 && !solve_chain(1, 1, shoulder_pos)) {
+		return 1;
 	}
 
-	if (!solve_chain(10, 10, vertebral_end_pos)) {
-		return false;
+	if (bones_found == 3 && !solve_chain(10, 10, vertebral_end_pos)) {
+		return 2;
 	}
-	return true;
+
+	return bones_found;
 }
