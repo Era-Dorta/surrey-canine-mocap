@@ -35,7 +35,7 @@ private:
 	BodyFitter body_fitter;
 	CloudClusterer cloud_clusterer;
 
-	osg::ref_ptr<osg::Vec3Array> cloud;
+	PointCloudPtr cloud;
 	std::vector<Skeleton::Skel_Leg> labels;
 
 	bool first_call;

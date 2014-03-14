@@ -98,6 +98,7 @@ src/Model/BVHFormat.cpp
 src/Model/MocapData.cpp
 src/Model/MocapHeader.cpp
 src/Model/Node.cpp
+src/Model/PointCloud.cpp
 src/Model/Skeleton.cpp
 src/View/DepthMapPoly.cpp
 src/View/DepthMapSurfel.cpp
@@ -139,6 +140,7 @@ src/Model/BVHFormat.h
 src/Model/MocapData.h
 src/Model/MocapHeader.h
 src/Model/Node.h
+src/Model/PointCloud.h
 src/Model/Skeleton.h
 src/View/DepthMapPoly.h
 src/View/DepthMapSurfel.h

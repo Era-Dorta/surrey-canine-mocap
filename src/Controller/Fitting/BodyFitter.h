@@ -15,10 +15,10 @@ public:
 	BodyFitter(SkeletonPtr skeleton, Skeletonization3DPtr skeletonization3d,
 			const camVecT& camera_arr);
 
-	bool fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,
+	bool fit_root_position(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 
-	int fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
+	int fit_head_and_back(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 };
 

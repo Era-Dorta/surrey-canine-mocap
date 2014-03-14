@@ -102,7 +102,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 		Skeletonization3D& skeleton) {
 	osg::ref_ptr<osg::Geode> skel_geode;
 	osg::ref_ptr<osg::Geometry> skel_geometry;
-	osg::ref_ptr<osg::Vec3Array> vertices;
+	PointCloudPtr vertices;
 
 	//Draw a red cloud of boxes, where each box represents a small part of a bone
 	for (unsigned int i = 0; i < camera_arr.size(); i++) {
@@ -114,7 +114,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 		for (unsigned int j = 0; j < vertices->size(); j++) {
 			osg::ref_ptr<osg::ShapeDrawable> shape1 = new osg::ShapeDrawable;
 			shape1->setShape(
-					new osg::Box((*vertices)[j], 0.005f, 0.005f, 0.005f));
+					new osg::Box(vertices->get_osg(j), 0.005f, 0.005f, 0.005f));
 			shape1->setColor(osg::Vec4(camera_arr[i]->getVisColour(), 1.0f));
 			skel_geode->addDrawable(shape1.get());
 		}
@@ -126,8 +126,7 @@ void RenderSkeletonization::display_3d_skeleon_cloud(int disp_frame_no,
 void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 		Skeletonization3D& skeleton) {
 
-	osg::ref_ptr<osg::Vec3Array> vertices = skeleton.get_merged_3d_projection(
-			disp_frame_no);
+	PointCloudPtr vertices = skeleton.get_merged_3d_projection(disp_frame_no);
 
 	osg::ref_ptr<osg::Geode> skel2d_geode;
 	if (merged_group->getNumChildren()) {
@@ -146,7 +145,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 		osg::ShapeDrawable* box_shape =
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
-		box->setCenter(vertices->at(i));
+		box->setCenter(vertices->get_osg(i));
 		//This line makes sure that OSG knows that the geometry has been modified
 		box_shape->dirtyBound();
 	}
@@ -156,7 +155,7 @@ void RenderSkeletonization::display_3d_merged_skeleon_cloud(int disp_frame_no,
 		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
 		//box_shape->setDataVariance( osg::Object::DYNAMIC );
 		box_shape->setShape(
-				new osg::Box(vertices->at(j), 0.005f, 0.005f, 0.005f));
+				new osg::Box(vertices->get_osg(j), 0.005f, 0.005f, 0.005f));
 		box_shape->setColor(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0)); //Red
 		//This lines are used to tell OSG that the data in the Geometry is
 		//changing every frame, so it has to update it
@@ -581,7 +580,7 @@ void RenderSkeletonization::add_axis_to_node(osg::Group* to_add,
 	to_add->addChild(half_size.get());
 }
 
-void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
+void RenderSkeletonization::display_cloud(const PointCloudPtr& cloud,
 		std::vector<Skeleton::Skel_Leg> group) {
 
 	osg::ref_ptr<osg::Geode> skel2d_geode;
@@ -594,14 +593,14 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 	//Draw a blue cloud of squares, where each square represents a small part of a bone
 	unsigned int useful_nodes, i = 0;
 	unsigned int n_drawables = skel2d_geode->getNumDrawables();
-	unsigned int n_vertices = points->size();
+	unsigned int n_vertices = cloud->size();
 	useful_nodes = ((n_drawables > n_vertices) ? n_vertices : n_drawables);
 	//If the geometry is created, only change its position
 	for (; i < useful_nodes; i++) {
 		osg::ShapeDrawable* box_shape =
 				static_cast<osg::ShapeDrawable*>(skel2d_geode->getDrawable(i));
 		osg::Box* box = static_cast<osg::Box*>(box_shape->getShape());
-		box->setCenter(points->at(i));
+		box->setCenter(cloud->get_osg(i));
 		switch (group.at(i)) {
 		case Skeleton::Front_Left:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0)); //Yellow
@@ -627,7 +626,7 @@ void RenderSkeletonization::display_cloud(osg::Vec3Array* points,
 	for (unsigned int j = i; j < n_vertices; j++) {
 		osg::ref_ptr<osg::ShapeDrawable> box_shape = new osg::ShapeDrawable;
 		box_shape->setShape(
-				new osg::Box(points->at(j), 0.005f, 0.005f, 0.005f));
+				new osg::Box(cloud->get_osg(j), 0.005f, 0.005f, 0.005f));
 		switch (group.at(j)) {
 		case Skeleton::Front_Left:
 			box_shape->setColor(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0));

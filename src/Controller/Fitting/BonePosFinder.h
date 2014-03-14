@@ -11,6 +11,7 @@
 #include "../PixelSearch.h"
 #include "../Projections.h"
 #include "../../Model/Skeleton.h"
+#include "../../Model/PointCloud.h"
 
 #include "opencv2/opencv.hpp"
 
@@ -18,17 +19,17 @@ class BonePosFinder {
 public:
 	BonePosFinder();
 
-	int find_head(const osg::ref_ptr<osg::Vec3Array>& cloud,
+	int find_head(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 
-	int find_paw(const osg::ref_ptr<osg::Vec3Array>& cloud,
+	int find_paw(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, std::vector<int>& leg_points_index);
 
 	//Only call fast methods with an initialised and ordered leg_point_index
 	int find_paw_fast(const std::vector<int>& leg_points_index);
 
-	int find_leg_upper_end(const osg::ref_ptr<osg::Vec3Array>& cloud,
+	int find_leg_upper_end(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, std::vector<int>& leg_points_index);
 
@@ -47,13 +48,11 @@ public:
 			constCamVecIte& cam, int current_frame,
 			const osg::Vec3& shoulder_pos, osg::Vec3& vertebral_end_pos);
 
-	int find_leg_lower_3_joints_simple(
-			const osg::ref_ptr<osg::Vec3Array>& cloud,
+	int find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
 			const std::vector<int>& leg_points_index,
 			const float bone_lengths[2], osg::Vec3 bone_positions[3]);
 
-	int find_leg_lower_3_joints_line_fitting(
-			const osg::ref_ptr<osg::Vec3Array>& cloud,
+	int find_leg_lower_3_joints_line_fitting(const PointCloudPtr& cloud,
 			const std::vector<int>& leg_points_index,
 			const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
 			osg::Vec3 new_bone_positions[3]);
@@ -68,12 +67,12 @@ private:
 	bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col, int &res_row,
 			int &res_col);
 
-	void get_y_z_front_projection(const osg::ref_ptr<osg::Vec3Array>& cloud,
+	void get_y_z_front_projection(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, cv::Mat& out_img, const osg::Vec3& trans =
 					osg::Vec3());
 
-	void get_x_y_side_projection(const osg::ref_ptr<osg::Vec3Array>& cloud,
+	void get_x_y_side_projection(const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg leg, cv::Mat& out_img, const osg::Vec3& trans =
 					osg::Vec3());

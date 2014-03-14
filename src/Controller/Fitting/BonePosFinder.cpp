@@ -12,15 +12,15 @@ BonePosFinder::BonePosFinder() {
 
 }
 
-int BonePosFinder::find_head(const osg::ref_ptr<osg::Vec3Array>& cloud,
+int BonePosFinder::find_head(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels) {
 	int index = -1;
 
 	if (cloud->size() > 4) {
 		float max_x = -FLT_MAX;
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (labels[i] == Skeleton::Not_Limbs && max_x < cloud->at(i).x()) {
-				max_x = cloud->at(i).x();
+			if (labels[i] == Skeleton::Not_Limbs && max_x < cloud->get_x(i)) {
+				max_x = cloud->get_x(i);
 				index = i;
 			}
 		}
@@ -28,7 +28,7 @@ int BonePosFinder::find_head(const osg::ref_ptr<osg::Vec3Array>& cloud,
 	return index;
 }
 
-int BonePosFinder::find_paw(const osg::ref_ptr<osg::Vec3Array>& cloud,
+int BonePosFinder::find_paw(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
 		std::vector<int>& leg_points_index) {
 	leg_points_index.clear();
@@ -40,11 +40,11 @@ int BonePosFinder::find_paw(const osg::ref_ptr<osg::Vec3Array>& cloud,
 	}
 
 	if (leg_points_index.size() > 0) {
-		float max_y = cloud->at(leg_points_index.front()).y();
+		float max_y = cloud->get_y(leg_points_index.front());
 		int index = leg_points_index.front();
 		for (unsigned int i = 0; i < leg_points_index.size(); i++) {
-			if (max_y < cloud->at(leg_points_index[i]).y()) {
-				max_y = cloud->at(leg_points_index[i]).y();
+			if (max_y < cloud->get_y(leg_points_index[i])) {
+				max_y = cloud->get_y(leg_points_index[i]);
 				index = leg_points_index[i];
 			}
 		}
@@ -63,7 +63,7 @@ int BonePosFinder::find_paw_fast(const std::vector<int>& leg_points_index) {
 	}
 }
 
-int BonePosFinder::find_leg_upper_end(const osg::ref_ptr<osg::Vec3Array>& cloud,
+int BonePosFinder::find_leg_upper_end(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
 		std::vector<int>& leg_points_index) {
 	leg_points_index.clear();
@@ -75,11 +75,11 @@ int BonePosFinder::find_leg_upper_end(const osg::ref_ptr<osg::Vec3Array>& cloud,
 	}
 
 	if (leg_points_index.size() > 0) {
-		float min_y = cloud->at(leg_points_index.front()).y();
+		float min_y = cloud->get_y(leg_points_index.front());
 		int index = leg_points_index.front();
 		for (unsigned int i = 0; i < leg_points_index.size(); i++) {
-			if (min_y > cloud->at(leg_points_index[i]).y()) {
-				min_y = cloud->at(leg_points_index[i]).y();
+			if (min_y > cloud->get_y(leg_points_index[i])) {
+				min_y = cloud->get_y(leg_points_index[i]);
 				index = leg_points_index[i];
 			}
 		}
@@ -238,8 +238,7 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 	return true;
 }
 
-int BonePosFinder::find_leg_lower_3_joints_simple(
-		const osg::ref_ptr<osg::Vec3Array>& cloud,
+int BonePosFinder::find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
 		const std::vector<int>& leg_points_index, const float bone_lengths[3],
 		osg::Vec3 bone_positions[2]) {
 
@@ -249,7 +248,7 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 
 	unsigned int num_joints = 3;
 	//Start at paw position
-	bone_positions[0] = cloud->at(leg_points_index[0]);
+	bone_positions[0] = cloud->get_osg(leg_points_index[0]);
 
 	unsigned int j = 0;
 	unsigned int i = 1, valid_pos = 1;
@@ -266,7 +265,8 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 		while (not_bone_length && j < leg_points_index.size()) {
 			index = leg_points_index[j];
 
-			float current_length = (bone_start_pos - cloud->at(index)).length();
+			float current_length =
+					(bone_start_pos - cloud->get_osg(index)).length();
 			if (current_length >= bone_lengths[i - 1]) {
 				not_bone_length = false;
 			} else {
@@ -276,7 +276,7 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 
 		if (not_bone_length == false) {
 			if (i < 3) {
-				bone_start_pos = cloud->at(index);
+				bone_start_pos = cloud->get_osg(index);
 				//Make sure position is exactly at bone length
 				refine_start_position(bone_start_pos, bone_positions[i - 1],
 						bone_lengths[i - 1]);
@@ -301,7 +301,7 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 		int num_points = 0;
 		for (unsigned int i = bone_pos_index[1]; i < leg_points_index.size();
 				i++) {
-			bone_positions[2] += cloud->at(leg_points_index[i]);
+			bone_positions[2] += cloud->get_osg(leg_points_index[i]);
 			num_points++;
 		}
 		bone_positions[2] = bone_positions[2] / num_points;
@@ -317,9 +317,8 @@ int BonePosFinder::find_leg_lower_3_joints_simple(
 }
 
 int BonePosFinder::find_leg_lower_3_joints_line_fitting(
-		const osg::ref_ptr<osg::Vec3Array>& cloud,
-		const std::vector<int>& leg_points_index, const float bone_lengths[2],
-		const osg::Vec3 prev_bone_positions[3],
+		const PointCloudPtr& cloud, const std::vector<int>& leg_points_index,
+		const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
 		osg::Vec3 new_bone_positions[3]) {
 
 	//Get all points from paw bone end until paw bone start,
@@ -328,11 +327,10 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 	unsigned int i = 0;
 	bool go_higher = true;
 	while (i < leg_points_index.size() && go_higher) {
-		osg::Vec3 current = cloud->at(leg_points_index[i]);
-		cv::Point3f ipt(current.x(), current.y(), current.z());
+		cv::Point3f ipt = cloud->get_point3(leg_points_index[i]);
 		bone_points.push_back(ipt);
 
-		if (current.y() < prev_bone_positions[1].y()) {
+		if (ipt.y < prev_bone_positions[1].y()) {
 			go_higher = false;
 		}
 		i++;
@@ -360,8 +358,7 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 	//Get the rest of the points for then next bone
 	bone_points.clear();
 	while (i < leg_points_index.size()) {
-		osg::Vec3 current = cloud->at(leg_points_index[i]);
-		cv::Point3f ipt(current.x(), current.y(), current.z());
+		cv::Point3f ipt = cloud->get_point3(leg_points_index[i]);
 		bone_points.push_back(ipt);
 		i++;
 	}
@@ -421,8 +418,7 @@ bool BonePosFinder::unstuck_go_down(const cv::Mat& img, int i_row, int i_col,
 	return false;
 }
 
-void BonePosFinder::get_y_z_front_projection(
-		const osg::ref_ptr<osg::Vec3Array>& cloud,
+void BonePosFinder::get_y_z_front_projection(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
 		cv::Mat& out_img, const osg::Vec3& trans) {
 	//We want a front view so in world axis is vectors
@@ -443,7 +439,8 @@ void BonePosFinder::get_y_z_front_projection(
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (labels[i] == leg) {
-			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
+			float3 point2d = Projections::get_2d_projection(cloud->get_osg(i),
+					invT);
 			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
 					&& point2d.x < out_img.cols)
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;
@@ -451,8 +448,7 @@ void BonePosFinder::get_y_z_front_projection(
 	}
 }
 
-void BonePosFinder::get_x_y_side_projection(
-		const osg::ref_ptr<osg::Vec3Array>& cloud,
+void BonePosFinder::get_x_y_side_projection(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg leg,
 		cv::Mat& out_img, const osg::Vec3& trans) {
 	//We want a side view, so no rotation is needed
@@ -473,7 +469,8 @@ void BonePosFinder::get_x_y_side_projection(
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (labels[i] == leg) {
-			float3 point2d = Projections::get_2d_projection(cloud->at(i), invT);
+			float3 point2d = Projections::get_2d_projection(cloud->get_osg(i),
+					invT);
 			if (point2d.y >= 0 && point2d.y < out_img.rows && point2d.x >= 0
 					&& point2d.x < out_img.cols)
 				out_img.at<uchar>(point2d.y, point2d.x) = 255;

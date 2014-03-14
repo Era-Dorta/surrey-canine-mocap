@@ -14,7 +14,7 @@ LegFitter::LegFitter(SkeletonPtr skeleton,
 }
 
 bool LegFitter::fit_leg_position_complete(Skeleton::Skel_Leg leg,
-		const osg::ref_ptr<osg::Vec3Array> cloud,
+		const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels) {
 	this->cloud = cloud;
 	std::vector<int> leg_points_index;
@@ -77,7 +77,7 @@ bool LegFitter::fit_leg_position_initialise(Skeleton::Skel_Leg leg,
 	paw_index = leg_points_index.front();
 
 	//Solve leg
-	if (!solve_chain(leg - 3, leg, cloud->at(paw_index))) {
+	if (!solve_chain(leg - 3, leg, cloud->get_osg(paw_index))) {
 		return false;
 	}
 	return true;
@@ -163,7 +163,8 @@ bool LegFitter::fit_leg_position_mid_pos_in_top_leg(Skeleton::Skel_Leg leg,
 	int mid_position = bone_pos_finder.find_leg_upper_end_fast(
 			leg_points_index);
 
-	return fit_leg_pos_impl(leg, cloud->at(mid_position), cloud->at(paw_index));
+	return fit_leg_pos_impl(leg, cloud->get_osg(mid_position),
+			cloud->get_osg(paw_index));
 }
 
 bool LegFitter::fit_leg_position_half_way(Skeleton::Skel_Leg leg,
@@ -194,9 +195,10 @@ bool LegFitter::fit_leg_position_half_way(Skeleton::Skel_Leg leg,
 
 	//Put the "shoulder" two bones halfway from the previous bones
 	//and the paw
-	osg::Vec3 mid_position = (cloud->at(paw_index) + prev_bone_position) * 0.5;
+	osg::Vec3 mid_position = (cloud->get_osg(paw_index) + prev_bone_position)
+			* 0.5;
 
-	return fit_leg_pos_impl(leg, mid_position, cloud->at(paw_index));
+	return fit_leg_pos_impl(leg, mid_position, cloud->get_osg(paw_index));
 
 }
 
@@ -347,7 +349,7 @@ float LegFitter::calculate_sum_distance2_to_cloud(const osg::Vec3& bone_end_pos,
 	//leg points to the bone end position
 	std::vector<int>::const_iterator i = leg_points_index.begin();
 	for (; i != leg_points_index.end(); ++i) {
-		distance += (bone_end_pos - cloud->at(*i)).length2();
+		distance += (bone_end_pos - cloud->get_osg(*i)).length2();
 	}
 	return distance;
 }
@@ -359,7 +361,7 @@ void LegFitter::reduce_points_with_height(float max_y, float min_y,
 
 	std::vector<int>::const_iterator i = leg_points_index.begin();
 	for (; i != leg_points_index.end(); ++i) {
-		if (cloud->at(*i).y() < max_y && cloud->at(*i).y() > min_y) {
+		if (cloud->get_y(*i) < max_y && cloud->get_y(*i) > min_y) {
 			new_leg_points_index.push_back(*i);
 		}
 	}

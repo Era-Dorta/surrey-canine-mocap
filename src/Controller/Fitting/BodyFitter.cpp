@@ -12,7 +12,7 @@ BodyFitter::BodyFitter(SkeletonPtr skeleton,
 		CommonFitter(skeleton, skeletonization3d, camera_arr) {
 }
 
-bool BodyFitter::fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,
+bool BodyFitter::fit_root_position(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels) {
 
 	int head_index = bone_pos_finder.find_head(cloud, labels);
@@ -21,7 +21,7 @@ bool BodyFitter::fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,
 		return false;
 	}
 
-	osg::Vec3 translation = cloud->at(head_index)
+	osg::Vec3 translation = cloud->get_osg(head_index)
 			- skeleton->get_root()->get_offset()
 			- skeleton->get_root()->froset->at(current_frame);
 
@@ -30,7 +30,7 @@ bool BodyFitter::fit_root_position(const osg::ref_ptr<osg::Vec3Array> cloud,
 	return true;
 }
 
-int BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
+int BodyFitter::fit_head_and_back(const PointCloudPtr& cloud,
 		const std::vector<Skeleton::Skel_Leg>& labels) {
 	int head_index = bone_pos_finder.find_head(cloud, labels);
 	unsigned int bones_found = 0;
@@ -41,7 +41,7 @@ int BodyFitter::fit_head_and_back(const osg::ref_ptr<osg::Vec3Array> cloud,
 
 	//Calculate positions
 	//First bone
-	osg::Vec3 head_pos, root_pos = cloud->at(head_index);
+	osg::Vec3 head_pos, root_pos = cloud->get_osg(head_index);
 	//Use the third camera since it gives the best head view
 	const cv::Mat& cam2_bin_img = skeletonizator->get_2D_bin_frame(2,
 			current_frame);

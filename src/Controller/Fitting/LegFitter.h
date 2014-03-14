@@ -17,7 +17,7 @@ public:
 			const camVecT& camera_arr);
 
 	bool fit_leg_position_complete(Skeleton::Skel_Leg leg,
-			const osg::ref_ptr<osg::Vec3Array> cloud,
+			const PointCloudPtr& cloud,
 			const std::vector<Skeleton::Skel_Leg>& labels);
 private:
 	bool fit_leg_position_initialise(Skeleton::Skel_Leg leg, int& paw_index,
@@ -73,7 +73,7 @@ private:
 		;
 
 		bool operator()(int i, int j) {
-			return (!comp_funct(m->cloud->at(i), m->cloud->at(j)));
+			return (!comp_funct(m->cloud->get_osg(i), m->cloud->get_osg(j)));
 		}
 
 		bool operator()(const osg::Vec3& i, const osg::Vec3& j) {
@@ -81,7 +81,7 @@ private:
 		}
 	};
 
-	osg::ref_ptr<osg::Vec3Array> cloud;
+	PointCloudPtr cloud;
 };
 
 #endif /* LEGFITTER_H_ */

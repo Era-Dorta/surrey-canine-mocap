@@ -31,7 +31,7 @@ public:
 
 	//From a cloud of points, fill result vector with a label for each point
 	//Median gives better results that mean, but it is not as fast
-	void divide_four_sections(const osg::ref_ptr<osg::Vec3Array>& point_cloud,
+	void divide_four_sections(const PointCloudPtr& point_cloud,
 			std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
 			bool use_simple_division = true);
 
@@ -46,8 +46,7 @@ private:
 	void divide_four_sections_knn(std::vector<Skeleton::Skel_Leg>& labels,
 			int num_invalid);
 
-	void refine_four_sections_division(
-			const osg::ref_ptr<osg::Vec3Array>& point_cloud,
+	void refine_four_sections_division(const PointCloudPtr& point_cloud,
 			std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
 			int head_index);
 
@@ -79,11 +78,11 @@ private:
 			std::vector<Skeleton::Skel_Leg>& labels, float mean_z_front,
 			float mean_z_back);
 
-	float get_mean(osg::ref_ptr<osg::Vec3Array> points,
+	float get_mean(const PointCloudPtr& points,
 			std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg use_label, Skeleton::Axis axis);
 
-	float get_division_val(osg::ref_ptr<osg::Vec3Array> points,
+	float get_division_val(const PointCloudPtr& points,
 			std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg use_label, Skeleton::Axis axis);
 
@@ -101,7 +100,7 @@ private:
 		;
 
 		bool operator()(int i, int j) {
-			return (!comp_funct(m->cloud->at(i), m->cloud->at(j)));
+			return (!comp_funct(m->cloud->get_osg(i), m->cloud->get_osg(j)));
 		}
 
 		bool operator()(const osg::Vec3& i, const osg::Vec3& j) {
@@ -109,7 +108,7 @@ private:
 		}
 	};
 
-	osg::ref_ptr<osg::Vec3Array> cloud;
+	PointCloudPtr cloud;
 	int current_frame;
 	int n_frames;
 	int img_rows;

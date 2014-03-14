@@ -28,20 +28,23 @@ void KNNSearch::set_num_kd_trees(unsigned int num_kd_trees) {
 	this->num_kd_trees = num_kd_trees;
 }
 
-bool KNNSearch::knn_search(osg::ref_ptr<osg::Vec3Array> data, unsigned int knn,
+bool KNNSearch::knn_search(const PointCloudPtr& cloud, unsigned int knn,
 		std::vector<std::vector<int> >& indices,
 		std::vector<std::vector<float> >& dists) {
 
-	if (data->size() == 0 || data->size() - 1 < knn) {
+	if (cloud->size() == 0 || cloud->size() - 1 < knn) {
 		return false;
 	}
 
 	//Since it is a Vec3Array it has 3 dimensions
-	flann::Matrix<float> dataset(new float[data->size() * 3], data->size(), 3);
-	flann::Matrix<float> query(new float[data->size() * 3], data->size(), 3);
+	//Data set are all the points and we want distance from every point to the
+	//others so query are all the points too
+	flann::Matrix<float> dataset(new float[cloud->size() * 3], cloud->size(),
+			3);
+	flann::Matrix<float> query(new float[cloud->size() * 3], cloud->size(), 3);
 
-	vec3Array_to_flann_matrix(data, dataset);
-	vec3Array_to_flann_matrix(data, query);
+	point_cloud_to_flann_matrix(cloud, dataset);
+	point_cloud_to_flann_matrix(cloud, query);
 
 	// construct an randomised kd-tree index using 4 kd-trees
 	flann::Index<flann::L2_3D<float> > index(dataset,
@@ -57,35 +60,11 @@ bool KNNSearch::knn_search(osg::ref_ptr<osg::Vec3Array> data, unsigned int knn,
 	return true;
 }
 
-void KNNSearch::vec3Array_to_flann_matrix(osg::ref_ptr<osg::Vec3Array> data_in,
-		flann::Matrix<float>& data_out) {
-	for (unsigned int i = 0; i < data_in->size(); i++) {
-		data_out[i][0] = data_in->at(i).x();
-		data_out[i][1] = data_in->at(i).y();
-		data_out[i][2] = data_in->at(i).z();
-	}
-}
-
-void KNNSearch::flann_matrix_to_vec3Array(const flann::Matrix<float>& data_in,
-		osg::ref_ptr<osg::Vec3Array> data_out) {
-
-	data_out->resize(data_in.rows * data_in.cols);
-
-	for (unsigned int i = 0; i < data_in.rows; i++) {
-		data_out->at(i).x() = data_in[i][0];
-		data_out->at(i).y() = data_in[i][1];
-		data_out->at(i).z() = data_in[i][2];
-	}
-}
-
-void KNNSearch::flann_matrix_to_vec3Array(const flann::Matrix<int>& data_in,
-		osg::ref_ptr<osg::Vec3Array> data_out) {
-
-	data_out->resize(data_in.rows * data_in.cols);
-
-	for (unsigned int i = 0; i < data_in.rows; i++) {
-		data_out->at(i).x() = data_in[i][0];
-		data_out->at(i).y() = data_in[i][1];
-		data_out->at(i).z() = data_in[i][2];
+void KNNSearch::point_cloud_to_flann_matrix(const PointCloudPtr& cloud_in,
+		flann::Matrix<float>& cloud_out) {
+	for (unsigned int i = 0; i < cloud_in->size(); i++) {
+		cloud_out[i][0] = cloud_in->get_x(i);
+		cloud_out[i][1] = cloud_in->get_y(i);
+		cloud_out[i][2] = cloud_in->get_z(i);
 	}
 }

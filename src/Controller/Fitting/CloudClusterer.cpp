@@ -26,8 +26,7 @@ void CloudClusterer::init(int n_frames, int img_rows, int img_cols) {
 	current_frame = 0;
 }
 
-void CloudClusterer::divide_four_sections(
-		const osg::ref_ptr<osg::Vec3Array>& point_cloud,
+void CloudClusterer::divide_four_sections(const PointCloudPtr& point_cloud,
 		std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
 		bool use_simple_division) {
 
@@ -45,7 +44,7 @@ void CloudClusterer::divide_four_sections(
 		//The body is larger than the legs so, add a extra
 		//so more points are assign to the body
 		for (unsigned int i = 0; i < cloud->size(); i++) {
-			if (cloud->at(i).y() <= mean_y + body_height_extra_threshold) {
+			if (cloud->get_y(i) <= mean_y + body_height_extra_threshold) {
 				labels[i] = Skeleton::Not_Limbs;
 				num_invalid++;
 			}
@@ -70,7 +69,7 @@ void CloudClusterer::divide_four_sections_simple(
 	mean_x_arr.at(current_frame) = mean_x;
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
-		if (labels[i] == Skeleton::Front_Right && cloud->at(i).x() <= mean_x) {
+		if (labels[i] == Skeleton::Front_Right && cloud->get_x(i) <= mean_x) {
 			labels[i] = Skeleton::Back_Right;
 		}
 	}
@@ -90,10 +89,10 @@ void CloudClusterer::divide_four_sections_simple(
 
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		if (labels[i] == Skeleton::Front_Right
-				&& cloud->at(i).z() >= mean_z_front) {
+				&& cloud->get_z(i) >= mean_z_front) {
 			labels[i] = Skeleton::Front_Left;
 		} else if (labels[i] == Skeleton::Back_Right
-				&& cloud->at(i).z() >= mean_z_back) {
+				&& cloud->get_z(i) >= mean_z_back) {
 			labels[i] = Skeleton::Back_Left;
 		}
 	}
@@ -111,9 +110,9 @@ void CloudClusterer::divide_four_sections_knn(
 		int j = 0;
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] != Skeleton::Not_Limbs) {
-				cv::Point3f ipt(cloud->at(i).x(), cloud->at(i).y(),
-						cloud->at(i).z());
-				data2.at<cv::Point3f>(j) = ipt;
+				data2.at<cv::Point3f>(j).x = cloud->get_x(i);
+				data2.at<cv::Point3f>(j).y = cloud->get_y(i);
+				data2.at<cv::Point3f>(j).z = cloud->get_z(i);
 				j++;
 			}
 		}
@@ -149,7 +148,7 @@ void CloudClusterer::divide_four_sections_knn(
 }
 
 void CloudClusterer::refine_four_sections_division(
-		const osg::ref_ptr<osg::Vec3Array>& point_cloud,
+		const PointCloudPtr& point_cloud,
 		std::vector<Skeleton::Skel_Leg>& labels, int frame_num,
 		int head_index) {
 
@@ -180,7 +179,7 @@ void CloudClusterer::recalculate_front_back_division_side_view(
 	if (head_index != -1) {
 
 		cv::Mat projected_img(img_rows, img_cols, CV_8U, cv::Scalar(0));
-		osg::Vec3 head_pos_trans = -cloud->at(head_index);
+		osg::Vec3 head_pos_trans = -cloud->get_osg(head_index);
 
 		//We want a side view, so no rotation is needed
 		//x = [1,0,0]
@@ -200,8 +199,8 @@ void CloudClusterer::recalculate_front_back_division_side_view(
 
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] != Skeleton::Not_Limbs) {
-				float3 point2d = Projections::get_2d_projection(cloud->at(i),
-						invT);
+				float3 point2d = Projections::get_2d_projection(
+						cloud->get_osg(i), invT);
 				if (point2d.y >= 0 && point2d.y < projected_img.rows
 						&& point2d.x >= 0 && point2d.x < projected_img.cols)
 					projected_img.at<uchar>(point2d.y, point2d.x) = 255;
@@ -215,7 +214,7 @@ void CloudClusterer::recalculate_front_back_division_side_view(
 
 		cv::dilate(projected_img, projected_img, res2);
 
-		osg::Vec3 current_div = cloud->at(head_index);
+		osg::Vec3 current_div = cloud->get_osg(head_index);
 		current_div.x() = mean_x_arr.at(current_frame);
 		current_div.y() -= 0.1;
 
@@ -247,24 +246,24 @@ void CloudClusterer::recalculate_front_back_division_side_view(
 				for (unsigned int i = 0; i < cloud->size(); i++) {
 					switch (labels[i]) {
 					case Skeleton::Front_Right:
-						if (cloud->at(i).x() <= result.x) {
+						if (cloud->get_x(i) <= result.x) {
 							labels[i] = Skeleton::Back_Right;
 						}
 						break;
 					case Skeleton::Front_Left:
-						if (cloud->at(i).x() <= result.x) {
+						if (cloud->get_x(i) <= result.x) {
 							labels[i] = Skeleton::Back_Right;
 						} else {
 							labels[i] = Skeleton::Front_Right;
 						}
 						break;
 					case Skeleton::Back_Right:
-						if (cloud->at(i).x() > result.x) {
+						if (cloud->get_x(i) > result.x) {
 							labels[i] = Skeleton::Front_Right;
 						}
 						break;
 					case Skeleton::Back_Left:
-						if (cloud->at(i).x() > result.x) {
+						if (cloud->get_x(i) > result.x) {
 							labels[i] = Skeleton::Front_Right;
 						} else {
 							labels[i] = Skeleton::Back_Right;
@@ -286,10 +285,10 @@ void CloudClusterer::recalculate_front_back_division_side_view(
 
 			for (unsigned int i = 0; i < cloud->size(); i++) {
 				if (labels[i] == Skeleton::Front_Right
-						&& cloud->at(i).z() >= mean_z_front) {
+						&& cloud->get_z(i) >= mean_z_front) {
 					labels[i] = Skeleton::Front_Left;
 				} else if (labels[i] == Skeleton::Back_Right
-						&& cloud->at(i).z() >= mean_z_back) {
+						&& cloud->get_z(i) >= mean_z_back) {
 					labels[i] = Skeleton::Back_Left;
 				}
 			}
@@ -367,7 +366,7 @@ void CloudClusterer::recalculate_right_left_division_front_view(
 	if (head_index != -1) {
 
 		cv::Mat projected_img(img_rows, img_cols, CV_8U, cv::Scalar(0));
-		osg::Vec3 head_pos_trans = -cloud->at(head_index);
+		osg::Vec3 head_pos_trans = -cloud->get_osg(head_index);
 
 		//We want a front view so in world axis is vectors
 		//x = [0,0,1]
@@ -388,8 +387,8 @@ void CloudClusterer::recalculate_right_left_division_front_view(
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] == Skeleton::Front_Left
 					|| labels[i] == Skeleton::Front_Right) {
-				float3 point2d = Projections::get_2d_projection(cloud->at(i),
-						invT);
+				float3 point2d = Projections::get_2d_projection(
+						cloud->get_osg(i), invT);
 				if (point2d.y >= 0 && point2d.y < projected_img.rows
 						&& point2d.x >= 0 && point2d.x < projected_img.cols)
 					projected_img.at<uchar>(point2d.y, point2d.x) = 255;
@@ -403,7 +402,7 @@ void CloudClusterer::recalculate_right_left_division_front_view(
 
 		cv::dilate(projected_img, projected_img, res2);
 
-		osg::Vec3 current_div = cloud->at(head_index);
+		osg::Vec3 current_div = cloud->get_osg(head_index);
 		current_div.y() += 0.09;
 		current_div.z() = mean_z_front_arr.at(current_frame);
 		float depth;
@@ -433,12 +432,12 @@ void CloudClusterer::recalculate_right_left_division_front_view(
 				for (unsigned int i = 0; i < cloud->size(); i++) {
 					switch (labels[i]) {
 					case Skeleton::Front_Right:
-						if (cloud->at(i).z() > result.z) {
+						if (cloud->get_z(i) > result.z) {
 							labels[i] = Skeleton::Front_Left;
 						}
 						break;
 					case Skeleton::Front_Left:
-						if (cloud->at(i).z() <= result.z) {
+						if (cloud->get_z(i) <= result.z) {
 							labels[i] = Skeleton::Front_Right;
 						}
 						break;
@@ -458,7 +457,7 @@ void CloudClusterer::recalculate_right_left_division_back_view(
 	if (head_index != -1) {
 
 		cv::Mat projected_img(img_rows, img_cols, CV_8U, cv::Scalar(0));
-		osg::Vec3 head_pos_trans = -cloud->at(head_index);
+		osg::Vec3 head_pos_trans = -cloud->get_osg(head_index);
 
 		//We want a front view so in world axis is vectors
 		//x = [0,0,1]
@@ -479,8 +478,8 @@ void CloudClusterer::recalculate_right_left_division_back_view(
 		for (unsigned int i = 0; i < cloud->size(); i++) {
 			if (labels[i] == Skeleton::Back_Left
 					|| labels[i] == Skeleton::Back_Right) {
-				float3 point2d = Projections::get_2d_projection(cloud->at(i),
-						invT);
+				float3 point2d = Projections::get_2d_projection(
+						cloud->get_osg(i), invT);
 				if (point2d.y >= 0 && point2d.y < projected_img.rows
 						&& point2d.x >= 0 && point2d.x < projected_img.cols)
 					projected_img.at<uchar>(point2d.y, point2d.x) = 255;
@@ -494,7 +493,7 @@ void CloudClusterer::recalculate_right_left_division_back_view(
 
 		cv::dilate(projected_img, projected_img, res2);
 
-		osg::Vec3 current_div = cloud->at(head_index);
+		osg::Vec3 current_div = cloud->get_osg(head_index);
 		current_div.y() += 0.09;
 		current_div.z() = mean_z_back_arr.at(current_frame);
 		float depth;
@@ -525,12 +524,12 @@ void CloudClusterer::recalculate_right_left_division_back_view(
 				for (unsigned int i = 0; i < cloud->size(); i++) {
 					switch (labels[i]) {
 					case Skeleton::Back_Right:
-						if (cloud->at(i).z() > result.z) {
+						if (cloud->get_z(i) > result.z) {
 							labels[i] = Skeleton::Back_Left;
 						}
 						break;
 					case Skeleton::Back_Left:
-						if (cloud->at(i).z() <= result.z) {
+						if (cloud->get_z(i) <= result.z) {
 							labels[i] = Skeleton::Back_Right;
 						}
 						break;
@@ -550,25 +549,25 @@ bool CloudClusterer::reclassify_left_right_leg_points(
 	for (unsigned int i = 0; i < cloud->size(); i++) {
 		switch (labels[i]) {
 		case Skeleton::Front_Right:
-			if (cloud->at(i).z() > mean_z_front) {
+			if (cloud->get_z(i) > mean_z_front) {
 				labels[i] = Skeleton::Front_Left;
 				point_relabeled = true;
 			}
 			break;
 		case Skeleton::Front_Left:
-			if (cloud->at(i).z() <= mean_z_front) {
+			if (cloud->get_z(i) <= mean_z_front) {
 				labels[i] = Skeleton::Front_Right;
 				point_relabeled = true;
 			}
 			break;
 		case Skeleton::Back_Right:
-			if (cloud->at(i).z() > mean_z_back) {
+			if (cloud->get_z(i) > mean_z_back) {
 				labels[i] = Skeleton::Back_Left;
 				point_relabeled = true;
 			}
 			break;
 		case Skeleton::Back_Left:
-			if (cloud->at(i).z() <= mean_z_back) {
+			if (cloud->get_z(i) <= mean_z_back) {
 				labels[i] = Skeleton::Back_Right;
 				point_relabeled = true;
 			}
@@ -752,7 +751,7 @@ bool CloudClusterer::knn_division_done(std::vector<Skeleton::Skel_Leg>& labels,
 	return true;
 }
 
-float CloudClusterer::get_mean(osg::ref_ptr<osg::Vec3Array> points,
+float CloudClusterer::get_mean(const PointCloudPtr& points,
 		std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg use_label,
 		Skeleton::Axis axis) {
 
@@ -760,7 +759,7 @@ float CloudClusterer::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 	int num_valid = 0;
 	for (unsigned int i = 0; i < points->size(); i++) {
 		if (labels[i] == use_label) {
-			mean += points->at(i)[axis];
+			mean += points->get_osg(i)[axis];
 			num_valid++;
 		}
 	}
@@ -774,14 +773,14 @@ float CloudClusterer::get_mean(osg::ref_ptr<osg::Vec3Array> points,
 
 //This method returns the mean value between the two most distant
 //points, it does not solve the problems of the simple division either
-float CloudClusterer::get_division_val(osg::ref_ptr<osg::Vec3Array> points,
+float CloudClusterer::get_division_val(const PointCloudPtr& points,
 		std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg use_label,
 		Skeleton::Axis axis) {
 
 	osg::ref_ptr<osg::Vec3Array> points_copy = new osg::Vec3Array;
 	for (unsigned int i = 0; i < points->size(); i++) {
 		if (labels[i] == use_label) {
-			points_copy->push_back(points->at(i));
+			points_copy->push_back(points->get_osg(i));
 		}
 	}
 

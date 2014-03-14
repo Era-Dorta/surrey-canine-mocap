@@ -90,8 +90,9 @@ bool GroundTruth::load_data(const std::string& path) {
 		if (std::getline(in_file, line)) {
 			std::stringstream ss(line);
 			ss >> num_points_frame;
-			if(num_points_frame != max_user_points){
-				cout << "Ground Truth file must have 20 points " << num_points_frame  << endl;
+			if (num_points_frame != max_user_points) {
+				cout << "Ground Truth file must have 20 points "
+						<< num_points_frame << endl;
 				return false;
 			}
 		}

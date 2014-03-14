@@ -58,7 +58,7 @@ public:
 	void display_3d_merged_skeleon_cloud(int disp_frame_no,
 			Skeletonization3D& skeleton);
 
-	void display_cloud(osg::Vec3Array* points,
+	void display_cloud(const PointCloudPtr& cloud,
 			std::vector<Skeleton::Skel_Leg> group);
 
 	void display_sphere(const osg::Vec3& position, unsigned index,

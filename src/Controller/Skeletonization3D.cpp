@@ -27,17 +27,16 @@ void Skeletonization3D::generate_skeletonization() {
 	skel2d_cam_array.resize(n_frames * n_cameras);
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_simple_3d_projection(
-		int cam_num, int frame_num) {
-	if (!skel2d_cam_array[frame_num * n_cameras + cam_num].valid()) {
+PointCloudPtr Skeletonization3D::get_simple_3d_projection(int cam_num,
+		int frame_num) {
+	if (skel2d_cam_array[frame_num * n_cameras + cam_num] == NULL) {
 		do_3d_projection(cam_num, frame_num);
 	}
 	return skel2d_cam_array[frame_num * n_cameras + cam_num];
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::get_merged_3d_projection(
-		int frame_num) {
-	if (!skel3d_merged_array[frame_num].valid()) {
+PointCloudPtr Skeletonization3D::get_merged_3d_projection(int frame_num) {
+	if (skel3d_merged_array[frame_num] == NULL) {
 		merge_2D_skeletons(frame_num);
 	}
 	return skel3d_merged_array[frame_num];
@@ -68,7 +67,7 @@ void Skeletonization3D::merge_2D_skeletons(int frame_num) {
 
 void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	//Return vector
-	osg::ref_ptr<osg::Vec3Array> skeleton_3d = new osg::Vec3Array();
+	PointCloudPtr skeleton_3d(new PointCloud);
 
 	//Calculate 3D projections of 2D skeleton images
 	//Every image is from a different camera
@@ -93,23 +92,20 @@ void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 					float3 depth_pix_hom = make_float3(col, row, 1.f);
 					float3 vert = depth * (inv_K * depth_pix_hom);
 					//Add to array
-					skeleton_3d->push_back(osg::Vec3(vert.x, vert.y, vert.z));
+					skeleton_3d->push_back(vert);
 				}
 			}
 		}
 	}
 
-	translate_points_to_inside(skeleton_3d.get(), cam_num);
-	skel2d_cam_array[frame_num * n_cameras + cam_num] = skeleton_3d.get();
+	translate_points_to_inside(skeleton_3d, cam_num);
+	skel2d_cam_array[frame_num * n_cameras + cam_num] = skeleton_3d;
 }
 
-void Skeletonization3D::translate_points_to_inside(
-		osg::ref_ptr<osg::Vec3Array> projection3d, int cam_num) const {
-	osg::Vec3Array::iterator point;
-	osg::Vec3 translation(0, 0, move_distance);
-
-	for (point = projection3d->begin(); point != projection3d->end(); ++point) {
-		*point = *point + translation;
+void Skeletonization3D::translate_points_to_inside(PointCloudPtr& cloud,
+		int cam_num) const {
+	for (unsigned int i = 0; i < cloud->size(); i++) {
+		cloud->set_z(i, cloud->get_z(i) + move_distance);
 	}
 }
 
@@ -151,7 +147,7 @@ void Skeletonization3D::get_global_coord_3d_projection(int cam_num,
 	}
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
+PointCloudPtr Skeletonization3D::merge_2D_skeletons_impl(
 		std::vector<const cv::Mat*>& skeletonized_frames, int frame_num) {
 	//Vector with 3D projections of 2D skeleton from every camera
 	std::vector<std::map<osg::Vec2, osg::Vec3> > projection3d_array;
@@ -166,18 +162,17 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::merge_2D_skeletons_impl(
 		visited_pixels.push_back(skel_arr[i]->get_frame(frame_num).clone());
 	}
 
-	osg::ref_ptr<osg::Vec3Array> result;
-
 	//result = take_all_points_2D_merge(projection3d_array);
 	//result = simple_2D_merge(projection3d_array);
-	result = follow_path_2D_merge(visited_pixels, projection3d_array);
+	PointCloudPtr result = follow_path_2D_merge(visited_pixels,
+			projection3d_array);
 	return result;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
+PointCloudPtr Skeletonization3D::simple_2D_merge(
 		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
 	//Return vector
-	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
+	PointCloudPtr result(new PointCloud);
 
 	//For each projection
 	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
@@ -238,14 +233,14 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::simple_2D_merge(
 			result->push_back(merged_pixel);
 		}
 	}
-	return result.get();
+	return result;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
+PointCloudPtr Skeletonization3D::follow_path_2D_merge(
 		std::vector<cv::Mat>& visited_pixels,
 		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
 	//Return vector
-	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
+	PointCloudPtr result(new PointCloud);
 
 	cv::Point3f p0, p1;
 
@@ -364,13 +359,13 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::follow_path_2D_merge(
 		}
 	}
 
-	return result.get();
+	return result;
 }
 
-osg::ref_ptr<osg::Vec3Array> Skeletonization3D::take_all_points_2D_merge(
+PointCloudPtr Skeletonization3D::take_all_points_2D_merge(
 		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
 	//Return vector
-	osg::ref_ptr<osg::Vec3Array> result = new osg::Vec3Array();
+	PointCloudPtr result(new PointCloud);
 
 	//For each projection
 	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
@@ -383,7 +378,7 @@ osg::ref_ptr<osg::Vec3Array> Skeletonization3D::take_all_points_2D_merge(
 			result->push_back(point->second);
 		}
 	}
-	return result.get();
+	return result;
 }
 
 int Skeletonization3D::get_n_frames() const {
