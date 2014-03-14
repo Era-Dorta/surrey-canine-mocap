@@ -135,3 +135,19 @@ void PointCloud::push_back(const cv::Point3f& point) {
 void PointCloud::push_back(float x, float y, float z) {
 	cloud->push_back(pcl::PointXYZ(x, y, z));
 }
+
+PointCloud::PointCloudIte PointCloud::begin() {
+	return cloud->begin();
+}
+
+PointCloud::PointCloudIte PointCloud::end() {
+	return cloud->end();
+}
+
+pcl::PointXYZ& PointCloud::front() {
+	return cloud->front();
+}
+
+pcl::PointXYZ& PointCloud::back() {
+	return cloud->back();
+}

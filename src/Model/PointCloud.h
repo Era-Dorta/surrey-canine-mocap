@@ -60,6 +60,13 @@ public:
 	void push_back(const float3& point);
 	void push_back(const cv::Point3f& point);
 	void push_back(float x, float y, float z);
+
+	typedef pcl::PointCloud<pcl::PointXYZ>::iterator PointCloudIte;
+	PointCloudIte begin();
+	PointCloudIte end();
+	pcl::PointXYZ& front();
+	pcl::PointXYZ& back();
+
 private:
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
 };
