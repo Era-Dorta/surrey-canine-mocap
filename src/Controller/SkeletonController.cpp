@@ -62,7 +62,9 @@ void SkeletonController::load_skeleton_from_file(std::string file_name) {
 }
 
 void SkeletonController::save_skeleton_to_file(std::string file_name) {
-	skeleton->save_to_file(file_name);
+	if(skeleton->isSkelLoaded()){
+		skeleton->save_to_file(file_name);
+	}
 }
 
 void SkeletonController::reset_state() {
