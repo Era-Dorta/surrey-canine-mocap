@@ -115,7 +115,7 @@ void SkeletonController::update_dynamics(int disp_frame_no) {
 		//Do the fitting only once per frame, then let the user modify the
 		//fitted skeleton if they wish to do so
 		if (fitting_pending.at(current_frame)) {
-			//skel_fitter.fit_skeleton_to_cloud();
+			skel_fitter.fit_skeleton_to_cloud();
 			fitting_pending.at(current_frame) = false;
 		}
 

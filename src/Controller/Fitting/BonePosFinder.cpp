@@ -8,8 +8,6 @@
 #include "BonePosFinder.h"
 
 BonePosFinder::BonePosFinder() {
-	// TODO Auto-generated constructor stub
-
 }
 
 int BonePosFinder::find_head(const PointCloudPtr& cloud,
@@ -213,6 +211,8 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 		}
 	}
 
+	std::vector<cv::Point3f> traveled_points;
+
 	bool not_bone_length = true;
 	float3 aux_point, head3 = make_float3(shoulder_pos.x(), shoulder_pos.y(),
 			shoulder_pos.z());
@@ -225,15 +225,33 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 			if (current_length >= bone_length) {
 				not_bone_length = false;
 			}
+			traveled_points.push_back(
+					cv::Point3f(aux_point.x, aux_point.y, aux_point.z));
 		} else {
 			if (!unstuck_go_down(cam1_bin_img, row, col, row, col)) {
-				cout << "Error calculating third bone position" << endl;
-				return false;
+				//If there are enough points then do a line fitting of those points
+				//and calculate bone position along that line
+				if (traveled_points.size() > 10) {
+					osg::Vec3 line_vec, line_point, shoulder_in_line;
+
+					fit_line_to_cloud(traveled_points, line_vec, line_point);
+
+					point_in_line_given_distance_most_left(shoulder_pos,
+							bone_length, line_vec, line_point,
+							vertebral_end_pos);
+
+					refine_goal_position(vertebral_end_pos, shoulder_pos,
+							bone_length);
+					return true;
+				} else {
+					cout << "Error calculating third bone position" << endl;
+					return false;
+				}
 			}
 		}
 	}
-	vertebral_end_pos.set(aux_point.x, aux_point.y, aux_point.z);
 
+	vertebral_end_pos.set(aux_point.x, aux_point.y, aux_point.z);
 	refine_goal_position(vertebral_end_pos, shoulder_pos, bone_length);
 	return true;
 }
@@ -370,7 +388,7 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 
 	//Now we want the point on the second line at distance bone length of the
 	//previous point
-	if (!point_in_line_given_distance_highest_y(new_bone_positions[1],
+	if (!point_in_line_given_distance_most_up(new_bone_positions[1],
 			bone_lengths[1], line_vec1, line_point1, new_bone_positions[2])) {
 		return 2;
 	}
@@ -519,7 +537,7 @@ void BonePosFinder::closest_point_in_line_from_point(
 	res_point = line_point + line_vec * t;
 }
 
-bool BonePosFinder::point_in_line_given_distance_highest_y(
+bool BonePosFinder::point_in_line_given_distance_most_up(
 		const osg::Vec3& from_point, float distance, const osg::Vec3& line_vec,
 		const osg::Vec3& line_point, osg::Vec3& res_point) {
 	osg::Vec3 aux0, aux1;
@@ -528,6 +546,22 @@ bool BonePosFinder::point_in_line_given_distance_highest_y(
 		return false;
 	}
 	if (aux0.y() < aux1.y()) {
+		res_point = aux0;
+	} else {
+		res_point = aux1;
+	}
+	return true;
+}
+
+bool BonePosFinder::point_in_line_given_distance_most_left(
+		const osg::Vec3& from_point, float distance, const osg::Vec3& line_vec,
+		const osg::Vec3& line_point, osg::Vec3& res_point) {
+	osg::Vec3 aux0, aux1;
+	if (!sphere_line_intersection(from_point, distance, line_vec, line_point,
+			aux0, aux1)) {
+		return false;
+	}
+	if (aux0.x() < aux1.x()) {
 		res_point = aux0;
 	} else {
 		res_point = aux1;

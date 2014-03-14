@@ -85,9 +85,15 @@ private:
 			const osg::Vec3& line_vec, const osg::Vec3& line_point,
 			osg::Vec3& res_point);
 
-	//Returns the point with highest Y (lowest in osg) value in line
+	//Returns the point with highest Y (most up in osg) value in line
 	//at distance from from_point
-	bool point_in_line_given_distance_highest_y(const osg::Vec3& from_point,
+	bool point_in_line_given_distance_most_up(const osg::Vec3& from_point,
+			float distance, const osg::Vec3& line_vec,
+			const osg::Vec3& line_point, osg::Vec3& res_point);
+
+	//Returns the point with lowest x (most to the left in osg) value in line
+	//at distance from from_point
+	bool point_in_line_given_distance_most_left(const osg::Vec3& from_point,
 			float distance, const osg::Vec3& line_vec,
 			const osg::Vec3& line_point, osg::Vec3& res_point);
 
