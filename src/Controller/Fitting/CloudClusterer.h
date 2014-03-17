@@ -86,28 +86,6 @@ private:
 			std::vector<Skeleton::Skel_Leg>& labels,
 			Skeleton::Skel_Leg use_label, Skeleton::Axis axis);
 
-	//Needed to use std::sort with comp_y
-	struct sortstruct {
-		// sortstruct needs to know its containing object
-		CloudClusterer* m;
-		bool (*comp_funct)(const pcl::PointXYZ&, const pcl::PointXYZ&);
-		sortstruct(CloudClusterer* p,
-				bool (*comp_funct_)(const pcl::PointXYZ&, const pcl::PointXYZ&)) :
-				m(p) {
-			m = p;
-			comp_funct = comp_funct_;
-		}
-		;
-
-		bool operator()(int i, int j) {
-			return (!comp_funct(m->cloud->get_pcl(i), m->cloud->get_pcl(j)));
-		}
-
-		bool operator()(const pcl::PointXYZ& i, const pcl::PointXYZ& j) {
-			return (!comp_funct(i, j));
-		}
-	};
-
 	PointCloudPtr cloud;
 	int current_frame;
 	int n_frames;

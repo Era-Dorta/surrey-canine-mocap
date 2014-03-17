@@ -777,7 +777,7 @@ float CloudClusterer::get_division_val(const PointCloudPtr& points,
 		std::vector<Skeleton::Skel_Leg>& labels, Skeleton::Skel_Leg use_label,
 		Skeleton::Axis axis) {
 
-	PointCloudPtr points_copy(new PointCloud);
+	PointCloudPtr points_copy(new PointCloud());
 	for (unsigned int i = 0; i < points->size(); i++) {
 		if (labels[i] == use_label) {
 			points_copy->push_back(points->get_pcl(i));
@@ -785,20 +785,21 @@ float CloudClusterer::get_division_val(const PointCloudPtr& points,
 	}
 
 	if (points_copy->size() >= 2) {
-		bool (*comp_funct)(const pcl::PointXYZ&, const pcl::PointXYZ&);
 		switch (axis) {
 		case Skeleton::X:
-			comp_funct = CompMethods::comp_x;
+			std::sort(points_copy->begin(), points_copy->end(),
+					CompMethods::comp_x);
 			break;
 		case Skeleton::Y:
-			comp_funct = CompMethods::comp_y;
+			std::sort(points_copy->begin(), points_copy->end(),
+					CompMethods::comp_y);
 			break;
 		default:
-			comp_funct = CompMethods::comp_z;
+			std::sort(points_copy->begin(), points_copy->end(),
+					CompMethods::comp_z);
 			break;
 		}
-		sortstruct s(this, comp_funct);
-		std::sort(points_copy->begin(), points_copy->end(), s);
+
 		return (points_copy->front().data[axis] + points_copy->back().data[axis])
 				* 0.5;
 	} else {
