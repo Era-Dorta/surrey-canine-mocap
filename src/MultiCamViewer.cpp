@@ -78,6 +78,11 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		skel_controller.generate_skeletonization();
 	}
 
+	if (set_ground_truth) {
+		std::string path_ground_truth(
+				"/home/cvssp/misc/m04701/workspace/data/groundTruth/test.txt");
+		ground_truth.load_data(path_ground_truth);
+	}
 	//DEBUG:
 	//cout << "begin_frame_no: " << begin_frame_no << " end_frame_no: " << end_frame_no << endl;
 
@@ -691,9 +696,10 @@ void MultiCamViewer::set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
 		} else {
 			ground_truth.set_ground_truth_frame(user_points, disp_frame_no);
 
-			//std::string path(
-			//		"/home/cvssp/misc/m04701/workspace/data/groundTruth/test.txt");
-			//ground_truth.save_data(path);
+			std::string path(
+					"/home/cvssp/misc/m04701/workspace/data/groundTruth/test.txt");
+			ground_truth.save_data(path);
+
 			num_user_points = 0;
 		}
 	}
