@@ -70,7 +70,7 @@ bool LegFitter::fit_leg_position_initialise(Skeleton::Skel_Leg leg,
 		return false;
 	}
 
-	sortstruct s(this, CompMethods::comp_y);
+	sortstruct s(cloud, CompMethods::comp_y);
 	std::sort(leg_points_index.begin(), leg_points_index.end(), s);
 
 	//Actualise paw index since we have modified the leg_point_index vector

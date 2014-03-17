@@ -59,25 +59,21 @@ private:
 	bool solve_leg_upper_pos_approx(Skeleton::Skel_Leg leg,
 			const osg::Vec3& pos);
 
-	//Needed to use std::sort with comp_y
+	//Needed to order vector of indices using cloud data in std::sort
 	struct sortstruct {
-		// sortstruct needs to know its containing object
-		LegFitter* m;
+		//It needs the cloud and the compare method
+		PointCloudPtr in_cloud;
 		bool (*comp_funct)(const pcl::PointXYZ&, const pcl::PointXYZ&);
-		sortstruct(LegFitter* p,
-				bool (*comp_funct_)(const pcl::PointXYZ&, const pcl::PointXYZ&)) :
-				m(p) {
-			m = p;
+		sortstruct(const PointCloudPtr& in_cloud_,
+				bool (*comp_funct_)(const pcl::PointXYZ&,
+						const pcl::PointXYZ&)) {
+			in_cloud = in_cloud_;
 			comp_funct = comp_funct_;
 		}
 		;
 
 		bool operator()(int i, int j) {
-			return (!comp_funct(m->cloud->get_pcl(i), m->cloud->get_pcl(j)));
-		}
-
-		bool operator()(const pcl::PointXYZ& i, const pcl::PointXYZ& j) {
-			return (!comp_funct(i, j));
+			return (!comp_funct(in_cloud->get_pcl(i), in_cloud->get_pcl(j)));
 		}
 	};
 
