@@ -96,8 +96,8 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 
 	osg::Vec3 bone_pos[3];
 	//Get naive bone positions
-	int num_valid = bone_pos_finder.find_leg_lower_3_joints_simple(cloud,
-			leg_points_index, bone_lengths, bone_pos);
+	int num_valid = bone_pos_finder.find_leg_lower_3_joints(cloud,
+			leg_points_index, bone_lengths, bone_pos, bone_pos, 0);
 
 	if (num_valid != 3) {
 		return false;
@@ -105,18 +105,12 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 
 	//Used calculated positions to get better ones
 	osg::Vec3 new_bone_pos[3];
-	int num_valid_adv = bone_pos_finder.find_leg_lower_3_joints_line_fitting(
-			cloud, leg_points_index, bone_lengths, bone_pos, new_bone_pos);
+	bone_pos_finder.find_leg_lower_3_joints(cloud, leg_points_index,
+			bone_lengths, bone_pos, new_bone_pos, 1);
 
-	for (int i = 0; i < num_valid_adv; i++) {
+	//Update bone positions with the improved values
+	for (int i = 0; i < 3; i++) {
 		bone_pos[i] = new_bone_pos[i];
-	}
-
-	//If only pos[0] and pos[1] were updated make sure that previous bone
-	//start position is recalculated
-	if (num_valid_adv == 2) {
-		bone_pos_finder.refine_start_position(bone_pos[2], bone_pos[1],
-				bone_lengths[1]);
 	}
 
 	//Try put all the bones in their positions

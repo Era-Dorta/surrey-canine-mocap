@@ -45,7 +45,7 @@ public:
 	void set_float3(unsigned int i, const float3& point);
 
 	const cv::Point3f get_point3(unsigned int i) const;
-	void set_float3(unsigned int i, const cv::Point3f& point);
+	void set_point3(unsigned int i, const cv::Point3f& point);
 
 	float get_x(unsigned int i) const;
 	void set_x(unsigned int i, float val);

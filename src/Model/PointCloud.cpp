@@ -80,7 +80,7 @@ const cv::Point3f PointCloud::get_point3(unsigned int i) const {
 	return cv::Point3f(cloud->points[i].x, cloud->points[i].y,
 			cloud->points[i].z);
 }
-void PointCloud::set_float3(unsigned int i, const cv::Point3f& point) {
+void PointCloud::set_point3(unsigned int i, const cv::Point3f& point) {
 	cloud->points[i].x = point.x;
 	cloud->points[i].y = point.y;
 	cloud->points[i].z = point.z;

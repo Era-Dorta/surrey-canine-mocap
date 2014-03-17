@@ -234,7 +234,8 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 				if (traveled_points.size() > 10) {
 					osg::Vec3 line_vec, line_point, shoulder_in_line;
 
-					fit_line_to_cloud(traveled_points, line_vec, line_point);
+					fit_line_to_cloud_opencv(traveled_points, line_vec,
+							line_point);
 
 					point_in_line_given_distance_most_left(shoulder_pos,
 							bone_length, line_vec, line_point,
@@ -254,6 +255,47 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 	vertebral_end_pos.set(aux_point.x, aux_point.y, aux_point.z);
 	refine_goal_position(vertebral_end_pos, shoulder_pos, bone_length);
 	return true;
+}
+
+int BonePosFinder::find_leg_lower_3_joints(const PointCloudPtr& cloud,
+		const std::vector<int>& leg_points_index, const float bone_lengths[2],
+		const osg::Vec3 prev_bone_positions[3], osg::Vec3 new_bone_positions[3],
+		unsigned int method) {
+
+	int num_valid_pos = 0;
+	switch (method) {
+	case 0:
+		num_valid_pos = find_leg_lower_3_joints_simple(cloud, leg_points_index,
+				bone_lengths, new_bone_positions);
+		break;
+	case 1:
+		num_valid_pos = find_leg_lower_3_joints_line_fitting(cloud,
+				leg_points_index, bone_lengths, prev_bone_positions,
+				new_bone_positions);
+		break;
+	default:
+		num_valid_pos = find_leg_lower_3_joints_line_ransac(cloud,
+				leg_points_index, bone_lengths, prev_bone_positions,
+				new_bone_positions);
+		break;
+	}
+
+	if (num_valid_pos == 1) {
+		new_bone_positions[1] = prev_bone_positions[1];
+		new_bone_positions[2] = prev_bone_positions[2];
+	}
+
+	if (num_valid_pos == 2) {
+		new_bone_positions[2] = prev_bone_positions[2];
+	}
+
+	refine_start_position(new_bone_positions[1], new_bone_positions[0],
+			bone_lengths[0]);
+
+	refine_start_position(new_bone_positions[2], new_bone_positions[1],
+			bone_lengths[1]);
+
+	return num_valid_pos;
 }
 
 int BonePosFinder::find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
@@ -355,7 +397,7 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 	}
 
 	osg::Vec3 line_vec0, line_point0;
-	if (!fit_line_to_cloud(bone_points, line_vec0, line_point0)) {
+	if (!fit_line_to_cloud_opencv(bone_points, line_vec0, line_point0)) {
 		return 0;
 	}
 
@@ -382,7 +424,7 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 	}
 
 	osg::Vec3 line_vec1, line_point1;
-	if (!fit_line_to_cloud(bone_points, line_vec1, line_point1)) {
+	if (!fit_line_to_cloud_opencv(bone_points, line_vec1, line_point1)) {
 		return 2;
 	}
 
@@ -395,6 +437,89 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 
 	refine_start_position(new_bone_positions[2], new_bone_positions[1],
 			bone_lengths[1]);
+
+	return 3;
+}
+
+int BonePosFinder::find_leg_lower_3_joints_line_ransac(
+		const PointCloudPtr& cloud, const std::vector<int>& leg_points_index,
+		const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
+		osg::Vec3 new_bone_positions[3]) {
+
+	PointCloudPtr leg_points0(new PointCloud());
+
+	//Get all the points that belong to the leg
+	for (unsigned int i = 0; i < leg_points_index.size(); i++) {
+		leg_points0->push_back(cloud->get_pcl(leg_points_index[i]));
+	}
+
+	osg::Vec3 line_point0, line_vec0, line_point1, line_vec1;
+	std::vector<int> inliers;
+
+	//Do a line fitting for all the points
+	if (!fit_line_to_cloud_pcl(leg_points0, line_vec0, line_point0, inliers)) {
+		return 0;
+	}
+
+	//Get the remainder points in another point cloud
+	int j = 0, size = (int) leg_points0->size();
+	PointCloudPtr leg_points1(new PointCloud());
+	for (int i = 0; i < size; i++) {
+		if (i != inliers[j]) {
+			leg_points1->push_back(leg_points0->get_pcl(i));
+		} else {
+			j++;
+		}
+	}
+
+	if (!fit_line_to_cloud_pcl(leg_points1, line_vec1, line_point1)) {
+		return 0;
+	}
+
+	float dist0 = distance_to_line(prev_bone_positions[0], line_vec0,
+			line_point0);
+	float dist1 = distance_to_line(prev_bone_positions[0], line_vec1,
+			line_point1);
+
+	//We make the assumption that the closest line to the paw position is
+	//the line that best fits the lower bone
+	if (dist1 < dist0) {
+		swap(line_vec0, line_vec1);
+		swap(line_point0, line_point1);
+	}
+
+	//Get new paw position
+	closest_point_in_line_from_point(prev_bone_positions[0], line_vec0,
+			line_point0, new_bone_positions[0]);
+
+	//Get wrist position
+	if (!point_in_line_given_distance_most_up(prev_bone_positions[0],
+			bone_lengths[0], line_vec0, line_point0, new_bone_positions[0])) {
+
+		refine_start_position(new_bone_positions[1], new_bone_positions[0],
+				bone_lengths[0]);
+		refine_start_position(new_bone_positions[2], new_bone_positions[1],
+				bone_lengths[1]);
+
+		return 1;
+	}
+
+	refine_start_position(new_bone_positions[1], new_bone_positions[0],
+			bone_lengths[0]);
+
+	//Get elbow bone start position
+	if (!point_in_line_given_distance_most_up(new_bone_positions[1],
+			bone_lengths[1], line_vec1, line_point1, new_bone_positions[2])) {
+
+		refine_start_position(new_bone_positions[2], new_bone_positions[1],
+				bone_lengths[1]);
+
+		return 2;
+	}
+
+	refine_start_position(new_bone_positions[2], new_bone_positions[1],
+			bone_lengths[1]);
+
 	return 3;
 }
 
@@ -496,7 +621,7 @@ void BonePosFinder::get_x_y_side_projection(const PointCloudPtr& cloud,
 	}
 }
 
-bool BonePosFinder::fit_line_to_cloud(
+bool BonePosFinder::fit_line_to_cloud_opencv(
 		const std::vector<cv::Point3f>& bone_points, osg::Vec3& line_vec,
 		osg::Vec3& line_point) {
 	if (bone_points.size() == 0) {
@@ -519,6 +644,62 @@ bool BonePosFinder::fit_line_to_cloud(
 
 	line_vec.set(out_line.val[0], out_line.val[1], out_line.val[2]);
 	line_point.set(out_line.val[3], out_line.val[4], out_line.val[5]);
+
+	return true;
+}
+
+bool BonePosFinder::fit_line_to_cloud_pcl(const PointCloudPtr& cloud,
+		osg::Vec3& line_vec, osg::Vec3& line_point) {
+
+	if (cloud->size() == 0) {
+		return false;
+	}
+
+	pcl::SampleConsensusModelLine<pcl::PointXYZ>::Ptr model_line(
+			new pcl::SampleConsensusModelLine<pcl::PointXYZ>(
+					cloud->get_cloud()));
+
+	pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_line);
+	ransac.setDistanceThreshold(.01);
+	ransac.computeModel();
+	Eigen::VectorXf line_coefficients;
+	ransac.getModelCoefficients(line_coefficients);
+
+	line_point.x() = line_coefficients[0];
+	line_point.y() = line_coefficients[1];
+	line_point.z() = line_coefficients[2];
+
+	line_vec.x() = line_coefficients[3];
+	line_vec.y() = line_coefficients[4];
+	line_vec.z() = line_coefficients[5];
+
+	return true;
+}
+
+bool BonePosFinder::fit_line_to_cloud_pcl(const PointCloudPtr& cloud,
+		osg::Vec3& line_vec, osg::Vec3& line_point, std::vector<int>& inliers) {
+	if (cloud->size() == 0) {
+		return false;
+	}
+
+	pcl::SampleConsensusModelLine<pcl::PointXYZ>::Ptr model_line(
+			new pcl::SampleConsensusModelLine<pcl::PointXYZ>(
+					cloud->get_cloud()));
+
+	pcl::RandomSampleConsensus<pcl::PointXYZ> ransac(model_line);
+	ransac.setDistanceThreshold(.01);
+	ransac.computeModel();
+	Eigen::VectorXf line_coefficients;
+	ransac.getModelCoefficients(line_coefficients);
+	ransac.getInliers(inliers);
+
+	line_point.x() = line_coefficients[0];
+	line_point.y() = line_coefficients[1];
+	line_point.z() = line_coefficients[2];
+
+	line_vec.x() = line_coefficients[3];
+	line_vec.y() = line_coefficients[4];
+	line_vec.z() = line_coefficients[5];
 
 	return true;
 }
@@ -596,4 +777,18 @@ bool BonePosFinder::sphere_line_intersection(const osg::Vec3& sphe_centre,
 	t = first_half - sq;
 	res_point1 = line_point + line_vec * t;
 	return true;
+}
+
+float BonePosFinder::distance_to_line(const osg::Vec3& from_point,
+		const osg::Vec3& line_vec, const osg::Vec3& line_point) {
+	osg::Vec3 aux_point;
+	closest_point_in_line_from_point(from_point, line_vec, line_point,
+			aux_point);
+	return (aux_point - from_point).length();
+}
+
+void BonePosFinder::swap(osg::Vec3& v0, osg::Vec3& v1) {
+	std::swap(v0.x(), v1.x());
+	std::swap(v0.y(), v1.y());
+	std::swap(v0.z(), v1.z());
 }

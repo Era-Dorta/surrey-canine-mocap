@@ -53,11 +53,26 @@ public:
 			constCamVecIte& cam, int current_frame,
 			const osg::Vec3& shoulder_pos, osg::Vec3& vertebral_end_pos);
 
+	// Method:
+	// 0 -> Go up the cloud until a point is at bone length
+	// 1 -> Use line fitting of two arbitrary section of the cloud
+	// 2 -> Use PCL Ransac line model to get two lines in the cloud
+	int find_leg_lower_3_joints(const PointCloudPtr& cloud,
+			const std::vector<int>& leg_points_index,
+			const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
+			osg::Vec3 new_bone_positions[3], unsigned int method);
+
+private:
 	int find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
 			const std::vector<int>& leg_points_index,
 			const float bone_lengths[2], osg::Vec3 bone_positions[3]);
 
 	int find_leg_lower_3_joints_line_fitting(const PointCloudPtr& cloud,
+			const std::vector<int>& leg_points_index,
+			const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
+			osg::Vec3 new_bone_positions[3]);
+
+	int find_leg_lower_3_joints_line_ransac(const PointCloudPtr& cloud,
 			const std::vector<int>& leg_points_index,
 			const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
 			osg::Vec3 new_bone_positions[3]);
@@ -68,7 +83,6 @@ public:
 	void refine_start_position(osg::Vec3& start_position,
 			const osg::Vec3& end_position, float length);
 
-private:
 	bool unstuck_go_down(const cv::Mat& img, int i_row, int i_col, int &res_row,
 			int &res_col);
 
@@ -82,8 +96,14 @@ private:
 			Skeleton::Skel_Leg leg, cv::Mat& out_img, const osg::Vec3& trans =
 					osg::Vec3());
 
-	bool fit_line_to_cloud(const std::vector<cv::Point3f>& bone_points,
+	bool fit_line_to_cloud_opencv(const std::vector<cv::Point3f>& bone_points,
 			osg::Vec3& line_vec, osg::Vec3& line_point);
+
+	bool fit_line_to_cloud_pcl(const PointCloudPtr& cloud, osg::Vec3& line_vec,
+			osg::Vec3& line_point);
+
+	bool fit_line_to_cloud_pcl(const PointCloudPtr& cloud, osg::Vec3& line_vec,
+			osg::Vec3& line_point, std::vector<int>& inliers);
 
 	//Returns in res_point the closest point in line from from_point
 	void closest_point_in_line_from_point(const osg::Vec3& from_point,
@@ -105,6 +125,11 @@ private:
 	bool sphere_line_intersection(const osg::Vec3& sphe_centre, float radius,
 			const osg::Vec3& line_vec, const osg::Vec3& line_point,
 			osg::Vec3& res_point0, osg::Vec3& res_point1);
+
+	float distance_to_line(const osg::Vec3& from_point,
+			const osg::Vec3& line_vec, const osg::Vec3& line_point);
+
+	void swap(osg::Vec3& v0, osg::Vec3& v1);
 };
 
 #endif /* BONEPOSFINDER_H_ */
