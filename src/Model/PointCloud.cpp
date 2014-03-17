@@ -18,7 +18,8 @@ PointCloud::PointCloud(const std::vector<float3>& in_cloud) {
 	from_float3Array(in_cloud);
 }
 
-PointCloud::PointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud) {
+PointCloud::PointCloud(
+		const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& in_cloud) {
 	from_pclCloud(in_cloud);
 }
 
@@ -38,11 +39,11 @@ void PointCloud::from_float3Array(const std::vector<float3>& in_cloud) {
 }
 
 void PointCloud::from_pclCloud(
-		const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud) {
-	cloud = in_cloud;
+		const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& in_cloud) {
+	cloud = boost::make_shared<pcl::PointCloud<pcl::PointXYZ> >(*in_cloud);
 }
 
-unsigned int PointCloud::size() {
+unsigned int PointCloud::size() const {
 	return cloud->size();
 }
 
@@ -136,11 +137,11 @@ void PointCloud::push_back(float x, float y, float z) {
 	cloud->push_back(pcl::PointXYZ(x, y, z));
 }
 
-PointCloud::PointCloudIte PointCloud::begin() {
+pcl::PointCloud<pcl::PointXYZ>::iterator PointCloud::begin() {
 	return cloud->begin();
 }
 
-PointCloud::PointCloudIte PointCloud::end() {
+pcl::PointCloud<pcl::PointXYZ>::iterator PointCloud::end() {
 	return cloud->end();
 }
 
@@ -150,4 +151,8 @@ pcl::PointXYZ& PointCloud::front() {
 
 pcl::PointXYZ& PointCloud::back() {
 	return cloud->back();
+}
+
+const pcl::PointCloud<pcl::PointXYZ>::Ptr& PointCloud::get_cloud() const {
+	return cloud;
 }

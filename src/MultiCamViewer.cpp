@@ -63,7 +63,12 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	//TODO This should be given by the user or somehow calculated from
 	//the images
 	//Set bounding box limits
+	// .set(xmin, ymin, zmin, xmax, ymax, zmax)
+	//Labrador
 	bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.015, 0.25);
+
+	//Others
+	//bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.03, 0.25);
 
 	if (!manual_origin_set) {
 		//Remove background using bounding box
@@ -664,8 +669,8 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 		} else {
 			cam_calibrator.set_plate_points(user_points[0], user_points[1],
 					user_points[2], user_points[3]);
-			//cam_cal.recalibrate_center_all_cameras();
-			cam_calibrator.recalibrate_axis_camera();
+			cam_calibrator.recalibrate_center_all_cameras();
+			//cam_calibrator.recalibrate_axis_camera();
 			cam_calibrator.save_all_cameras(_dataset_path);
 
 			//Code to calibrate each camera axis separately

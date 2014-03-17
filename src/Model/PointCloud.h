@@ -17,18 +17,20 @@
 
 // Interface class to hide want kind of cloud point we are using and
 // be compatible with all the different vector types used in the program
+
 class PointCloud {
 public:
 	PointCloud();
 	PointCloud(const osg::ref_ptr<osg::Vec3Array>& in_cloud);
 	PointCloud(const std::vector<float3>& in_cloud);
-	PointCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud);
+	PointCloud(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& in_cloud);
 
 	void from_osgVec3Array(const osg::ref_ptr<osg::Vec3Array>& in_cloud);
 	void from_float3Array(const std::vector<float3>& in_cloud);
-	void from_pclCloud(const pcl::PointCloud<pcl::PointXYZ>::Ptr& in_cloud);
+	void from_pclCloud(
+			const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& in_cloud);
 
-	unsigned int size();
+	unsigned int size() const;
 
 	const pcl::PointXYZ& get_pcl(unsigned int i) const;
 	void set_pcl(unsigned int i, const pcl::PointXYZ& point);
@@ -62,11 +64,12 @@ public:
 	void push_back(const cv::Point3f& point);
 	void push_back(float x, float y, float z);
 
-	typedef pcl::PointCloud<pcl::PointXYZ>::iterator PointCloudIte;
-	PointCloudIte begin();
-	PointCloudIte end();
+	pcl::PointCloud<pcl::PointXYZ>::iterator begin();
+	pcl::PointCloud<pcl::PointXYZ>::iterator end();
 	pcl::PointXYZ& front();
 	pcl::PointXYZ& back();
+
+	const pcl::PointCloud<pcl::PointXYZ>::Ptr& get_cloud() const;
 
 private:
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;

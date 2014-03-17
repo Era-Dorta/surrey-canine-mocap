@@ -40,6 +40,8 @@ int main(int argc, char** argv) {
 		//Set default path when no arguments are given
 		path =
 				"/home/cvssp/misc/m04701/workspace/data/UniS_Fitzpatrick_04_July_2013/RGBD_Cap_2013.07.04_12.58.30_Labrador";
+				//"/scratch/Fitzpatrick_2013/RGBD_Cap_2013.07.04_11.26.09_Staffy";
+				//"/scratch/Fitzpatrick_2013/RGBD_Cap_2013.07.04_11.39.17_Rottweiler";
 		//exit(-1);
 	} else {
 		path = argv[1];
