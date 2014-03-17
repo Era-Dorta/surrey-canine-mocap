@@ -12,7 +12,8 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <osg/Array>
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
+#include <boost/make_shared.hpp>
 
 // Interface class to hide want kind of cloud point we are using and
 // be compatible with all the different vector types used in the program

@@ -13,7 +13,12 @@
 #include "../../Model/Skeleton.h"
 #include "../../Model/PointCloud.h"
 
-#include "opencv2/opencv.hpp"
+//#include <pcl/io/pcd_io.h>
+
+#include <pcl/common/common.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_line.h>
+#include <opencv2/opencv.hpp>
 
 class BonePosFinder {
 public:

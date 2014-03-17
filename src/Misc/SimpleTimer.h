@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <stdio.h>
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 
 //A simple wrapper class for the OpenCV timing functionality:
 class Timer {

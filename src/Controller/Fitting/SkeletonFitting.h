@@ -12,10 +12,10 @@
 #include "LegFitter.h"
 #include "BodyFitter.h"
 
-#include "osg/Array"
-#include "opencv2/opencv.hpp"
+#include <osg/Array>
+#include <opencv2/opencv.hpp>
 
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
 
 class SkeletonFitting {
 public:

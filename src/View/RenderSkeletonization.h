@@ -17,12 +17,7 @@
 #include <osg/Texture2D>
 #include <osg/Material>
 
-#include "boost/shared_ptr.hpp"
-
-#include "iostream"
-
-using std::cout;
-using std::endl;
+#include <boost/shared_ptr.hpp>
 
 //Type def to avoid writing this monster more than once .
 typedef std::multiset<osgUtil::LineSegmentIntersector::Intersection>::iterator intersecIte;

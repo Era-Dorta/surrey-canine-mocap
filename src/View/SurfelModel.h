@@ -25,7 +25,7 @@
 #include <osgViewer/CompositeViewer>
 #include <osg/Geometry>
 
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 #include "opencv2/gpu/gpu.hpp"
 
 #include "../Misc/SimpleTimer.h"

@@ -25,13 +25,13 @@
 #include <osgViewer/CompositeViewer>
 #include <osg/Geometry>
 
-#include "boost/filesystem.hpp"
-#include "boost/algorithm/string/predicate.hpp"
-#include "boost/lexical_cast.hpp"
-#include "boost/shared_ptr.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 
-#include "opencv2/opencv.hpp"
-#include "opencv2/gpu/gpu.hpp"
+#include <opencv2/opencv.hpp>
+#include <opencv2/gpu/gpu.hpp>
 
 class RGBD_Frame {
 public:

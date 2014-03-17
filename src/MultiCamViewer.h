@@ -43,13 +43,13 @@
 #include <osg/BlendFunc>
 #include <osg/LineWidth>
 
-#include "boost/filesystem.hpp"
-#include "boost/algorithm/string/predicate.hpp"
-#include "boost/lexical_cast.hpp"
-#include "boost/shared_ptr.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 
-#include "opencv2/opencv.hpp"
-#include "opencv2/gpu/gpu.hpp"
+#include <opencv2/opencv.hpp>
+#include <opencv2/gpu/gpu.hpp>
 
 class MultiCamViewer: public osgGA::GUIEventHandler {
 public:

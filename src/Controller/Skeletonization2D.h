@@ -4,7 +4,7 @@
 #include "../View/RGBDCamera.h"
 #include "PixelSearch.h"
 
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 
 #include <iostream>
 using std::cout;

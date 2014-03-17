@@ -7,10 +7,6 @@ Skeletonization3D::Skeletonization3D(const camVecT& camera_arr_,
 				move_distance_) {
 }
 
-Skeletonization3D::~Skeletonization3D() {
-	//dtor
-}
-
 void Skeletonization3D::generate_skeletonization() {
 	skel_arr.clear();
 	//Save number of cameras and total number of frames
@@ -27,7 +23,7 @@ void Skeletonization3D::generate_skeletonization() {
 	skel2d_cam_array.resize(n_frames * n_cameras);
 }
 
-PointCloudPtr Skeletonization3D::get_simple_3d_projection(int cam_num,
+const PointCloudPtr& Skeletonization3D::get_simple_3d_projection(int cam_num,
 		int frame_num) {
 	if (skel2d_cam_array[frame_num * n_cameras + cam_num] == NULL) {
 		do_3d_projection(cam_num, frame_num);
@@ -35,7 +31,8 @@ PointCloudPtr Skeletonization3D::get_simple_3d_projection(int cam_num,
 	return skel2d_cam_array[frame_num * n_cameras + cam_num];
 }
 
-PointCloudPtr Skeletonization3D::get_merged_3d_projection(int frame_num) {
+const PointCloudPtr& Skeletonization3D::get_merged_3d_projection(
+		int frame_num) {
 	if (skel3d_merged_array[frame_num] == NULL) {
 		merge_2D_skeletons(frame_num);
 	}
@@ -67,7 +64,7 @@ void Skeletonization3D::merge_2D_skeletons(int frame_num) {
 
 void Skeletonization3D::do_3d_projection(int cam_num, int frame_num) {
 	//Return vector
-	PointCloudPtr skeleton_3d(new PointCloud);
+	PointCloudPtr skeleton_3d(new PointCloud());
 
 	//Calculate 3D projections of 2D skeleton images
 	//Every image is from a different camera
@@ -172,7 +169,7 @@ PointCloudPtr Skeletonization3D::merge_2D_skeletons_impl(
 PointCloudPtr Skeletonization3D::simple_2D_merge(
 		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
 	//Return vector
-	PointCloudPtr result(new PointCloud);
+	PointCloudPtr result(new PointCloud());
 
 	//For each projection
 	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;
@@ -240,7 +237,7 @@ PointCloudPtr Skeletonization3D::follow_path_2D_merge(
 		std::vector<cv::Mat>& visited_pixels,
 		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
 	//Return vector
-	PointCloudPtr result(new PointCloud);
+	PointCloudPtr result(new PointCloud());
 
 	cv::Point3f p0, p1;
 
@@ -365,7 +362,7 @@ PointCloudPtr Skeletonization3D::follow_path_2D_merge(
 PointCloudPtr Skeletonization3D::take_all_points_2D_merge(
 		std::vector<std::map<osg::Vec2, osg::Vec3> >& projection3d_array) {
 	//Return vector
-	PointCloudPtr result(new PointCloud);
+	PointCloudPtr result(new PointCloud());
 
 	//For each projection
 	std::vector<std::map<osg::Vec2, osg::Vec3> >::iterator projection3d;

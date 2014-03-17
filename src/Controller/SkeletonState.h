@@ -9,7 +9,7 @@
 #define SKELETONSTATE_H_
 
 #include "../Model/Skeleton.h"
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
 
 class SkeletonState {
 public:

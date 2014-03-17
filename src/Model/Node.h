@@ -14,8 +14,8 @@
 #include <vector>
 #include <string>
 #include <cmath>
-#include "boost/shared_ptr.hpp"
-#include "boost/weak_ptr.hpp"
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 typedef unsigned char BYTE;
 

@@ -2,13 +2,13 @@
 #define SKELETONIZATION3D_H
 
 #include "Skeletonization2D.h"
-#include "../View/RGBDCamera.h"
 #include "PixelSearch.h"
+#include "../View/RGBDCamera.h"
 #include "../Model/PointCloud.h"
 
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#include <boost/shared_ptr.hpp>
 
 class Skeletonization3D {
 public:
@@ -18,17 +18,15 @@ public:
 	Skeletonization3D(const camVecT& camera_arr_, float merge_treshold_ = 0.02,
 			float row_treshold_ = 0.01, float move_distance_ = 0.025);
 
-	virtual ~Skeletonization3D();
-
 	void generate_skeletonization();
 
 	//Return an array of points, given a camera and a frame number
 	//Important: This coordinates are relative to the camera
-	PointCloudPtr get_simple_3d_projection(int cam_num, int frame_num);
+	const PointCloudPtr& get_simple_3d_projection(int cam_num, int frame_num);
 
 	//Return an array of points, after merging all the camera views
 	//Important: This coordinates are global
-	PointCloudPtr get_merged_3d_projection(int frame_num);
+	const PointCloudPtr& get_merged_3d_projection(int frame_num);
 
 	//Get a 2D skeleton frame
 	const cv::Mat& get_2D_frame(int cam_num, int frame_num) const;

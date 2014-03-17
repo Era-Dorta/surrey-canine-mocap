@@ -8,7 +8,7 @@
 #ifndef PIXELSEARCH_H_
 #define PIXELSEARCH_H_
 
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 
 namespace PixelSearch {
 //Given a uchar 1 channel image, and a start points it returns true and a position

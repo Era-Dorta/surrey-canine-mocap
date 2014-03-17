@@ -8,12 +8,13 @@
 #ifndef RGBDCAMERA_H_
 #define RGBDCAMERA_H_
 
-#include "../Misc/MiscUtils.h"
 #include "RGBDFrame.h"
+#include "RenderPOV.h"
 //#include "DepthMapPoly.h"
 #include "DepthMapSurfel.h"
+#include "../Misc/MiscUtils.h"
 #include "../Misc/SimpleTimer.h"
-#include "RenderPOV.h"
+
 
 #include <string>
 #include <vector>
@@ -33,13 +34,13 @@
 #include <osg/Geometry>
 #include <osg/LineWidth>
 
-#include "boost/filesystem.hpp"
-#include "boost/algorithm/string/predicate.hpp"
-#include "boost/lexical_cast.hpp"
-#include "boost/shared_ptr.hpp"
+#include <boost/filesystem.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/shared_ptr.hpp>
 
-#include "opencv2/opencv.hpp"
-#include "opencv2/gpu/gpu.hpp"
+#include <opencv2/opencv.hpp>
+#include <opencv2/gpu/gpu.hpp>
 
 class RGBD_Camera {
 public:
