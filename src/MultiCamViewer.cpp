@@ -70,11 +70,16 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 	//Others
 	//bounding_box.set(-1.3, -0.54, -0.25, 1.3, -0.03, 0.25);
 
-	if (!manual_origin_set) {
+	if (!manual_origin_set || set_ground_truth) {
 		//Remove background using bounding box
 		for (unsigned int i = 0; i < camera_arr.size(); i++) {
 			camera_arr[i]->remove_background_only_bounding_box(bounding_box);
 		}
+	}
+
+	//Only generate skeletonization when needed, it is a quite
+	//computationally expensive process
+	if (!manual_origin_set && !set_ground_truth) {
 		skel_controller.generate_skeletonization();
 	}
 
@@ -168,7 +173,7 @@ void MultiCamViewer::setup_scene() {
 
 	scene_root->addChild(render_skel_group);
 
-	if (!manual_origin_set) {
+	if (!manual_origin_set && !set_ground_truth) {
 		skel_controller.setup_scene();
 	}
 
@@ -554,7 +559,7 @@ void MultiCamViewer::update_dynamics() {
 
 	}
 
-	if (!manual_origin_set) {
+	if (!manual_origin_set && !set_ground_truth) {
 		skel_controller.update_dynamics(disp_frame_no);
 	}
 
