@@ -260,20 +260,20 @@ bool BonePosFinder::find_vertebral_end_pos(const cv::Mat& cam1_bin_img,
 int BonePosFinder::find_leg_lower_3_joints(const PointCloudPtr& cloud,
 		const std::vector<int>& leg_points_index, const float bone_lengths[2],
 		const osg::Vec3 prev_bone_positions[3], osg::Vec3 new_bone_positions[3],
-		unsigned int method) {
+		Find_Leg_Method method) {
 
 	int num_valid_pos = 0;
 	switch (method) {
-	case 0:
+	case Simple:
 		num_valid_pos = find_leg_lower_3_joints_simple(cloud, leg_points_index,
 				bone_lengths, new_bone_positions);
 		break;
-	case 1:
+	case S_Line_Fit:
 		num_valid_pos = find_leg_lower_3_joints_line_fitting(cloud,
 				leg_points_index, bone_lengths, prev_bone_positions,
 				new_bone_positions);
 		break;
-	default:
+	case Ransac_Line_Fit:
 		num_valid_pos = find_leg_lower_3_joints_line_ransac(cloud,
 				leg_points_index, bone_lengths, prev_bone_positions,
 				new_bone_positions);

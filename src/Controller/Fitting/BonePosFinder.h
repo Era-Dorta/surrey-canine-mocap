@@ -53,14 +53,17 @@ public:
 			constCamVecIte& cam, int current_frame,
 			const osg::Vec3& shoulder_pos, osg::Vec3& vertebral_end_pos);
 
+	enum Find_Leg_Method {
+		Simple, S_Line_Fit, Ransac_Line_Fit
+	};
 	// Method:
-	// 0 -> Go up the cloud until a point is at bone length
-	// 1 -> Use line fitting of two arbitrary section of the cloud
-	// 2 -> Use PCL Ransac line model to get two lines in the cloud
+	// Simple -> Go up the cloud until a point is at bone length
+	// S_Line_Fit -> Use line fitting of two arbitrary section of the cloud
+	// Ransac_Line_Fit -> Use PCL Ransac line model to get two lines in the cloud
 	int find_leg_lower_3_joints(const PointCloudPtr& cloud,
 			const std::vector<int>& leg_points_index,
 			const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
-			osg::Vec3 new_bone_positions[3], unsigned int method);
+			osg::Vec3 new_bone_positions[3], Find_Leg_Method method);
 
 private:
 	int find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
