@@ -11,6 +11,13 @@ PointCloud::PointCloud() :
 		cloud(new pcl::PointCloud<pcl::PointXYZ>) {
 }
 
+PointCloud::PointCloud(unsigned int width, unsigned int height) :
+		//PCL uses column row but for it is better for us to use
+		//row column, also the points in the file get ordered by
+		//frame so on inside this class exchange width and height
+		cloud(new pcl::PointCloud<pcl::PointXYZ>(height, width)) {
+}
+
 PointCloud::PointCloud(const osg::ref_ptr<osg::Vec3Array>& in_cloud) {
 	from_osgVec3Array(in_cloud);
 }
@@ -63,6 +70,18 @@ void PointCloud::set_osg(unsigned int i, const osg::Vec3& point) {
 	cloud->points[i].x = point.x();
 	cloud->points[i].y = point.y();
 	cloud->points[i].z = point.z();
+}
+
+const osg::Vec3 PointCloud::get_osg(unsigned int row,
+		unsigned int column) const {
+	return osg::Vec3(cloud->at(column, row).x, cloud->at(column, row).y,
+			cloud->at(column, row).z);
+}
+void PointCloud::set_osg(unsigned int row, unsigned int column,
+		const osg::Vec3& point) {
+	cloud->at(column, row).x = point.x();
+	cloud->at(column, row).y = point.y();
+	cloud->at(column, row).z = point.z();
 }
 
 const float3 PointCloud::get_float3(unsigned int i) const {
@@ -155,4 +174,38 @@ pcl::PointXYZ& PointCloud::back() {
 
 const pcl::PointCloud<pcl::PointXYZ>::Ptr& PointCloud::get_cloud() const {
 	return cloud;
+}
+
+void PointCloud::resize(size_t size) {
+	cloud->resize(size);
+}
+
+void PointCloud::resize(unsigned int width, unsigned int height) {
+	if (height == 1) {
+		//Insert and extra row or PCL will think this is an unordered
+		//cloud and it will fail on accessing with two indices
+		height++;
+	}
+
+	cloud->resize(width * height);
+
+	//Resize puts height to 1, so set it again to its
+	//correct value
+	cloud->width = width;
+	cloud->height = height;
+}
+
+unsigned int PointCloud::get_width() const {
+	return cloud->width;
+}
+
+unsigned int PointCloud::get_height() const {
+	return cloud->height;
+}
+
+int PointCloud::save_to_file(const std::string& path) {
+	return pcl::io::savePCDFile(path, *cloud);
+}
+int PointCloud::load_from_file(const std::string& path) {
+	return pcl::io::loadPCDFile(path, *cloud);
 }

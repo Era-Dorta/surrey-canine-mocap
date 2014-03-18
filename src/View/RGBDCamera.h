@@ -15,7 +15,6 @@
 #include "../Misc/MiscUtils.h"
 #include "../Misc/SimpleTimer.h"
 
-
 #include <string>
 #include <vector>
 #include <fstream>

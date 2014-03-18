@@ -18,7 +18,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		win_width(1280), win_height(720), paused(true), with_colour(false), frame_period_s(
 				1.0 / 30.0), //30fps
 		last_frame_tick_count(0), manual_origin_set(false), manual_axis_rot(
-				false), set_ground_truth(false), show_bounding_box(false), current_axis_manual(
+				false), set_ground_truth(true), show_bounding_box(false), current_axis_manual(
 				0), last_cam_index(0), _dataset_path(path), scene_root(
 				new osg::Group()), rgb_render_interactive_view(new osg::Image), cam_vis_switch(
 				new osg::Switch), render_skel_group(new osg::Group()), ground_truth_group(
@@ -80,7 +80,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 
 	if (set_ground_truth) {
 		std::string path_ground_truth(
-				"/home/cvssp/misc/m04701/workspace/data/groundTruth/test.txt");
+				"/home/cvssp/misc/m04701/workspace/data/groundTruth/ground_truth.pcd");
 		ground_truth.load_data(path_ground_truth);
 	}
 	//DEBUG:
@@ -566,7 +566,7 @@ void MultiCamViewer::update_dynamics() {
 					ground_truth.get_point(i + index_offset, disp_frame_no),
 					ground_truth_group, i);
 
-			if (i == 1 || i == 4 || i == 8 || i == 11) {
+			if (i == 2 || i == 5 || i == 9 || i == 12) {
 				index_offset++;
 			}
 		}
@@ -697,7 +697,7 @@ void MultiCamViewer::set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
 			ground_truth.set_ground_truth_frame(user_points, disp_frame_no);
 
 			std::string path(
-					"/home/cvssp/misc/m04701/workspace/data/groundTruth/test.txt");
+					"/home/cvssp/misc/m04701/workspace/data/groundTruth/ground_truth.pcd");
 			ground_truth.save_data(path);
 
 			num_user_points = 0;

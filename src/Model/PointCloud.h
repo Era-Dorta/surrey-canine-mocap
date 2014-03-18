@@ -11,6 +11,7 @@
 #include "../Misc/CudaVec.h"
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/io/pcd_io.h>
 #include <osg/Array>
 #include <opencv2/opencv.hpp>
 #include <boost/make_shared.hpp>
@@ -21,6 +22,7 @@
 class PointCloud {
 public:
 	PointCloud();
+	PointCloud(unsigned int width, unsigned int height = 1);
 	PointCloud(const osg::ref_ptr<osg::Vec3Array>& in_cloud);
 	PointCloud(const std::vector<float3>& in_cloud);
 	PointCloud(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& in_cloud);
@@ -38,8 +40,15 @@ public:
 	// TODO Since the implementation is with PCL when returning the other
 	// types vector we have to return a copy. This is quite inefficient
 	// better find a way to avoid all this memory creation/destruction
+	// This could be partially solved by using our own point type
+	// that encapsulates all points types
 	const osg::Vec3 get_osg(unsigned int i) const;
 	void set_osg(unsigned int i, const osg::Vec3& point);
+
+	//Method for an organised point cloud
+	//Do not call on 1 row clouds
+	const osg::Vec3 get_osg(unsigned int row, unsigned int column) const;
+	void set_osg(unsigned int row, unsigned int column, const osg::Vec3& point);
 
 	const float3 get_float3(unsigned int i) const;
 	void set_float3(unsigned int i, const float3& point);
@@ -70,6 +79,18 @@ public:
 	pcl::PointXYZ& back();
 
 	const pcl::PointCloud<pcl::PointXYZ>::Ptr& get_cloud() const;
+
+	//Resize for 1 row clouds
+	void resize(size_t size);
+
+	//Resize for row col clouds
+	void resize(unsigned int height, unsigned int width);
+
+	unsigned int get_width() const;
+	unsigned int get_height() const;
+
+	int save_to_file(const std::string& path);
+	int load_from_file(const std::string& path);
 
 private:
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;

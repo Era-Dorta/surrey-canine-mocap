@@ -9,8 +9,7 @@
 #define GROUNDTRUTH_H_
 
 #include "../Model/Skeleton.h"
-#include <fstream>
-#include <iostream>
+#include "../Model/PointCloud.h"
 
 class GroundTruth {
 public:
@@ -36,20 +35,12 @@ public:
 
 	bool is_data_loaded() const;
 
-	const osg::Vec3& get_point(unsigned int index, unsigned int frame_num);
+	const osg::Vec3 get_point(unsigned int index, unsigned int frame_num);
 
 private:
-	void save_points(std::ofstream& out_file);
-
-	void load_points(std::ifstream& in_file, int num_frames);
-
-	float read_float(std::stringstream& ss);
-
-	typedef std::vector<std::vector<osg::Vec3> > Vec3DVec;
-
-	Vec3DVec points_vec;
-	bool data_loaded;
 	unsigned int max_user_points;
+	PointCloud cloud;
+	bool data_loaded;
 	const osg::Vec3 empty;
 };
 
