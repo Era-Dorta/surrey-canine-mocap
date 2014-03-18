@@ -461,6 +461,10 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 		return 0;
 	}
 
+	if (inliers.empty()) {
+		return 0;
+	}
+
 	//Get the remainder points in another point cloud
 	int j = 0, size = (int) leg_points0->size();
 	PointCloudPtr leg_points1(new PointCloud());
@@ -472,17 +476,28 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 		}
 	}
 
-	if (!fit_line_to_cloud_pcl(leg_points1, line_vec1, line_point1)) {
+	//Get the centroid of all the inliers
+	Eigen::Vector4f centroid0;
+	pcl::compute3DCentroid(*(leg_points0->get_cloud()), inliers, centroid0);
+
+	if (!fit_line_to_cloud_pcl(leg_points1, line_vec1, line_point1, inliers)) {
 		return 0;
 	}
 
-	float dist0 = distance_to_line(prev_bone_positions[0], line_vec0,
-			line_point0);
-	float dist1 = distance_to_line(prev_bone_positions[0], line_vec1,
-			line_point1);
+	Eigen::Vector4f centroid1;
+	pcl::compute3DCentroid(*(leg_points1->get_cloud()), inliers, centroid1);
 
-	//We make the assumption that the closest line to the paw position is
-	//the line that best fits the lower bone
+	osg::Vec3 aux(centroid0[0], centroid0[1], centroid0[2]);
+	float dist0 = (prev_bone_positions[0] - aux).length();
+
+	aux.x() = centroid1[0];
+	aux.y() = centroid1[1];
+	aux.z() = centroid1[2];
+
+	float dist1 = (prev_bone_positions[0] - aux).length();
+
+	//We assume the lower line is the one whose inliers
+	//are closer to previous paw position
 	if (dist1 < dist0) {
 		swap(line_vec0, line_vec1);
 		swap(line_point0, line_point1);

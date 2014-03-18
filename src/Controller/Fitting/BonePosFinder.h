@@ -13,11 +13,14 @@
 #include "../../Model/Skeleton.h"
 #include "../../Model/PointCloud.h"
 
-//#include <pcl/io/pcd_io.h>
-
+//TODO Should have a class cloud manipulator with all the
+//pcl methods, so if we decide to change from pcl to other library
+//it will be easy
 #include <pcl/common/common.h>
+#include <pcl/common/centroid.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_line.h>
+
 #include <opencv2/opencv.hpp>
 
 class BonePosFinder {
