@@ -446,6 +446,9 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 		const float bone_lengths[2], const osg::Vec3 prev_bone_positions[3],
 		osg::Vec3 new_bone_positions[3]) {
 
+	//TODO If the inliers is bigger than a certain percentage of
+	//of the total cloud we could assume the leg is stretched
+	//so we should use only one line to calculate the positions
 	PointCloudPtr leg_points0(new PointCloud());
 
 	//Get all the points that belong to the leg
@@ -509,7 +512,7 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 
 	//Get wrist position
 	if (!point_in_line_given_distance_most_up(prev_bone_positions[0],
-			bone_lengths[0], line_vec0, line_point0, new_bone_positions[0])) {
+			bone_lengths[0], line_vec0, line_point0, new_bone_positions[1])) {
 
 		refine_start_position(new_bone_positions[1], new_bone_positions[0],
 				bone_lengths[0]);
