@@ -774,12 +774,13 @@ bool BonePosFinder::sphere_line_intersection(const osg::Vec3& sphe_centre,
 	//http://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
 
 	osg::Vec3 sphe_to_line = line_point - sphe_centre;
-	float first_val = (line_vec - sphe_to_line) * (line_vec - sphe_to_line);
+	float first_val = (line_vec * sphe_to_line) * (line_vec * sphe_to_line);
 	float sphe_to_line2 = sphe_to_line * sphe_to_line;
 	float radius2 = radius * radius;
 	float sq = first_val - sphe_to_line2 + radius2;
 
 	//Inside of square root is negative, so there are no solutions
+	//for real coordinates
 	if (sq < 0) {
 		return false;
 	}
