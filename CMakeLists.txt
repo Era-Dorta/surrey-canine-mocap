@@ -26,15 +26,10 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 PRINT("Boost include:" ${Boost_INCLUDE_DIR})
 
 #OpenCV
-FIND_PACKAGE(OpenCV REQUIRED HINTS "/home/cvssp/misc/m04701/customlibs") 
+FIND_PACKAGE(OpenCV) 
 INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
 PRINT("OpenCV include" ${OpenCV_INCLUDE_DIRS}) 
 PRINT("OpenCV lib" ${OpenCV_LIB_DIR})
-
-
-#Custom path to compiled by hand libraries, thanks to not having permision to install software
-#If you have installation permisions remove this line
-SET(CMAKE_PREFIX_PATH "/home/cvssp/misc/m04701/customlibs")
 
 #FLANN
 FIND_PACKAGE(Flann)
