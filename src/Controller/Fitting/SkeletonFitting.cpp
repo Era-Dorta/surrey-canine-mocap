@@ -20,29 +20,8 @@ SkeletonFitting::SkeletonFitting(SkeletonPtr skeleton,
 SkeletonFitting::~SkeletonFitting() {
 }
 
-//void SkeletonFitting::fit_skeleton_into_cloud(Skeleton& skeleton,
-//		osg::ref_ptr<osg::Vec3Array> cloud) {
 
-//TODO
-//Select all points that are closer than a threshold to the line formed by
-//a pair of joints, care with points far away from the joints, case the line
-//cuts other points in the skeleton->
-
-//How to get the points???
-//Segment in boxes first???
-
-//}
-
-//void SkeletonFitting::fit_skeleton_with_prev_nex_frame(Skeleton& skeleton,
-//	int frame) {
-//TODO
-//Calculate distance to joint in next and previous frame
-//Calculate vectors of movement to positions in next and previous frame
-//Add them
-//If the are not 0 in any dimension, it means that if we move in that dimension
-//a certain amount, then distance to prev and next should be reduced.
-//Iterative??? How much to move???
-//}
+//TODO Implement some form of time coherence
 
 void SkeletonFitting::calculate_for_frame(int frame_num) {
 	if (current_frame != frame_num) {

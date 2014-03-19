@@ -58,6 +58,7 @@ private:
 
 	//merge_2D_skeletons_impl can call this two methods to actually do the
 	//merging.
+	//TODO Implement another method using PCL merging clouds algorithms
 
 	//This method finds a white pixel starting from 0,0 and then calculates
 	//distances to all white pixels in the other camera views, then takes the

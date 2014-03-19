@@ -106,7 +106,7 @@ bool LegFitter::fit_leg_position_go_up_y(Skeleton::Skel_Leg leg, int paw_index,
 
 	//Used calculated positions to get better ones
 	osg::Vec3 new_bone_pos[3];
-	int res = bone_pos_finder.find_leg_lower_3_joints(cloud, leg_points_index,
+	bone_pos_finder.find_leg_lower_3_joints(cloud, leg_points_index,
 			bone_lengths, bone_pos, new_bone_pos,
 			BonePosFinder::Ransac_Line_Fit);
 

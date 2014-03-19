@@ -502,6 +502,9 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 	}
 
 	//Get new paw position
+	//TODO If the new paw position is further away than an offset from
+	//the old one, then fix it: put it a maximum offset, half way, leave
+	//were it was, ..., not sure which one would work best
 	closest_point_in_line_from_point(prev_bone_positions[0], line_vec0,
 			line_point0, new_bone_positions[0]);
 
@@ -510,7 +513,6 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 			bone_lengths[0], line_vec0, line_point0, new_bone_positions[1])) {
 		return 1;
 	}
-
 
 	//Get elbow bone start position, there is no need to call
 	//refine position on wrist bone since we got the point
