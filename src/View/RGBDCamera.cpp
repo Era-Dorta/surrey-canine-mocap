@@ -51,8 +51,8 @@ RGBD_Camera::RGBD_Camera(std::string dataset_path, std::string cam_name) :
 	cout << "Found " << rgb_files.size() << " images." << endl;
 
 	//Parse the RGB filenames:
-	for (std::vector<std::string>::iterator i(rgb_files.begin() + 80);
-			i != rgb_files.end() - 57; ++i)
+	for (std::vector<std::string>::iterator i(rgb_files.begin());
+			i != rgb_files.end(); ++i)
 			//for(std::vector<std::string>::iterator i(rgb_files.begin()); i != rgb_files.begin()+10; ++i)
 			{
 		int frame_num = boost::lexical_cast<int>(
@@ -110,7 +110,7 @@ void RGBD_Camera::load_timestamps(std::map<int, double>& ts, std::string fn) {
 void RGBD_Camera::load_frame(int frame_num) {
 	RGBD_Frame frame;
 
-	frame.frame_num = frame_num - 80;
+	frame.frame_num = frame_num;
 
 	//Read images:
 	char fn[1024];
@@ -130,7 +130,7 @@ void RGBD_Camera::load_frame(int frame_num) {
 		exit(-1);
 	}
 
-	frames[frame_num - 80] = frame;
+	frames[frame_num] = frame;
 
 }
 

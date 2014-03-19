@@ -99,6 +99,7 @@ private:
 	int last_cam_index;
 
 	std::string _dataset_path;
+	std::string user_home;
 	camVecT camera_arr;
 	osg::ref_ptr<osg::Group> scene_root;
 	osg::ref_ptr<osg::Image> rgb_render_interactive_view;

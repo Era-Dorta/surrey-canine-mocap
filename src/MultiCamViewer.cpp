@@ -28,7 +28,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 				0.f), cam_calibrator(camera_arr), num_user_points(0), max_user_points(
 				16), skel_controller(camera_arr, render_skel_group), ground_truth(
 				max_user_points + 4) {
-
+	user_home = std::getenv("HOME");
 	user_points.resize(max_user_points);
 	//When manual origin set use camera colour, if not then user normals
 	//for the shader
@@ -85,7 +85,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 
 	if (set_ground_truth) {
 		std::string path_ground_truth(
-				"/home/cvssp/misc/m04701/workspace/data/groundTruth/ground_truth.pcd");
+				user_home + "/workspace/data/groundTruth/ground_truth.pcd");
 		ground_truth.load_data(path_ground_truth);
 	}
 	//DEBUG:
@@ -694,15 +694,19 @@ void MultiCamViewer::set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
 		osgGA::GUIActionAdapter& aa) {
 	osg::Vec3 pos;
 	if (get_user_point(ea, aa, pos)) {
-		if (num_user_points < max_user_points) {
-			user_points[num_user_points] = pos;
-			display_sphere(pos, ground_truth_group, num_user_points);
-			num_user_points++;
-		} else {
+
+		//Save point in aux vector
+		user_points[num_user_points] = pos;
+		display_sphere(pos, ground_truth_group, num_user_points);
+		num_user_points++;
+
+		//If this is the last point then sent them to gound_truth
+		//and reset the vector
+		if (num_user_points == max_user_points) {
 			ground_truth.set_ground_truth_frame(user_points, disp_frame_no);
 
 			std::string path(
-					"/home/cvssp/misc/m04701/workspace/data/groundTruth/ground_truth.pcd");
+					user_home + "/workspace/data/groundTruth/ground_truth.pcd");
 			ground_truth.save_data(path);
 
 			num_user_points = 0;

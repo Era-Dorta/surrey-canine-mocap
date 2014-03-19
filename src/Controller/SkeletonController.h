@@ -116,6 +116,7 @@ private:
 	float inv_kin_scale_factor;
 	float swivel_angle;
 	std::vector<bool> fitting_pending;
+	std::string user_home;
 
 	MessageHandler msg_handler;
 

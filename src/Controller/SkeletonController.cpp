@@ -24,6 +24,7 @@ SkeletonController::SkeletonController(const camVecT& camera_arr,
 	rotate_scale_factor = 0.02;
 	translate_scale_factor = 0.002;
 	inv_kin_scale_factor = 0.0005;
+	user_home = std::getenv("HOME");
 
 	reset_state();
 
@@ -449,23 +450,23 @@ bool SkeletonController::handle_keyboard_events(
 		case osgGA::GUIEventAdapter::KEY_L:
 			cout << "loading skeleton file" << endl;
 			load_skeleton_from_file(
-			//		"/home/cvssp/misc/m04701/workspace/data/bvh/dog_resized.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling_centered.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/vogueBLong.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up29.bvh");
-			//"/home/cvssp/misc/m04701/workspace/data/bvh/4bones.bvh");
-					"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+			//user_home + "/workspace/data/bvh/dog_resized.bvh");
+			//user_home + "/workspace/data/bvh/Dog_modelling.bvh");
+			//user_home + "/workspace/data/bvh/Dog_modelling_centered.bvh");
+			//user_home + "/workspace/data/bvh/vogueBLong.bvh");
+			//user_home + "/workspace/data/bvh/dog_manual_mark_up29.bvh");
+			//user_home + "/workspace/data/bvh/4bones.bvh");
+					user_home + "/workspace/data/bvh/out2.bvh");
 			break;
 
 			//Save skeleton to file:
 		case osgGA::GUIEventAdapter::KEY_K:
 			if (!manual_mark_up) {
 				save_skeleton_to_file(
-						"/home/cvssp/misc/m04701/workspace/data/bvh/out2.bvh");
+						user_home + "/workspace/data/bvh/out2.bvh");
 			} else {
-				std::string file_name =
-						"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
+				std::string file_name = user_home
+						+ "/workspace/data/bvh/dog_manual_mark_up";
 				std::stringstream out;
 				out << current_frame;
 				file_name += out.str();
@@ -534,21 +535,19 @@ void SkeletonController::mix_skeleton_sizes() {
 	int start_frame = 29, end_frame = 29;
 	std::vector<std::string> file_names;
 	for (int i = start_frame; i <= end_frame; i++) {
-		std::string file_name =
-				"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up";
+		std::string file_name = user_home
+				+ "/workspace/data/bvh/dog_manual_mark_up";
 		std::stringstream out;
 		out << i;
 		file_name += out.str();
 		file_name += ".bvh";
 		file_names.push_back(file_name);
 	}
-
-	std::string file_name =
-			"/home/cvssp/misc/m04701/workspace/data/bvh/Dog_modelling.bvh";
+	std::string file_name = user_home + "/workspace/data/bvh/Dog_modelling.bvh";
 	skel_mixer.init(file_name, file_names);
 	skel_mixer.mix();
-	file_name =
-			"/home/cvssp/misc/m04701/workspace/data/bvh/dog_manual_mark_up_mixed_legs_impr.bvh";
+	file_name = user_home
+			+ "/workspace/data/bvh/dog_manual_mark_up_mixed_legs_impr.bvh";
 	skel_mixer.save_file(file_name);
 }
 
