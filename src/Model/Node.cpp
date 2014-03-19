@@ -320,8 +320,6 @@ const osg::Vec3f& Node::get_offset() const {
 
 void Node::set_offset(const osg::Vec3f& offset) {
 	this->offset = offset;
-	length = local_end.length();
-	length2 = length * length;
 }
 
 float Node::get_length() const {

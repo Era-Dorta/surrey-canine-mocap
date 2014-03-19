@@ -289,6 +289,8 @@ int BonePosFinder::find_leg_lower_3_joints(const PointCloudPtr& cloud,
 		new_bone_positions[2] = prev_bone_positions[2];
 	}
 
+	//Make sure output positions are reachable since we have set the inverse
+	//kinematics engine to have a small error tolerance with end positions
 	refine_start_position(new_bone_positions[1], new_bone_positions[0],
 			bone_lengths[0]);
 
@@ -356,7 +358,8 @@ int BonePosFinder::find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
 	}
 
 	if (valid_pos == 2) {
-		//Set temp position as the mean of all the points above the bone
+		//If we couldn't get the third position then infer it by
+		//using the mean of all the points above the bone
 		//end position
 		int num_points = 0;
 		for (unsigned int i = bone_pos_index[1]; i < leg_points_index.size();
@@ -365,11 +368,6 @@ int BonePosFinder::find_leg_lower_3_joints_simple(const PointCloudPtr& cloud,
 			num_points++;
 		}
 		bone_positions[2] = bone_positions[2] / num_points;
-
-		//Use the vector from the mean to next bone start position
-		//to project a plausible position for this bone
-		refine_start_position(bone_positions[2], bone_positions[1],
-				bone_lengths[1]);
 		valid_pos++;
 	}
 
@@ -434,9 +432,6 @@ int BonePosFinder::find_leg_lower_3_joints_line_fitting(
 			bone_lengths[1], line_vec1, line_point1, new_bone_positions[2])) {
 		return 2;
 	}
-
-	refine_start_position(new_bone_positions[2], new_bone_positions[1],
-			bone_lengths[1]);
 
 	return 3;
 }
@@ -511,32 +506,19 @@ int BonePosFinder::find_leg_lower_3_joints_line_ransac(
 			line_point0, new_bone_positions[0]);
 
 	//Get wrist position
-	if (!point_in_line_given_distance_most_up(prev_bone_positions[0],
+	if (!point_in_line_given_distance_most_up(new_bone_positions[0],
 			bone_lengths[0], line_vec0, line_point0, new_bone_positions[1])) {
-
-		refine_start_position(new_bone_positions[1], new_bone_positions[0],
-				bone_lengths[0]);
-		refine_start_position(new_bone_positions[2], new_bone_positions[1],
-				bone_lengths[1]);
-
 		return 1;
 	}
 
-	refine_start_position(new_bone_positions[1], new_bone_positions[0],
-			bone_lengths[0]);
 
-	//Get elbow bone start position
+	//Get elbow bone start position, there is no need to call
+	//refine position on wrist bone since we got the point
+	//using point_in_line_given_distance_most_up
 	if (!point_in_line_given_distance_most_up(new_bone_positions[1],
 			bone_lengths[1], line_vec1, line_point1, new_bone_positions[2])) {
-
-		refine_start_position(new_bone_positions[2], new_bone_positions[1],
-				bone_lengths[1]);
-
 		return 2;
 	}
-
-	refine_start_position(new_bone_positions[2], new_bone_positions[1],
-			bone_lengths[1]);
 
 	return 3;
 }

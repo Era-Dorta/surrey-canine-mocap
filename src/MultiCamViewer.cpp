@@ -18,7 +18,7 @@ MultiCamViewer::MultiCamViewer(std::string path) :
 		win_width(1280), win_height(720), paused(true), with_colour(false), frame_period_s(
 				1.0 / 30.0), //30fps
 		last_frame_tick_count(0), manual_origin_set(false), manual_axis_rot(
-				false), set_ground_truth(true), show_bounding_box(false), current_axis_manual(
+				false), set_ground_truth(false), show_bounding_box(false), current_axis_manual(
 				0), last_cam_index(0), _dataset_path(path), scene_root(
 				new osg::Group()), rgb_render_interactive_view(new osg::Image), cam_vis_switch(
 				new osg::Switch), render_skel_group(new osg::Group()), ground_truth_group(
