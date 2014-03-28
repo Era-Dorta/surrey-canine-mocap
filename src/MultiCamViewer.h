@@ -69,15 +69,21 @@ private:
 			double top);
 	void save_image_freeview();
 
+	//Adds a calibration point for manual camera centre translation
 	void set_calibration_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
 
+	//Adds a ground truth point to the current frame
 	void set_ground_truth_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
 
+	//Gets in world coordinates the point the user clicked on
 	bool get_user_point(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa, osg::Vec3& point);
 
+	//Display a sphere in pos position, it will be a child of add_to_group
+	//num_sphere is this sphere number, this is useful to avoid creating
+	//and destroying the sphere on every frame
 	void display_sphere(const osg::Vec3& pos, osg::Group* add_to_group,
 			unsigned int num_sphere);
 

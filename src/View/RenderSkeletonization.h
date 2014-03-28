@@ -53,6 +53,8 @@ public:
 	void display_3d_merged_skeleon_cloud(int disp_frame_no,
 			Skeletonization3D& skeleton);
 
+	//Show the cloud with a different colour for each point group
+	//using the labels in group
 	void display_cloud(const PointCloudPtr& cloud,
 			std::vector<Skeleton::Skel_Leg> group);
 
@@ -69,6 +71,8 @@ public:
 	void display_line(const osg::Vec3& from, const osg::Vec3& to,
 			unsigned int index);
 
+	//If the object the user clicked on is a bone, it returns its
+	//renderer transformation matrix
 	osg::MatrixTransform* is_obj_bone(osg::Drawable* selected_obj);
 
 	//Toggle cam_num cloud point
@@ -79,6 +83,7 @@ public:
 
 	void toggle_3d_merged_cloud();
 
+	//Toggle cloud with labels
 	void toggle_group_div();
 private:
 	osg::ref_ptr<osg::MatrixTransform> create_sphere(float radius,

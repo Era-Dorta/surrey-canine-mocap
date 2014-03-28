@@ -30,8 +30,6 @@ enum Fitting_State {
 
 class SkeletonController {
 public:
-	//SkeletonController();
-
 	SkeletonController(const camVecT& camera_arr,
 			osg::ref_ptr<osg::Group> render_skel_group);
 
@@ -45,6 +43,7 @@ public:
 
 	void update_dynamics(int disp_frame_no);
 
+	//Calculate tracking information for all frames
 	void generate_skeletonization();
 
 	void setup_scene();
@@ -67,12 +66,17 @@ private:
 	bool handle_keyboard_events(const osgGA::GUIEventAdapter& ea,
 			osgGA::GUIActionAdapter& aa);
 
+	//Get a useful vector to pass to the skeleton modification methods
+	//from screen 2D mouse coordinates
 	osg::Vec3 get_mouse_vec(int x, int y);
 
+	//Mix manually marked up bvh skeleton files and create a new one
 	void mix_skeleton_sizes();
 
+	//Reset state to not bone modification
 	void finish_bone_trans();
 
+	//Fix bone axis after a bone modification
 	void update_bones_axis();
 
 	//Class that creates a skeleton from a given set of frames
@@ -89,6 +93,8 @@ private:
 
 	SkeletonMixer skel_mixer;
 
+	//Class that saves current frame skeleton rotations in case the user
+	//decides to restore them after a modification
 	SkeletonState skel_state;
 
 	Fitting_State state;

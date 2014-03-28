@@ -686,6 +686,7 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 						user_points[2], user_points[3]);
 				cam_calibrator.recalibrate_center_all_cameras();
 				cam_calibrator.save_all_cameras(_dataset_path);
+				num_user_points = 0;
 			}
 		}
 	}
