@@ -660,6 +660,12 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 
 	osg::Vec3 pos;
 	if (get_user_point(ea, aa, pos)) {
+		if (manual_axis_rot) {
+			//Code to calibrate each camera axis separately
+			cam_calibrator.recalibrate_axis_camera();
+			cam_calibrator.save_camera_axis_calibration(last_cam_index, _dataset_path);
+			return;
+		}
 		if (num_user_points < 4) {
 			user_points[num_user_points] = pos;
 			num_user_points++;
@@ -675,17 +681,12 @@ void MultiCamViewer::set_calibration_point(const osgGA::GUIEventAdapter& ea,
 
 			sphere_geode->addDrawable(sphere_shape);
 			scene_root->addChild(sphere_geode.get());
-
-		} else {
-			cam_calibrator.set_plate_points(user_points[0], user_points[1],
-					user_points[2], user_points[3]);
-			cam_calibrator.recalibrate_center_all_cameras();
-			//cam_calibrator.recalibrate_axis_camera();
-			cam_calibrator.save_all_cameras(_dataset_path);
-
-			//Code to calibrate each camera axis separately
-			//cam_cal.recalibrate_axis_camera();
-			//cam_cal.save_camera_calibration(last_cam_index, _dataset_path);
+			if (num_user_points == 4) {
+				cam_calibrator.set_plate_points(user_points[0], user_points[1],
+						user_points[2], user_points[3]);
+				cam_calibrator.recalibrate_center_all_cameras();
+				cam_calibrator.save_all_cameras(_dataset_path);
+			}
 		}
 	}
 }
