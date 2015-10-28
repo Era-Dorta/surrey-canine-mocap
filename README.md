@@ -1,12 +1,12 @@
-MCV
+Canine Marker-less motion tracking
 ===
 
-Markerless motion tracking for dog gait analysis.
+A simple aplication to fit and visualize virtual canine skeletons using data from Kinect cameras.
 
 Installation
 -----------
 
-You need the following libraries:
+The following libraries are needed to compile the code:
 * [Boost](http://www.boost.org)
 * [OpenCV](http://opencv.org)
 * [Flann](http://www.cs.ubc.ca/research/flann)
@@ -14,8 +14,8 @@ You need the following libraries:
 * [PCL](http://pointclouds.org)
 * [OSG](http://www.openscenegraph.org)
 
-You will also need the following folders in your home directory:
+The application expects the following folders to exits in your home directory:
 * `~/workspace/data/bvh/` 
 * `~/workspace/data/groundTruth/`
 
-If your compiler supports [OpenMP](http://openmp.org/wp/) the cmake compilation will automatically use it for Flann.
+[OpenMP](http://openmp.org/wp/) will be used for Flann if it is detected by cmake.
